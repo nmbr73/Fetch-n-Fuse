@@ -152,7 +152,13 @@ function Create()
     INP_MaxScale 	     = 10.0,
   })
 
-  InMouseXY = self:AddInput("Mouse", "MouseXY", {
+  InMouseXY = self:AddInput("Mouse Drag", "MouseXY", {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+    INPID_PreviewControl = "CrosshairControl",
+  })
+
+  InMouseZW = self:AddInput("Mouse Click", "MouseZW", {
     LINKID_DataType = "Point",
     INPID_InputControl = "OffsetControl",
     INPID_PreviewControl = "CrosshairControl",
@@ -162,7 +168,7 @@ function Create()
   self:EndControlNest()
 
 
-  self:BeginControlNest("Some Color", "SomeRandomColor", true, {})
+  self:BeginControlNest("Some Color", "SomeRandomColor", false, {})
 
   attrs={
     LINKID_DataType = "Number",
@@ -304,19 +310,30 @@ function Process(req)
   params = node:GetParamBlock(ShaderStandardParameters)
 
 
-	params.mouse_x = 0
-	params.mouse_y = 0
-	params.mouse_z = 0
-	params.mouse_w = 0
+	local mouse =  nil
 
-  local mouse  = InMouseXY:GetValue(req)
+  params.mouse_x = 0
+	params.mouse_y = 0
+
+  mouse  = InMouseXY:GetValue(req)
 
   if (mouse ~= nil) then
 		params.mouse_x = mouse.X * Width
 		params.mouse_y = mouse.Y * Height
-
     -- print("mouse=(".. params.mouse_x.."|"..params.mouse_y ..")")
 	end
+
+	params.mouse_z = 0
+	params.mouse_w = 0
+
+  mouse  = InMouseZW:GetValue(req)
+
+  if (mouse ~= nil) then
+		params.mouse_z = mouse.X * Width
+		params.mouse_w = mouse.Y * Height
+    -- print("mouse=(".. params.mouse_z.."|"..params.mouse_w ..")")
+	end
+
 
 
   params.frequency        = InFrequency:GetValue(req).Value
