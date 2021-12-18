@@ -1,0 +1,439 @@
+--[[--
+
+Some experiments based on the work of
+Chris Ridings (www.chrisridings.com), Bryan Ray (http://www.bryanray.name/wordpress/opencl-fuses-index/),
+JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
+
+--]]--
+
+
+ShaderStandardParameters = [[
+  float frequency;
+
+  float mouse_x;
+	float mouse_y;
+	float mouse_z;
+	float mouse_w;
+
+  float r;
+  float g;
+  float b;
+  float a;
+  int   width;
+  int   height;
+  float iTime;
+  int   compOrder;
+
+	int iChannel0_width;
+	int iChannel0_height;
+
+  ]]
+
+
+-- //////////////////////////////////////////////////////////
+
+HelperFunctions = [[
+
+  #define SHADER_PREAMBLE                                                                           \
+    DEFINE_KERNEL_ITERATORS_XY(x, y);                                                               \
+    if (x >= params->width || y >= params->height)                                                  \
+      return;                                                                                       \
+                                                                                                    \
+    float2 iResolution = to_float2(params->width, params->height);                                  \
+    float  iTime       = params->iTime * params->frequency;                                         \
+    float2 fragCoord   = to_float2(x, y);                                                           \
+    float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w); \
+    float4 fragColor   = to_float4_s(0.0f);
+
+   #define SHADER_EPILOGUE \
+    _tex2DVec4Write(dst, x, y, fragColor);
+
+  #undef USE_NATIVE_METAL_IMPL
+  #undef USE_NATIVE_CUDA_IMPL
+  #undef USE_NATIVE_OPENCL_IMPL
+
+  // 0 to use the generic implementations; 1 for Metal, OpenCL, Cuda specific code if existing
+
+  #if 1
+    #if defined(DEVICE_IS_METAL)
+      #define USE_NATIVE_METAL_IMPL   1
+    #elif defined(DEVICE_IS_CUDA)
+      #define USE_NATIVE_CUDA_IMPL    1
+    #elif defined(DEVICE_IS_OPENCL)
+      #define USE_NATIVE_OPENCL_IMPL  1
+    #endif
+  #endif
+
+  #if defined(USE_NATIVE_METAL_IMPL)
+    #define swixy(V) (V).xy
+    #define swiyx(V) (V).yx
+    #define swixxy(V) (V).xxy
+    #define swixyx(V) (V).xyx
+    #define swiyxz(V) (V).yxz
+    #define swiyzz(V) (V).yzz
+    #define swizyx(V) (V).zyx
+  #else
+    #define swixy(V) to_float2((V).x,(V).y)
+    #define swiyx(V) to_float2((V).y,(V).x)
+    #define swixxy(V) to_float3((V).x,(V).x,(V).y)
+    #define swixyx(V) to_float3((V).x,(V).y,(V).x)
+    #define swiyxz(V) to_float3((V).y,(V).x,(V).z)
+    #define swiyzz(V) to_float3((V).y,(V).z,(V).z)
+    #define swizyx(V) to_float3((V).z,(V).y,(V).x)
+  #endif
+
+  #if defined(USE_NATIVE_METAL_IMPL)
+    __DEVICE__ inline float length1f      ( float  x ) { return abs(x);    }
+    __DEVICE__ inline float length_float3 ( float3 v ) { return length(v); }
+    __DEVICE__ inline float3 fract_float3(float3 v) { return fract(v); }
+    __DEVICE__ inline float4 pow_float4(float4 a, float4 b) { return pow(a,b); }
+  #else
+    __DEVICE__ inline float length1f      ( float  x ) { return _fabs(x);                                 }
+    __DEVICE__ inline float length_float3 ( float3 v ) { return _sqrtf(v.x*v.x+v.y*v.y+v.z*v.z);          }
+    __DEVICE__ inline float3 fract_float3(float3 v)          { return to_float3(v.x - _floor(v.x), v.y - _floor(v.y), v.z - _floor(v.z)                   ); }
+    __DEVICE__ inline float4 pow_float4(float4 a, float4 b) { return to_float4( pow(a.x,b.x),pow(a.y,b.y),pow(a.z,b.z),pow(a.w,b.w) ); }
+  #endif
+
+  #if defined(USE_NATIVE_METAL_IMPL)
+
+    typedef float2x2 mat2;
+
+    __DEVICE__ inline mat2    to_mat2(float  a, float  b, float c, float d) { return mat2(a,b,c,d); }
+    __DEVICE__ inline float2  prod_float2_mat2(float2 v, mat2   m )  { return v*m; }
+
+  #else
+
+    typedef struct { float2 r0; float2 r1; } mat2;
+
+    __DEVICE__ inline mat2   to_mat2(float  a, float  b, float c, float d)  { mat2 t; t.r0.x = a; t.r0.y = b; t.r1.x = c; t.r1.y = d; return t; }
+    __DEVICE__ inline float2 prod_float2_mat2(float2 v, mat2 m) { float2 t; t.x = v.x*m.r0.x + v.y*m.r0.y; t.y = v.x*m.r1.x + v.y*m.r1.y; return t; }
+
+  #endif // end of mat2 implementation
+
+]]
+
+-- //////////////////////////////////////////////////////////
+
+
+ShaderDefaultCode = [[
+
+__KERNEL__ void DefaultKernel(
+    __CONSTANTREF__ ShaderParams *params,
+    __TEXTURE2D__ iChannel0,
+    __TEXTURE2D_WRITE__ dst
+    )
+{
+  DEFINE_KERNEL_ITERATORS_XY(x, y);
+
+  if (x >= params->width || y >= params->height)
+    return;
+
+  _tex2DVec4Write(dst, x, y, to_float4(params->r,params->g,params->b,params->a) );
+}
+
+]]
+
+
+FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
+    REGS_Name = "ShadersInc",
+	  REGS_Category = "Fuses",
+    REGS_OpDescription = "An Incubator for Shadertoys",
+	  REGS_OpIconString = "incubus",
+    REG_Source_GlobalCtrls = true,
+    REG_Source_SizeCtrls = true,
+    REG_Source_AspectCtrls = true,
+	  REG_TimeVariant = true,
+	  REGS_Company = "nmbr73",
+	  REGS_URL = "https://nmbr73.github.io/",
+	  REG_Version	= 000001,
+    -- REG_Fuse_NoEdit = true,
+    -- REG_Fuse_NoReload = true,
+    })
+
+
+CodeFragments={}
+
+function getCodeFragmentFiles()
+
+  local files={}
+
+  local REPOSITORYPATH = ""
+  local handle	= bmd.readdir(REPOSITORYPATH.."Conversions/*.*.c")
+
+  for k, v in pairs(handle) do
+    if v.Name and not(v.IsDir) then
+
+      local filename = v.Name
+      local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
+
+      files[k]={
+        Name=fusename,
+        Path=REPOSITORYPATH.."Conversions/",
+        Filename=filename,
+        ShadertoyID=shadertoyid,
+        Label=fusename.." ("..shadertoyid..")",
+      }
+    end
+  end
+
+  return files
+end
+
+
+
+
+function Create()
+
+  CodeFragments=getCodeFragmentFiles()
+
+  local attrs
+
+  attrs={}
+
+  for k,v in pairs(CodeFragments) do
+    table.insert(attrs,{ CCS_AddString = v.Label })
+  end
+
+  InFileToUse = self:AddInput("Code Fragment", "FragementFileSelection", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "ComboControl",
+    INP_Default = 0,
+    INP_Integer = true,
+    attrs
+    })
+
+  InReloadCode= self:AddInput("Reload Code", "ReloadCodeFragment",
+    { LINKID_DataType = "Text",
+      INPID_InputControl = "ButtonControl",
+      INP_DoNotifyChanged = true,
+      INP_External = false,
+    })
+
+  self:BeginControlNest("Common Fuse Controls", "CommonFuseControls", true, {})
+
+
+  InFrequency = self:AddInput("Frequency", "Frequency", {
+    LINKID_DataType    = "Number",
+    INPID_InputControl = "SliderControl",
+    INP_Default        = 1.0,
+    INP_MinScale 	     = 0.0,
+    INP_MaxScale 	     = 10.0,
+  })
+
+  InMouseXY = self:AddInput("Mouse", "MouseXY", {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+    INPID_PreviewControl = "CrosshairControl",
+  })
+
+
+  self:EndControlNest()
+
+
+  self:BeginControlNest("Some Color", "SomeRandomColor", true, {})
+
+  attrs={
+    LINKID_DataType = "Number",
+		INPID_InputControl = "ColorControl",
+		INP_MinScale = 0.0,
+		INP_MaxScale = 1.0,
+		INP_Default  = 0.5,
+		ICS_Name = "Color",
+		IC_ControlGroup = 1,
+  }
+
+  InR = self:AddInput("Red",   "Red",   { attrs, IC_ControlID = 0, })
+	InG = self:AddInput("Green", "Green", { attrs, IC_ControlID = 1, })
+	InB = self:AddInput("Blue",  "Blue",  { attrs, IC_ControlID = 2, })
+	InA = self:AddInput("Alpha", "Alpha", { attrs, IC_ControlID = 3, })
+
+  self:EndControlNest()
+
+
+	InChannel0 = self:AddInput("iChannel0", "iChannel0", { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false })
+	OutImage = self:AddOutput("Output", "Output", { LINKID_DataType = "Image", LINK_Main = 1 }) -- , INP_Required = false })
+
+
+  InRebuildCheckBox = self:AddInput("InRebuildCheckBox", "InRebuildCheckBox", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default = 0,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    IC_Visible = false,
+  })
+
+end
+
+
+
+
+
+
+
+local Selected_Option = -1
+local Selected_Item   = nil
+local Selected_Name   = nil
+
+
+
+function Process(req)
+
+  -- print("process ...")
+
+  local filetouse_no = InFileToUse:GetValue(req).Value + 1
+  local rebuild = false
+
+  if InRebuildCheckBox:GetValue(req).Value == 1 then
+    print("rebuild!")
+    rebuild=true
+    InRebuildCheckBox:SetSource(Number(0),0)
+  end
+
+
+
+  if rebuild or Selected_Option ~= filetouse_no then
+
+    ShaderMainCode  = ""
+    Selected_Item   = CodeFragments[filetouse_no]
+    Selected_Option = filetouse_no
+    Selected_Name   = Selected_Item.Name
+    file = io.open(Selected_Item.Path .. Selected_Item.Filename,"r")
+
+    if file ~= nil then
+      -- print("load "..(Selected_Item.Name).."'s code")
+      ShaderMainCode = "\n" .. file:read("*all")
+      file:close()
+    end
+
+    rebuild=true
+  end
+
+	if (ShaderMainCode == "" or ShaderMainCode == nil) then
+    print("use default code")
+    ShaderMainCode=ShaderDefaultCode
+    Selected_Name='Default'
+  end
+
+  local node = DVIPComputeNode(req,
+    Selected_Name.."Kernel",
+    HelperFunctions .. ShaderMainCode,
+    -- Selected_Name..
+    "Params",
+    ShaderStandardParameters
+    )
+
+
+
+  local imgattrs = {
+    IMG_Document = self.Comp,
+    { IMG_Channel = "Red", },
+    { IMG_Channel = "Green", },
+    { IMG_Channel = "Blue", },
+    { IMG_Channel = "Alpha", },
+    IMG_Width = Width,
+    IMG_Height = Height,
+    IMG_XScale = XAspect,
+    IMG_YScale = YAspect,
+    IMAT_OriginalWidth = realwidth, -- nil !?!
+    IMAT_OriginalHeight = realheight, -- nil !?!
+    IMG_Quality = not req:IsQuick(),
+    IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
+    IMG_DeferAlloc = true,
+    IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+  }
+
+
+
+  -- Extern Texture or create a new one
+  iChannel0 = InChannel0:GetValue(req)
+
+  if (iChannel0 == nil) then
+    iChannel0 = Image(imgattrs)
+    local p = Pixel({R=0,G=0,B=0,A=0})
+    iChannel0:Fill(p)
+  end
+
+  local dst = Image {IMG_Like = iChannel0, IMG_DeferAlloc = true}
+
+
+  if req:IsPreCalc() then
+    print("precalc")
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    return
+  end
+
+  local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
+
+  local params = {}
+
+  params = node:GetParamBlock(ShaderStandardParameters)
+
+
+	params.mouse_x = 0
+	params.mouse_y = 0
+	params.mouse_z = 0
+	params.mouse_w = 0
+
+  local mouse  = InMouseXY:GetValue(req)
+
+  if (mouse ~= nil) then
+		params.mouse_x = mouse.X * Width
+		params.mouse_y = mouse.Y * Height
+
+    -- print("mouse=(".. params.mouse_x.."|"..params.mouse_y ..")")
+	end
+
+
+  params.frequency        = InFrequency:GetValue(req).Value
+  params.r                = InR:GetValue(req).Value
+  params.g                = InG:GetValue(req).Value
+  params.b                = InB:GetValue(req).Value
+  params.a                = InA:GetValue(req).Value
+  params.width            = iChannel0.DataWindow:Width()  -- params.width  = dst.Width
+  params.height           = iChannel0.DataWindow:Height() -- params.height = dst.Height
+  params.iTime            = req.Time / framerate
+  params.compOrder        = iChannel0:IsMask() and 1 or 15
+	params.iChannel0_width  = iChannel0.Width
+	params.iChannel0_height = iChannel0.Height
+
+  node:SetParamBlock(params)
+
+--  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+	node:AddInput("iChannel0",iChannel0)
+	node:AddOutput("dst", dst)
+
+  if rebuild then
+    node:ForceRebuild()
+  end
+
+  local ok = node:RunSession(req)
+
+	if (not ok) then
+		dst = nil
+    print("--- Errors ---")
+    dump(node:GetErrorLog())
+	end
+
+
+  -- Output our result
+  OutImage:Set(req,dst)
+
+	collectgarbage();
+
+end
+
+
+
+function NotifyChanged(inp, param, time)
+	if (param ~= nil) then
+		if (param.Value == 1) then
+			if (inp == InReloadCode) then
+        -- print("we want our code to rebuild")
+        InRebuildCheckBox:SetSource(Number(1),0)
+      end
+		end
+	end
+end
