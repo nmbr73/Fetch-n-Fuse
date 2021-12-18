@@ -28,8 +28,8 @@ __KERNEL__ void ShatteredLightKernel(
   SHADER_PREAMBLE;
 
 
-  _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,1.0f));
-  return;
+  // _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,1.0f));
+  // return;
 
 
   float radius = 0.3f;
@@ -68,7 +68,7 @@ __KERNEL__ void ShatteredLightKernel(
   col *= 0.8f;
 
   //##########################################################################
-
+  fragColor=to_float4_aw(col,1.0f);
   SHADER_EPILOGUE;
 
 
