@@ -9,7 +9,7 @@ __KERNEL__ void SimpleDCTLKernel(
 
   SHADER_PREAMBLE;
 
-  float red          = params->r;
+  float red          = 1.0f; //params->r;
   float green        = params->g;
   float blue         = params->b;
   float alpha        = params->a;

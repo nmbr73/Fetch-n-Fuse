@@ -7,7 +7,7 @@ function install()
   local n = nil
 
   local repositorypath    = debug.getinfo(2, "S").short_src:match("(.*[/\\])install%.lua")
-  f = io.open(repositorypath..'Incubator.fuse', "r")
+  f = io.open(repositorypath..'.clobber/Incubator.fuse', "r")
 
   if not f then return "failed to read fuse sourcecode" end
   local incubator_source = f:read("*all")
@@ -18,7 +18,7 @@ function install()
   if n<1 then return "failed substitute repo path in fuse code" end
 
   local fusepath          = fusion:MapPath("Fuses:/")
-  f = io.open(fusepath.."IncubatorByNmbr73_temporary.fuse","w")
+  f = io.open(fusepath.."IncubatorByNmbr73_JustDeleteIfYouWantTo.fuse","w")
 
   if not f then return "failed to write fuse" end
 
