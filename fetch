@@ -12,8 +12,21 @@ from dotenv import load_dotenv
 
 def convert(code):
 
-  code=re.sub(r'sin([ \t]*\()',r'_sinf\1', code)
-  code=re.sub(r'cos([ \t]*\()',r'_cosf\1', code)
+  code=re.sub(r'([^\w])(fragCoord|iResolution)\.xy([^\w])',r'\1\2\3', code)
+  code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
+  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
+
+  for s in [
+      # prefix, suffix, fuctions
+      [ '' ,   '_f', 'mod'], # '_f' dahinter, um auf eigene Implementierung umzubiegen
+      [ '_',   'f' , 'pow|log2|log10|log|copysign|saturate|sqrt|trunc|hypot|cos|sin|cospi|sinpi|tan|acos|asinh|atanh|cosh|sinh|tanh|cbrt|lgamma|tgamma|rsqrt|exp|exp2'],
+      [ '_',   '2f', 'atan'],
+      [ '_f',  'f' , 'max|min|dim'],
+      [ '_' ,  ''  , 'ceil|floor|round|mix'],
+      [ '_f',  ''  , 'maf|divide|recip|abs|remainder']
+    ]:
+    code=re.sub(r'([^\w])('+s[2]+r')(\s*)\(',r'\g<1>'+s[0]+r'\g<2>'+s[1]+r'\3(', code)
+
 
   code=re.sub(r'([ \t\(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \t\),\+\-\*=;]+)',r'\g<1>0\2\3', code)
   code=re.sub(r'([ \t\(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \t\),\+\-\*=;]+)',r'\g<1>0\2\3', code)
@@ -152,6 +165,7 @@ load_dotenv()
 
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
+# parser.add_argument('-t','--test',action='store_true',help='use existing file to avoid http access')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 args = parser.parse_args()
