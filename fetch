@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+
+import os
+import io
+import re
+import requests
+import json
+import yaml
+from dotenv import load_dotenv
+
+
+
+#GITHUB_NAME = os.getenv('GITHUB_NAME')
+
+
+
+def get(id):
+
+  url="https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('SHADERTOY_APIKEY')
+
+  response = requests.get(url)
+
+  if response.status_code != 200:
+    raise Exception(url+"\nHTTP Error "+str(response.status_code))
+
+  json_data = json.loads(response.text)
+
+  error=json_data.get('Error',None)
+
+  if error!=None:
+    raise Exception(url+"\n"+error)
+
+  info=json_data['Shader']['info']
+
+
+  shader_name=info['name']
+  shader_author=info['username']
+  shader_description=info['description']
+
+  fuse_name=re.sub(r'[^A-Za-z0-9]+','', shader_name)
+  fuse_author=os.getenv('GITHUB_NAME')
+
+
+  with io.open('Conversions/'+fuse_name+'.'+id+".yaml", 'w', encoding='utf8') as outfile:
+      yaml.dump({
+        'shader':{
+          'id':id,
+          'name':shader_name,
+          'author':shader_author,
+          'url':'https://www.shadertoy.com/view/'+id
+        },
+        'fuse':{
+          'name':fuse_name,
+          'author':fuse_author
+
+        }
+      },outfile, default_flow_style=False, allow_unicode=True)
+
+  code=""
+  for entry in json_data['Shader']['renderpass']:
+    code=code+entry['code']
+
+  code = code.replace("\t", "    ")
+  code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
+
+
+  with open('Conversions/'+fuse_name+'.'+id+".c", 'w') as f:
+     f.write(code)
+
+
+  print(f"{shader_name}->{fuse_name}")
+
+
+# ltfXzj - tut's nicht
+# td2SDz - tut's
+
+if not(os.path.isfile(".env")):
+  with open(".env", 'w') as f:
+     f.write( "GITHUB_NAME=\"\"\n"
+              "SHADERTOY_APIKEY=\"\"\n"
+            )
+  print(".env file created - please enter your credentials to use")
+
+
+load_dotenv()
+
+
+import argparse
+
+parser = argparse.ArgumentParser(description='Fetch fuse source code.')
+parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
+args = parser.parse_args()
+
+
+try:
+  get(args.id)
+except Exception as e:
+  print(str(e))
