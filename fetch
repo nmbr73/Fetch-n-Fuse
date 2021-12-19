@@ -10,6 +10,38 @@ import argparse
 from dotenv import load_dotenv
 
 
+def convert(code):
+
+  code=re.sub(r'sin([ \t]*\()',r'_sinf\1', code)
+  code=re.sub(r'cos([ \t]*\()',r'_cosf\1', code)
+
+  code=re.sub(r'([ \t\(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \t\),\+\-\*=;]+)',r'\g<1>0\2\3', code)
+  code=re.sub(r'([ \t\(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \t\),\+\-\*=;]+)',r'\g<1>0\2\3', code)
+  code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.)([ \t\),\+\-\*=;]+)',r'\1\g<2>0\3', code)
+  code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.)([ \t\),\+\-\*=;]+)',r'\1\g<2>0\3', code)
+  code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.[0-9]+)([ \t\),\+\-\*=;]+)',r'\1\2f\3', code)
+  code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.[0-9]+)([ \t\),\+\-\*=;]+)',r'\1\2f\3', code)
+
+  # vecN ... =  -> floatN ... =
+  code=re.sub(r'\n(\s*)vec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1float\2\3', code)
+  code=re.sub(r'\n(\s*)const(\s+)vec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1const\2float\3\4', code)
+
+  # vecN(float) -> to_floatN_s(float)
+  code=re.sub(r'vec([234])(\s*\(\s*[0-9]+\.[0-9]+f\s*\))',r'to_float\1_s\2', code)
+
+  # versuche floatN_aw zu erwischen - geht aber natürlich nur sehr bedingt
+  code=re.sub(r'vec([34])(\s*\([^,]+,[^,\)]+\))',r'to_float\1_aw\2', code)
+
+  code=re.sub(r'vec([234])(\s*\()',r'to_float\1\2', code)
+
+  # am Schluss alle verbleibenden 'vecN' weghauen:
+  code=re.sub(r'([\s\(\)\*\+\-;,=])vec([234])(\s)',r'\1float\2\3', code)
+
+
+  return code
+
+
+
 def get(id,force=False):
 
   url="https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY')
@@ -92,6 +124,7 @@ def get(id,force=False):
 
 
   code = code.replace("\t", "    ")
+  code = convert(code)
   code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
 
 
