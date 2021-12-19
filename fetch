@@ -29,7 +29,7 @@ def convert(code):
   # vecN(float) -> to_floatN_s(float)
   code=re.sub(r'vec([234])(\s*\(\s*[0-9]+\.[0-9]+f\s*\))',r'to_float\1_s\2', code)
 
-  # versuche floatN_aw zu erwischen - geht aber natürlich nur sehr bedingt
+  # versuche floatN_aw zu erwischen - geht aber natuerlich nur sehr bedingt
   code=re.sub(r'vec([34])(\s*\([^,]+,[^,\)]+\))',r'to_float\1_aw\2', code)
 
   code=re.sub(r'vec([234])(\s*\()',r'to_float\1\2', code)
@@ -42,7 +42,7 @@ def convert(code):
 
 
 
-def get(id,force=False):
+def do_fetch(id,force=False):
 
   url="https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY')
 
@@ -158,6 +158,6 @@ args = parser.parse_args()
 
 
 try:
-  get(args.id,force=args.force)
+  do_fetch(args.id,force=args.force)
 except Exception as e:
   print(str(e))

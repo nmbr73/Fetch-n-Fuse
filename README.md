@@ -10,7 +10,7 @@ But the whole thing is in a very early stage and will probably not work very wel
 Then `cd` into your working copy of the repository and do a:
 ```
 python3 -m pip install -r requirements.txt
-chmod a+x fetch
+chmod a+x fetch fuse
 ./fetch
 ```
 
@@ -18,7 +18,7 @@ Now edit the `.env` file to add you credentials.
 
 ## Fetch a Shader
 
-In your working copy do a ...
+In your working copy do (on Windows as parameters to `python3` maybe) a ...
 ```
 ./fetch --id <TOYID>
 ```
