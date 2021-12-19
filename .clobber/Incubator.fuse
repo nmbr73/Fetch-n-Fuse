@@ -37,7 +37,7 @@ HelperFunctions = nil
 ShaderDefaultCode = [[
 
 __KERNEL__ void DefaultKernel(
-    __CONSTANTREF__ ShaderParams *params,
+    __CONSTANTREF__ Params *params,
     __TEXTURE2D__ iChannel0,
     __TEXTURE2D_WRITE__ dst
     )
