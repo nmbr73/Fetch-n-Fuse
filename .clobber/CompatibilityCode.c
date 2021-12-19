@@ -30,6 +30,10 @@
   #endif
 
   #if defined(USE_NATIVE_METAL_IMPL)
+
+    #define swixz(V) (V).xz
+    #define swiyz(V) (V).yz
+
     #define swixy(V) (V).xy
     #define swiyx(V) (V).yx
     #define swixxy(V) (V).xxy
@@ -37,7 +41,17 @@
     #define swiyxz(V) (V).yxz
     #define swiyzz(V) (V).yzz
     #define swizyx(V) (V).zyx
+
+    #define swixyz(V) (V).xyz
+    #define swixxx(V) (V).xxx
+    #define swiwww(V) (V).www
+
+    #define swizxy(V) (V).zxy
+
   #else
+    #define swixz(V) to_float2((V).x,(V).z)
+    #define swiyz(V) to_float2((V).x,(V).z)
+
     #define swixy(V) to_float2((V).x,(V).y)
     #define swiyx(V) to_float2((V).y,(V).x)
     #define swixxy(V) to_float3((V).x,(V).x,(V).y)
@@ -45,6 +59,12 @@
     #define swiyxz(V) to_float3((V).y,(V).x,(V).z)
     #define swiyzz(V) to_float3((V).y,(V).z,(V).z)
     #define swizyx(V) to_float3((V).z,(V).y,(V).x)
+
+    #define swixyz(V) to_float3((V).x,(V).y,(V).z)
+    #define swixxx(V) to_float3((V).x,(V).x,(V).x)
+    #define swiwww(V) to_float3((V).w,(V).w,(V).w)
+
+    #define swizxy(V) to_float3((V).z,(V).x,(V).y)
   #endif
 
   #if defined(USE_NATIVE_METAL_IMPL)
