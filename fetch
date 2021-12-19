@@ -6,10 +6,11 @@ import re
 import requests
 import json
 import yaml
+import argparse
 from dotenv import load_dotenv
 
 
-def get(id):
+def get(id,force=False):
 
   url="https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY')
 
@@ -37,8 +38,8 @@ def get(id):
 
   fuse_filename='Conversions/'+fuse_name+'.'+id
 
-  if os.path.isfile(fuse_filename+".c"):
-    raise Exception(url+"\nconversion already exists")
+  if os.path.isfile(fuse_filename+".c") and not force:
+    raise Exception(url+"\nconversion already exists (use -f to overwrite)")
 
 
   with io.open(fuse_filename+".yaml", 'w', encoding='utf8') as outfile:
@@ -57,8 +58,38 @@ def get(id):
       },outfile, default_flow_style=False, allow_unicode=True)
 
   code=""
+
+  assets_exists=False
+
+
   for entry in json_data['Shader']['renderpass']:
-    code=code+entry['code']
+
+    code="\n// ----------------------------------------------------------------------------------\n"+ \
+      "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
+      "// ----------------------------------------------------------------------------------\n"+ \
+      "\n\n\n"+entry['code']+"\n\n\n"+code
+
+    inputs=entry.get('inputs',None)
+
+    if inputs!=None and len(inputs)>0:
+      buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
+
+      if not assets_exists and not os.path.exists(fuse_filename+'.assets'):
+          os.makedirs(fuse_filename+'.assets')
+          assets_exists = True
+
+      for input in inputs:
+          filename, suffix = os.path.splitext(input['src'])
+          filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{input['ctype']}{suffix}"
+
+          if not os.path.exists(filename):
+            data = requests.get("https://www.shadertoy.com"+input['src'])
+
+            with open(filename, 'wb') as f:
+                f.write(data.content)
+
+
+
 
   code = code.replace("\t", "    ")
   code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
@@ -68,11 +99,12 @@ def get(id):
      f.write(code)
 
 
-  # print(f"{shader_name}->{fuse_name}")
-
 
 # ltfXzj - tut's nicht
 # td2SDz - tut's
+# MlKGWK - hat mehrere Buffer
+# lstXRl - hat assets
+# Wl3fzM - den will ich als Test dann hiermit mal machen
 
 if not(os.path.isfile(".env")):
   with open(".env", 'w') as f:
@@ -85,14 +117,14 @@ if not(os.path.isfile(".env")):
 load_dotenv()
 
 
-import argparse
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
+parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 args = parser.parse_args()
 
 
 try:
-  get(args.id)
+  get(args.id,force=args.force)
 except Exception as e:
   print(str(e))

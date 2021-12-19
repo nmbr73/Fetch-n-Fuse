@@ -9,6 +9,7 @@ But the whole thing is in a very early stage and will probably not work very wel
 
 Then `cd` into your working copy of the repository and do a:
 ```
+python3 -m pip install -r requirements.txt
 chmod a+x fetch
 ./fetch
 ```

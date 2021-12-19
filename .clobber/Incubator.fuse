@@ -7,8 +7,22 @@ JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3
 --]]--
 
 
+-- vec3 iResolution;
+-- float iTime;
+-- float iTimeDelta;
+-- float iFrame;
+-- float iChannelTime[4];
+-- vec4 iMouse;
+-- vec4 iDate;
+-- float iSampleRate;
+-- vec3 iChannelResolution[4];
+-- samplerXX iChanneli;
+
 ShaderStandardParameters = [[
+
   float frequency;
+  float iTime;
+
 
   float mouse_x;
 	float mouse_y;
@@ -21,7 +35,6 @@ ShaderStandardParameters = [[
   float a;
   int   width;
   int   height;
-  float iTime;
   int   compOrder;
 
 	int iChannel0_width;
