@@ -5,7 +5,7 @@
 * Drag'n'drop the `install.lua` onto your Fusion composition pane.
 * Restart DaFusion.
 
-But the whole thing is in a very early stage and will probably not work all to well.
+But the whole thing is in a very early stage and will probably not work very well.
 
 Then `cd` into your working copy of the repository and do a:
 ```
