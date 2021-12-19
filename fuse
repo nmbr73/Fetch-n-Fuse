@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+import os
+import io
+import re
+import requests
+import json
+import yaml
+import argparse
+from dotenv import load_dotenv
+
+
+
+load_dotenv()
+
+def da_fuse(id):
+
+  path='./Conversions/'
+
+  files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.c")]
+
+  if len(files) < 1:
+    raise Exception(f"no such file '{path}*.{id}.c'")
+
+  if len(files) > 1:
+    raise Exception(f"there are multiple files matching '{path}*.{id}.c'")
+
+  name = re.sub(r'^(.+)\.'+id+'\.c$',r'\1',files[0].name)
+
+  info=None
+  with open(f"{path}{name}.{id}.yaml", "r") as f:
+    info=yaml.safe_load(f)
+
+  fuse_author = info['fuse']['author']
+  fuse_name = info['fuse']['name']
+  shader_author = info['shader']['author']
+  shader_id = info['shader']['id']
+  shader_name = info['shader']['name']
+
+  if shader_id != id or fuse_name!=name:
+    raise Exception("inconsistency in your source and yaml file")
+
+  target_path='./DaFuses/'
+  if not os.path.exists(target_path):
+      os.makedirs(target_path)
+
+
+  #print(str(info))
+  #print(f"file: '{fuse_name}'")
+
+  #print(str(x))
+  #for e in [entry for entry in os.scandir('Conversions') if entry.is_file() and entry.name.endswith(f".{id}.c")]:
+  #  print(str(e))
+
+
+
+parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
+parser.add_argument('-i','--id', help="shadertoy id as it can be found in the conversion's filename right before the'.c' suffix", required=True)
+args = parser.parse_args()
+
+
+try:
+  da_fuse(args.id)
+except Exception as e:
+  print("outch: "+str(e))
