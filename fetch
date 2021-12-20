@@ -80,14 +80,14 @@ def do_fetch(id,force=False,nocache=False):
 
   fuse_name=check_if_exists(path,id,'json')
 
-  if fuse_name!=None: # os.path.isfile(shaders_path+id+".json") and not nocache:
+  if fuse_name!=None and not nocache: # os.path.isfile(shaders_path+id+".json") and not nocache:
     print("read from cache")
     with open(path+fuse_name+'.'+id+".json", "r") as f:
       json_text=f.read()
       fetched_from_cache=True
 
   else:
-    print("fetch from shadertoys.com")
+    print("fetch from shadertoy.com")
     response = requests.get("https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY'))
 
     if response.status_code != 200:
@@ -245,11 +245,12 @@ load_dotenv()
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
 # parser.add_argument('-t','--test',action='store_true',help='use existing file to avoid http access')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
+parser.add_argument('-nc','--no-cache',action='store_true',help='overwrite code if it already exists')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 args = parser.parse_args()
 
 
 try:
-  do_fetch(args.id,force=args.force)
+  do_fetch(args.id,force=args.force,nocache=args.no_cache)
 except Exception as e:
   print("ERROR: "+str(e))
