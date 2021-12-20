@@ -44,6 +44,12 @@ def da_fuse(id):
   if not os.path.exists(target_path):
       os.makedirs(target_path)
 
+  with open(target_path+fuse_name+".md", 'w') as f:
+     f.write(
+        f"# {fuse_name}.fuse\n\nBased on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n"
+        +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
+        )
+
 
   #print(str(info))
   #print(f"file: '{fuse_name}'")
