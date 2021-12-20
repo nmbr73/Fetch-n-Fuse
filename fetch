@@ -54,28 +54,77 @@ def convert(code):
   return code
 
 
+def check_if_exists(path,id,suffix):
 
-def do_fetch(id,force=False):
+  files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.{suffix}")]
 
-  url="https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY')
-  response = requests.get(url)
+  if len(files) < 1:
+    return None
+
+  if len(files) > 1:
+    raise Exception(f"multiple files matching '{path}*.{id}.{suffix}'")
+
+  return re.sub(r'^(.+)\.'+id+'\.'+suffix+'$',r'\1',files[0].name)
+
+
+
+def do_fetch(id,force=False,nocache=False):
+
+  path='./Conversions/'
+
+
   url="https://www.shadertoy.com/view/"+id
 
-  if response.status_code != 200:
-    raise Exception(url+"\nHTTP Error "+str(response.status_code))
+  fetched_from_cache=False
+  json_text=""
 
-  json_data = json.loads(response.text)
+  fuse_name=check_if_exists(path,id,'json')
+
+  if fuse_name!=None: # os.path.isfile(shaders_path+id+".json") and not nocache:
+    print("read from cache")
+    with open(shaders_path+id+".json", "r") as f:
+      json_text=f.read()
+      fetched_from_cache=True
+
+  else:
+    print("fetch from shadertoys.com")
+    response = requests.get("https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY'))
+
+    if response.status_code != 200:
+      raise Exception(url+"\nHTTP Error "+str(response.status_code))
+
+    json_text=response.text
+
+
+  json_data = json.loads(json_text)
 
   error=json_data.get('Error',None)
 
   if error!=None:
     raise Exception(url+"\n"+error)
 
-  info=json_data['Shader']['info']
+
+  if not fetched_from_cache and not nocache:
+    print("write to cache")
+    if not os.path.exists(shaders_path):
+        os.makedirs(shaders_path)
+    with io.open(shaders_path+id+".json", 'w') as f:
+      f.write(json_text)
+
+
+  if 'Shader' in json_data:
+     json_data=json_data['Shader']
+
+  info=json_data['info']
+
 
 
   shader_name=info['name']
-  shader_author=info['username']
+  if 'username' in info:
+    shader_author=info['username']
+  else:
+    shader_author="N.N."
+
   shader_description=info['description']
 
   fuse_name=re.sub(r'[^A-Za-z0-9]+','', shader_name)
@@ -85,6 +134,7 @@ def do_fetch(id,force=False):
 
   if os.path.isfile(fuse_filename+".c") and not force:
     raise Exception(url+"\nconversion already exists (use -f to overwrite)")
+
 
 
   with io.open(fuse_filename+".yaml", 'w', encoding='utf8') as outfile:
@@ -107,7 +157,8 @@ def do_fetch(id,force=False):
   assets_exists=False
 
 
-  for entry in json_data['Shader']['renderpass']:
+# for entry in json_data['Shader']['renderpass']:
+  for entry in json_data['renderpass']:
 
     code="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
@@ -124,14 +175,32 @@ def do_fetch(id,force=False):
           assets_exists = True
 
       for input in inputs:
-          filename, suffix = os.path.splitext(input['src'])
-          filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{input['ctype']}{suffix}"
 
-          if not os.path.exists(filename):
-            data = requests.get("https://www.shadertoy.com"+input['src'])
+          src=None
 
-            with open(filename, 'wb') as f:
-                f.write(data.content)
+          if 'src' in input:
+            src=input['src']
+          elif 'filepath' in input:
+            src=input['filepath']
+
+
+          ctype=None
+
+          if 'ctype' in input:
+            ctype=input['ctype']
+          elif 'type' in input:
+            ctype=input['type']
+
+
+          if src!=None and ctype!=None:
+            filename, suffix = os.path.splitext(src)
+            filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
+
+            if not os.path.exists(filename):
+              data = requests.get("https://www.shadertoy.com"+src)
+
+              with open(filename, 'wb') as f:
+                  f.write(data.content)
 
 
 
@@ -174,4 +243,4 @@ args = parser.parse_args()
 try:
   do_fetch(args.id,force=args.force)
 except Exception as e:
-  print(str(e))
+  print("ERROR: "+str(e))
