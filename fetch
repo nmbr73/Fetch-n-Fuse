@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 def convert(code):
 
-  code=re.sub(r'([^\w])(fragCoord|iResolution)\.xy([^\w])',r'\1\2\3', code)
+  code=re.sub(r'([^\w])(fragCoord)\.xy([^\w])',r'\1\2\3', code)
   code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
   code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
 

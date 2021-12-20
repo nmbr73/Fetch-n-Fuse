@@ -24,12 +24,12 @@ __KERNEL__ void CrazynessKernel(
     )
 {
 
-  SHADER_PREAMBLE;
+  PROLOGUE;
 
-  float red          = params->r;
-  float green        = params->g;
-  float blue         = params->b;
-  float alpha        = params->a;
+  float red          = params->r0;
+  float green        = params->g0;
+  float blue         = params->b0;
+  float alpha        = params->a0;
 
 // FORKED FROM Ether by nimitz (twitter: @stormoid)
 // https://www.shadertoy.com/view/MsjSW3
@@ -53,7 +53,7 @@ __KERNEL__ void CrazynessKernel(
   fragColor = to_float4_aw(cl, alpha);
 
 
-  SHADER_EPILOGUE;
+  EPILOGUE(fragColor);
 
 
 }

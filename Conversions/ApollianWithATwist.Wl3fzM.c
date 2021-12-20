@@ -145,7 +145,7 @@ __KERNEL__ void ApollianwithatwistKernel(
     __TEXTURE2D_WRITE__      dst
     ) {
 
-  SHADER_PREAMBLE;
+  PROLOGUE;
 
 
   float2 q = fragCoord/swixy(iResolution);
@@ -156,6 +156,7 @@ __KERNEL__ void ApollianwithatwistKernel(
   col = postProcess(col, q);
 
   fragColor = to_float4_aw(col, 1.0f);
-  SHADER_EPILOGUE;
+
+  EPILOGUE(fragColor);
 
 }

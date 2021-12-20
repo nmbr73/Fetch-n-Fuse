@@ -7,43 +7,8 @@ JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3
 --]]--
 
 
--- vec3 iResolution;
--- float iTime;
--- float iTimeDelta;
--- float iFrame;
--- float iChannelTime[4];
--- vec4 iMouse;
--- vec4 iDate;
--- float iSampleRate;
--- vec3 iChannelResolution[4];
--- samplerXX iChanneli;
 
-ShaderStandardParameters = [[
-
-  float frequency;
-  float iTime;
-
-
-  float mouse_x;
-	float mouse_y;
-	float mouse_z;
-	float mouse_w;
-
-  float r;
-  float g;
-  float b;
-  float a;
-  int   width;
-  int   height;
-  int   compOrder;
-
-	int iChannel0_width;
-	int iChannel0_height;
-
-  ]]
-
-
-
+ShaderStandardParameters = nil
 HelperFunctions = nil
 
 
@@ -60,9 +25,8 @@ __KERNEL__ void DefaultKernel(
   if (x >= params->width || y >= params->height)
     return;
 
-  _tex2DVec4Write(dst, x, y, to_float4(params->r,params->g,params->b,params->a) );
+  _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,0.0f) );
 }
-
 ]]
 
 
@@ -79,7 +43,7 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 	  REGS_URL = "https://nmbr73.github.io/",
 	  REG_Version	= 000001,
     REG_Fuse_NoEdit = true,
-    REG_Fuse_NoReload = true,
+    REG_Fuse_NoReload = false, -- true,
     })
 
 
@@ -115,19 +79,32 @@ end
 
 function Create()
 
-  local REPOSITORYPATH = ""
+local REPOSITORYPATH = ""
 
   CodeFragments=getCodeFragmentFiles(REPOSITORYPATH)
 
   f = io.open(REPOSITORYPATH..'.clobber/CompatibilityCode.c', "r")
 
   if not f then
-    HelperFunctions = ""
+    HelperFunctions = nil
     print("failed to read compat code")
   else
     HelperFunctions = f:read("*all")
     f:close()
   end
+
+  f = io.open(REPOSITORYPATH..'.clobber/ShaderParameters.c', "r")
+
+  if not f then
+    ShaderStandardParameters = nil
+    print("failed to read shader params code")
+  else
+    ShaderStandardParameters = f:read("*all")
+    f:close()
+  end
+
+
+
 
 
 
@@ -181,7 +158,7 @@ function Create()
   self:EndControlNest()
 
 
-  self:BeginControlNest("Some Color", "SomeRandomColor", false, {})
+  self:BeginControlNest("Some Color", "SomeRandomColor0", false, {})
 
   attrs={
     LINKID_DataType = "Number",
@@ -189,14 +166,29 @@ function Create()
 		INP_MinScale = 0.0,
 		INP_MaxScale = 1.0,
 		INP_Default  = 0.5,
-		ICS_Name = "Color",
+		ICS_Name = "Color 0",
 		IC_ControlGroup = 1,
   }
 
-  InR = self:AddInput("Red",   "Red",   { attrs, IC_ControlID = 0, })
-	InG = self:AddInput("Green", "Green", { attrs, IC_ControlID = 1, })
-	InB = self:AddInput("Blue",  "Blue",  { attrs, IC_ControlID = 2, })
-	InA = self:AddInput("Alpha", "Alpha", { attrs, IC_ControlID = 3, })
+  InR0 = self:AddInput("Red",   "Red0",   { attrs, IC_ControlID = 0, })
+	InG0 = self:AddInput("Green", "Green0", { attrs, IC_ControlID = 1, })
+	InB0 = self:AddInput("Blue",  "Blue0",  { attrs, IC_ControlID = 2, })
+	InA0 = self:AddInput("Alpha", "Alpha0", { attrs, IC_ControlID = 3, })
+
+  attrs={
+    LINKID_DataType = "Number",
+		INPID_InputControl = "ColorControl",
+		INP_MinScale = 0.0,
+		INP_MaxScale = 1.0,
+		INP_Default  = 0.5,
+		ICS_Name = "Color 1",
+		IC_ControlGroup = 2,
+  }
+
+  InR1 = self:AddInput("Red",   "Red1",   { attrs, IC_ControlID = 0, })
+	InG1 = self:AddInput("Green", "Green1", { attrs, IC_ControlID = 1, })
+	InB1 = self:AddInput("Blue",  "Blue1",  { attrs, IC_ControlID = 2, })
+	InA1 = self:AddInput("Alpha", "Alpha1", { attrs, IC_ControlID = 3, })
 
   self:EndControlNest()
 
@@ -266,6 +258,10 @@ function Process(req)
     Selected_Name='Default'
   end
 
+  if HelperFunctions==nil or ShaderStandardParameters==nil then
+    print("now way this will work")
+  end
+
   local node = DVIPComputeNode(req,
     Selected_Name.."Kernel",
     HelperFunctions .. ShaderMainCode,
@@ -333,7 +329,6 @@ function Process(req)
   if (mouse ~= nil) then
 		params.mouse_x = mouse.X * Width
 		params.mouse_y = mouse.Y * Height
-    -- print("mouse=(".. params.mouse_x.."|"..params.mouse_y ..")")
 	end
 
 	params.mouse_z = 0
@@ -344,26 +339,28 @@ function Process(req)
   if (mouse ~= nil) then
 		params.mouse_z = mouse.X * Width
 		params.mouse_w = mouse.Y * Height
-    -- print("mouse=(".. params.mouse_z.."|"..params.mouse_w ..")")
 	end
 
 
 
   params.frequency        = InFrequency:GetValue(req).Value
-  params.r                = InR:GetValue(req).Value
-  params.g                = InG:GetValue(req).Value
-  params.b                = InB:GetValue(req).Value
-  params.a                = InA:GetValue(req).Value
-  params.width            = iChannel0.DataWindow:Width()  -- params.width  = dst.Width
-  params.height           = iChannel0.DataWindow:Height() -- params.height = dst.Height
   params.iTime            = req.Time / framerate
+
+  params.r0 = InR0:GetValue(req).Value; params.g0 = InG0:GetValue(req).Value; params.b0 = InB0:GetValue(req).Value; params.a0 = InA0:GetValue(req).Value
+  params.r1 = InR1:GetValue(req).Value; params.g1 = InG1:GetValue(req).Value; params.b1 = InB1:GetValue(req).Value; params.a1 = InA1:GetValue(req).Value
+
+  params.width  = dst.Width
+  params.height = dst.Height
+--params.width            = iChannel0.DataWindow:Width()
+--params.height           = iChannel0.DataWindow:Height()
+
   params.compOrder        = iChannel0:IsMask() and 1 or 15
-	params.iChannel0_width  = iChannel0.Width
+  params.iChannel0_width  = iChannel0.Width
 	params.iChannel0_height = iChannel0.Height
 
   node:SetParamBlock(params)
 
---  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+--node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
 	node:AddInput("iChannel0",iChannel0)
 	node:AddOutput("dst", dst)
 

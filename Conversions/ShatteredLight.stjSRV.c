@@ -25,7 +25,7 @@ __KERNEL__ void ShatteredLightKernel(
 
   // DEFINE_KERNEL_ITERATORS_XY(x, y);
 
-  SHADER_PREAMBLE;
+  PROLOGUE;
 
 
   // _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,1.0f));
@@ -68,8 +68,6 @@ __KERNEL__ void ShatteredLightKernel(
   col *= 0.8f;
 
   //##########################################################################
-  fragColor=to_float4_aw(col,1.0f);
-  SHADER_EPILOGUE;
 
-
+  EPILOGUE(to_float4_aw(col,1.0f));
 }

@@ -7,14 +7,15 @@ __KERNEL__ void SimpleDCTLKernel(
     )
 {
 
-  SHADER_PREAMBLE;
+  PROLOGUE;
+  PARAM_ICOLOR0;
 
-  float red          = 1.0f; //params->r;
-  float green        = params->g;
-  float blue         = params->b;
-  float alpha        = params->a;
+  float red          = iColor0.x;
+  float green        = iColor0.y;
+  float blue         = iColor0.z;
+  float alpha        = iColor0.w;
 
   fragColor=to_float4(red,green,blue,alpha);
 
-  SHADER_EPILOGUE;
+  EPILOGUE(fragColor);
 }
