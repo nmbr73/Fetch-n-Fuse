@@ -379,18 +379,15 @@ function Process(req)
 
   -- Output our result
   OutImage:Set(req,dst)
-
 	collectgarbage();
 
 end
-
 
 
 function NotifyChanged(inp, param, time)
 	if (param ~= nil) then
 		if (param.Value == 1) then
 			if (inp == InReloadCode) then
-        -- print("we want our code to rebuild")
         InRebuildCheckBox:SetSource(Number(1),0)
       end
 		end
