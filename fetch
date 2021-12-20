@@ -58,8 +58,8 @@ def convert(code):
 def do_fetch(id,force=False):
 
   url="https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY')
-
   response = requests.get(url)
+  url="https://www.shadertoy.com/view/"+id
 
   if response.status_code != 200:
     raise Exception(url+"\nHTTP Error "+str(response.status_code))
