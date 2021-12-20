@@ -82,7 +82,7 @@ def do_fetch(id,force=False,nocache=False):
 
   if fuse_name!=None: # os.path.isfile(shaders_path+id+".json") and not nocache:
     print("read from cache")
-    with open(shaders_path+id+".json", "r") as f:
+    with open(path+fuse_name+'.'+id+".json", "r") as f:
       json_text=f.read()
       fetched_from_cache=True
 
@@ -104,12 +104,6 @@ def do_fetch(id,force=False,nocache=False):
     raise Exception(url+"\n"+error)
 
 
-  if not fetched_from_cache and not nocache:
-    print("write to cache")
-    if not os.path.exists(shaders_path):
-        os.makedirs(shaders_path)
-    with io.open(shaders_path+id+".json", 'w') as f:
-      f.write(json_text)
 
 
   if 'Shader' in json_data:
@@ -127,7 +121,22 @@ def do_fetch(id,force=False,nocache=False):
 
   shader_description=info['description']
 
-  fuse_name=re.sub(r'[^A-Za-z0-9]+','', shader_name)
+
+  n=re.sub(r'[^A-Za-z0-9]+','', shader_name)
+
+  if fuse_name!=None:
+    pass
+  # if n!=fuse_name:
+  #    raise Exception(url+"\nfuse name inconsistency")
+  else:
+    fuse_name=n
+
+  if not fetched_from_cache and not nocache:
+    print("write to cache")
+    with io.open(path+fuse_name+'.'+id+".json", 'w') as f:
+      f.write(json_text)
+
+
   fuse_author=os.getenv('AUTHOR')
 
   fuse_filename='Conversions/'+fuse_name+'.'+id
