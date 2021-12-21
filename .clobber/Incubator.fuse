@@ -81,7 +81,7 @@ end
 
 function Create()
 
-local REPOSITORYPATH=[[D:\Zumsel\Dokumente\Github\Fetch-n-Fuse\]]
+local REPOSITORYPATH=""
 
   CodeFragments=getCodeFragmentFiles(REPOSITORYPATH)
 
@@ -379,7 +379,7 @@ end
 
 function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
-		
+
 		if (inp == InReloadCode) then
 			if (param.Value == 1) then
                InRebuildCheckBox:SetSource(Number(1),0)
@@ -391,7 +391,7 @@ function NotifyChanged(inp, param, time)
            InRebuildCheckBox:SetSource(Number(1),0)
 		   --print("/n Filetouse-Notify /n")
         end
-	    
-	    
+
+
 	end
 end
