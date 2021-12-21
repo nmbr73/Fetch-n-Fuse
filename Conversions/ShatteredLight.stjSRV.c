@@ -18,7 +18,7 @@ __DEVICE__ float glowBomb(float2 uv, float2 A, float2 B) {
 
 
 
-__KERNEL__ void Kernel(
+__KERNEL__ void ShatteredLightKernel(
     __CONSTANTREF__ Params*  params,
     __TEXTURE2D__            iChannel0,
     __TEXTURE2D_WRITE__      dst

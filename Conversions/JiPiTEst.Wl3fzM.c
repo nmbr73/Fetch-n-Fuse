@@ -22,39 +22,39 @@
   __DEVICE__ inline float2  mat2_multi_f2(  mat2  m, float2 v )  { return m*v; }
 
 #else
-	
+
 #ifdef XXX
 
-typedef struct  
-  {  
-    float2 r0, r1;  
-  } mat2;  
+typedef struct
+  {
+    float2 r0, r1;
+  } mat2;
 
 #endif
 
-__DEVICE__ inline mat2 make_mat2( float A, float B, float C, float D)  
-  {  
-    mat2 E;  
-    E.r0 = to_float2(A,B);  
-    E.r1 = to_float2(C,D);  
-    return E;  
-  } 
-
-__DEVICE__ inline float2 f2_multi_mat2( float2 A, mat2 B )  
-  {  
-	float2 C;  
-	C.x = A.x * B.r0.x + A.y * B.r0.y;  
-	C.y = A.x * B.r1.x + A.y * B.r1.y;  
-	return C;  
+__DEVICE__ inline mat2 make_mat2( float A, float B, float C, float D)
+  {
+    mat2 E;
+    E.r0 = to_float2(A,B);
+    E.r1 = to_float2(C,D);
+    return E;
   }
-  
-__DEVICE__ inline float2 mat2_multi_f2( mat2 B, float2 A)  
-  {  
-	float2 C;  
-	C.x = A.x * B.r0.x + A.y * B.r1.x;  
-	C.y = A.x * B.r0.y + A.y * B.r1.y;  
-	return C;  
-  }  
+
+__DEVICE__ inline float2 f2_multi_mat2( float2 A, mat2 B )
+  {
+	float2 C;
+	C.x = A.x * B.r0.x + A.y * B.r0.y;
+	C.y = A.x * B.r1.x + A.y * B.r1.y;
+	return C;
+  }
+
+__DEVICE__ inline float2 mat2_multi_f2( mat2 B, float2 A)
+  {
+	float2 C;
+	C.x = A.x * B.r0.x + A.y * B.r1.x;
+	C.y = A.x * B.r0.y + A.y * B.r1.y;
+	return C;
+  }
 #endif
 
 
@@ -141,7 +141,7 @@ __DEVICE__ float df(float2 p,float iTime) {
 }
 
 __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
-	
+
   float aa   = 2.0/iResolution_y;
   const float lw = 0.0235f;
   const float lh = 1.25f;
@@ -178,7 +178,7 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
   float bd = df(swixz(bp),iTime);
   float sd1= df(swixz(sp1),iTime);
   float sd2= df(swixz(sp2),iTime);
-	
+
   float3 col  = to_float3_s(0.0f);
   const float ss =15.0f;
 
@@ -215,14 +215,14 @@ __KERNEL__ void ApollianwithatwistKernel(
     ) {
 
 
-    DEFINE_KERNEL_ITERATORS_XY(x, y);                                                               
-    //if (x >= params->width || y >= params->height)                                                  
-    //  return;                                                                                       
-                                                                                                    
-//    float2 iResolution = to_float2(params->width, params->height);                                  
-//    float  iTime       = params->iTime * params->frequency;                                         
-//    float2 fragCoord   = to_float2(x, y);                                                           
-//    float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w); 
+    DEFINE_KERNEL_ITERATORS_XY(x, y);
+    //if (x >= params->width || y >= params->height)
+    //  return;
+
+//    float2 iResolution = to_float2(params->width, params->height);
+//    float  iTime       = params->iTime * params->frequency;
+//    float2 fragCoord   = to_float2(x, y);
+//    float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w);
     float4 fragColor   = to_float4_s(0.0f);
 
 
@@ -241,8 +241,8 @@ __KERNEL__ void ApollianwithatwistKernel(
 
 
   fragColor = to_float4_aw(col, 1.0f);
-#endif  
-  
+#endif
+
   //SHADER_EPILOGUE;
   _tex2DVec4Write(dst, x, y, fragColor);
 

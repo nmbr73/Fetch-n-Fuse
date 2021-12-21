@@ -10,13 +10,13 @@ V0.1 Kernelnamen angepaßt
 
 
 
-ShaderStandardParameters = nil
-HelperFunctions = nil
+ShaderParameters = nil
+CompatibilityCode = nil
 
 
-ShaderDefaultCode = [[
+ConversionSourcecode_fallback = [[
 
-__KERNEL__ void DefaultKernel(
+__KERNEL__ void IncubatorFallbackKernel(
     __CONSTANTREF__ Params *params,
     __TEXTURE2D__ iChannel0,
     __TEXTURE2D_WRITE__ dst
@@ -49,9 +49,17 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
     })
 
 
-CodeFragments={}
 
-function getCodeFragmentFiles(path)
+function verbose(msg)
+  print(msg)
+end
+
+
+
+
+Conversions={}
+
+function getConversions(path)
 
   local files={}
 
@@ -81,27 +89,29 @@ end
 
 function Create()
 
-local REPOSITORYPATH=""
+  local REPOSITORYPATH=""
 
-  CodeFragments=getCodeFragmentFiles(REPOSITORYPATH)
+  verbose("Create: repo in "..REPOSITORYPATH)
+
+  Conversions=getConversions(REPOSITORYPATH)
 
   f = io.open(REPOSITORYPATH..'.clobber/CompatibilityCode.c', "r")
 
   if not f then
-    HelperFunctions = nil
+    CompatibilityCode = nil
     print("failed to read compat code")
   else
-    HelperFunctions = f:read("*all")
+    CompatibilityCode = f:read("*all")
     f:close()
   end
 
   f = io.open(REPOSITORYPATH..'.clobber/ShaderParameters.c', "r")
 
   if not f then
-    ShaderStandardParameters = nil
+    ShaderParameters = nil
     print("failed to read shader params code")
   else
-    ShaderStandardParameters = f:read("*all")
+    ShaderParameters = f:read("*all")
     f:close()
   end
 
@@ -114,20 +124,21 @@ local REPOSITORYPATH=""
 
   attrs={}
 
-  for k,v in pairs(CodeFragments) do
+  for k,v in pairs(Conversions) do
+    verbose("Create: conversion '"..v.Label.."'")
     table.insert(attrs,{ CCS_AddString = v.Label })
   end
 
-  InFileToUse = self:AddInput("Code Fragment", "FragementFileSelection", {
+  InFileToUseCombo = self:AddInput("Code Fragment", "FragementFileSelection", {
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
-	INP_DoNotifyChanged = true,
+	  INP_DoNotifyChanged = true,
     INP_Default = 0,
     INP_Integer = true,
     attrs
     })
 
-  InReloadCode= self:AddInput("Reload Code", "ReloadCodeFragment",
+  InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
     { LINKID_DataType = "Text",
       INPID_InputControl = "ButtonControl",
       INP_DoNotifyChanged = true,
@@ -188,79 +199,111 @@ local REPOSITORYPATH=""
     IC_Visible = false,
   })
 
+  -- InVerboseCheckBox = self:AddInput("VERBOSE", "VerboseCheckbox", {
+  --   LINKID_DataType = "Number",
+  --   INPID_InputControl = "CheckboxControl",
+  --   INP_Default = 1,
+  --   INP_MinScale = 0,
+  --   INP_MaxScale = 1,
+  --   IC_Visible = true,
+  -- })
+
+
 end
 
 
 
 
 
-local Selected_Option = -1
-local Selected_Item   = nil
-local Selected_Name   = nil
-
-
+local ConversionFusename   = ""
+local ConversionKernelname = ""
+local ConversionSourcecode = ""
 
 function Process(req)
 
-  -- print("process ...")
-
-  local filetouse_no = InFileToUse:GetValue(req).Value + 1
   local rebuild = false
 
   if InRebuildCheckBox:GetValue(req).Value == 1 then
-    print("rebuild!")
+    verbose("Process: do rebuild and clear the flag")
     rebuild=true
     InRebuildCheckBox:SetSource(Number(0),0)
   end
 
 
 
-  if rebuild or Selected_Option ~= filetouse_no then
+  if rebuild then
+    ConversionSourcecode  = ""
+    local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
+    ConversionFusename   = item.Name
 
-    ShaderMainCode  = ""
-    Selected_Item   = CodeFragments[filetouse_no]
-    Selected_Option = filetouse_no
-    Selected_Name   = Selected_Item.Name
-    file = io.open(Selected_Item.Path .. Selected_Item.Filename,"r")
+    verbose("Process: rebuild code for conversion '"..ConversionFusename.."'")
+
+    file = io.open(item.Path .. item.Filename,"r")
 
     if file ~= nil then
-      -- print("load "..(Selected_Item.Name).."'s code")
-      ShaderMainCode = "\n" .. file:read("*all")
+      ConversionSourcecode = "\n" .. file:read("*all")
       file:close()
     end
 
---[[--
-    if not(string.match(ShaderMainCode, "__KERNEL__%s+void%s+"..Selected_Name.."Kernel%(")) then
-      print ("there definitely is a problem with the kernel name")
-      ShaderMainCode=nil
+
+
+    -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
+    -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
+    -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
+    -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
+    -- drangehaengt.
+
+    ConversionKernelname = ConversionFusename .. "Kernel_" .. self.Name
+
+    local count
+
+    ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+      "__KERNEL__%s+void%s+"..ConversionFusename.."Kernel%(",
+      "__KERNEL__ void "..ConversionKernelname.."("
+      )
+
+    -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
+    -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
+    -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
+    -- falsche Namen in 99% der Faelle
+
+    if count ~=1 then
+      print("there definitely is a problem with the kernel name")
+      ConversionSourcecode = ""
     end
---]]--
-    --Kernelnamen anpassen - Im Codefile immer "Kernel"
-	local nodeName = self.Name
-    Selected_Name = nodeName.."_Kernel" --string.gsub(Selected_Name, "Kernel", nodeName.."Kernel")
-    ShaderMainCode = string.gsub(ShaderMainCode, "Kernel", nodeName.."_Kernel")
 
-    rebuild=true
   end
 
-  if (ShaderMainCode == "" or ShaderMainCode == nil) then
+
+
+
+  if ConversionSourcecode == ""  then
     print("no shader to render - using some default kernel")
-    ShaderMainCode=ShaderDefaultCode
-    Selected_Name='Default'
+    ConversionSourcecode=ConversionSourcecode_fallback
+
+    -- No need for a '_ShadersIncN' extension across
+    -- multiple instances as the fallback kernel code
+    -- is always the same.
+
+    ConversionKernelname="IncubatorFallbackKernel"
+    ConversionFusename="IncubatorFallback"
     rebuild=true
   end
 
-  if HelperFunctions==nil or ShaderStandardParameters==nil then
-    print("now way this will work")
+  if CompatibilityCode==nil or ShaderParameters==nil then
+    print("no way this will work")
+    return
   end
 
+  if rebuild then
+    verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
+  end
 
   local node = DVIPComputeNode(req,
-    Selected_Name,--.."Kernel",
-    HelperFunctions .. ShaderMainCode,
-    -- Selected_Name..
+    ConversionKernelname,
+    CompatibilityCode .. ConversionSourcecode,
     "Params",
-    ShaderStandardParameters
+    ShaderParameters
     )
 
 
@@ -309,7 +352,7 @@ function Process(req)
 
   local params = {}
 
-  params = node:GetParamBlock(ShaderStandardParameters)
+  params = node:GetParamBlock(ShaderParameters)
 
 
   local mouse =  nil
@@ -380,18 +423,17 @@ end
 function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
 
-		if (inp == InReloadCode) then
+		if (inp == InReloadCodeButton) then
 			if (param.Value == 1) then
-               InRebuildCheckBox:SetSource(Number(1),0)
-			   --print("/n ReloadCode-Notify /n")
-            end
-        end
+        verbose("NotifyChanged: reload button pressend")
+        InRebuildCheckBox:SetSource(Number(1),0)
+      end
+    end
 
-		if (inp == InFileToUse) then
-           InRebuildCheckBox:SetSource(Number(1),0)
-		   --print("/n Filetouse-Notify /n")
-        end
-
+		if (inp == InFileToUseCombo) then
+      verbose("NotifyChanged: file to use changed - set flag for a rebuild")
+      InRebuildCheckBox:SetSource(Number(1),0)
+    end
 
 	end
 end

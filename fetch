@@ -215,17 +215,18 @@ def do_fetch(id,force=False,nocache=False):
 
 
   code = code.replace("\t", "    ")
-  
+
   with open(fuse_filename+"raw"+".c", 'w') as f:
      f.write(code)
-  
-  
-  code = convert(code)
-#  code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
 
-# Kernelaufruf
+
+  code = convert(code)
+
+  #code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
+
+  # Kernelaufruf
   code = re.sub(r'void\s+mainImage\s*\(',
-   '__KERNEL__ void Kernel(              \n'+ 
+   '__KERNEL__ void '+fuse_name+'Kernel(              \n'+
    '__CONSTANTREF__ Params*  params,     \n'+
    '__TEXTURE2D__            iChannel0,  \n'+
    '__TEXTURE2D_WRITE__      dst         \n'+
