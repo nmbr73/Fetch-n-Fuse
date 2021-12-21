@@ -215,8 +215,26 @@ def do_fetch(id,force=False,nocache=False):
 
 
   code = code.replace("\t", "    ")
+  
+  with open(fuse_filename+"raw"+".c", 'w') as f:
+     f.write(code)
+  
+  
   code = convert(code)
-  code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
+#  code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
+
+# Kernelaufruf
+  code = re.sub(r'void\s+mainImage\s*\(',
+   '__KERNEL__ void Kernel(              \n'+ 
+   '__CONSTANTREF__ Params*  params,     \n'+
+   '__TEXTURE2D__            iChannel0,  \n'+
+   '__TEXTURE2D_WRITE__      dst         \n'+
+   ' )',code)
+
+
+  code = re.sub(r'\s*out\s*(float4\s*.*)\s*,\s*in\s*(float2\s*.*)\s*\)\n({)',r'\3\n PROLOGUE; \n \1 = fragColor; \n \2 = fragCoord;\n',code)
+
+
 
 
   with open(fuse_filename+".c", 'w') as f:
