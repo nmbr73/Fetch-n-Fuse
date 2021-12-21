@@ -208,7 +208,7 @@ __DEVICE__ float3 postProcess(float3 col, float2 q)  {
 
 #endif
 
-__KERNEL__ void ApollianwithatwistKernel(
+__KERNEL__ void JiPiTEstKernel(
     __CONSTANTREF__ Params*  params,
     __TEXTURE2D__            iChannel0,
     __TEXTURE2D_WRITE__      dst
