@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 
 
+
 def convert(code,fuse_name):
 
   # uncomment to see the code before conversion:
@@ -75,85 +76,140 @@ def convert(code,fuse_name):
 
 
 
-def check_if_exists(path,id,suffix):
 
-  files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.{suffix}")]
+def copyTextFile(src,dst):
+  txt=""
+  with open(src, "r") as f:
+    txt=f.read()
+  with open(dst, "w") as f:
+    f.write(txt)
 
-  if len(files) < 1:
-    return None
+
+
+
+
+def getCacheFilename(path,id):
+
+  files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.json")]
 
   if len(files) > 1:
     raise Exception(f"multiple files matching '{path}*.{id}.{suffix}'")
 
-  return re.sub(r'^(.+)\.'+id+'\.'+suffix+'$',r'\1',files[0].name)
+  if len(files) < 1:
+
+    fname=f"shader_{id}.json"
+
+    if os.path.isfile(path + fname):
+      return fname
+
+    downloads=os.getenv('DOWNLOADS')
+
+    if downloads!=None and downloads!="":
+      if os.path.isfile(downloads + fname):
+        print(f"copy '{fname}' from downloads")
+        copyTextFile(downloads + fname , path + fname)
+
+    if os.path.isfile(path + fname):
+      return fname
+
+    return None
+
+  return files[0].name
+
+  #return re.sub(r'^(.+)\.'+id+'\.'+suffix+'$',r'\1',files[0].name)
 
 
 
-def do_fetch(id,force=False,nocache=False):
-
-  path='./Conversions/'
 
 
-  url="https://www.shadertoy.com/view/"+id
+def convertToFusename(shader_name):
+  return re.sub(r'[^A-Za-z0-9]+','', shader_name)
 
-  fetched_from_cache=False
-  json_text=""
 
-  fuse_name=check_if_exists(path,id,'json')
 
-  if fuse_name!=None and not nocache: # os.path.isfile(shaders_path+id+".json") and not nocache:
-    print("read from cache")
-    with open(path+fuse_name+'.'+id+".json", "r") as f:
-      json_text=f.read()
-      fetched_from_cache=True
 
-  else:
+
+def doFetch(id,force=False,nocache=False):
+
+  path = './Conversions/'
+  url = "https://www.shadertoy.com/view/"+id
+
+  json_text = None
+  cache_filename = None
+
+
+
+  if not nocache:
+
+    cache_filename = getCacheFilename(path,id)
+
+    if cache_filename:
+      print("read from cache ..."+cache_filename)
+
+      with open(path+cache_filename, "r") as f:
+        json_text=f.read()
+
+  if json_text == None:
+
     print("fetch from shadertoy.com")
     response = requests.get("https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY'))
 
     if response.status_code != 200:
       raise Exception(url+"\nHTTP Error "+str(response.status_code))
 
-    json_text=response.text
+    json_text = response.text
+
+
+
 
 
   json_data = json.loads(json_text)
 
-  error=json_data.get('Error',None)
+  error = json_data.get('Error',None)
 
-  if error!=None:
+  if error != None:
     raise Exception(url+"\n"+error)
 
-
   if 'Shader' in json_data:
-     json_data=json_data['Shader']
+     json_data = json_data['Shader']
 
-  info=json_data['info']
-
-
+  info = json_data['info']
 
   shader_name=info['name']
+
+  m=re.match(r'^Fork (.+) ([^ ]+) \d+$',shader_name)
+
+  if m != None:
+    shader_name=m.group(1)
+
   if 'username' in info:
-    shader_author=info['username']
+    shader_author = info['username']
   else:
-    shader_author="N.N."
+    shader_author = "N.N."
 
   shader_description=info['description']
 
 
-  n=re.sub(r'[^A-Za-z0-9]+','', shader_name)
+  fuse_name = convertToFusename(shader_name)
 
-  if fuse_name!=None:
-    pass
-  # if n!=fuse_name:
-  #    raise Exception(url+"\nfuse name inconsistency")
-  else:
-    fuse_name=n
+  fname=f"{fuse_name}.{id}.json"
 
-  if not fetched_from_cache and not nocache:
-    print("write to cache")
-    with io.open(path+fuse_name+'.'+id+".json", 'w') as f:
-      f.write(json_text)
+  if not nocache:
+    if cache_filename == None:
+      print("write to cache")
+      with io.open(path+fname, 'w') as f:
+        f.write(json_text)
+    else:
+
+      if cache_filename == f"shader_{id}.json":
+        print(f"rename '{cache_filename}' to '{fname}'")
+        copyTextFile(path+cache_filename,path+fname)
+        os.remove(path+cache_filename)
+        cache_filename=fname
+      else:
+        if cache_filename != fname:
+          raise Exception(f"cache filename is {cache_filename} but should be '{fuse_name}.{id}.json'")
+
 
 
   fuse_author=os.getenv('AUTHOR')
@@ -250,6 +306,7 @@ if not(os.path.isfile(".env")):
   with open(".env", 'w') as f:
      f.write( "AUTHOR=\"\"\n"
               "APIKEY=\"\"\n"
+              "DOWNLOADS=\"\"\n"
             )
   print(".env file created - please enter your credentials to use")
 
@@ -262,6 +319,6 @@ parser.add_argument('-i','--id', help='shadertoy id as used in the URL', require
 args = parser.parse_args()
 
 try:
-  do_fetch(args.id,force=args.force,nocache=args.no_cache)
+  doFetch(args.id,force=args.force,nocache=args.no_cache)
 except Exception as e:
   print("ERROR: "+str(e))
