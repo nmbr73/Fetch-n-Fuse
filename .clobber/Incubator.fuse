@@ -134,61 +134,40 @@ local REPOSITORYPATH = ""
   self:BeginControlNest("Common Fuse Controls", "CommonFuseControls", true, {})
 
 
-  InFrequency = self:AddInput("Frequency", "Frequency", {
-    LINKID_DataType    = "Number",
-    INPID_InputControl = "SliderControl",
-    INP_Default        = 1.0,
-    INP_MinScale 	     = 0.0,
-    INP_MaxScale 	     = 10.0,
-  })
+    InFrequency = self:AddInput("Frequency", "Frequency", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_Default        = 1.0,
+      INP_MinScale 	     = 0.0,
+      INP_MaxScale 	     = 10.0,
+    })
 
-  InMouseXY = self:AddInput("Mouse Drag", "MouseXY", {
-    LINKID_DataType = "Point",
-    INPID_InputControl = "OffsetControl",
-    INPID_PreviewControl = "CrosshairControl",
-  })
+    InMouseXY = self:AddInput("Mouse Drag", "MouseXY", {
+      LINKID_DataType = "Point",
+      INPID_InputControl = "OffsetControl",
+      INPID_PreviewControl = "CrosshairControl",
+    })
 
-  InMouseZW = self:AddInput("Mouse Click", "MouseZW", {
-    LINKID_DataType = "Point",
-    INPID_InputControl = "OffsetControl",
-    INPID_PreviewControl = "CrosshairControl",
-  })
-
+    InMouseZW = self:AddInput("Mouse Click", "MouseZW", {
+      LINKID_DataType = "Point",
+      INPID_InputControl = "OffsetControl",
+      INPID_PreviewControl = "CrosshairControl",
+    })
 
   self:EndControlNest()
 
 
-  self:BeginControlNest("Some Color", "SomeRandomColor0", false, {})
+  self:BeginControlNest("Some Color", "Colors", false, {})
 
-  attrs={
-    LINKID_DataType = "Number",
-		INPID_InputControl = "ColorControl",
-		INP_MinScale = 0.0,
-		INP_MaxScale = 1.0,
-		INP_Default  = 0.5,
-		ICS_Name = "Color 0",
-		IC_ControlGroup = 1,
-  }
+    InR0 = self:AddInput("Red",   "r0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InG0 = self:AddInput("Green", "g0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InB0 = self:AddInput("Blue",  "b0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InA0 = self:AddInput("Alpha", "a0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
 
-  InR0 = self:AddInput("Red",   "Red0",   { attrs, IC_ControlID = 0, })
-	InG0 = self:AddInput("Green", "Green0", { attrs, IC_ControlID = 1, })
-	InB0 = self:AddInput("Blue",  "Blue0",  { attrs, IC_ControlID = 2, })
-	InA0 = self:AddInput("Alpha", "Alpha0", { attrs, IC_ControlID = 3, })
-
-  attrs={
-    LINKID_DataType = "Number",
-		INPID_InputControl = "ColorControl",
-		INP_MinScale = 0.0,
-		INP_MaxScale = 1.0,
-		INP_Default  = 0.5,
-		ICS_Name = "Color 1",
-		IC_ControlGroup = 2,
-  }
-
-  InR1 = self:AddInput("Red",   "Red1",   { attrs, IC_ControlID = 0, })
-	InG1 = self:AddInput("Green", "Green1", { attrs, IC_ControlID = 1, })
-	InB1 = self:AddInput("Blue",  "Blue1",  { attrs, IC_ControlID = 2, })
-	InA1 = self:AddInput("Alpha", "Alpha1", { attrs, IC_ControlID = 3, })
+    InR1 = self:AddInput("Red",   "r1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InG1 = self:AddInput("Green", "g1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InB1 = self:AddInput("Blue",  "b1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InA1 = self:AddInput("Alpha", "a1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
 
   self:EndControlNest()
 
@@ -249,13 +228,20 @@ function Process(req)
       file:close()
     end
 
+    if not(string.match(ShaderMainCode, "__KERNEL__%s+void%s+"..Selected_Name.."Kernel%(")) then
+      print ("there definitely is a problem with the kernel name")
+      ShaderMainCode=nil
+    end
+
+
     rebuild=true
   end
 
 	if (ShaderMainCode == "" or ShaderMainCode == nil) then
-    print("use default code")
+    print("no shader to render - using some default kernel")
     ShaderMainCode=ShaderDefaultCode
     Selected_Name='Default'
+    rebuild=true
   end
 
   if HelperFunctions==nil or ShaderStandardParameters==nil then
