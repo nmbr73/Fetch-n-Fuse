@@ -1,12 +1,14 @@
 
 
+__DEVICE__ float sign_f(float value) { if (value == 0.0f) return 0.0f; return value > 0.0f ? 1.0f : -1.0f;}
+
 __DEVICE__ float glowBomb(float2 uv, float2 A, float2 B) {
 
     float strokeWidth = 0.0f; //24. * 1./iResolution.x; // Scale by N units of the X resolution
     float2 pa = uv-A, ba = B-A;
 //  float line = (length(pa-ba*clamp(dot(pa, ba)/dot(ba, ba),0.0f,1.0f)) - strokeWidth) * sign(dot( normalize( float2( ba.y, -ba.x ) ), pa ));
     float line =   (length(pa-ba*clamp(dot(pa, ba)/dot(ba, ba),0.0f,1.0f)) - strokeWidth)
-                 * sign(dot( to_float2( ba.y, -ba.x ) , pa ));
+                 * sign_f(dot( to_float2( ba.y, -ba.x ) , pa ));
     float lineSide = step(0.0f, line); // Same as: line < 0. ? 0. : 1.;
 
     return (1. - smoothstep( _fabs(line)/1.15f, 0.0f, 0.075f )) * lineSide;
@@ -16,7 +18,7 @@ __DEVICE__ float glowBomb(float2 uv, float2 A, float2 B) {
 
 
 
-__KERNEL__ void ShatteredLightKernel(
+__KERNEL__ void Kernel(
     __CONSTANTREF__ Params*  params,
     __TEXTURE2D__            iChannel0,
     __TEXTURE2D_WRITE__      dst

@@ -4,6 +4,8 @@ Some experiments based on the work of
 Chris Ridings (www.chrisridings.com), Bryan Ray (http://www.bryanray.name/wordpress/opencl-fuses-index/),
 JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
 
+V0.1 Kernelnamen angepaßt
+
 --]]--
 
 
@@ -42,7 +44,7 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 	  REGS_Company = "nmbr73",
 	  REGS_URL = "https://nmbr73.github.io/",
 	  REG_Version	= 000001,
-    REG_Fuse_NoEdit = true,
+    REG_Fuse_NoEdit = false,
     REG_Fuse_NoReload = false, -- true,
     })
 
@@ -79,7 +81,7 @@ end
 
 function Create()
 
-local REPOSITORYPATH = ""
+local REPOSITORYPATH=[[D:\Zumsel\Dokumente\Github\Fetch-n-Fuse\]]
 
   CodeFragments=getCodeFragmentFiles(REPOSITORYPATH)
 
@@ -119,6 +121,7 @@ local REPOSITORYPATH = ""
   InFileToUse = self:AddInput("Code Fragment", "FragementFileSelection", {
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
+	INP_DoNotifyChanged = true,
     INP_Default = 0,
     INP_Integer = true,
     attrs
@@ -191,8 +194,6 @@ end
 
 
 
-
-
 local Selected_Option = -1
 local Selected_Item   = nil
 local Selected_Name   = nil
@@ -228,16 +229,21 @@ function Process(req)
       file:close()
     end
 
+--[[--
     if not(string.match(ShaderMainCode, "__KERNEL__%s+void%s+"..Selected_Name.."Kernel%(")) then
       print ("there definitely is a problem with the kernel name")
       ShaderMainCode=nil
     end
-
+--]]--
+    --Kernelnamen anpassen - Im Codefile immer "Kernel"
+	local nodeName = self.Name
+    Selected_Name = nodeName.."_Kernel" --string.gsub(Selected_Name, "Kernel", nodeName.."Kernel")
+    ShaderMainCode = string.gsub(ShaderMainCode, "Kernel", nodeName.."_Kernel")
 
     rebuild=true
   end
 
-	if (ShaderMainCode == "" or ShaderMainCode == nil) then
+  if (ShaderMainCode == "" or ShaderMainCode == nil) then
     print("no shader to render - using some default kernel")
     ShaderMainCode=ShaderDefaultCode
     Selected_Name='Default'
@@ -248,8 +254,9 @@ function Process(req)
     print("now way this will work")
   end
 
+
   local node = DVIPComputeNode(req,
-    Selected_Name.."Kernel",
+    Selected_Name,--.."Kernel",
     HelperFunctions .. ShaderMainCode,
     -- Selected_Name..
     "Params",
@@ -305,10 +312,10 @@ function Process(req)
   params = node:GetParamBlock(ShaderStandardParameters)
 
 
-	local mouse =  nil
+  local mouse =  nil
 
   params.mouse_x = 0
-	params.mouse_y = 0
+  params.mouse_y = 0
 
   mouse  = InMouseXY:GetValue(req)
 
@@ -342,7 +349,7 @@ function Process(req)
 
   params.compOrder        = iChannel0:IsMask() and 1 or 15
   params.iChannel0_width  = iChannel0.Width
-	params.iChannel0_height = iChannel0.Height
+  params.iChannel0_height = iChannel0.Height
 
   node:SetParamBlock(params)
 
@@ -365,17 +372,26 @@ function Process(req)
 
   -- Output our result
   OutImage:Set(req,dst)
-	collectgarbage();
+  collectgarbage();
 
 end
 
 
 function NotifyChanged(inp, param, time)
-	if (param ~= nil) then
-		if (param.Value == 1) then
-			if (inp == InReloadCode) then
-        InRebuildCheckBox:SetSource(Number(1),0)
-      end
-		end
+	if inp ~= nil and param ~= nil then
+		
+		if (inp == InReloadCode) then
+			if (param.Value == 1) then
+               InRebuildCheckBox:SetSource(Number(1),0)
+			   --print("/n ReloadCode-Notify /n")
+            end
+        end
+
+		if (inp == InFileToUse) then
+           InRebuildCheckBox:SetSource(Number(1),0)
+		   --print("/n Filetouse-Notify /n")
+        end
+	    
+	    
 	end
 end

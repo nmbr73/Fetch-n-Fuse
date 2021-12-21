@@ -1,6 +1,6 @@
 
 
-__KERNEL__ void SimpleDCTLKernel(
+__KERNEL__ void Kernel(
     __CONSTANTREF__ Params*  params,
     __TEXTURE2D__            iChannel0,
     __TEXTURE2D_WRITE__      dst
