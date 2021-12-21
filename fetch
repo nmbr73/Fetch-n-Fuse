@@ -10,7 +10,17 @@ import argparse
 from dotenv import load_dotenv
 
 
-def convert(code):
+
+
+
+def convert(code,fuse_name):
+
+  # uncomment to see the code before conversion:
+  #
+  # with open(fuse_filename+".raw.c", 'w') as f:
+  #    f.write(code)
+
+  code = code.replace("\t", "  ")
 
   code=re.sub(r'([^\w])(fragCoord)\.xy([^\w])',r'\1\2\3', code)
   code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
@@ -28,12 +38,12 @@ def convert(code):
     code=re.sub(r'([^\w])('+s[2]+r')(\s*)\(',r'\g<1>'+s[0]+r'\g<2>'+s[1]+r'\3(', code)
 
 
-  code=re.sub(r'([ \t\(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \t\),\+\-\*=;]+)',r'\g<1>0\2\3', code)
-  #code=re.sub(r'([ \t\(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \t\),\+\-\*=;]+)',r'\g<1>0\2\3', code)
-  code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.)([ \t\),\+\-\*=;]+)',r'\1\g<2>0\3', code)
-  #code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.)([ \t\),\+\-\*=;]+)',r'\1\g<2>0\3', code)
-  code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.[0-9]+)([ \t\),\+\-\*=;]+)',r'\1\2f\3', code)
-  #code=re.sub(r'([ \t\(,\+\-\*=]+)([0-9]+\.[0-9]+)([ \t\),\+\-\*=;]+)',r'\1\2f\3', code)
+  code=re.sub(r'([ \(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \),\+\-\*=;]+)',r'\g<1>0\2\3', code)
+  #code=re.sub(r'([ \(,\+\-\*=]+)(\.[0-9]+f{0,1})([ \),\+\-\*=;]+)',r'\g<1>0\2\3', code)
+  code=re.sub(r'([ \(,\+\-\*=]+)([0-9]+\.)([ \),\+\-\*=;]+)',r'\1\g<2>0\3', code)
+  #code=re.sub(r'([ \(,\+\-\*=]+)([0-9]+\.)([ \),\+\-\*=;]+)',r'\1\g<2>0\3', code)
+  code=re.sub(r'([ \(,\+\-\*=]+)([0-9]+\.[0-9]+)([ \),\+\-\*=;]+)',r'\1\2f\3', code)
+  #code=re.sub(r'([ \(,\+\-\*=]+)([0-9]+\.[0-9]+)([ \),\+\-\*=;]+)',r'\1\2f\3', code)
 
   # vecN ... =  -> floatN ... =
   code=re.sub(r'\n(\s*)vec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1float\2\3', code)
@@ -50,8 +60,19 @@ def convert(code):
   # am Schluss alle verbleibenden 'vecN' weghauen:
   code=re.sub(r'([\s\(\)\*\+\-;,=])vec([234])(\s)',r'\1float\2\3', code)
 
+  # Kernelaufruf
+  code = re.sub(r'void\s+mainImage\s*\(',
+   '__KERNEL__ void '+fuse_name+'Kernel(              \n'+
+   '__CONSTANTREF__ Params*  params,     \n'+
+   '__TEXTURE2D__            iChannel0,  \n'+
+   '__TEXTURE2D_WRITE__      dst         \n'+
+   ' )',code)
+
+  code = re.sub(r'\s*out\s*(float4\s*.*)\s*,\s*in\s*(float2\s*.*)\s*\)\n({)',r'\3\n PROLOGUE; \n \1 = fragColor; \n \2 = fragCoord;\n',code)
 
   return code
+
+
 
 
 def check_if_exists(path,id,suffix):
@@ -102,8 +123,6 @@ def do_fetch(id,force=False,nocache=False):
 
   if error!=None:
     raise Exception(url+"\n"+error)
-
-
 
 
   if 'Shader' in json_data:
@@ -212,34 +231,12 @@ def do_fetch(id,force=False,nocache=False):
                   f.write(data.content)
 
 
-
-
-  code = code.replace("\t", "    ")
-
-  with open(fuse_filename+"raw"+".c", 'w') as f:
-     f.write(code)
-
-
-  code = convert(code)
-
-  #code = re.sub(r'void\s+mainImage\s*\(', '__KERNEL__ void '+fuse_name+'Kernel(', code)
-
-  # Kernelaufruf
-  code = re.sub(r'void\s+mainImage\s*\(',
-   '__KERNEL__ void '+fuse_name+'Kernel(              \n'+
-   '__CONSTANTREF__ Params*  params,     \n'+
-   '__TEXTURE2D__            iChannel0,  \n'+
-   '__TEXTURE2D_WRITE__      dst         \n'+
-   ' )',code)
-
-
-  code = re.sub(r'\s*out\s*(float4\s*.*)\s*,\s*in\s*(float2\s*.*)\s*\)\n({)',r'\3\n PROLOGUE; \n \1 = fragColor; \n \2 = fragCoord;\n',code)
-
-
-
+  code = convert(code,fuse_name)
 
   with open(fuse_filename+".c", 'w') as f:
      f.write(code)
+
+
 
 
 
@@ -256,17 +253,13 @@ if not(os.path.isfile(".env")):
             )
   print(".env file created - please enter your credentials to use")
 
-
 load_dotenv()
-
-
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
 parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 args = parser.parse_args()
-
 
 try:
   do_fetch(args.id,force=args.force,nocache=args.no_cache)
