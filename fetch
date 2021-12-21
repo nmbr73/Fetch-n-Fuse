@@ -243,9 +243,8 @@ load_dotenv()
 
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
-# parser.add_argument('-t','--test',action='store_true',help='use existing file to avoid http access')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
-parser.add_argument('-nc','--no-cache',action='store_true',help='overwrite code if it already exists')
+parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 args = parser.parse_args()
 
