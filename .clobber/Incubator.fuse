@@ -5,7 +5,7 @@ Chris Ridings (www.chrisridings.com), Bryan Ray (http://www.bryanray.name/wordpr
 JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
 
 V0.1 Kernelnamen angepaßt
-
+V0.2 AddSampler wieder hinzugefügt
 --]]--
 
 
@@ -31,7 +31,7 @@ __KERNEL__ void IncubatorFallbackKernel(
 }
 ]]
 
-
+-----------------------------------------------------------------------------------------------------
 FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
     REGS_Name = "ShadersInc",
 	  REGS_Category = "Fuses",
@@ -87,10 +87,10 @@ end
 
 local ConversionShaderID  =  ""
 
-
+-----------------------------------------------------------------------------------------------------
 function Create()
 
-  local REPOSITORYPATH=""
+  local REPOSITORYPATH=[[]]
 
   verbose("Create: repo in "..REPOSITORYPATH)
 
@@ -117,10 +117,6 @@ function Create()
   end
 
 
-
-
-
-
   local attrs
 
   attrs={}
@@ -129,6 +125,8 @@ function Create()
     verbose("Create: conversion '"..v.Label.."'")
     table.insert(attrs,{ CCS_AddString = v.Label })
   end
+
+
 
   InFileToUseCombo = self:AddInput("Code Fragment", "FragementFileSelection", {
     LINKID_DataType = "Number",
@@ -139,16 +137,15 @@ function Create()
     attrs
     })
 
-  InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
-    { LINKID_DataType = "Text",
-      INPID_InputControl = "ButtonControl",
-      INP_DoNotifyChanged = true,
-      INP_External = false,
-    })
+  InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment", { 
+    LINKID_DataType = "Text",
+    INPID_InputControl = "ButtonControl",
+    INP_DoNotifyChanged = true,
+    INP_External = false,
+  })
+
 
   self:BeginControlNest("Common Fuse Controls", "CommonFuseControls", true, {})
-
-
     InFrequency = self:AddInput("Frequency", "Frequency", {
       LINKID_DataType    = "Number",
       INPID_InputControl = "SliderControl",
@@ -168,12 +165,10 @@ function Create()
       INPID_InputControl = "OffsetControl",
       INPID_PreviewControl = "CrosshairControl",
     })
-
   self:EndControlNest()
 
 
   self:BeginControlNest("Some Color", "Colors", false, {})
-
     InR0 = self:AddInput("Red",   "r0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
     InG0 = self:AddInput("Green", "g0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
     InB0 = self:AddInput("Blue",  "b0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
@@ -183,13 +178,7 @@ function Create()
     InG1 = self:AddInput("Green", "g1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
     InB1 = self:AddInput("Blue",  "b1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
     InA1 = self:AddInput("Alpha", "a1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-
   self:EndControlNest()
-
-
-	InChannel0 = self:AddInput("iChannel0", "iChannel0", { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false })
-	OutImage = self:AddOutput("Output", "Output", { LINKID_DataType = "Image", LINK_Main = 1 }) -- , INP_Required = false })
-
 
   InRebuildCheckBox = self:AddInput("InRebuildCheckBox", "InRebuildCheckBox", {
     LINKID_DataType = "Number",
@@ -218,11 +207,22 @@ function Create()
     INP_Disabled=true,
   })
 
+
+	InChannel0 = self:AddInput("iChannel0", "iChannel0", {
+    LINKID_DataType = "Image", 
+    LINK_Main = 1, 
+    INP_Required = false 
+  })
+	OutImage = self:AddOutput("Output", "Output", {
+    LINKID_DataType = "Image",
+    LINK_Main = 1 
+  }) -- , INP_Required = false })
+
 end
 
 
 
-
+-----------------------------------------------------------------------------------------------------
 local ConversionFusename   = ""
 local ConversionKernelname = ""
 local ConversionSourcecode = ""
@@ -282,7 +282,7 @@ function Process(req)
     -- falsche Namen in 99% der Faelle
 
     if count ~=1 then
-      print("there definitely is a problem with the kernel name")
+      print("there definitely is a problem with the kernel name. Found:",count)
       ConversionSourcecode = ""
     end
 
@@ -321,7 +321,6 @@ function Process(req)
     )
 
 
-
   local imgattrs = {
     IMG_Document = self.Comp,
     { IMG_Channel = "Red", },
@@ -340,7 +339,6 @@ function Process(req)
     IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
     IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
   }
-
 
 
   -- Extern Texture or create a new one
@@ -362,36 +360,28 @@ function Process(req)
     return
   end
 
+
+  -------------- Parameter für DCTL-Code ---------------------
   local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
 
   local params = {}
-
   params = node:GetParamBlock(ShaderParameters)
 
-
   local mouse =  nil
-
   params.mouse_x = 0
   params.mouse_y = 0
-
   mouse  = InMouseXY:GetValue(req)
-
   if (mouse ~= nil) then
 		params.mouse_x = mouse.X * Width
 		params.mouse_y = mouse.Y * Height
 	end
-
 	params.mouse_z = 0
 	params.mouse_w = 0
-
   mouse  = InMouseZW:GetValue(req)
-
   if (mouse ~= nil) then
 		params.mouse_z = mouse.X * Width
 		params.mouse_w = mouse.Y * Height
 	end
-
-
 
   params.frequency        = InFrequency:GetValue(req).Value
   params.iTime            = req.Time / framerate
@@ -399,8 +389,12 @@ function Process(req)
   params.r0 = InR0:GetValue(req).Value; params.g0 = InG0:GetValue(req).Value; params.b0 = InB0:GetValue(req).Value; params.a0 = InA0:GetValue(req).Value
   params.r1 = InR1:GetValue(req).Value; params.g1 = InG1:GetValue(req).Value; params.b1 = InB1:GetValue(req).Value; params.a1 = InA1:GetValue(req).Value
 
-  params.width  = dst.Width
-  params.height = dst.Height
+--  params.width  = dst.Width
+--  params.height = dst.Height
+		params.width  = iChannel0.DataWindow:Width()
+		params.height = iChannel0.DataWindow:Height()
+--print("Resolution",params.width,params.height)
+
 --params.width            = iChannel0.DataWindow:Width()
 --params.height           = iChannel0.DataWindow:Height()
 
@@ -411,8 +405,10 @@ function Process(req)
   node:SetParamBlock(params)
 
 --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
 	node:AddInput("iChannel0",iChannel0)
 	node:AddOutput("dst", dst)
+
 
   if rebuild then
     node:ForceRebuild()
@@ -426,14 +422,13 @@ function Process(req)
     dump(node:GetErrorLog())
 	end
 
-
   -- Output our result
   OutImage:Set(req,dst)
   collectgarbage();
 
 end
 
-
+-----------------------------------------------------------------------------------------------------
 function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
 
