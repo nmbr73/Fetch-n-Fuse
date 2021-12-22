@@ -7,7 +7,7 @@ __KERNEL__ void SimpleDCTLKernel(
     )
 {
 
-  PROLOGUE;
+  PROLOGUE(fragColor,fragCoord);
   PARAM_ICOLOR0;
 
   float red          = iColor0.x;

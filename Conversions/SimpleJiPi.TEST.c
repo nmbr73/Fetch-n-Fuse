@@ -7,7 +7,7 @@ __KERNEL__ void SimpleJiPiKernel(
     )
 {
 
-  PROLOGUE;
+  PROLOGUE(fragColor,fragCoord);
   PARAM_ICOLOR0;
 
   float red          = params->r1;

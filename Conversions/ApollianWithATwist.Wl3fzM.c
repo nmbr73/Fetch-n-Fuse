@@ -145,7 +145,7 @@ __KERNEL__ void ApollianWithATwistKernel(
     __TEXTURE2D_WRITE__      dst
     ) {
 
-  PROLOGUE;
+  PROLOGUE(fragColor,fragCoord);
 
 
   float2 q = fragCoord/swixy(iResolution);
