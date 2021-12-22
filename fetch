@@ -62,14 +62,15 @@ def convert(code,fuse_name):
   code=re.sub(r'([\s\(\)\*\+\-;,=])vec([234])(\s)',r'\1float\2\3', code)
 
   # Kernelaufruf
-  code = re.sub(r'void\s+mainImage\s*\(',
-   '__KERNEL__ void '+fuse_name+'Kernel(              \n'+
-   '__CONSTANTREF__ Params*  params,     \n'+
-   '__TEXTURE2D__            iChannel0,  \n'+
-   '__TEXTURE2D_WRITE__      dst         \n'+
-   ' )',code)
+  code = re.sub(r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{',
+    '__KERNEL__ void '+fuse_name+'Kernel(\n'+
+    '                   __CONSTANTREF__ Params*  params,\n'+
+    '                   __TEXTURE2D__            iChannel0,\n'+
+    '                   __TEXTURE2D_WRITE__      dst         )\n'+
+    '{\n'+
+    '  PROLOGUE(\\1,\\2)\n\n'
+    , code)
 
-  code = re.sub(r'\s*out\s*(float4\s*.*)\s*,\s*in\s*(float2\s*.*)\s*\)\n({)',r'\3\n PROLOGUE; \n \1 = fragColor; \n \2 = fragCoord;\n',code)
 
   return code
 
