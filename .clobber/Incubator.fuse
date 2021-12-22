@@ -85,6 +85,7 @@ function getConversions(path)
 end
 
 
+local ConversionShaderID  =  ""
 
 
 function Create()
@@ -208,9 +209,16 @@ function Create()
   --   IC_Visible = true,
   -- })
 
+  InShadertoyButton=self:AddInput("Show on shadertoy.com", "ShowOnShadertoy", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "ButtonControl",
+    INP_DoNotifyChanged = false,
+    INP_External = false,
+    BTNCS_Execute = 'print("does nothing")',
+    INP_Disabled=true,
+  })
 
 end
-
 
 
 
@@ -234,9 +242,15 @@ function Process(req)
   if rebuild then
     ConversionSourcecode  = ""
     local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
-    ConversionFusename   = item.Name
+    ConversionFusename    = item.Name
+    ConversionShaderID    = item.ShadertoyID
 
-    verbose("Process: rebuild code for conversion '"..ConversionFusename.."'")
+    InShadertoyButton:SetAttrs({
+      BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
+      INP_Disabled=false
+      })
+
+    verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
 
     file = io.open(item.Path .. item.Filename,"r")
 

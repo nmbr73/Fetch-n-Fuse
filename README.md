@@ -40,6 +40,14 @@ chmod a+x fetch fuse
 
 Now edit the `.env` file to add you credentials. You need to log in to shadertoys.com and create an APP on https://www.shadertoy.com/myapps to retrieve your own API-Key.
 
+It should look something like this afterwards:
+```
+AUTHOR="nmbr73"
+APIKEY="******"
+DOWNLOADS="/Users/nmbr73/Downloads/"
+```
+... `DOWNLOADS` is optional, but it's recommended to set it to your browsers download folder (do not forget the trailing slash!). If set, then the downloads folder is used to search for shaders - otherwise you have to copy such downloads into the `Conversions/` folder before calling `fetch`.
+
 ## Fetch a Shader
 
 In your working copy do (on Windows as parameters to `python3` maybe) a ...
