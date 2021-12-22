@@ -16,7 +16,7 @@ function install()
   local incubator_source = f:read("*all")
   f:close()
 
-  incubator_source, n = string.gsub(incubator_source, '%s+local%s+REPOSITORYPATH%s*=%s*"[^""]*"', '\n\nlocal REPOSITORYPATH=[['..repositorypath..']]')
+  incubator_source, n = string.gsub(incubator_source, '%s+local%s+REPOSITORYPATH%s*=%s*%[%[[^%]]*%]%]', '\n\n  local REPOSITORYPATH=[['..repositorypath..']]')
 
   if n<1 then return "failed substitute repo path in fuse code" end
 
