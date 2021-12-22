@@ -215,6 +215,9 @@ __KERNEL__ void JiPiTEstKernel(
     ) {
 
 
+PROLOGUE;
+
+#ifdef ORG
     DEFINE_KERNEL_ITERATORS_XY(x, y);
     //if (x >= params->width || y >= params->height)
     //  return;
@@ -224,7 +227,7 @@ __KERNEL__ void JiPiTEstKernel(
 //    float2 fragCoord   = to_float2(x, y);
 //    float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w);
     float4 fragColor   = to_float4_s(0.0f);
-
+#endif
 
 #ifdef XXX
   SHADER_PREAMBLE;
@@ -242,6 +245,12 @@ __KERNEL__ void JiPiTEstKernel(
 
   fragColor = to_float4_aw(col, 1.0f);
 #endif
+
+    float2 uv = fragCoord / iResolution;
+    
+    //fragColor = _tex2DVecN(iChannel0,fragCoord.x/iResolution.x*1000.0f,fragCoord.y/iResolution.y*1000.0f,15);
+    fragColor = _tex2DVecN(iChannel0,uv.x,uv.y,15);
+
 
   //SHADER_EPILOGUE;
   _tex2DVec4Write(dst, x, y, fragColor);
