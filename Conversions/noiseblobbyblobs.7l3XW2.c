@@ -72,7 +72,7 @@ __TEXTURE2D__            iChannel0,
 __TEXTURE2D_WRITE__      dst
  ){
 
- PROLOGUE;
+ PROLOGUE(fragColor,fragCoord);
  //float4 fragColor = fragColor;
  //float2 fragCoord  = fragCoord;
 

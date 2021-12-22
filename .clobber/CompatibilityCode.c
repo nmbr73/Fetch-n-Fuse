@@ -1,14 +1,14 @@
   //float3 iResolution = to_float3(params->width, params->height, 1.0f);
 
-  #define PROLOGUE                                                                             \
+  #define PROLOGUE(FRAGCOLOR,FRAGCOORD)                                                                             \
     DEFINE_KERNEL_ITERATORS_XY(x, y);                                                                 \
     if (x >= params->width || y >= params->height)                                                    \
       return;                                                                                         \
                                                                                                       \
     float2 iResolution = to_float2(params->width, params->height);                              \
     float  iTime       = params->iTime * params->frequency;                                           \
-    float2 fragCoord   = to_float2(x, y);                                                             \
-    float4 fragColor   = to_float4_s(0.0f)
+    float2 FRAGCOORD   = to_float2(x, y);                                                             \
+    float4 FRAGCOLOR   = to_float4_s(0.0f)
 
   #define PARAM_IMOUSE \
     float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w);
@@ -20,8 +20,8 @@
     float4 iColor1     = to_float4(params->r1,params->g1,params->b1,params->a1);
 
 
-   #define EPILOGUE(COLOR) \
-    _tex2DVec4Write(dst, x, y, (COLOR) )
+   #define EPILOGUE(FRAGCOLOR) \
+    _tex2DVec4Write(dst, x, y, (FRAGCOLOR) )
 
   #undef USE_NATIVE_METAL_IMPL
   #undef USE_NATIVE_CUDA_IMPL
