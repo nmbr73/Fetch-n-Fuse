@@ -108,6 +108,10 @@ def getCacheFilename(path,id):
       if os.path.isfile(downloads + fname):
         print(f"copy '{fname}' from downloads")
         copyTextFile(downloads + fname , path + fname)
+      else:
+        print(f"found no '{downloads}{fname}' that could be used")
+    else:
+      print(f"no DOWNLOADS folder configured in environment")
 
     if os.path.isfile(path + fname):
       return fname
