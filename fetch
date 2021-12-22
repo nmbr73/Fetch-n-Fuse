@@ -72,7 +72,7 @@ def convert(code,fuse_name):
     , code)
 
 
-  code=re.sub(r'(\n\s*)(float[1-4]{0,1}|int|void)(\s+[A-Za-z_]\w*\s*\([^\)]*\)\s*{)',r'\g<1>__DEVICE__ \g<2>\g<3>',code)
+  code=re.sub(r'(\n\s*)(mat[2-4]|float[1-4]{0,1}|int|void)(\s+[A-Za-z_]\w*\s*\([^\)]*\)\s*{)',r'\g<1>__DEVICE__ \g<2>\g<3>',code)
 
 
   return code
