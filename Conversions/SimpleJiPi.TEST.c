@@ -1,6 +1,6 @@
 
 
-__KERNEL__ void Kernel(
+__KERNEL__ void SimpleJiPiKernel(
     __CONSTANTREF__ Params*  params,
     __TEXTURE2D__            iChannel0,
     __TEXTURE2D_WRITE__      dst
