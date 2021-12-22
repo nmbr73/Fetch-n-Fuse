@@ -120,8 +120,6 @@ def getCacheFilename(path,id):
 
   return files[0].name
 
-  #return re.sub(r'^(.+)\.'+id+'\.'+suffix+'$',r'\1',files[0].name)
-
 
 
 
