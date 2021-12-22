@@ -70,10 +70,7 @@ def convert(code,fuse_name,buffer_name):
 
   # Kernelaufruf
   code = re.sub(r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{',
-    '__KERNEL__ void '+kernel_name+'(\n'+
-    '                   __CONSTANTREF__ Params*  params,\n'+
-    '                   __TEXTURE2D__            iChannel0,\n'+
-    '                   __TEXTURE2D_WRITE__      dst         )\n'+
+    '__KERNEL__ void '+kernel_name+'( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )\n'+
     '{\n'+
     '  PROLOGUE(\\1,\\2);\n\n'
     , code)
