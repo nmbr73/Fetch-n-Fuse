@@ -18,7 +18,7 @@ def convert(code,fuse_name):
 
   # uncomment to see the code before conversion:
   #
-  # with open(fuse_filename+".raw.c", 'w') as f:
+  # with open(fuse_filename+"_raw.c", 'w') as f:
   #    f.write(code)
 
   code = code.replace("\t", "  ")
