@@ -123,7 +123,7 @@ def getCacheFilename(path,id):
 
 
 def convertToFusename(shader_name):
-  return re.sub(r'[^A-Za-z0-9]+','', shader_name)
+  return''.join(x for x in re.sub(r'[^A-Za-z0-9 ]+',' ', shader_name).title() if not x.isspace())
 
 
 
