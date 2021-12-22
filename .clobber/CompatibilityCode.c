@@ -1,5 +1,12 @@
   //float3 iResolution = to_float3(params->width, params->height, 1.0f);
 
+
+// brauche ich als define, um nachher die anzahl der channels manipulieren zu koennen ...
+// #define FUSION_PARAMETERS __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst
+// ... tut's aber blöder Weise so überhauot nicht - wird irgendwie falsch expandiert
+
+
+
   #define PROLOGUE(FRAGCOLOR,FRAGCOORD)                                                                             \
     DEFINE_KERNEL_ITERATORS_XY(x, y);                                                                 \
     if (x >= params->width || y >= params->height)                                                    \

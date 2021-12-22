@@ -94,8 +94,8 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
 
   float3 rd = normalize(pp - ro);
 
-  float3 ld1 = normalize(lp1 - pp);
-  float3 ld2 = normalize(lp2 - pp);
+  // float3 ld1 = normalize(lp1 - pp);
+  // float3 ld2 = normalize(lp2 - pp);
 
   float bt = -(t-b)/rd.y;
 
@@ -106,11 +106,11 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
   float bl22= L2(lp2-bp);
 
   float st1= (0.0f-b)/srd1.y;
-  float st2= (0.0f-b)/srd2.y;
+  // float st2= (0.0f-b)/srd2.y;
   float3 sp1 = bp + srd1*st1;
   float3 sp2 = bp + srd2*st1;
 
-  float bd = df(swixz(bp),iTime);
+  // float bd = df(swixz(bp),iTime);
   float sd1= df(swixz(sp1),iTime);
   float sd2= df(swixz(sp2),iTime);
 
@@ -139,11 +139,9 @@ __DEVICE__ float3 postProcess(float3 col, float2 q)  {
   return col;
 }
 
-__KERNEL__ void ApollianWithATwistKernel(
-    __CONSTANTREF__ Params*  params,
-    __TEXTURE2D__            iChannel0,
-    __TEXTURE2D_WRITE__      dst
-    ) {
+
+__KERNEL__ void ApollianWithATwistKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+{
 
   PROLOGUE(fragColor,fragCoord);
 
