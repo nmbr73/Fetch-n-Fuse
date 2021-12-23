@@ -1,44 +1,28 @@
-  //float3 iResolution = to_float3(params->width, params->height, 1.0f);
 
 
 // brauche ich als define, um nachher die anzahl der channels manipulieren zu koennen ...
 // #define FUSION_PARAMETERS __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst
-// ... tut's aber blöder Weise so überhauot nicht - wird irgendwie falsch expandiert
+// ... tut's aber bloeder Weise so ueberhaupt nicht - wird irgendwie falsch expandiert
 
 
 
-  #define PROLOGUE(FRAGCOLOR,FRAGCOORD)                                                                             \
+  // Standard Shadertoy parameters:
+  #define PROLOGUE(FRAGCOLOR,FRAGCOORD)                                \
     DEFINE_KERNEL_ITERATORS_XY(x, y);                                                                 \
     if (x >= params->width || y >= params->height)                                                    \
       return;                                                                                         \
                                                                                                       \
-    float2 iResolution = to_float2(params->width, params->height);                              \
-    float  iTime       = params->iTime * params->frequency;                                           \
+    float2 iResolution = to_float2(params->width, params->height);                                    \
+    float  iTime       = params->iTime;                                           \
+    float4 iMouse      = to_float4(params->iMouse[0],params->iMouse[1],params->iMouse[2],params->iMouse[3]);  \
     float2 FRAGCOORD   = to_float2(x, y);                                                             \
     float4 FRAGCOLOR   = to_float4_s(0.0f)
-
-  #define PARAM_IMOUSE \
-    float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w);
-
-
-   #define USE_CTRL_COLOR0(NAME) float4 NAME     = to_float4(params->color[0][0],params->color[0][1],params->color[0][2],params->color[0][3])
-   #define USE_CTRL_COLOR1(NAME) float4 NAME     = to_float4(params->color[1][0],params->color[1][1],params->color[1][2],params->color[1][3])
-   #define USE_CTRL_COLOR2(NAME) float4 NAME     = to_float4(params->color[2][0],params->color[2][1],params->color[2][2],params->color[2][3])
-   #define USE_CTRL_COLOR3(NAME) float4 NAME     = to_float4(params->color[3][0],params->color[3][1],params->color[3][2],params->color[3][3])
-   #define USE_CTRL_COLOR4(NAME) float4 NAME     = to_float4(params->color[4][0],params->color[4][1],params->color[4][2],params->color[4][3])
-   #define USE_CTRL_COLOR5(NAME) float4 NAME     = to_float4(params->color[5][0],params->color[5][1],params->color[5][2],params->color[5][3])
-
-
-  #define USE_CTRL_COLOR1(NAME) \
-    float4 NAME     = to_float4(params->r1,params->g1,params->b1,params->a1)
-
 
    #define EPILOGUE(FRAGCOLOR) \
     _tex2DVec4Write(dst, x, y, (FRAGCOLOR) )
 
-  #undef USE_NATIVE_METAL_IMPL
-  #undef USE_NATIVE_CUDA_IMPL
-  #undef USE_NATIVE_OPENCL_IMPL
+
+
 
 
 
@@ -51,6 +35,11 @@
   #define out
   #define inout
 #endif
+
+
+#undef USE_NATIVE_METAL_IMPL
+#undef USE_NATIVE_CUDA_IMPL
+#undef USE_NATIVE_OPENCL_IMPL
 
   // 0 to use the generic implementations; 1 for Metal, OpenCL, Cuda specific code if existing
 

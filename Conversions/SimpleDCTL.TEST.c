@@ -9,10 +9,11 @@ __KERNEL__ void SimpleDCTLKernel(
 
   PROLOGUE(fragColor,fragCoord);
   USE_CTRL_COLOR3(farbenspiel);
+  USE_CTRL_SLIDER2(zumausprobieren);
 
   float red          = farbenspiel.x;
   float green        = farbenspiel.y;
-  float blue         = farbenspiel.z;
+  float blue         = zumausprobieren / 100.0f;
   float alpha        = farbenspiel.w;
 
   fragColor=to_float4(red,green,blue,alpha);

@@ -16,7 +16,8 @@ ConversionFusename   = ""
 ConversionKernelname = ""
 ConversionSourcecode = ""
 
-
+NUM_COLOR_CONTROLS=5
+NUM_SLIDER_CONTROLS=5
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -128,6 +129,16 @@ end
 --
 function Create()
 
+  local xtracode=""
+
+  for i=0,NUM_COLOR_CONTROLS-1 do
+    xtracode=xtracode.."#define USE_CTRL_COLOR"..i.."(NAME) float4 NAME     = to_float4(params->color["..i.."][0],params->color["..i.."][1],params->color["..i.."][2],params->color["..i.."][3])\n"
+  end
+
+  for i=0,NUM_SLIDER_CONTROLS-1 do
+    xtracode=xtracode.."#define USE_CTRL_SLIDER"..i.."(NAME) float NAME     = params->slider["..i.."]\n"
+  end
+
 
   -- get the list of conversions and read compatibility and params code
 
@@ -143,21 +154,27 @@ function Create()
     CompatibilityCode = nil
     print("failed to read compatibility code")
   else
-    CompatibilityCode = f:read("*all")
+    CompatibilityCode = f:read("*all") .. xtracode
     f:close()
   end
 
-  f = io.open(REPOSITORYPATH..'.clobber/ShaderParameters.c', "r")
+  ShaderParameters=[[
 
-  if not f then
-    ShaderParameters = nil
-    print("failed to read shader paramseters code")
-  else
-    ShaderParameters = f:read("*all")
-    f:close()
-  end
+  float iTime;
+  float iMouse[4];
+
+  float color[]]..NUM_COLOR_CONTROLS..[[][4];
+  float slider[]]..NUM_SLIDER_CONTROLS..[[];
+
+  int   width, height;
+  int   compOrder;
+
+  int iChannel0_width;
+  int iChannel0_height;
+  ]]
 
 
+  print(ShaderParameters)
 
   -- combo box with all the conversions + a reload button
 
@@ -186,27 +203,54 @@ function Create()
       INP_External = false,
     })
 
+  InShadertoyButton=self:AddInput("Show on shadertoy.com", "ShowOnShadertoy", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "ButtonControl",
+    INP_DoNotifyChanged = false,
+    INP_External = false,
+    BTNCS_Execute = 'print("does nothing")',
+    INP_Disabled=true,
+  })
+
+  InFrequency = self:AddInput("Speedup", "speed", {
+    LINKID_DataType    = "Number",
+    INPID_InputControl = "SliderControl",
+    INP_Default        = 1.0,
+    INP_MinScale 	     = 0.0,
+    INP_MaxScale 	     = 5.0,
+    SLCS_LowName       = "stop",
+    SLCS_HighName      = "5x",
+
+  })
 
 
   -- some general controls for data passed to the kernel
 
-  self:BeginControlNest("Common Fuse Controls", "CommonFuseControls", true, {})
+  self:BeginControlNest("Common Shader Inputs", "shaderInputs", true, {})
 
-    InFrequency = self:AddInput("Frequency", "Frequency", {
-      LINKID_DataType    = "Number",
-      INPID_InputControl = "SliderControl",
-      INP_Default        = 1.0,
-      INP_MinScale 	     = 0.0,
-      INP_MaxScale 	     = 10.0,
-    })
 
-    InMouseXY = self:AddInput("Mouse Drag", "MouseXY", {
+		InShaderInputs_iTime = self:AddInput("iTime", "iTime", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_DoNotifyChanged  = false,
+			INP_External = false,
+			IC_NoLabel = false,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "-",
+			TEC_Lines = 1,
+			TEC_Wrap = false,
+			TEC_ReadOnly = true,
+			TEC_CharLimit = 0,
+			TEC_DeferSetInputs = false,
+			})
+
+    InMouseXY = self:AddInput("iMouse (drag)", "iMouseXY", {
       LINKID_DataType = "Point",
       INPID_InputControl = "OffsetControl",
       INPID_PreviewControl = "CrosshairControl",
     })
 
-    InMouseZW = self:AddInput("Mouse Click", "MouseZW", {
+    InMouseZW = self:AddInput("iMouse (click)", "iMouseZW", {
       LINKID_DataType = "Point",
       INPID_InputControl = "OffsetControl",
       INPID_PreviewControl = "CrosshairControl",
@@ -218,36 +262,38 @@ function Create()
 
   -- some color controls to play with colors in the kernel
 
-  self:BeginControlNest("Some Color", "Colors", false, {})
+  self:BeginControlNest("Color Controls", "Colors", false, {})
 
     InColor={}
 
     local rgba = {'Red','Green','Blue','Alpha'}
 
-    for i=0,5 do
+    for i=0,NUM_COLOR_CONTROLS-1 do
       InColor[i]={}
       for j=0,3 do
         InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
       end
     end
 
-
-    -- InR0 = self:AddInput("Red",   "r0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InG0 = self:AddInput("Green", "g0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InB0 = self:AddInput("Blue",  "b0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InA0 = self:AddInput("Alpha", "a0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-
-    -- InR1 = self:AddInput("Red",   "r1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InG1 = self:AddInput("Green", "g1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InB1 = self:AddInput("Blue",  "b1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InA1 = self:AddInput("Alpha", "a1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-
-    -- InR2 = self:AddInput("Red",   "r2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InG2 = self:AddInput("Green", "g2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InB2 = self:AddInput("Blue",  "b2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    -- InA2 = self:AddInput("Alpha", "a2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-
     self:EndControlNest()
+
+
+  -- some sliders controls to play with colors in the kernel
+
+  self:BeginControlNest("Slider Controls", "Sliders", false, {})
+
+  InSlider={}
+
+  for i=0,NUM_SLIDER_CONTROLS-1 do
+    InSlider[i] = self:AddInput("Slider "..i, "slider"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale 	     = 0.0,
+      INP_MaxScale 	     = 100.0,
+    })
+  end
+
+  self:EndControlNest()
 
 
 
@@ -271,14 +317,6 @@ function Create()
   --   IC_Visible = true,
   -- })
 
-  InShadertoyButton=self:AddInput("Show on shadertoy.com", "ShowOnShadertoy", {
-    LINKID_DataType = "Text",
-    INPID_InputControl = "ButtonControl",
-    INP_DoNotifyChanged = false,
-    INP_External = false,
-    BTNCS_Execute = 'print("does nothing")',
-    INP_Disabled=true,
-  })
 
 
 
@@ -432,6 +470,7 @@ function Process(req)
     return
   end
 
+
   -------------- Parameter für DCTL-Code ---------------------
   local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
 
@@ -442,36 +481,30 @@ function Process(req)
 
   local mouse =  nil
 
-  params.mouse_x = 0
-  params.mouse_y = 0
-
   mouse  = InMouseXY:GetValue(req)
 
-  if (mouse ~= nil) then
-		params.mouse_x = mouse.X * Width
-		params.mouse_y = mouse.Y * Height
-	end
-
-	params.mouse_z = 0
-	params.mouse_w = 0
+  params.iMouse[0] = mouse.X * Width
+  params.iMouse[1] = mouse.Y * Height
 
   mouse  = InMouseZW:GetValue(req)
 
-  if (mouse ~= nil) then
-		params.mouse_z = mouse.X * Width
-		params.mouse_w = mouse.Y * Height
-	end
+  params.iMouse[3] = mouse.X * Width
+  params.iMouse[4] = mouse.Y * Height
 
+  local frequency = InFrequency:GetValue(req).Value
 
+  params.iTime            = (req.Time / framerate) * frequency;
 
-  params.frequency        = InFrequency:GetValue(req).Value
-  params.iTime            = req.Time / framerate
-
-  for i=0,5 do
+  for i=0,NUM_COLOR_CONTROLS-1 do
     for j=0,3 do
       params.color[i][j] = InColor[i][j]:GetValue(req).Value
     end
   end
+
+  for i=0,NUM_SLIDER_CONTROLS-1 do
+    params.slider[i] = InSlider[i]:GetValue(req).Value
+  end
+
 
   params.width  = dst.Width
   params.height = dst.Height
@@ -492,6 +525,12 @@ function Process(req)
   if rebuild then
     node:ForceRebuild()
   end
+
+
+
+
+  InShaderInputs_iTime:SetSource(Text( string.format("%.4f", params.iTime) ),0,0)
+
 
   local ok = node:RunSession(req)
 
