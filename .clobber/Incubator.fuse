@@ -220,17 +220,34 @@ function Create()
 
   self:BeginControlNest("Some Color", "Colors", false, {})
 
-    InR0 = self:AddInput("Red",   "r0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    InG0 = self:AddInput("Green", "g0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    InB0 = self:AddInput("Blue",  "b0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    InA0 = self:AddInput("Alpha", "a0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    InColor={}
 
-    InR1 = self:AddInput("Red",   "r1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    InG1 = self:AddInput("Green", "g1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    InB1 = self:AddInput("Blue",  "b1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
-    InA1 = self:AddInput("Alpha", "a1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    local rgba = {'Red','Green','Blue','Alpha'}
 
-  self:EndControlNest()
+    for i=0,5 do
+      InColor[i]={}
+      for j=0,3 do
+        InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+      end
+    end
+
+
+    -- InR0 = self:AddInput("Red",   "r0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InG0 = self:AddInput("Green", "g0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InB0 = self:AddInput("Blue",  "b0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InA0 = self:AddInput("Alpha", "a0", { ICS_Name = "Color 0", IC_ControlGroup = 1, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+
+    -- InR1 = self:AddInput("Red",   "r1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InG1 = self:AddInput("Green", "g1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InB1 = self:AddInput("Blue",  "b1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InA1 = self:AddInput("Alpha", "a1", { ICS_Name = "Color 1", IC_ControlGroup = 2, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+
+    -- InR2 = self:AddInput("Red",   "r2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 0, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InG2 = self:AddInput("Green", "g2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 1, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InB2 = self:AddInput("Blue",  "b2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 2, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+    -- InA2 = self:AddInput("Alpha", "a2", { ICS_Name = "Color 2", IC_ControlGroup = 3, IC_ControlID = 3, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+
+    self:EndControlNest()
 
 
 
@@ -450,8 +467,11 @@ function Process(req)
   params.frequency        = InFrequency:GetValue(req).Value
   params.iTime            = req.Time / framerate
 
-  params.r0 = InR0:GetValue(req).Value; params.g0 = InG0:GetValue(req).Value; params.b0 = InB0:GetValue(req).Value; params.a0 = InA0:GetValue(req).Value
-  params.r1 = InR1:GetValue(req).Value; params.g1 = InG1:GetValue(req).Value; params.b1 = InB1:GetValue(req).Value; params.a1 = InA1:GetValue(req).Value
+  for i=0,5 do
+    for j=0,3 do
+      params.color[i][j] = InColor[i][j]:GetValue(req).Value
+    end
+  end
 
   params.width  = dst.Width
   params.height = dst.Height

@@ -20,11 +20,17 @@
   #define PARAM_IMOUSE \
     float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w);
 
-  #define PARAM_ICOLOR0 \
-    float4 iColor0     = to_float4(params->r0,params->g0,params->b0,params->a0);
 
-  #define PARAM_ICOLOR1 \
-    float4 iColor1     = to_float4(params->r1,params->g1,params->b1,params->a1);
+   #define USE_CTRL_COLOR0(NAME) float4 NAME     = to_float4(params->color[0][0],params->color[0][1],params->color[0][2],params->color[0][3])
+   #define USE_CTRL_COLOR1(NAME) float4 NAME     = to_float4(params->color[1][0],params->color[1][1],params->color[1][2],params->color[1][3])
+   #define USE_CTRL_COLOR2(NAME) float4 NAME     = to_float4(params->color[2][0],params->color[2][1],params->color[2][2],params->color[2][3])
+   #define USE_CTRL_COLOR3(NAME) float4 NAME     = to_float4(params->color[3][0],params->color[3][1],params->color[3][2],params->color[3][3])
+   #define USE_CTRL_COLOR4(NAME) float4 NAME     = to_float4(params->color[4][0],params->color[4][1],params->color[4][2],params->color[4][3])
+   #define USE_CTRL_COLOR5(NAME) float4 NAME     = to_float4(params->color[5][0],params->color[5][1],params->color[5][2],params->color[5][3])
+
+
+  #define USE_CTRL_COLOR1(NAME) \
+    float4 NAME     = to_float4(params->r1,params->g1,params->b1,params->a1)
 
 
    #define EPILOGUE(FRAGCOLOR) \

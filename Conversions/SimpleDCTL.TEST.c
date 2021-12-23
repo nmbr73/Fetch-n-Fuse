@@ -8,12 +8,12 @@ __KERNEL__ void SimpleDCTLKernel(
 {
 
   PROLOGUE(fragColor,fragCoord);
-  PARAM_ICOLOR0;
+  USE_CTRL_COLOR3(farbenspiel);
 
-  float red          = iColor0.x;
-  float green        = iColor0.y;
-  float blue         = iColor0.z;
-  float alpha        = iColor0.w;
+  float red          = farbenspiel.x;
+  float green        = farbenspiel.y;
+  float blue         = farbenspiel.z;
+  float alpha        = farbenspiel.w;
 
   fragColor=to_float4(red,green,blue,alpha);
 

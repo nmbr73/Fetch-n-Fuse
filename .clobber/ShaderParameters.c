@@ -16,6 +16,8 @@ float mouse_x,mouse_y,mouse_z,mouse_w; // vec4 iMouse
 float r0,g0,b0,a0; // iColor0
 float r1,g1,b1,a1; // iColor1
 
+float color[5][4];
+
 int   width, height; // vec3 iResolution; ... third element is the pixel aspect ratio
 int   compOrder;
 
