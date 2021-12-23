@@ -37,6 +37,8 @@ def da_fuse(id):
   shader_id = info['shader']['id']
   shader_name = info['shader']['name']
 
+  shader_description= info['shader']['description']
+
   if shader_id != id or fuse_name!=name:
     raise Exception("inconsistency in your source and yaml file")
 
@@ -47,7 +49,7 @@ def da_fuse(id):
   with open(target_path+fuse_name+".md", 'w') as f:
      f.write(
         f"# {fuse_name}.fuse\n\nBased on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n"
-        +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
+        +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n"+shader_description+"\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
         )
 
 
@@ -63,7 +65,6 @@ def da_fuse(id):
 parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
 parser.add_argument('-i','--id', help="shadertoy id as it can be found in the conversion's filename right before the'.c' suffix", required=True)
 args = parser.parse_args()
-
 
 try:
   da_fuse(args.id)
