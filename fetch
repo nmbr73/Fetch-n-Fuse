@@ -249,22 +249,33 @@ def doFetch(id,force=False,nocache=False):
   if os.path.isfile(fuse_filename+".c") and not force:
     raise Exception(url+"\nconversion already exists (use -f to overwrite)")
 
-
-
-  with io.open(fuse_filename+".yaml", 'w', encoding='utf8') as outfile:
-      yaml.dump({
+  yaml_data={
         'shader':{
           'id':id,
           'name':shader_name,
           'author':shader_author,
-          'url':'https://www.shadertoy.com/view/'+id
+          'url':'https://www.shadertoy.com/view/'+id,
+          'description':info['description'],
+          'tags':info['tags'],
         },
         'fuse':{
           'name':fuse_name,
           'author':fuse_author
 
         }
-      },outfile, default_flow_style=False, allow_unicode=True)
+      }
+
+  if "parentid" in info and "parentname" in info:
+    yaml_data['shader']['parent']={
+      'id':info['parentid'],
+      'name':info['parentname'],
+      'url':'https://www.shadertoy.com/view/'+info['parentid'],
+      }
+
+
+  with io.open(fuse_filename+".yaml", 'w', encoding='utf8') as outfile:
+      yaml.dump(yaml_data
+      ,outfile, default_flow_style=False, allow_unicode=True)
 
   code=""
 

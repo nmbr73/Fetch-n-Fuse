@@ -3,6 +3,14 @@ fuse:
   name: ApollianWithATwist
 shader:
   author: mrange
+  description: 'License CC0: Apollian with a twist
+
+    Playing around with apollian fractal
+
+    '
   id: Wl3fzM
   name: Apollian with a twist
+  tags:
+  - 2d
+  - apollian
   url: https://www.shadertoy.com/view/Wl3fzM
