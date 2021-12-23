@@ -17,7 +17,8 @@ ConversionKernelname = ""
 ConversionSourcecode = ""
 
 NUM_COLOR_CONTROLS=5
-NUM_SLIDER_CONTROLS=5
+NUM_TINYSLIDER_CONTROLS=3
+NUM_SMALLSLIDER_CONTROLS=3
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -135,10 +136,11 @@ function Create()
     xtracode=xtracode.."#define USE_CTRL_COLOR"..i.."(NAME) float4 NAME     = to_float4(params->color["..i.."][0],params->color["..i.."][1],params->color["..i.."][2],params->color["..i.."][3])\n"
   end
 
-  for i=0,NUM_SLIDER_CONTROLS-1 do
-    xtracode=xtracode.."#define USE_CTRL_SLIDER"..i.."(NAME) float NAME     = params->slider["..i.."]\n"
+  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    xtracode=xtracode.."#define USE_CTRL_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = params->tinySlider["..i.."]; if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
+  verbose("use the folloin defines to connect your controls:\n"..xtracode)
 
   -- get the list of conversions and read compatibility and params code
 
@@ -164,7 +166,7 @@ function Create()
   float iMouse[4];
 
   float color[]]..NUM_COLOR_CONTROLS..[[][4];
-  float slider[]]..NUM_SLIDER_CONTROLS..[[];
+  float tinySlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
 
   int   width, height;
   int   compOrder;
@@ -282,14 +284,14 @@ function Create()
 
   self:BeginControlNest("Slider Controls", "Sliders", false, {})
 
-  InSlider={}
+  InTinySlider={}
 
-  for i=0,NUM_SLIDER_CONTROLS-1 do
-    InSlider[i] = self:AddInput("Slider "..i, "slider"..i, {
+  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    InTinySlider[i] = self:AddInput("Tiny Slider "..i, "slider"..i, {
       LINKID_DataType    = "Number",
       INPID_InputControl = "SliderControl",
       INP_MinScale 	     = 0.0,
-      INP_MaxScale 	     = 100.0,
+      INP_MaxScale 	     = 1.0,
     })
   end
 
@@ -501,8 +503,8 @@ function Process(req)
     end
   end
 
-  for i=0,NUM_SLIDER_CONTROLS-1 do
-    params.slider[i] = InSlider[i]:GetValue(req).Value
+  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    params.tinySlider[i] = InTinySlider[i]:GetValue(req).Value
   end
 
 
