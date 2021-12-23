@@ -1,0 +1,141 @@
+//************** Helperfunctions ******************
+
+#define radians(a) a * M_PI/180.0f
+
+//-------fract--------
+#if defined(DEVICE_IS_CUDA) 
+   #define fract(a) (a-_floor(a))
+#endif
+
+
+#define fract_f(a) a - _floor(a)
+__DEVICE__ float fract_f(float A){return A - _floor(A);}
+__DEVICE__ float2 fract_f2(float2 A){return make_float2(A.x - _floor(A.x), A.y - _floor(A.y));}
+__DEVICE__ float3 fract_f3(float3 A){return make_float3(A.x - _floor(A.x), A.y - _floor(A.y), A.z - _floor(A.z));}
+__DEVICE__ float4 fract_f4(float4 A){return make_float4(A.x - _floor(A.x), A.y - _floor(A.y), A.z - _floor(A.w), A.w - _floor(A.w));}
+
+//-------mod--------
+#define mod_f(a,b) (a-b*_floor(a/b))
+
+__DEVICE__ float mod_f(float value, float divisor) {  return value - divisor * _floor(value / divisor);}
+__DEVICE__ float2 mod_f2(float2 value, float divisor) {return to_float2(mod_f(value.x, divisor),mod_f(value.y, divisor));}
+__DEVICE__ float2 mod_f2f2(float2 value, float2 divisor) {return to_float2(mod_f(value.x, divisor.x),mod_f(value.y, divisor.y));}
+__DEVICE__ float3 mod_f3(float3 value, float divisor) {return to_float3(mod_f(value.x, divisor),mod_f(value.y, divisor),mod_f(value.z, divisor));}
+__DEVICE__ float3 mod_f3f3(float3 value, float3 divisor) {return to_float3(mod_f(value.x, divisor.x),mod_f(value.y, divisor.y),mod_f(value.z, divisor.z));}
+__DEVICE__ float4 mod_f4(float4 value, float divisor) {return to_float4(mod_f(value.x, divisor),mod_f(value.y, divisor),mod_f(value.z, divisor),mod_f(value.w, divisor));}
+__DEVICE__ float4 mod_f4f4(float4 value, float4 divisor) {return to_float4(mod_f(value.x, divisor.x),mod_f(value.y, divisor.y),mod_f(value.z, divisor.z),mod_f(value.w, divisor.w));}
+
+//-------sin--------
+__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
+__DEVICE__ float3 sin_f3(float3 i) {float3 r; r.x = _sinf(i.x); r.y = _sinf(i.y); r.z = _sinf(i.z); return r;}
+__DEVICE__ float4 sin_f4(float4 i) {float4 r; r.x = _sinf(i.x); r.y = _sinf(i.y); r.z = _sinf(i.z); r.w = _sinf(i.w); return r;}
+
+//-------cos--------
+__DEVICE__ float2 cos_f2(float2 i) {float2 r; r.x = _cosf(i.x); r.y = _cosf(i.y); return r;}
+__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
+__DEVICE__ float4 cos_f4(float4 i) {float4 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); r.w = _cosf(i.w);return r;}
+
+//-------acos--------
+__DEVICE__ float3 acos_f3(float3 i) {float3 r; r.x = _acosf(i.x); r.y = _acosf(i.y); r.z = _acosf(i.z); return r;}
+
+
+//-------tan--------
+__DEVICE__ float3 tan_f3(float3 i) {float3 r; r.x = _tanf(i.x); r.y = _tanf(i.y); r.z = _tanf(i.z); return r;}
+
+//-------tanh--------
+__DEVICE__ float3 tanh_f3(float3 i) {float3 r; r.x = _tanhf(i.x); r.y = _tanhf(i.y); r.z = _tanhf(i.z); return r;}
+
+//-------atan_f4--------
+__DEVICE__ float2 atan_f2(float2 i, float j) {float2 r; r.x = _atan2f(i.x,j); r.y = _atan2f(i.y,j); return r;}
+__DEVICE__ float4 atan_f4(float4 i, float j) {float4 r; r.x = _atan2f(i.x,j); r.y = _atan2f(i.y,j); r.z = _atan2f(i.z,j); r.w = _atan2f(i.w,j); return r;}
+
+//-------max--------
+__DEVICE__ float2 max_f2(float2 v, float2 i) {return to_float2(_fmaxf(v.x,i.x),_fmaxf(v.y,i.y));}	
+__DEVICE__ float2 max_f2f(float2 v, float i) {return to_float2(_fmaxf(v.x,i),_fmaxf(v.y,i));}	
+__DEVICE__ float3 max_f3(float3 v, float3 i) {return to_float3(_fmaxf(v.x,i.x),_fmaxf(v.y,i.y),_fmaxf(v.z,i.z));}
+__DEVICE__ float3 max_f3f(float3 v, float i) {return to_float3(_fmaxf(v.x,i),_fmaxf(v.y,i),_fmaxf(v.z,i));}	
+__DEVICE__ float4 max_f4(float4 value, float maxValue) {return to_float4(_fmaxf(value.x, maxValue),_fmaxf(value.y, maxValue), _fmaxf(value.z, maxValue), _fmaxf(value.w, maxValue));} 
+
+__DEVICE__ float4 max_f4_f4(float4 value, float4 maxValue) {return to_float4(_fmaxf(value.x, maxValue.x),_fmaxf(value.y, maxValue.y), _fmaxf(value.z, maxValue.z), _fmaxf(value.w, maxValue.w));} 
+
+//-------min--------
+__DEVICE__ float2 min_f2(float2 v, float2 i) {return to_float2(_fminf(v.x,i.x),_fminf(v.y,i.y));}
+__DEVICE__ float3 min_f3(float3 v, float3 i) {return to_float3(_fminf(v.x,i.x),_fminf(v.y,i.y),_fminf(v.z,i.z));}	
+__DEVICE__ float4 min_f4(float4 v, float4 i) {return to_float4(_fminf(v.x,i.x),_fminf(v.y,i.y),_fminf(v.z,i.z),_fminf(v.w,i.w));}	
+
+__DEVICE__ float3 min_f3f(float3 v, float i) {return to_float3(_fminf(v.x,i),_fminf(v.y,i),_fminf(v.z,i));}	
+
+//-------abs--------
+
+__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
+__DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
+__DEVICE__ float4 abs_f4(float4 a) {return (to_float4(_fabs(a.x), _fabs(a.y),_fabs(a.z),_fabs(a.w)));}
+
+//-------sqrt--------
+__DEVICE__ float2 sqrt_f2(float2 a) {float2 r; r.x = _sqrtf(a.x); r.y = _sqrtf(a.y); return r;}
+__DEVICE__ float3 sqrt_f3(float3 a) {float3 r; r.x = _sqrtf(a.x); r.y = _sqrtf(a.y); r.z = _sqrtf(a.z); return r;}
+__DEVICE__ float4 sqrt_f4(float4 a) {float4 r; r.x = _sqrtf(a.x); r.y = _sqrtf(a.y); r.z = _sqrtf(a.z); r.w = _sqrtf(a.w); return r;}
+
+ 
+//-------exp-------- 
+__DEVICE__ float2 exp_f2(float2 a) {return (to_float2(_expf(a.x), _expf(a.y)));}
+__DEVICE__ float3 exp_f3(float3 a) {return (to_float3(_expf(a.x), _expf(a.y),_expf(a.z)));}
+__DEVICE__ float4 exp_f4(float4 a) {return (to_float4(_expf(a.x), _expf(a.y),_expf(a.z),_expf(a.w)));}
+
+//-------exp2-------- 
+__DEVICE__ float2 exp2_f2(float2 a) {return (to_float2(_exp2f(a.x), _exp2f(a.y)));}
+__DEVICE__ float3 exp2_f3(float3 a) {return (to_float3(_exp2f(a.x), _exp2f(a.y), _exp2f(a.z)));}
+__DEVICE__ float4 exp2_f4(float4 a) {return (to_float4(_exp2f(a.x), _exp2f(a.y), _exp2f(a.z), _exp2f(a.w)));}
+
+//-------ceil-------- 
+__DEVICE__ float2 ceil_f2(float2 a) {return (to_float2(_ceil(a.x), _ceil(a.y)));}
+
+
+//-------mix-------- 
+__DEVICE__ float2 mix_f2(float2 v, float2 i, float2 m) {return to_float2(_mix(v.x,i.x,m.x),_mix(v.y,i.y,m.y));}	
+__DEVICE__ float3 mix_f3(float3 v, float3 i, float3 m) {return to_float3(_mix(v.x,i.x,m.x),_mix(v.y,i.y,m.y),_mix(v.z,i.z,m.z));}	
+__DEVICE__ float4 mix_f4_f(float4 v, float4 i, float m) {return to_float4(_mix(v.x,i.x,m),_mix(v.y,i.y,m),_mix(v.z,i.z,m),_mix(v.w,i.w,m));}	
+
+//-------log-------- 
+__DEVICE__ float3 log_f3(float3 a) {return (to_float3(_logf(a.x), _logf(a.y),_logf(a.z)));}
+
+//-------log2-------- 
+__DEVICE__ float3 log2_f3(float3 a) {return (to_float3(_log2f(a.x), _log2f(a.y),_log2f(a.z)));}
+
+//-------round-------- 
+__DEVICE__ float2 round_f2(float2 a) {return (to_float2(_round(a.x), _round(a.y)));}
+__DEVICE__ float3 round_f3(float3 a) {return (to_float3(_round(a.x), _round(a.y),_round(a.z)));}
+__DEVICE__ float4 round_f4(float4 a) {return (to_float4(_round(a.x), _round(a.y),_round(a.z),_round(a.w)));}
+
+//'''''''''''''''''''''''''''''''''''''''''''''''
+//-------rot--------
+__DEVICE__ float4 rot2d(float angle){return to_float4(_cosf(angle),-_sinf(angle),_sinf(angle),_cosf(angle));} //mat2 -> float4 
+
+//-------reflect--------
+#if defined(DEVICE_IS_OPENCL) || defined(DEVICE_IS_METAL)
+__DEVICE__ float3 reflect(float3 I, float3 N) {return I - 2.0f * dot(N, I) * N;}
+#endif
+
+
+#if defined(DEVICE_IS_OPENCL) || defined(DEVICE_IS_METAL)
+	#define reflect(I,N) (I-2.0f*dot(N,I)*N)
+#endif
+
+//-------refract--------
+__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
+   float dotNI = dot(N, I);
+   float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+   if (k < 0.0f) {
+     return to_float2_s(0.0f);
+   }
+   return eta * I - (eta * dotNI * _sqrtf(k)) * N;
+}
+
+__DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
+   float dotNI = dot(N, I);
+   float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+   if (k < 0.0f) {
+     return to_float3_s(0.0);
+   }
+   return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
+}
