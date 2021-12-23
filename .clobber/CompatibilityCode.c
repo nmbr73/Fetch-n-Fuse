@@ -46,8 +46,6 @@
   #define inout
 #endif
 
-
-
   // 0 to use the generic implementations; 1 for Metal, OpenCL, Cuda specific code if existing
 
   #if 1
@@ -212,7 +210,7 @@
   __DEVICE__ inline mat3 to_mat3_1f ( float  a )
   {
     mat3 t;
-    t.r0.x = t.r0.y = t.r0.z = t.r1.x = t.r1.y t.r1.z = t.r2.x = t.r2.y t.r2.z = a;
+    t.r0.x = t.r0.y = t.r0.z = t.r1.x = t.r1.y = t.r1.z = t.r2.x = t.r2.y = t.r2.z = a;
     return t;
   }
 
