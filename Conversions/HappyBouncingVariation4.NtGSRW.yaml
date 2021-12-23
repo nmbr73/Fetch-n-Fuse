@@ -1,0 +1,13 @@
+fuse:
+  author: JiPi
+  name: HappyBouncingVariation4
+shader:
+  author: leon
+  description: shader about boucing animation, space transformation, easing functions,
+    funny shape and colorful vibes.
+  id: NtGSRW
+  name: happy bouncing variation 4
+  tags:
+  - colorful
+  - animation
+  url: https://www.shadertoy.com/view/NtGSRW
