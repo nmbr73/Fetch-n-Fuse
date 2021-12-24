@@ -26,8 +26,8 @@ __DEVICE__ float3 hsv2rgb(float3 c) {
   return c.z * _mix(swixxx(K), clamp(p - swixxx(K), 0.0f, 1.0f), c.y);
 }
 
-__DEVICE__ float apollian(float4 p, float s) {
-  float scale = 1.0f;
+__DEVICE__ float apollian(float4 p, float s,float scale) {
+  //float scale = 1.0f;
 
   for(int i=0; i<7; ++i) {
     p        = -1.0f + 2.0f*fract(0.5f*p+0.5f);
@@ -42,7 +42,7 @@ __DEVICE__ float apollian(float4 p, float s) {
   return _fabs(p.y)/scale;
 }
 
-__DEVICE__ float weird(float2 p,float iTime) {
+__DEVICE__ float weird(float2 p,float iTime,float scale) {
   float z = 4.0f;
   p *= ROT(iTime*0.1f);
   float tm = 0.2f*iTime;
@@ -65,18 +65,18 @@ __DEVICE__ float weird(float2 p,float iTime) {
   pp.x=tmp_float2.x;
   pp.z*=tmp_float2.y;
   pp /= z;
-  float d = apollian(pp, 1.2f);
+  float d = apollian(pp, 1.2f,scale);
   return d*z;
 }
 
-__DEVICE__ float df(float2 p,float iTime) {
+__DEVICE__ float df(float2 p,float iTime, float scale) {
   const float zoom = 0.5f;
   p /= zoom;
-  float d0 = weird(p,iTime);
+  float d0 = weird(p,iTime,scale);
   return d0*zoom;
 }
 
-__DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
+__DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) {
   float aa   = 2.0/iResolution_y;
   const float lw = 0.0235f;
   const float lh = 1.25f;
@@ -84,7 +84,7 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
   const float3 lp1 = to_float3(0.5f, lh, 0.5f);
   const float3 lp2 = to_float3(-0.5f, lh, 0.5f);
 
-  float d = df(p,iTime);
+  float d = df(p,iTime,scale);
 
   float b = -0.125f;
   float t = 10.0f;
@@ -111,8 +111,8 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
   float3 sp2 = bp + srd2*st1;
 
   // float bd = df(swixz(bp),iTime);
-  float sd1= df(swixz(sp1),iTime);
-  float sd2= df(swixz(sp2),iTime);
+  float sd1= df(swixz(sp1),iTime,scale);
+  float sd2= df(swixz(sp2),iTime,scale);
 
   float3 col  = to_float3_s(0.0f);
   const float ss =15.0f;
@@ -131,29 +131,37 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y) {
   return col;
 }
 
-__DEVICE__ float3 postProcess(float3 col, float2 q)  {
-  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
-  col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
-  col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
-  col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
-  return col;
-}
 
 
 __KERNEL__ void ApollianWithATwistKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
 
   PROLOGUE(fragColor,fragCoord);
-
+  USE_CTRL_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
+  USE_CTRL_SMALLSLIDER0(Scale,0.0f,10.0f,1.0f);
+  USE_CTRL_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
+  USE_CTRL_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
+  USE_CTRL_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
 
   float2 q = fragCoord/swixy(iResolution);
   float2 p = -1.0f + 2.0f * q;
   p.x *= iResolution.x/iResolution.y;
 
-  float3 col = color(p,iTime,iResolution.y);
-  col = postProcess(col, q);
+//float3 col = color(p,iTime,iResolution.y,1.0f);
+  float3 col = color(p,iTime,iResolution.y,Scale*10.0f);
 
-  fragColor = to_float4_aw(col, 1.0f);
+// --- Post Process:
+
+  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+//col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
+  col=col*Contrast+0.4f*col*col*(3.0f-2.0f*col);  // contrast
+//col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
+  col=_mix(col, to_float3_s(dot(col, to_float3_s(Saturation))), -0.4f);  // saturation
+//col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
+  col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),Vigneting);  // vigneting
+
+//fragColor = to_float4_aw(col, 1.0f);
+  fragColor = to_float4_aw(col, Alpha);
 
   EPILOGUE(fragColor);
 
