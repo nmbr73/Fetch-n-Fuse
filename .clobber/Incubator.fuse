@@ -430,7 +430,7 @@ function Process(req)
 
     InShadertoyButton:SetAttrs({
       BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
-      INP_Disabled=false
+      INP_Disabled=  ConversionShaderID=="TEST" and true or false
       })
 
     verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
