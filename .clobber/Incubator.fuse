@@ -230,11 +230,9 @@ function Create()
 
   self:BeginControlNest("Common Shader Inputs", "shaderInputs", true, {})
 
-
-		InShaderInputs_iTime = self:AddInput("iTime", "iTime", {
+		InShaderInputs_iResolution = self:AddInput("iResolution", "iResolution", {
 			LINKID_DataType = "Text",
 			INPID_InputControl = "TextEditControl",
-			INP_DoNotifyChanged  = false,
 			INP_External = false,
 			IC_NoLabel = false,
 			ICD_Width = 1.0,
@@ -244,8 +242,48 @@ function Create()
 			TEC_ReadOnly = true,
 			TEC_CharLimit = 0,
 			TEC_DeferSetInputs = false,
+
+			INP_DoNotifyChanged  = false,
       INP_Disabled = true,
+      INP_Passive = true,
+		  })
+
+		InShaderInputs_iTime = self:AddInput("iTime", "iTime", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			IC_NoLabel = false,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "-",
+			TEC_Lines = 1,
+			TEC_Wrap = false,
+			TEC_ReadOnly = true,
+			TEC_CharLimit = 0,
+			TEC_DeferSetInputs = false,
+
+			INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
 			})
+
+		InShaderInputs_iMouse = self:AddInput("iMouse", "iMouse", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			IC_NoLabel = false,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "-",
+			TEC_Lines = 1,
+			TEC_Wrap = false,
+			TEC_ReadOnly = true,
+			TEC_CharLimit = 0,
+			TEC_DeferSetInputs = false,
+
+			INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+			})
+
 
 
     InMouseXY = self:AddInput("iMouse.xy", "iMouseXY", {
@@ -258,8 +296,10 @@ function Create()
       LINKID_DataType = "Point",
       INPID_InputControl = "OffsetControl",
       INPID_PreviewControl = "CrosshairControl",
-      INP_Integer = true,
+
+      INP_DoNotifyChanged  = false,
       INP_Disabled = true,
+      INP_Passive = true,
     })
 
     InMouseDrag = self:AddInput("Mouse Button Pressed", "click", {
@@ -497,40 +537,59 @@ function Process(req)
 
 
   local mouse =  nil
+  local text  =  nil
+
+  -- iMouse
 
   mouse  = InMouseXY:GetValue(req)
 
-  params.iMouse[0] = mouse.X -- * Width
-  params.iMouse[1] = mouse.Y -- * Height
+  params.iMouse[0] = mouse.X
+  params.iMouse[1] = mouse.Y
+  params.iMouse[2] = 0
   params.iMouse[3] = 0
-  params.iMouse[4] = 0
 
   if InMouseDrag:GetValue(req).Value == 1 then
-    params.iMouse[3] = params.iMouse[0]
-    params.iMouse[4] = params.iMouse[1]
+    params.iMouse[2] = params.iMouse[0]
+    params.iMouse[3] = params.iMouse[1]
   end
 
-
   mouse=InMouseZW:GetValue(req)
-  if mouse.X ~= params.iMouse[3] or mouse.Y ~= params.iMouse[4] then
+  if mouse.X ~= params.iMouse[2] or mouse.Y ~= params.iMouse[3] then
     InMouseZW:SetAttrs({INP_Disabled=false})
-    InMouseZW:SetSource(Point(params.iMouse[3],params.iMouse[4]),0,0)
+    InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
     InMouseZW:SetAttrs({INP_Disabled=true})
   end
 
+  params.iMouse[0] = params.iMouse[0] * Width
+  params.iMouse[1] = params.iMouse[1] * Height
+  params.iMouse[2] = params.iMouse[2] * Width
+  params.iMouse[3] = params.iMouse[3] * Height
+
+  text = string.format("{%.1f, %.1f, %.1f, %.1f}", params.iMouse[0], params.iMouse[1],params.iMouse[2],params.iMouse[3])
+
+  if InShaderInputs_iMouse:GetValue(req).Value ~= text then
+    InShaderInputs_iMouse:SetAttrs({INP_Disabled=false})
+    InShaderInputs_iMouse:SetSource(Text( text ),0,0)
+    InShaderInputs_iMouse:SetAttrs({INP_Disabled=true})
+  end
+
+
+  -- iTime
 
   local frequency = InFrequency:GetValue(req).Value
 
   params.iTime            = (req.Time / framerate) * frequency;
 
-  local txt= string.format("%.4f", params.iTime)
-  if InShaderInputs_iTime:GetValue(req).Value ~= txt then
+  text = string.format("(%.0f/%.2ffps)*%.3f= %.4f", req.Time,framerate,frequency,params.iTime)
+
+  if InShaderInputs_iTime:GetValue(req).Value ~= text then
     InShaderInputs_iTime:SetAttrs({INP_Disabled=false})
-    InShaderInputs_iTime:SetSource(Text( string.format("%.4f", params.iTime) ),0,0)
+    InShaderInputs_iTime:SetSource(Text( text ),0,0)
     InShaderInputs_iTime:SetAttrs({INP_Disabled=true})
   end
 
 
+  -- Colors
 
   for i=0,NUM_COLOR_CONTROLS-1 do
     for j=0,3 do
@@ -538,15 +597,27 @@ function Process(req)
     end
   end
 
+  -- Sliders
+
   for i=0,NUM_TINYSLIDER_CONTROLS-1 do
     params.tinySlider[i] = InTinySlider[i]:GetValue(req).Value
   end
 
+  -- Resolution
 
   params.width  = dst.Width
   params.height = dst.Height
 --params.width            = iChannel0.DataWindow:Width()
 --params.height           = iChannel0.DataWindow:Height()
+
+  text = string.format("{%.0f, %.0f}", params.width, params.height )
+
+  if InShaderInputs_iResolution:GetValue(req).Value ~= text then
+    InShaderInputs_iResolution:SetAttrs({INP_Disabled=false})
+    InShaderInputs_iResolution:SetSource(Text( text ),0,0)
+    InShaderInputs_iResolution:SetAttrs({INP_Disabled=true})
+  end
+
 
   params.compOrder        = iChannel0:IsMask() and 1 or 15
   params.iChannel0_width  = iChannel0.Width
