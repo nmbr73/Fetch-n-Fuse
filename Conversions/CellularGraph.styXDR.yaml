@@ -1,0 +1,12 @@
+fuse:
+  author: JiPi
+  name: CellularGraph
+shader:
+  author: wyatt
+  description: Merry Christmas :)
+  id: styXDR
+  name: Cellular Graph
+  tags:
+  - voronoi
+  - graph
+  url: https://www.shadertoy.com/view/styXDR

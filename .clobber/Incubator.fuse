@@ -8,10 +8,13 @@
 Änderung zum Testen und Debuggen von Shadern, die einen BufferA verwenden und diesen als iChannel0 wieder laden
 ! Kernelnamen wird nicht mehr mit Fusenamen gebildet ! -> nur einen Inkubator pro Komposition, da es sonst bei Versionsänderungen des DCTL-Codes zur unerwarteten Reaktionen kommen kann
 
-BufferATest: off        -> Inkubator wie im Original, nur kein Fusenamen im Kernelnamen
-BufferATest: TestKernel -> Über kernel kann der zu testende Kernel ausgewählt werden         
-                           bei der Auswahl von BufferA wird der Ausgang des Buffers als Eingang (iChannel0) wieder geladen
-BufferATest: Final      -> noch nicht implementiert - Imagekernel nimmt Ausgang des BufferA und gibt diesen als Output aus
+BufferTest: off        -> Inkubator wie im Original, nur kein Fusenamen im Kernelnamen
+BufferTest: TestKernel -> Über kernel kann der zu testende Kernel ausgewählt werden         
+                          bei der Auswahl von Recursive wird der Ausgang des Buffers als Eingang (iChannel0) wieder geladen, ansonsten Image1
+BufferTest: Final      -> Imagekernel nimmt Ausgang des BufferA und gibt diesen als Output aus
+
+
+Mit BufferTest: TestKernel können die BufferA bis BufferD ausgewählt werden und mit der Checkbox Recursive kann ausgewählt werden, ob der Ausgang wieder in iChannel0 oder die Textur an Image1 angelegt werden soll.  
 
 ToDo: Reset 
 
@@ -242,7 +245,7 @@ function Create()
   self:BeginControlNest("MultiBuffer", "MultiBuffer", true, {})
   --JiPi Multibuffertest
 
-  InBufferATest = self:AddInput("BufferA Test", "BufferATest", {
+  InBufferATest = self:AddInput("Buffer Test", "BufferATest", {
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
 	  INP_DoNotifyChanged = true,
@@ -252,6 +255,14 @@ function Create()
     { CCS_AddString  = "Test Kernel", },
 	  { CCS_AddString  = "Final", },
     CC_LabelPosition = "Horizontal",
+    })
+  
+  InRecursive = self:AddInput("Recursive", "Recursive", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "CheckboxControl",
+      INP_Default = 0,
+      INP_Integer = true,
+      IC_Visible = true,
     })
   
   InKerneltoUse = self:AddInput("Kernel", "KernelSelection", {
@@ -554,11 +565,20 @@ function Process(req)
 
   _ConversionKernelname = ConversionKernelname --Image
 
-  --if  (InKerneltoUse:GetValue(req).Value > 1 and InBufferATest:GetValue(req).Value > 0)  then 
-  if  (InKerneltoUse:GetValue(req).Value >= 1 and InBufferATest:GetValue(req).Value > 0)  then 
-    _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA") 
+  if (InBufferATest:GetValue(req).Value > 0)  then    -- Buffer allgemein testen
+    if (InKerneltoUse:GetValue(req).Value == 1) then       -- BufferA
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA") 
+    else if (InKerneltoUse:GetValue(req).Value == 2) then  -- BufferB 
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferB")     
+    else if (InKerneltoUse:GetValue(req).Value == 3) then  -- BufferC 
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferC")     
+    else if (InKerneltoUse:GetValue(req).Value == 4) then  -- BufferD 
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferD")     
+    end
+    end
+    end
+    end
   end
-
 --print("Kernelname",_ConversionKernelname)
 
   local node = DVIPComputeNode(req,
@@ -710,9 +730,9 @@ function Process(req)
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   
   --JiPi_Multifuse
-  if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1) then
+  if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1 and InRecursive:GetValue(req).Value == 1 ) then
     node:AddInput("iChannel0",Image_Buff_GlobalA)
-    print("----- BufferA-------")
+    --print("----- BufferA-------")
   else
     node:AddInput("iChannel0",iChannel0)
   end
