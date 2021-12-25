@@ -133,44 +133,44 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
 
 
 
-__KERNEL__ void ApollianWithATwistKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+__KERNEL__ void ApollianWithATwistFuse(
+  float4 fragColor,
+  float2 fragCoord,
+  float3 iResolution,
+  float  iTime,
+  float4 iMouse
+  )
 {
 
-  PROLOGUE(fragColor,fragCoord);
-  USE_CTRL_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
-  USE_CTRL_SMALLSLIDER0(Scale,0.0f,10.0f,1.0f);
-  USE_CTRL_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
-  USE_CTRL_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
-  USE_CTRL_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
+  CONNECT_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
+  CONNECT_SMALLSLIDER0(Scale,0.0f,10.0f,1.0f);
+  CONNECT_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
+  CONNECT_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
+  CONNECT_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
 
   float2 q = fragCoord/swixy(iResolution);
   float2 p = -1.0f + 2.0f * q;
   p.x *= iResolution.x/iResolution.y;
 
+//float3 col = color(p,iTime,iResolution.y,1.0f);
+  float3 col = color(p,iTime,iResolution.y,Scale*10.0f);
 
 // --- Post Process:
 
-  #if 0
-
-    // Use Controls
-    float3 col = color(p,iTime,iResolution.y,Scale*10.0f);
-    col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
-    col=col*Contrast+0.4f*col*col*(3.0f-2.0f*col);  // contrast
-    col=_mix(col, to_float3_s(dot(col, to_float3_s(Saturation))), -0.4f);  // saturation
-    col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),Vigneting);  // vigneting
-    fragColor = to_float4_aw(col, Alpha);
-
-  #else
-
-    // Use Defaults
-    float3 col = color(p,iTime,iResolution.y,1.0f);
-    col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
-    col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
-    col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
-    fragColor = to_float4_aw(col, 1.0f);
-
-  #endif
+#if 1
+  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+  col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
+  col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
+  col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
+  fragColor = to_float4_aw(col, 1.0f);
+#else
+  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+  col=col*Contrast+0.4f*col*col*(3.0f-2.0f*col);  // contrast
+  col=_mix(col, to_float3_s(dot(col, to_float3_s(Saturation))), -0.4f);  // saturation
+  col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),Vigneting);  // vigneting
+  fragColor = to_float4_aw(col, Alpha);
+#endif
 
 
-  EPILOGUE(fragColor);
+  SetFragmentShaderComputedColor(fragColor);
 }
