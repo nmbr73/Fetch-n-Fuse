@@ -7,7 +7,7 @@
 
 #define A(u) _tex2DVecN(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
 
-__KERNEL__ void FungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+__KERNEL__ void fungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
   PROLOGUE(fragColor,u);
 
@@ -72,13 +72,15 @@ __KERNEL__ void FungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE
     }
     if(iFrame==0)
     {
+        a = to_float4_s(0.5f);
         float2 m1 = (2.0f*u-iResolution)/iResolution.y-to_float2(-0.02f,0);
         float2 m2 = (2.0f*u-iResolution)/iResolution.y-to_float2(+0.02f,0);
-        a += +0.1f/_expf(dot(m1,m1)*333.0f)
+        a *= +0.1f/_expf(dot(m1,m1)*333.0f)
              -0.1f/_expf(dot(m2,m2)*333.0f);
     }
 //    float keyA  = 0.0f;//_tex2DVecN( iChannel1, to_float2(65.5f/256.0f,0.25f) ).x;
 //    if(keyA!=0.0f) a = to_float4_s(_tex2DVecN( iChannel2, u.x/iResolution.x,u.y/iResolution.y,15)))-0.6f;
+
     fragColor = a;
 
 
@@ -93,7 +95,7 @@ __KERNEL__ void FungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE
 
 
 
-__KERNEL__ void FungusKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+__KERNEL__ void fungusKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
   PROLOGUE(fragColor,fragCoord);
 
@@ -102,6 +104,8 @@ __KERNEL__ void FungusKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iCh
     float4 a = _tex2DVecN(iChannel0,u.x,u.y,15);
     fragColor = a*4.0f+0.5f;
 
+//fragColor = to_float4(0.8f,0.4f,0.2f,1.0f);
+//fragColor = a;
 
   EPILOGUE(fragColor);
 }

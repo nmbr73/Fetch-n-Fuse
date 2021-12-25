@@ -554,11 +554,12 @@ function Process(req)
 
   _ConversionKernelname = ConversionKernelname --Image
 
-  if  (InKerneltoUse:GetValue(req).Value == 1 and InBufferATest:GetValue(req).Value > 0) then 
+  --if  (InKerneltoUse:GetValue(req).Value > 1 and InBufferATest:GetValue(req).Value > 0)  then 
+  if  (InKerneltoUse:GetValue(req).Value >= 1 and InBufferATest:GetValue(req).Value > 0)  then 
     _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA") 
   end
 
-
+--print("Kernelname",_ConversionKernelname)
 
   local node = DVIPComputeNode(req,
     _ConversionKernelname,
@@ -598,6 +599,7 @@ function Process(req)
   end
 
   local dst = Image {IMG_Like = iChannel0, IMG_DeferAlloc = true}
+  local dst2 = Image {IMG_Like = iChannel0, IMG_DeferAlloc = true}
 
 
   if req:IsPreCalc() then
@@ -710,6 +712,7 @@ function Process(req)
   --JiPi_Multifuse
   if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1) then
     node:AddInput("iChannel0",Image_Buff_GlobalA)
+    print("----- BufferA-------")
   else
     node:AddInput("iChannel0",iChannel0)
   end
@@ -731,7 +734,38 @@ function Process(req)
 
   --JiPi_Multifuse
   Image_Buff_GlobalA = dst --Recursiv Image
+  
+  if (InBufferATest:GetValue(req).Value == 2) then   -- ImageKernel after BufferA
+  
+    local nodeI = DVIPComputeNode(req,
+          ConversionFusename.."Kernel",          --Image
+          CompatibilityCode .. ConversionSourcecode,
+          "Params",
+          ShaderParameters
+          )
+    
+    nodeI:SetParamBlock(params)
+    nodeI:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+    
+    nodeI:AddInput("iChannel0",Image_Buff_GlobalA)
+   	nodeI:AddOutput("dst", dst2)
+ 
+    if rebuild then
+      nodeI:ForceRebuild()
+    end
 
+    local ok = nodeI:RunSession(req)
+
+    if (not ok) then
+      dst2 = nil
+      print("--- Errors Imagekernel ---")
+      dump(nodeI:GetErrorLog())
+    end
+    
+    dst = dst2
+  end
+
+ 
   -- Output our result
   OutImage:Set(req,dst)
   collectgarbage();
