@@ -1,8 +1,19 @@
 fuse:
   author: JiPi
-  name: fungus
+  name: Fungus
 shader:
   author: lomateron
+  description: 'click to delete
+
+    key A to apply image
+
+    here the only difference to this https://www.shadertoy.com/view/sslSR8
+
+    points dissolve through time
+
+    if black and white meet then they both get bigger'
   id: NdsSD4
   name: fungus
+  tags:
+  - convolution
   url: https://www.shadertoy.com/view/NdsSD4

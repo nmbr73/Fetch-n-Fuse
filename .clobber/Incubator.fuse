@@ -1,12 +1,21 @@
+--[[--/*
 --- Special purpose Fuse to support shader kernel development.
 --
 -- Based on the work of Chris Ridings (www.chrisridings.com), Bryan Ray (http://www.bryanray.name/wordpress/opencl-fuses-index/),
 -- JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
 --
 
+Änderung zum Testen und Debuggen von Shadern, die einen BufferA verwenden und diesen als iChannel0 wieder laden
+! Kernelnamen wird nicht mehr mit Fusenamen gebildet ! -> nur einen Inkubator pro Komposition, da es sonst bei Versionsänderungen des DCTL-Codes zur unerwarteten Reaktionen kommen kann
 
+BufferATest: off        -> Inkubator wie im Original, nur kein Fusenamen im Kernelnamen
+BufferATest: TestKernel -> Über kernel kann der zu testende Kernel ausgewählt werden         
+                           bei der Auswahl von BufferA wird der Ausgang des Buffers als Eingang (iChannel0) wieder geladen
+BufferATest: Final      -> noch nicht implementiert - Imagekernel nimmt Ausgang des BufferA und gibt diesen als Output aus
 
+ToDo: Reset 
 
+*/--]]--
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 ShaderParameters     = nil
@@ -230,6 +239,36 @@ function Create()
 
   })
 
+  self:BeginControlNest("MultiBuffer", "MultiBuffer", true, {})
+  --JiPi Multibuffertest
+
+  InBufferATest = self:AddInput("BufferA Test", "BufferATest", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "ComboControl",
+	  INP_DoNotifyChanged = true,
+    INP_Default = 0,
+    INP_Integer = true,
+    { CCS_AddString  = "Off", },
+    { CCS_AddString  = "Test Kernel", },
+	  { CCS_AddString  = "Final", },
+    CC_LabelPosition = "Horizontal",
+    })
+  
+  InKerneltoUse = self:AddInput("Kernel", "KernelSelection", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "ComboControl",
+	  INP_DoNotifyChanged = true,
+    INP_Default = 0,
+    INP_Integer = true,
+    { CCS_AddString  = "Image", },
+    { CCS_AddString  = "BufferA", },
+	  { CCS_AddString  = "BufferB", },
+    { CCS_AddString  = "BufferC", },
+	  { CCS_AddString  = "BufferD", },
+    CC_LabelPosition = "Horizontal",
+    })
+    
+  self:EndControlNest()
 
   -- some general controls for data passed to the kernel
 
@@ -290,7 +329,6 @@ function Create()
 			})
 
 
-
     InMouseXY = self:AddInput("iMouse.xy", "iMouseXY", {
       LINKID_DataType = "Point",
       INPID_InputControl = "OffsetControl",
@@ -316,11 +354,7 @@ function Create()
       IC_Visible = true,
     })
 
-
-
   self:EndControlNest()
-
-
 
   -- some color controls to play with colors in the kernel
 
@@ -410,6 +444,19 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to render the node.
 --
+--JiPi_Multifuse
+ImgAttrs_Global = {
+        { IMG_Channel = "Red", },
+        { IMG_Channel = "Green", },
+        { IMG_Channel = "Blue", },
+        { IMG_Channel = "Alpha", },
+        IMG_Width = Width,
+        IMG_Height = Height,
+  	    IMG_DeferAlloc = false,
+        }
+Image_Buff_GlobalA = Image(ImgAttrs_Global)
+
+
 function Process(req)
 
   local rebuild = false
@@ -443,32 +490,37 @@ function Process(req)
     end
 
 
+    --JiPi_Multifuse
+    if (InBufferATest:GetValue(req).Value > 0) then
+      ConversionKernelname = ConversionFusename .. "Kernel"
+    else
 
-    -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
-    -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
-    -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
-    -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
-    -- drangehaengt.
+      -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
+      -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
+      -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
+      -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
+      -- drangehaengt.
 
-    ConversionKernelname = ConversionFusename .. "Kernel_" .. self.Name
+      --ConversionKernelname = ConversionFusename .. "Kernel_" .. self.Name
+      ConversionKernelname = ConversionFusename .. "Kernel"
 
-    local count
+      local count
 
-    ConversionSourcecode, count = string.gsub(ConversionSourcecode,
-      "__KERNEL__%s+void%s+"..ConversionFusename.."Kernel%(",
-      "__KERNEL__ void "..ConversionKernelname.."("
-      )
+      ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+        "__KERNEL__%s+void%s+"..ConversionFusename.."Kernel%(",
+        "__KERNEL__ void "..ConversionKernelname.."("
+        )
 
-    -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
-    -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
-    -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
-    -- falsche Namen in 99% der Faelle
+      -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
+      -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
+      -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
+      -- falsche Namen in 99% der Faelle
 
-    if count ~=1 then
-      print("void "..ConversionFusename.."Kernel() found "..count.."x ... remember the Highlander!")
-      ConversionSourcecode = ""
+      if count ~=1 then
+        print("void "..ConversionFusename.."Kernel() found "..count.."x ... remember the Highlander!")
+        ConversionSourcecode = ""
+      end
     end
-
   end
 
 
@@ -496,13 +548,24 @@ function Process(req)
     verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
   end
 
+  -- JiPi Multibuffertest
+  -- ev überrpüfen, ob entsprechender Buffer überhaupt vorhanden ist
+  --print("KerneltoUse", InKerneltoUse:GetValue(req).Value)
+
+  _ConversionKernelname = ConversionKernelname --Image
+
+  if  (InKerneltoUse:GetValue(req).Value == 1 and InBufferATest:GetValue(req).Value > 0) then 
+    _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA") 
+  end
+
+
+
   local node = DVIPComputeNode(req,
-    ConversionKernelname,
+    _ConversionKernelname,
     CompatibilityCode .. ConversionSourcecode,
     "Params",
     ShaderParameters
     )
-
 
 
   local imgattrs = {
@@ -523,7 +586,6 @@ function Process(req)
     IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
     IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
   }
-
 
 
   -- Extern Texture or create a new one
@@ -558,7 +620,6 @@ function Process(req)
   local text  =  nil
 
   -- iMouse
-
   mouse  = InMouseXY:GetValue(req)
 
   params.iMouse[0] = mouse.X
@@ -593,7 +654,6 @@ function Process(req)
 
 
   -- iTime
-
   local frequency = InFrequency:GetValue(req).Value
 
   params.iTime            = (req.Time / framerate) * frequency;
@@ -608,7 +668,6 @@ function Process(req)
 
 
   -- Colors
-
   for i=0,NUM_COLOR_CONTROLS-1 do
     for j=0,3 do
       params.color[i][j] = InColor[i][j]:GetValue(req).Value
@@ -616,7 +675,6 @@ function Process(req)
   end
 
   -- Sliders
-
   for i=0,NUM_TINYSLIDER_CONTROLS-1 do
     params.tinySlider[i] = InTinySlider[i]:GetValue(req).Value
   end
@@ -627,7 +685,6 @@ function Process(req)
 
 
   -- Resolution
-
   params.width  = dst.Width
   params.height = dst.Height
 --params.width            = iChannel0.DataWindow:Width()
@@ -648,18 +705,20 @@ function Process(req)
 
   node:SetParamBlock(params)
 
---node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
-	node:AddInput("iChannel0",iChannel0)
+  
+  --JiPi_Multifuse
+  if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1) then
+    node:AddInput("iChannel0",Image_Buff_GlobalA)
+  else
+    node:AddInput("iChannel0",iChannel0)
+  end
+  
 	node:AddOutput("dst", dst)
 
   if rebuild then
     node:ForceRebuild()
   end
-
-
-
-
 
 
   local ok = node:RunSession(req)
@@ -670,6 +729,8 @@ function Process(req)
     dump(node:GetErrorLog())
 	end
 
+  --JiPi_Multifuse
+  Image_Buff_GlobalA = dst --Recursiv Image
 
   -- Output our result
   OutImage:Set(req,dst)
