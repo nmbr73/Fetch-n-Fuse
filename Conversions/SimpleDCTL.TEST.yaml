@@ -1,0 +1,17 @@
+fuse:
+  author: nmbr73
+  name: SimpleDCTL
+shader:
+  author: nmbr73
+  description: 'A simple Shader
+
+    Just to test the Incubation.fuse
+
+    and the Fuse generation.
+    '
+  id: TEST
+  name: SimpleDCTL
+  tags:
+  - test
+  - incubation
+  url: https://www.shadertoy.com/TEST
