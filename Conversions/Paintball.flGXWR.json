@@ -1,0 +1,34 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flGXWR",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Paintball  JiPi 651",
+  "description": "Trying out multiple light sources for generating diffuse and specular.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "metaballs"
+  ],
+  "hasliked": 0,
+  "parentid": "tljcWh",
+  "parentname": "Paintball Multi Light"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define hsv2rgb(h) clamp( abs(mod( h*6.+vec3(0,4,2), 6.)-3.)-1., 0., 1. )\n\nconst int nBalls = 40;\nconst int nLights = 4;\nconst int numColors = 3; //max 4\nconst float lightZ = -0.2;\n\nfloat random (float i){\n \treturn fract(sin(float(i)*43.0)*4790.234);   \n}\n\n\nfloat calcInfluence( vec4 ball, vec2 uv)\n{ \n    float d = distance(ball.rg, uv);\n    float inf = pow( ball.b/d, 3.0);\n    return  inf;   \n}\n\nvec3 calcNormal( vec4 ball, vec2 uv )\n{\n    return vec3( ball.rg - uv, 0.1);      \n}\n\nvec3[] colors = vec3[]\n(   \n\n    vec3(255./255., 77./255., 0./255.),\n    vec3(10./255., 84./255., 255./255.),\n    vec3(255./255., 246./255., 0./255.),\n    vec3(0./255., 192./255., 199./255.)\n   \n);\n\n//for gradient?\nvec3[] colors2 = vec3[]\n(   \n\n    vec3(230./255., 25./255., 56./255.),\n    vec3(230./255., 144./255., 25./255.),\n    vec3(0./255., 199./255., 152./255.),\n    vec3(10./255., 165./255., 255./255.)\n);\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.y;\n    uv.x -= 0.333;\n    vec4 mouse = iMouse / iResolution.yyyy;\n    mouse.x -= 0.333;\n    \n   \tint i;\n    \n    //settings to play with!\n    float threshold = 1.0;\n    float shadowIntensity = 0.5; \n    float specularIntensity = 0.75;\n    float specularPower = 300.0;\n    float rimIntensity = 3.; //2\n    float aoIntensity = 0.75; //75\n    float ambientBrightness =  0.5 + 0.5 * uv.y;\n    float lightFalloff = 0.5;\n    \n    bool rainbowMode = false;\n    \n\n   \t//balls\n    float rad = 0.07;\n    float rf = 0.005;\n    float jiggle = sin(iTime*(2.0)) * 0.0125;\n    \n    float speed = 0.3;\n    \n    vec4[nBalls] balls;\n    vec4[nLights] lights;\n    \n    for( i = 0; i < nBalls; i++ ){\n    \n        float per = float(i)/float(nBalls);\n        float r = random( per * 7.0 + 0.32);\n        float r2 = random( per * 11.0 + 0.87 );\n        float r3 = random( per * 19.0 + 0.121 );\n        float time = iTime + r * 11. + r2 * 21.;\n        float x = 0.5 + sin(time*speed * (0.5 + 0.5 * r2))*(0.1 + 0.9 * r);\n        float y = 0.5 + cos(time*speed * (0.5 + 0.5 * r3))*(0.1 + 0.9 * r2);\n \n        int color = i % numColors;\n        float rd = rad + 0.9 * rad * sin(iTime*0.2 + r*13.0)*r;\n        \n        balls[i] = vec4( x, y, rd, color );\n        \n    }\n    \n    for( i = 0; i < nLights; i++ ){\n    \n        float per = float(i)/float(nBalls);\n        float r = random( per * 21.0 + 17.0 );\n        float r2 = random( per * 31.0 + 13.0 );\n        float r3 = random( per * 41.0 + 3.0 );\n        float time = iTime + r * 21. + r2 * 11.;\n        float x = 0.5 + sin(time*speed * (0.5 + 0.5 * r2))*(0.1 + 0.9 * r);\n        float y = 0.5 + cos(time*speed * (0.5 + 0.5 * r3))*(0.1 + 0.9 * r2);\n \n        lights[i] = vec4( x, y, 0.01, 1.0 );\n        \n    }\n\n    \n    int ballCount = nBalls;\n    \n    int accumulatorCount = 4;\n    float[] accumulators = float[]\n    (\n    \t0.0,\n        0.0,\n        0.0,\n        0.0\n    );\n    \n    vec3[] shaders = vec3[]\n    (\n    \tvec3(0),\n        vec3(0),\n        vec3(0),\n        vec3(0)\n    );\n    \n    \n\n    //determine color with greatest influence\n    for( i = 0; i < ballCount; i++ )\n    {\n        int idx = int( balls[i].a );\n        float inf = calcInfluence( balls[i], uv);  \n        accumulators[idx] += inf;\n        shaders[idx] += calcNormal( balls[i], uv) * inf;\n    }\n    \n    float maxInf = 0.0;\n    int maxIdx = 0;\n    vec3 avgColor = vec3(0,0,0);\n    float totalInf = 0.0;\n    \n    for( i = 0; i < accumulatorCount; i++ )\n    {\n        if( accumulators[i] > maxInf )\n        {\n            maxInf = accumulators[i];\n            maxIdx = i;\n        }\n        \n        totalInf += accumulators[i];\n        avgColor += accumulators[i] * colors[i];\n    }\n    \n    avgColor /= totalInf;\n    \n    float influence = accumulators[maxIdx];\n    vec3 baseColor = colors[maxIdx];\n    vec3 normal = normalize(shaders[maxIdx]);\n \n      \n  \n    //basecolor\n    vec3 color = baseColor;\n    vec3 ambientColor = vec3(ambientBrightness);\n    if( rainbowMode )\n        ambientColor = avgColor * ambientBrightness;\n   \n    //rim light\n    float rim = 1.0 - (dot ( vec3(0.,0.,-1.), -normal));\n    color += vec3(1.0) * rimIntensity * pow (rim, 2.0);\n    \n    color = color * (1.0 - shadowIntensity);\n    \n    for( i = 0; i < nLights; i++ )\n    {\n        vec4 light = lights[i];\n        vec3 lightDir = normalize( vec3(light.xy, lightZ) - vec3( uv, 0.0 ) ); \n        float intensity = min( 1.0, (lightFalloff * light.w) / pow( distance( light.xy, uv ), 2.0 ));\n        \n        //diffuse\n        float lighting = max(0.,dot( -normal, lightDir) );\n        lighting *= intensity;\n        color += max( (baseColor * lighting) - color, vec3(0.) );\n  \n        // specular blinn phong\n        vec3 dir = normalize(lightDir + vec3(0,0,-1.0) );\n        float specAngle = max(dot(dir, -normal), 0.0);\n        float specular = pow(specAngle, specularPower);\n        color += vec3(1.0) * specular * specularIntensity * intensity;\n    }\n    \n   \n    \n    \n    //ao\n    float prox = (maxInf/totalInf);\n    prox = pow( smoothstep( 1.0, 0.35, prox), 3.0 );\n    vec3 aoColor = vec3(0.0);\n    color = mix( color , aoColor, prox * aoIntensity);\n    \n\t//shape\n    float aa = min( fwidth( influence ) * 1.5, 1.);\n   \tfloat smo = smoothstep( 0., aa, influence - threshold);\n    color = mix( ambientColor, color, smo);\n    \n    \n    for( i = 0; i < nLights; i++ )\n    {\n        vec4 light = lights[i];\n    \tfloat lightIntensity = calcInfluence( light, uv );\n       \tcolor += pow(lightIntensity,0.5) * 1.0 * light.w;    \n    }\n    \n                    \n    \n    fragColor = vec4( color, 1.0 );\n    \n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

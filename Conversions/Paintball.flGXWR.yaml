@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  name: Paintball
+shader:
+  author: N.N.
+  description: Trying out multiple light sources for generating diffuse and specular.
+  id: flGXWR
+  name: 'Paintball '
+  parent:
+    id: tljcWh
+    name: Paintball Multi Light
+    url: https://www.shadertoy.com/view/tljcWh
+  tags:
+  - metaballs
+  url: https://www.shadertoy.com/view/flGXWR
