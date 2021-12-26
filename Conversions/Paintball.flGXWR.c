@@ -43,7 +43,7 @@ __DEVICE__ float3 calcNormal( float4 ball, float2 uv )
 //************************
 __KERNEL__ void PaintballFuse(
     float2 fragCoord,
-    float3 iResolution,
+    float2 iResolution,
     float4 iMouse,
     float  iTime
    )

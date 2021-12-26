@@ -69,7 +69,7 @@ __DEVICE__ float test(float2 p, float time, float a) {
 __KERNEL__ void noiseblobbyblobsFuse(
   float4 fragColor,
   float2 fragCoord,
-  float3 iResolution,
+  float2 iResolution,
   float iTime
  ){
 

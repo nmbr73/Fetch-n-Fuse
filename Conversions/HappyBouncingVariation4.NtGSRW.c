@@ -148,7 +148,7 @@ __DEVICE__ float4 buddy (float2 pp, float3 tint, float t, float ii)
 __KERNEL__ void HappyBouncingVariation4Fuse(
   float4 color,
   float2 pixel,
-  float3 iResolution,
+  float2 iResolution,
   float iTime
   )
 {

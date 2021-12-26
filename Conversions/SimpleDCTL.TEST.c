@@ -23,7 +23,7 @@ __KERNEL__ void SimpleDCTLFuse(
   float2 fragCoord,
   float     iChannelTime [ ],
   float iTime   ,
-  float3 iResolution,
+  float2 iResolution,
   float4 iMouse,
   float3 * iChannelResolution
   )

@@ -215,7 +215,7 @@ __DEVICE__ float4 sdEyes (float2 p, float t, float3 tint, float sens, float body
 __KERNEL__ void happybouncingFuse(
   float4 color,
   float2 pixel,
-  float3 iResolution,
+  float2 iResolution,
   float iTime
 
  ){

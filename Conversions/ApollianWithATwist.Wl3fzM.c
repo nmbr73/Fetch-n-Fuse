@@ -136,7 +136,7 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
 __KERNEL__ void ApollianWithATwistFuse(
   float4 fragColor,
   float2 fragCoord,
-  float3 iResolution,
+  float2 iResolution,
   float  iTime,
   float4 iMouse
   )

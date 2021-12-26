@@ -496,7 +496,7 @@ function Process(req)
 
 
     local has_param={
-      ['iResolution']           = { Type='float3',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+      ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
       ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
       ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
 
