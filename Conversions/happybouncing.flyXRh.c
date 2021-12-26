@@ -212,17 +212,19 @@ __DEVICE__ float4 sdEyes (float2 p, float t, float3 tint, float sens, float body
 
 
 
-__KERNEL__ void happybouncingKernel(
-__CONSTANTREF__ Params*  params,
-__TEXTURE2D__            iChannel0,
-__TEXTURE2D_WRITE__      dst
- ){
-    PROLOGUE(color,pixel);
+__KERNEL__ void happybouncingFuse(
+  float4 color,
+  float2 pixel,
+  float3 iResolution,
+  float iTime
 
+ ){
+    CONNECT_TINYSLIDER0(variante,0.0f,2.0f,0.0f); // Name der 'float' Variable, Min, Max, und Default-Wert (Default wird hier nicht, aber spaeter in der Fuse verwendet)
 
     int modus = 0;    // Varianten 0:Original
-    if (params->r0 == 1.0f) modus = 1;
-    if (params->r0 == 2.0f) modus = 2;
+
+    if (variante == 1.0f) modus = 1;
+    if (variante == 2.0f) modus = 2;
 
     // global variable
     float bodySize = 0.2f;
@@ -250,7 +252,7 @@ __TEXTURE2D_WRITE__      dst
     {
         // usefull to dissociate instances
         float ii = i/(buddies-(modus==2?0.0f:1.0f));
-        float iii = 1.0f-ii;
+        // float iii = 1.0f-ii; unused!
 
         float iy = i/(buddies-1.0f); //Modus2
 
@@ -294,7 +296,6 @@ __TEXTURE2D_WRITE__      dst
           float body = circle(p, bodySize);
           col += tint*fill(body);
           shape = _fminf(shape, body);
-float zzzzzzzzzzzzzzzzzzzzzz;
           float4 eyes = sdEyes(pp, t-0.03f, tint, -1.0f,bodySize,modus,size,divergence);
           col = _mix(col, swixyz(eyes), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
@@ -386,6 +387,5 @@ float zzzzzzzzzzzzzzzzzzzzzz;
         }
     }
 
-
-	EPILOGUE(color);
+  SetFragmentShaderComputedColor(color);
 }
