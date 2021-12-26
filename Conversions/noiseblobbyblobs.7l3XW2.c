@@ -4,13 +4,13 @@
 // ----------------------------------------------------------------------------------
 
 
-__DEVICE__ float fract_f(float A){return A - _floor(A);}
-__DEVICE__ float2 fract_f2(float2 A){return make_float2(A.x - _floor(A.x), A.y - _floor(A.y));}
-__DEVICE__ float mod_f(float value, float divisor) {  return value - divisor * _floor(value / divisor);}
+// __DEVICE__ float fract_f(float A){return A - _floor(A);}
+// __DEVICE__ float2 fract_f2(float2 A){return make_float2(A.x - _floor(A.x), A.y - _floor(A.y));}
+// __DEVICE__ float mod_f(float value, float divisor) {  return value - divisor * _floor(value / divisor);}
 __DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 __DEVICE__ float3 tanh_f3(float3 i) {float3 r; r.x = _tanhf(i.x); r.y = _tanhf(i.y); r.z = _tanhf(i.z); return r;}
 
-#define in
+// #define in
 
 #define pi 3.14159
 
@@ -66,15 +66,13 @@ __DEVICE__ float test(float2 p, float time, float a) {
 
 
 
-__KERNEL__ void noiseblobbyblobsKernel(
-__CONSTANTREF__ Params*  params,
-__TEXTURE2D__            iChannel0,
-__TEXTURE2D_WRITE__      dst
+__KERNEL__ void noiseblobbyblobsFuse(
+  float4 fragColor,
+  float2 fragCoord,
+  float3 iResolution,
+  float iTime
  ){
 
- PROLOGUE(fragColor,fragCoord);
- //float4 fragColor = fragColor;
- //float2 fragCoord  = fragCoord;
 
     float2 uv = (fragCoord - 0.5f * swixy(iResolution))/ iResolution.y;
     float2 ouv = uv;
@@ -140,5 +138,5 @@ __TEXTURE2D_WRITE__      dst
 
     fragColor = to_float4_aw(col, 1.0f); //to_float4(v);
 
-	EPILOGUE(fragColor);
+  SetFragmentShaderComputedColor(fragColor);
 }

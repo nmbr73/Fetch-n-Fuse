@@ -61,37 +61,57 @@ def convert(code,fuse_name,buffer_name):
   # am Schluss alle verbleibenden 'vecN' weghauen:
   code=re.sub(r'([\s\(\)\*\+\-;,=])vec([234])(\s)',r'\1float\2\3', code)
 
-  kernel_name=fuse_name+'Kernel'
+  kernel_name=fuse_name+'Fuse'
 
   if buffer_name!="Image":
-    kernel_name=fuse_name+'Kernel_'+buffer_name
+    kernel_name=fuse_name+'Fuse_'+buffer_name
 
   kernel_name=kernel_name.replace(" ", "")
 
+  kernel_parameters=""
+
+  for e in [
+      ['iTime','float iTime'],
+      ['iResolution','float3 iResolution'],
+      ['iMouse','float4 iMouse'],
+      ['iTimeDelta' , 'float iTimeDelta'],
+      ['iFrame' , 'int iFrame'],
+      ['iChannelTime' , 'float iChannelTime[]'],
+      ['iChannelResolution' , 'float3 iChannelResolution[]'],
+      ['iDate' , 'float4 iDate'],
+      ['iSampleRate' , 'float iSampleRate'],
+      ['iChannel0', 'sampler2D iChannel0'],
+      ['iChannel1', 'sampler2D iChannel1'],
+      ['iChannel2', 'sampler2D iChannel2'],
+      ['iChannel3', 'sampler2D iChannel3'],
+    ]:
+    if code.find(e[0])!=-1: # okay, ein find() ist hier arg grob - aber fuer's erste soll's reichen
+      kernel_parameters=kernel_parameters+", "+e[1]
+
+
   # Kernelaufruf
-  code = re.sub(r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{',
-    '__KERNEL__ void '+kernel_name+'( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )\n'+
-    '{\n'+
-    '  PROLOGUE(\\1,\\2);\n\n'
-    , code)
+  #   Ich erwische dabei nur die mit fragColor und fragCoord? Gibt's bei Shadertoy auch Aufrufe ohne diese beiden,
+  #   gar oder mit mehr Parametern?!?
+  #
+  match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{'
 
+  m = re.search(match_kernel,code)
 
-  # Ich hol mir den Namen von fragColor nochmal da raus:
-
-  fragColor="fragColor"
-  m=re.match(r'{\n  PROLOGUE\(([^,]+),[^,]+\)\n\n',code)
-
-  if m != None:
+  if m:
     fragColor=m.group(1)
 
+    code = re.sub(match_kernel,
+      '__KERNEL__ void '+kernel_name+'(float4 \\1, float2 \\2'+kernel_parameters+')\n{\n'
+      , code)
 
-  # Und versuche jetzt den Epilog reinzuschmieren:
+    # Versuche jetzt am Ende noch etwas reinzuschmieren:
 
-  p=code.rfind("}")
+    p=code.rfind("}")
 
-  if p!=-1:
-    code=code[0:p] + "\n\n  EPILOGUE("+ fragColor +");\n" +code[p]
-
+    if p!=-1:
+      code=code[0:p] + "\n\n  SetFragmentShaderComputedColor("+ fragColor +");\n" +code[p]
+  else:
+    print("no kernel")
 
 
   # Mal versuchen Funktionen zu finden:

@@ -1,31 +1,5 @@
 
 
-// brauche ich als define, um nachher die anzahl der channels manipulieren zu koennen ...
-// #define FUSION_PARAMETERS __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst
-// ... tut's aber bloeder Weise so ueberhaupt nicht - wird irgendwie falsch expandiert
-
-
-
-  // Standard Shadertoy parameters:
-  #define PROLOGUE(FRAGCOLOR,FRAGCOORD)                                \
-    DEFINE_KERNEL_ITERATORS_XY(x, y);                                                                 \
-    if (x >= params->width || y >= params->height)                                                    \
-      return;                                                                                         \
-                                                                                                      \
-    float2 iResolution = to_float2(params->width, params->height);                                    \
-    float  iTime       = params->iTime;                                           \
-    float4 iMouse      = to_float4(params->iMouse[0],params->iMouse[1],params->iMouse[2],params->iMouse[3]);  \
-    float2 FRAGCOORD   = to_float2(x, y);                                                             \
-    float4 FRAGCOLOR   = to_float4_s(0.0f)
-
-   #define EPILOGUE(FRAGCOLOR) \
-    _tex2DVec4Write(dst, x, y, (FRAGCOLOR) )
-
-
-
-
-
-
 #if defined(DEVICE_IS_METAL)
   #define in
   #define out thread
@@ -224,8 +198,8 @@
   #define fract_f3(A) fract(A)
   #define fract_f4(A) fract(A)
 
-  #define mod_f(a,b)  mod((a),(b))
-  #define mod_f2(value,divisor) mod(value,divisor)
+  #define mod_f(a,b)  modf((a),(b))
+  #define mod_f2(value,divisor) modf(value,divisor)
 
 #else
 

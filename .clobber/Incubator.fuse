@@ -9,47 +9,34 @@
 ! Kernelnamen wird nicht mehr mit Fusenamen gebildet ! -> nur einen Inkubator pro Komposition, da es sonst bei Versionsänderungen des DCTL-Codes zur unerwarteten Reaktionen kommen kann
 
 BufferTest: off        -> Inkubator wie im Original, nur kein Fusenamen im Kernelnamen
-BufferTest: TestKernel -> Über kernel kann der zu testende Kernel ausgewählt werden         
+BufferTest: TestKernel -> Über kernel kann der zu testende Kernel ausgewählt werden
                           bei der Auswahl von Recursive wird der Ausgang des Buffers als Eingang (iChannel0) wieder geladen, ansonsten Image1
 BufferTest: Final      -> Imagekernel nimmt Ausgang des BufferA und gibt diesen als Output aus
 
 
-Mit BufferTest: TestKernel können die BufferA bis BufferD ausgewählt werden und mit der Checkbox Recursive kann ausgewählt werden, ob der Ausgang wieder in iChannel0 oder die Textur an Image1 angelegt werden soll.  
+Mit BufferTest: TestKernel können die BufferA bis BufferD ausgewählt werden und mit der Checkbox Recursive kann ausgewählt werden, ob der Ausgang wieder in iChannel0 oder die Textur an Image1 angelegt werden soll.
 
-ToDo: Reset 
+ToDo: Reset
 
 */--]]--
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
-ShaderParameters     = nil
-CompatibilityCode    = nil
-ConversionShaderID   = ""
-ConversionFusename   = ""
-ConversionKernelname = ""
-ConversionSourcecode = ""
+ShaderParameters       = nil
+CompatibilityCode      = nil
+KernelInputCtrlDefines = nil
+ConversionShaderID     = ""
+ConversionFusename     = ""
+ConversionKernelname   = ""
+ConversionSourcecode   = ""
 
-NUM_COLOR_CONTROLS=5
-NUM_TINYSLIDER_CONTROLS=4
-NUM_SMALLSLIDER_CONTROLS=4
-
+NUM_INPUT_CHANNELS        = 1
+NUM_COLOR_CONTROLS        = 5
+NUM_TINYSLIDER_CONTROLS   = 4
+NUM_SMALLSLIDER_CONTROLS  = 4
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
-ConversionSourcecode_fallback = [[
+ConversionSourcecode_fallback = nil
 
-__KERNEL__ void IncubatorFallbackKernel(
-    __CONSTANTREF__ Params *params,
-    __TEXTURE2D__ iChannel0,
-    __TEXTURE2D_WRITE__ dst
-    )
-{
-  DEFINE_KERNEL_ITERATORS_XY(x, y);
-
-  if (x >= params->width || y >= params->height)
-    return;
-
-  _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,0.0f) );
-}
-]]
 
 
 
@@ -142,25 +129,56 @@ end
 --
 function Create()
 
-  local xtracode=""
+  local REPOSITORYPATH=[[]]
+
+
+  -- create defined to connect input contols to kernel
+
+  KernelInputCtrlDefines =""
 
   for i=0,NUM_COLOR_CONTROLS-1 do
-    xtracode=xtracode.."#define USE_CTRL_COLOR"..i.."(NAME) float4 NAME     = to_float4(params->color["..i.."][0],params->color["..i.."][1],params->color["..i.."][2],params->color["..i.."][3])\n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME) float4 NAME     = to_float4(_shaderParameters->color["..i.."][0],_shaderParameters->color["..i.."][1],_shaderParameters->color["..i.."][2],_shaderParameters->color["..i.."][3])\n"
   end
 
   for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-    xtracode=xtracode.."#define USE_CTRL_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = params->tinySlider["..i.."]; if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->tinySlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
   for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-    xtracode=xtracode.."#define USE_CTRL_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = params->smallSlider["..i.."]; if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->smallSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
-  verbose("use the folloin defines to connect your controls:\n"..xtracode)
+  verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
+
+
+
+  -- create fallback kernel code
+
+  local channels=""
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    channels=channels.."__TEXTURE2D__ iChannel"..i..", "
+  end
+
+  ConversionSourcecode_fallback =
+  [[__KERNEL__ void IncubatorFallbackKernel(
+      __CONSTANTREF__ ShaderParameters *params,
+      ]]..channels..[[
+      __TEXTURE2D_WRITE__ dst
+      )
+  {
+    DEFINE_KERNEL_ITERATORS_XY(x, y);
+
+    if (x >= params->width || y >= params->height)
+      return;
+
+    _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,0.0f) );
+  }
+  ]]
+
+
 
   -- get the list of conversions and read compatibility and params code
 
-  local REPOSITORYPATH=[[  <WILL BE REPLACED BY INSTALL.LUA>  ]]
 
   verbose("Create: repository used is "..REPOSITORYPATH)
 
@@ -172,7 +190,7 @@ function Create()
     CompatibilityCode = nil
     print("failed to read compatibility code")
   else
-    CompatibilityCode = f:read("*all") .. xtracode
+    CompatibilityCode = f:read("*all")
     f:close()
   end
 
@@ -187,9 +205,11 @@ function Create()
 
   int   width, height;
   int   compOrder;
-
   int iChannel0_width;
   int iChannel0_height;
+
+  int useDefaultValues;
+
   ]]
 
 
@@ -256,7 +276,7 @@ function Create()
 	  { CCS_AddString  = "Final", },
     CC_LabelPosition = "Horizontal",
     })
-  
+
   InRecursive = self:AddInput("Recursive", "Recursive", {
       LINKID_DataType = "Number",
       INPID_InputControl = "CheckboxControl",
@@ -264,7 +284,7 @@ function Create()
       INP_Integer = true,
       IC_Visible = true,
     })
-  
+
   InKerneltoUse = self:AddInput("Kernel", "KernelSelection", {
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
@@ -278,8 +298,19 @@ function Create()
 	  { CCS_AddString  = "BufferD", },
     CC_LabelPosition = "Horizontal",
     })
-    
+
   self:EndControlNest()
+
+  InUseDefaultValues = self:AddInput("don't use controls for input", "useDefaultValues", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default = 0,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    IC_Visible = true,
+  })
+
+
 
   -- some general controls for data passed to the kernel
 
@@ -512,26 +543,172 @@ function Process(req)
       -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
       -- drangehaengt.
 
-      --ConversionKernelname = ConversionFusename .. "Kernel_" .. self.Name
-      ConversionKernelname = ConversionFusename .. "Kernel"
+    ConversionKernelname = ConversionFusename .. "Fuse_" .. self.Name
+
+    -- --------------------------------------------------------------------------------------------------------------
+
+    local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%(([^%)]*)%)%s*%{")
+    local count=0
+
+
+
+    -- float4 fragColor,
+    -- float2 fragCoord,
+
+
+
+    local has_param={
+      ['iResolution']           = { Type='float3',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+      ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
+      ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
+
+      -- ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
+      -- ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
+      -- ['iChannelTime']          = { Type='float*',     Present=false, Code='float4 iChannelTime = to_float4(_shaderParameters->iChannelTime[0],_shaderParameters->iChannelTime[1],_shaderParameters->iChannelTime[2],_shaderParameters->iChannelTime[3]);'  },
+      -- ['iChannelResolution']    = { Type='float3*',    Present=false, Code='float3 iChannelResolution[4] = { to_float3(_shaderParameters->iChannelTime[0][0],_shaderParameters->iChannelTime[0][1],_shaderParameters->iChannelTime[0][2] ), to_float3(_shaderParameters->iChannelTime[1][0],_shaderParameters->iChannelTime[1][1],_shaderParameters->iChannelTime[1][2] ), to_float3(_shaderParameters->iChannelTime[2][0],_shaderParameters->iChannelTime[2][1],_shaderParameters->iChannelTime[2][2] ), to_float3(_shaderParameters->iChannelTime[3][0],_shaderParameters->iChannelTime[3][1],_shaderParameters->iChannelTime[3][2] )};'  },
+      -- ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
+      -- ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
+
+      ['iChannel0']             = { Type='sampler2D', Present=false },
+      ['iChannel1']             = { Type='sampler2D', Present=false },
+      ['iChannel2']             = { Type='sampler2D', Present=false },
+      ['iChannel3']             = { Type='sampler2D', Present=false },
+    }
+
+    local fragColor_name=nil -- float4
+    local fragCoord_name=nil -- float2
+
+
+    -- ja, okay, jetzt wird's echt bescheuert ...
+
+    local i=-1 -- iteration to allow fragColor and Coord only as the first two parameters
+    if kernel_parameters==nil then
+      print("no kernel found - unable to determine parameters")
+    else
+      -- kernel_parameters=kernel_parameters:gsub("^%s*(.-)%s*$", "%1") -- trim
+      -- verbose("kernel parameters='"..kernel_parameters.."'")
+
+      for p in kernel_parameters:gmatch('([^,]+)') do
+
+        i=i+1;
+
+        t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type name"
+        if t==nil then
+          t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s*%*%s*([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type * name" (yes, type*name matches, so what)
+          if t~=nil then
+            t=t..'*'
+          else
+            t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$") -- match "type name [ ]"
+            if t~=nil then
+              t=t..'*'
+            end
+          end
+        end
+
+        if t==nil then
+          print("parameter='"..p.."' has bad format")
+        else
+          verbose("parameter"..i..": type='"..t.."', name='"..n.."'")
+          if has_param[n]==nil then
+            if i==0 and t=='float4' and fragColor_name==nil then
+              fragColor_name=n -- first and only the first parameter can be the color (yes, stupid idea to call that color iDate)
+            elseif i<2 and t=='float2' and fragCoord_name==nil then
+              fragCoord_name=n -- first or second parameter can be the coord
+            else
+              print("i don't know '"..t.." "..n.."'")
+            end
+          else
+            if t ~= has_param[n].Type then
+              print("bad type '"..t.."' for '"..n.."' ('"..(has_param[n].Type).."' expected)")
+            else
+              if has_param[n].Present then
+                print("multiple occurences of '"..t.." "..n.."'")
+              else
+                has_param[n].Present=true
+              end
+            end
+          end
+        end
+      end
+    end
+
+
+    kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
+    for i=0,3 do
+      if has_param["iChannel"..i].Present then
+        if i >= NUM_INPUT_CHANNELS then
+          print("iChannel"..i.." not available")
+        else
+          kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
+        end
+      else
+        if i<NUM_INPUT_CHANNELS then
+          kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
+        end
+      end
+    end
+    kernel_parameters = kernel_parameters .. "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
+
+
+    local variable_declarations = ""
+
+    if fragColor_name ~= nil then
+      variable_declarations=variable_declarations.."float4 "..fragColor_name.."=to_float4_s(0.0f);\n"
+    end
+
+    if fragCoord_name ~= nil then
+      variable_declarations=variable_declarations.."float2 "..fragCoord_name.."=to_float2(fusion_x,fusion_y);\n"
+    end
+
+
+    for n,p in pairs(has_param) do
+      if p.Present and p.Code then
+        variable_declarations = variable_declarations .. p.Code .. "\n"
+      end
+    end
+
 
       local count
 
+    ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+      "__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%([^%)]*%)%s*%{",
+
+      KernelInputCtrlDefines.."\n\n"..
+      "__KERNEL__ void "..ConversionKernelname.."("..kernel_parameters..")\n{\n"..
+      [[
+          DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);
+          if (fusion_x >= _shaderParameters->width || fusion_y >= _shaderParameters->height)
+            return;
+      ]]
+      ..variable_declarations.."\n\n// --------\n\n"
+      )
+
+
+    -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
+    -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
+    -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
+    -- falsche Namen in 99% der Faelle
+
+    if count ~=1 then
+      print("void "..ConversionFusename.."Fuse() found "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
+      ConversionSourcecode = ""
+    else
+
       ConversionSourcecode, count = string.gsub(ConversionSourcecode,
-        "__KERNEL__%s+void%s+"..ConversionFusename.."Kernel%(",
-        "__KERNEL__ void "..ConversionKernelname.."("
-        )
+        "(%s+)SetFragmentShaderComputedColor%s*%(%s*",
+        "%1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, "
+      )
 
-      -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
-      -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
-      -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
-      -- falsche Namen in 99% der Faelle
+      -- print(ConversionSourcecode)
 
-      if count ~=1 then
-        print("void "..ConversionFusename.."Kernel() found "..count.."x ... remember the Highlander!")
-        ConversionSourcecode = ""
+      if CompatibilityCode~=nil then
+        ConversionSourcecode=CompatibilityCode..ConversionSourcecode
+      else
+        print("no compatibility code?!?")
       end
     end
+
+
   end
 
 
@@ -547,11 +724,13 @@ function Process(req)
 
     ConversionKernelname="IncubatorFallbackKernel"
     ConversionFusename="IncubatorFallback"
+
+    print(ConversionSourcecode)
     rebuild=true
   end
 
-  if CompatibilityCode==nil or ShaderParameters==nil then
-    print("no way this will work")
+  if ShaderParameters==nil then
+    print("this will never ever work")
     return
   end
 
@@ -567,13 +746,13 @@ function Process(req)
 
   if (InBufferATest:GetValue(req).Value > 0)  then    -- Buffer allgemein testen
     if (InKerneltoUse:GetValue(req).Value == 1) then       -- BufferA
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA") 
-    else if (InKerneltoUse:GetValue(req).Value == 2) then  -- BufferB 
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferB")     
-    else if (InKerneltoUse:GetValue(req).Value == 3) then  -- BufferC 
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferC")     
-    else if (InKerneltoUse:GetValue(req).Value == 4) then  -- BufferD 
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferD")     
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA")
+    else if (InKerneltoUse:GetValue(req).Value == 2) then  -- BufferB
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferB")
+    else if (InKerneltoUse:GetValue(req).Value == 3) then  -- BufferC
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferC")
+    else if (InKerneltoUse:GetValue(req).Value == 4) then  -- BufferD
+      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferD")
     end
     end
     end
@@ -582,9 +761,9 @@ function Process(req)
 --print("Kernelname",_ConversionKernelname)
 
   local node = DVIPComputeNode(req,
-    _ConversionKernelname,
-    CompatibilityCode .. ConversionSourcecode,
-    "Params",
+    ConversionKernelname,
+    ConversionSourcecode,
+    "ShaderParameters",
     ShaderParameters
     )
 
@@ -638,24 +817,35 @@ function Process(req)
   params = node:GetParamBlock(ShaderParameters)
 
 
-  local mouse =  nil
   local text  =  nil
 
   -- iMouse
-  mouse  = InMouseXY:GetValue(req)
 
-  params.iMouse[0] = mouse.X
-  params.iMouse[1] = mouse.Y
-  params.iMouse[2] = 0
-  params.iMouse[3] = 0
+  local mouse_xy  = InMouseXY:GetValue(req)
+  local mouse_zw  = InMouseZW:GetValue(req)
 
-  if InMouseDrag:GetValue(req).Value == 1 then
-    params.iMouse[2] = params.iMouse[0]
-    params.iMouse[3] = params.iMouse[1]
+  params.iMouse[0] = mouse_xy.X
+  params.iMouse[1] = mouse_xy.Y
+  params.iMouse[2] = mouse_zw.X
+  params.iMouse[3] = mouse_zw.Y
+
+  -- okay, tut's noch immer nicht - vermutlich muss ich da
+  -- mit einem weiteren versteckten feld arbeiten, um mir
+  -- die position beim click zu merken
+
+  if InMouseDrag:GetValue(req).Value ~= 0 then
+    -- hm, okay ... was mache ich mit einem Mausklick bei Position 0|0 ?!?
+    if params.iMouse[2]==0 and params.iMouse[3]==0 then
+      params.iMouse[2]=params.iMouse[0]
+      params.iMouse[3]=params.iMouse[1]
+    end
+  else
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
   end
 
-  mouse=InMouseZW:GetValue(req)
-  if mouse.X ~= params.iMouse[2] or mouse.Y ~= params.iMouse[3] then
+  if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+    -- print(mouse_zw.X.." != "..params.iMouse[2])
     InMouseZW:SetAttrs({INP_Disabled=false})
     InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
     InMouseZW:SetAttrs({INP_Disabled=true})
@@ -688,6 +878,8 @@ function Process(req)
     InShaderInputs_iTime:SetAttrs({INP_Disabled=true})
   end
 
+
+  params.useDefaultValues = InUseDefaultValues:GetValue(req).Value
 
   -- Colors
   for i=0,NUM_COLOR_CONTROLS-1 do
@@ -728,7 +920,7 @@ function Process(req)
   node:SetParamBlock(params)
 
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
-  
+
   --JiPi_Multifuse
   if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1 and InRecursive:GetValue(req).Value == 1 ) then
     node:AddInput("iChannel0",Image_Buff_GlobalA)
@@ -736,7 +928,7 @@ function Process(req)
   else
     node:AddInput("iChannel0",iChannel0)
   end
-  
+
 	node:AddOutput("dst", dst)
 
   if rebuild then
@@ -754,22 +946,22 @@ function Process(req)
 
   --JiPi_Multifuse
   Image_Buff_GlobalA = dst --Recursiv Image
-  
+
   if (InBufferATest:GetValue(req).Value == 2) then   -- ImageKernel after BufferA
-  
+
     local nodeI = DVIPComputeNode(req,
           ConversionFusename.."Kernel",          --Image
           CompatibilityCode .. ConversionSourcecode,
           "Params",
           ShaderParameters
           )
-    
+
     nodeI:SetParamBlock(params)
     nodeI:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
-    
+
     nodeI:AddInput("iChannel0",Image_Buff_GlobalA)
    	nodeI:AddOutput("dst", dst2)
- 
+
     if rebuild then
       nodeI:ForceRebuild()
     end
@@ -781,11 +973,11 @@ function Process(req)
       print("--- Errors Imagekernel ---")
       dump(nodeI:GetErrorLog())
     end
-    
+
     dst = dst2
   end
 
- 
+
   -- Output our result
   OutImage:Set(req,dst)
   collectgarbage();

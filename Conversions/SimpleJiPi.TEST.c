@@ -1,21 +1,15 @@
 
 
-__KERNEL__ void SimpleJiPiKernel(
-    __CONSTANTREF__ Params*  params,
-    __TEXTURE2D__            iChannel0,
-    __TEXTURE2D_WRITE__      dst
-    )
+__KERNEL__ void SimpleJiPiFuse(float4 fragColor)
 {
+  CONNECT_COLOR0(color);
 
-  PROLOGUE(fragColor,fragCoord);
-  PARAM_ICOLOR0;
-
-  float red          = params->r1;
-  float green        = params->g1;
-  float blue         = params->b1;
-  float alpha        = params->a1;
+  float red          = color.x;
+  float green        = color.y;
+  float blue         = color.z;
+  float alpha        = color.w;
 
   fragColor=to_float4(red,green,blue,alpha);
 
-  EPILOGUE(fragColor);
+  SetFragmentShaderComputedColor(fragColor);
 }
