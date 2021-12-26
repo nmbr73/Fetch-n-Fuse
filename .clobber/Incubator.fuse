@@ -721,25 +721,35 @@ function Process(req)
   params = node:GetParamBlock(ShaderParameters)
 
 
-  local mouse =  nil
   local text  =  nil
 
   -- iMouse
 
-  mouse  = InMouseXY:GetValue(req)
+  local mouse_xy  = InMouseXY:GetValue(req)
+  local mouse_zw  = InMouseZW:GetValue(req)
 
-  params.iMouse[0] = mouse.X
-  params.iMouse[1] = mouse.Y
-  params.iMouse[2] = 0
-  params.iMouse[3] = 0
+  params.iMouse[0] = mouse_xy.X
+  params.iMouse[1] = mouse_xy.Y
+  params.iMouse[2] = mouse_zw.X
+  params.iMouse[3] = mouse_zw.Y
 
-  if InMouseDrag:GetValue(req).Value == 1 then
-    params.iMouse[2] = params.iMouse[0]
-    params.iMouse[3] = params.iMouse[1]
+  -- okay, tut's noch immer nicht - vermutlich muss ich da
+  -- mit einem weiteren versteckten feld arbeiten, um mir
+  -- die position beim click zu merken
+
+  if InMouseDrag:GetValue(req).Value ~= 0 then
+    -- hm, okay ... was mache ich mit einem Mausklick bei Position 0|0 ?!?
+    if params.iMouse[2]==0 and params.iMouse[3]==0 then
+      params.iMouse[2]=params.iMouse[0]
+      params.iMouse[3]=params.iMouse[1]
+    end
+  else
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
   end
 
-  mouse=InMouseZW:GetValue(req)
-  if mouse.X ~= params.iMouse[2] or mouse.Y ~= params.iMouse[3] then
+  if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+    -- print(mouse_zw.X.." != "..params.iMouse[2])
     InMouseZW:SetAttrs({INP_Disabled=false})
     InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
     InMouseZW:SetAttrs({INP_Disabled=true})
