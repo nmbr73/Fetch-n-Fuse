@@ -129,11 +129,11 @@ function Create()
   end
 
   for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = _shaderParameters->tinySlider["..i.."]; if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->tinySlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
   for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = _shaderParameters->smallSlider["..i.."]; if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->smallSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
   verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
@@ -193,9 +193,11 @@ function Create()
 
   int   width, height;
   int   compOrder;
-
   int iChannel0_width;
   int iChannel0_height;
+
+  int useDefaultValues;
+
   ]]
 
 
@@ -247,6 +249,17 @@ function Create()
     SLCS_HighName      = "5x",
 
   })
+
+
+  InUseDefaultValues = self:AddInput("don't use controls for input", "useDefaultValues", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default = 0,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    IC_Visible = true,
+  })
+
 
 
   -- some general controls for data passed to the kernel
@@ -783,6 +796,8 @@ function Process(req)
     InShaderInputs_iTime:SetAttrs({INP_Disabled=true})
   end
 
+
+  params.useDefaultValues = InUseDefaultValues:GetValue(req).Value
 
   -- Colors
 
