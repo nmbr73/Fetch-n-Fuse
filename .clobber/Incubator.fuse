@@ -18,6 +18,7 @@ ConversionKernelname   = ""
 ConversionSourcecode   = ""
 
 NUM_INPUT_CHANNELS        = 1
+
 NUM_COLOR_CONTROLS        = 5
 NUM_TINYSLIDER_CONTROLS   = 4
 NUM_SMALLSLIDER_CONTROLS  = 4
@@ -184,21 +185,27 @@ function Create()
 
   ShaderParameters=[[
 
+  float iResolution[2];
   float iTime;
   float iMouse[4];
+  float iTimeDelta;
+  int   iFrame;
+  float iChannelTime[]]..NUM_INPUT_CHANNELS..[[];
+  float iChannelResolution[]]..NUM_INPUT_CHANNELS..[[][2];
+  float iDate[4];
+  float iSampleRate;
+  int width, height; // you should prefer to use iResolution instead
+  int compOrder;
 
   float color[]]..NUM_COLOR_CONTROLS..[[][4];
   float tinySlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
   float smallSlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
 
-  int   width, height;
-  int   compOrder;
-  int iChannel0_width;
-  int iChannel0_height;
 
-  int useDefaultValues;
+  int useDefaultValues; // do not use - will not exists in the final fuse!
 
   ]]
+
 
 
   print(ShaderParameters)
@@ -489,29 +496,54 @@ function Process(req)
     local count=0
 
 
-
-    -- float4 fragColor,
-    -- float2 fragCoord,
-
-
-
     local has_param={
-      ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+      -- ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+      ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
       ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
       ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
 
-      -- ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
-      -- ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
-      -- ['iChannelTime']          = { Type='float*',     Present=false, Code='float4 iChannelTime = to_float4(_shaderParameters->iChannelTime[0],_shaderParameters->iChannelTime[1],_shaderParameters->iChannelTime[2],_shaderParameters->iChannelTime[3]);'  },
-      -- ['iChannelResolution']    = { Type='float3*',    Present=false, Code='float3 iChannelResolution[4] = { to_float3(_shaderParameters->iChannelTime[0][0],_shaderParameters->iChannelTime[0][1],_shaderParameters->iChannelTime[0][2] ), to_float3(_shaderParameters->iChannelTime[1][0],_shaderParameters->iChannelTime[1][1],_shaderParameters->iChannelTime[1][2] ), to_float3(_shaderParameters->iChannelTime[2][0],_shaderParameters->iChannelTime[2][1],_shaderParameters->iChannelTime[2][2] ), to_float3(_shaderParameters->iChannelTime[3][0],_shaderParameters->iChannelTime[3][1],_shaderParameters->iChannelTime[3][2] )};'  },
-      -- ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
-      -- ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
+      ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
+      ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
+      ['iChannelTime']          = { Type='float*',    Present=false, Code='ohoh!'  },
+      ['iChannelResolution']    = { Type='float2*',   Present=false, Code='whoops!'  },
+      ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
+      ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
 
-      ['iChannel0']             = { Type='sampler2D', Present=false },
-      ['iChannel1']             = { Type='sampler2D', Present=false },
-      ['iChannel2']             = { Type='sampler2D', Present=false },
-      ['iChannel3']             = { Type='sampler2D', Present=false },
+
+      -- ['iChannel0']             = { Type='sampler2D', Present=false },
+      -- ['iChannel1']             = { Type='sampler2D', Present=false },
+      -- ['iChannel2']             = { Type='sampler2D', Present=false },
+      -- ['iChannel3']             = { Type='sampler2D', Present=false },
+
+      -- Some special variables not known to shadertoys,
+      -- but you may want to use them in a Fuse, so we
+      -- allow to add them to the kernel's parameters:
+      ['width']             = { Type='int', Present=false, Code='int width = _shaderParameters->width;' },
+      ['height']            = { Type='int', Present=false, Code='int height = _shaderParameters->height;' },
+      ['compOrder']         = { Type='int', Present=false, Code='int width = _shaderParameters->compOrder;' },
+      ['x']                 = { Type='int', Present=false, Code='int x = fusion_x;' },
+      ['y']                 = { Type='int', Present=false, Code='int y = fusion_y;' },
+
     }
+
+    has_param['iChannelResolution']['Code']='float2 iChannelResolution['..NUM_INPUT_CHANNELS..'];\n'
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      has_param['iChannelResolution']['Code']=has_param['iChannelResolution']['Code']
+        .."iChannelResolution["..i.."] = to_float2(_shaderParameters->iChannelResolution["..i.."][0],_shaderParameters->iChannelResolution["..i.."][1]);\n"
+    end
+
+
+    has_param['iChannelTime']['Code']='float iChannelTime['..NUM_INPUT_CHANNELS..'];\n'
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      has_param['iChannelTime']['Code']=has_param['iChannelTime']['Code']
+        .."iChannelTime["..i.."] = _shaderParameters->iChannelTime["..i.."];\n"
+    end
+
+
+
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      has_param['iChannel'..i]={ Type='sampler2D', Present=false }
+    end
 
     local fragColor_name=nil -- float4
     local fragCoord_name=nil -- float2
@@ -572,17 +604,11 @@ function Process(req)
 
 
     kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
-    for i=0,3 do
+    for i=0,NUM_INPUT_CHANNELS-1 do
       if has_param["iChannel"..i].Present then
-        if i >= NUM_INPUT_CHANNELS then
-          print("iChannel"..i.." not available")
-        else
-          kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
-        end
+        kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
       else
-        if i<NUM_INPUT_CHANNELS then
-          kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
-        end
+        kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
       end
     end
     kernel_parameters = kernel_parameters .. "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
@@ -825,7 +851,10 @@ function Process(req)
 --params.width            = iChannel0.DataWindow:Width()
 --params.height           = iChannel0.DataWindow:Height()
 
-  text = string.format("{%.0f, %.0f}", params.width, params.height )
+  params.iResolution[0] = dst.Width
+  params.iResolution[1] = dst.Height
+
+  text = string.format("{%.0f, %.0f}", params.iResolution[0], params.iResolution[1] )
 
   if InShaderInputs_iResolution:GetValue(req).Value ~= text then
     InShaderInputs_iResolution:SetAttrs({INP_Disabled=false})
@@ -834,9 +863,38 @@ function Process(req)
   end
 
 
+
+
   params.compOrder        = iChannel0:IsMask() and 1 or 15
-  params.iChannel0_width  = iChannel0.Width
-  params.iChannel0_height = iChannel0.Height
+
+
+
+
+  -- -----
+  -- TODO: The following parameters are not yet
+  -- initialized:
+
+  params.iTimeDelta=0
+  params.iFrame=0
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    params.iChannelTime[i] = 0
+    for j=0,1 do
+      params.iChannelResolution[i][j] = 0
+    end
+  end
+
+  -- params.iChannel0_width  = iChannel0.Width
+  -- params.iChannel0_height = iChannel0.Height
+
+
+  params.iDate[0] = 0
+  params.iDate[1] = 0
+  params.iDate[2] = 0
+  params.iDate[3] = 0
+
+  params.iSampleRate = 0
+
 
   node:SetParamBlock(params)
 
