@@ -68,15 +68,31 @@ def convert(code,fuse_name,buffer_name):
 
   kernel_name=kernel_name.replace(" ", "")
 
-  # Kernelaufruf
-  # code = re.sub(r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{',
-  #   '__KERNEL__ void '+kernel_name+'( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )\n'+
-  #   '{\n'+
-  #   '  PROLOGUE(\\1,\\2);\n\n'
-  #   , code)
+  kernel_parameters=""
+
+  for e in [
+      ['iTime','float iTime'],
+      ['iResolution','float3 iResolution'],
+      ['iMouse','float4 iMouse'],
+      ['iTimeDelta' , 'float iTimeDelta'],
+      ['iFrame' , 'int iFrame'],
+      ['iChannelTime' , 'float iChannelTime[]'],
+      ['iChannelResolution' , 'float3 iChannelResolution[]'],
+      ['iDate' , 'float4 iDate'],
+      ['iSampleRate' , 'float iSampleRate'],
+      ['iChannel0', 'sampler2D iChannel0'],
+      ['iChannel1', 'sampler2D iChannel1'],
+      ['iChannel2', 'sampler2D iChannel2'],
+      ['iChannel3', 'sampler2D iChannel3'],
+    ]:
+    if code.find(e[0])!=-1: # okay, ein find() ist hier arg grob - aber fuer's erste soll's reichen
+      kernel_parameters=kernel_parameters+", "+e[1]
+
 
   # Kernelaufruf
-
+  #   Ich erwische dabei nur die mit fragColor und fragCoord? Gibt's bei Shadertoy auch Aufrufe ohne diese beiden,
+  #   gar oder mit mehr Parametern?!?
+  #
   match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{'
 
   m = re.search(match_kernel,code)
@@ -85,7 +101,7 @@ def convert(code,fuse_name,buffer_name):
     fragColor=m.group(1)
 
     code = re.sub(match_kernel,
-      '__KERNEL__ void '+kernel_name+'(float4 \\1, float2 \\2)\n{\n'
+      '__KERNEL__ void '+kernel_name+'(float4 \\1, float2 \\2'+kernel_parameters+')\n{\n'
       , code)
 
     # Versuche jetzt am Ende noch etwas reinzuschmieren:
