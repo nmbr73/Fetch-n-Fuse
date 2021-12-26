@@ -129,7 +129,7 @@ end
 --
 function Create()
 
-  local REPOSITORYPATH=[[]]
+  local REPOSITORYPATH=[[D:\Zumsel\Dokumente\Github\Fetch-n-Fuse\]]
 
 
   -- create defined to connect input contols to kernel
@@ -534,17 +534,17 @@ function Process(req)
 
     --JiPi_Multifuse
     if (InBufferATest:GetValue(req).Value > 0) then
-      ConversionKernelname = ConversionFusename .. "Kernel"
+      ConversionKernelname = ConversionFusename .. "Fuse"
     else
 
-      -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
-      -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
-      -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
-      -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
-      -- drangehaengt.
+        -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
+        -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
+        -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
+        -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
+        -- drangehaengt.
 
-    ConversionKernelname = ConversionFusename .. "Fuse_" .. self.Name
-
+      ConversionKernelname = ConversionFusename .. "Fuse" --.. self.Name
+    end
     -- --------------------------------------------------------------------------------------------------------------
 
     local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%(([^%)]*)%)%s*%{")
@@ -631,7 +631,7 @@ function Process(req)
         end
       end
     end
-
+    
 
     kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
     for i=0,3 do
@@ -758,7 +758,7 @@ function Process(req)
     end
     end
   end
---print("Kernelname",_ConversionKernelname)
+print("\n SourceCode",ConversionSourcecode,"\n")
 
   local node = DVIPComputeNode(req,
     ConversionKernelname,
