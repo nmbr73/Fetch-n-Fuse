@@ -6,13 +6,13 @@
 
 
 #define A(u) texture(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
-	
+
 	__KERNEL__ void Kernel(
     __CONSTANTREF__ Params*  params,
     __TEXTURE2D__            iChannel0,
     __TEXTURE2D_WRITE__      dst
     ) {
-	
+
 	DEFINE_KERNEL_ITERATORS_XY(x, y);                                                               \
     if (x >= params->width || y >= params->height)                                                  \
       return;                                                                                       \
@@ -22,10 +22,10 @@
     float2 u   = to_float2(x, y);                                                           \
     float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w); \
     float4 fragColor   = to_float4_s(0.0f);
-	
+
     float4 a = A((u+to_float2(0,0)));
     float b = 0.0f;
-    
+
     //kernel convolution that pointifies
     {
         float z = 2.0f;//kernel convolution size
@@ -88,7 +88,7 @@
     //float keyA  = texture( iChannel1, to_float2(65.5/256.,0.25f) ).x;
     //if(keyA!=0.0f)a = texture( iChannel2, u/iResolution).xxxx-0.6f;
     fragColor = a;
-	
+
 	SHADER_EPILOGUE;
 }
 
@@ -100,7 +100,8 @@
 
 #ifdef XXX
 
-__KERNEL__ void fungusKernel( out float4 fragColor, in float2 fragCoord )
+
+__KERNEL__ void fungusFuse( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
     float2 u = fragCoord/iResolution;
     float4 a = texture(iChannel0,u);
