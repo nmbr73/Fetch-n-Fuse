@@ -198,8 +198,8 @@
   #define fract_f3(A) fract(A)
   #define fract_f4(A) fract(A)
 
-  #define mod_f(a,b)  mod((a),(b))
-  #define mod_f2(value,divisor) mod(value,divisor)
+  #define mod_f(a,b)  modf((a),(b))
+  #define mod_f2(value,divisor) modf(value,divisor)
 
 #else
 
