@@ -537,68 +537,13 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to render the node.
 --
---JiPi_Multifuse
-ImgAttrs_Global = {
-        { IMG_Channel = "Red", },
-        { IMG_Channel = "Green", },
-        { IMG_Channel = "Blue", },
-        { IMG_Channel = "Alpha", },
-        IMG_Width = Width,
-        IMG_Height = Height,
-  	    IMG_DeferAlloc = false,
-        }
-Image_Buff_GlobalA = Image(ImgAttrs_Global)
 
+-- Kerneldeklaration
 
-function Process(req)
+function Kerneldeclaration(ConversionFusename, ConversionKernelname)
 
-  local rebuild = false
-
-  if InRebuildCheckBox:GetValue(req).Value == 1 then
-    verbose("Process: do rebuild and clear the flag")
-    InRebuildCheckBox:SetSource(Number(0),0)
-    rebuild=true
-  end
-
-
-
-  if rebuild then
-    ConversionSourcecode  = ""
-    local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
-    ConversionFusename    = item.Name
-    ConversionShaderID    = item.ShadertoyID
-
-    InShadertoyButton:SetAttrs({
-      BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
-      INP_Disabled=  ConversionShaderID=="TEST" and true or false
-      })
-
-    verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
-
-    file = io.open(item.Path .. item.Filename,"r")
-
-    if file ~= nil then
-      ConversionSourcecode = "\n" .. file:read("*all")
-      file:close()
-    end
-
-
-    --JiPi_Multifuse
-    if (InBufferATest:GetValue(req).Value > 0) then
-      ConversionKernelname = ConversionFusename .. "Fuse"
-    else
-
-        -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
-        -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
-        -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
-        -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
-        -- drangehaengt.
-
-      ConversionKernelname = ConversionFusename .. "Fuse_" .. self.Name
-    end
-    -- --------------------------------------------------------------------------------------------------------------
-
-    local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%(([^%)]*)%)%s*%{")
+    --local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%(([^%)]*)%)%s*%{")
+    local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionKernelname.."%s*%(([^%)]*)%)%s*%{")
     local count=0
 
 
@@ -738,10 +683,11 @@ function Process(req)
     end
 
 
-      local count
+    local count
 
     ConversionSourcecode, count = string.gsub(ConversionSourcecode,
-      "__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%([^%)]*%)%s*%{",
+      --"__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%([^%)]*%)%s*%{",
+      "__KERNEL__%s+void%s+"..ConversionKernelname.."%s*%([^%)]*%)%s*%{",
 
       KernelInputCtrlDefines.."\n\n"..
       "__KERNEL__ void "..ConversionKernelname.."("..kernel_parameters..")\n{\n"..
@@ -760,7 +706,8 @@ function Process(req)
     -- falsche Namen in 99% der Faelle
 
     if count ~=1 then
-      print("void "..ConversionFusename.."Fuse() found "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
+      --print("void "..ConversionFusename.."Fuse() found "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
+      print("void "..ConversionKernelname.."() found "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
       ConversionSourcecode = ""
     else
 
@@ -777,11 +724,80 @@ function Process(req)
         print("no compatibility code?!?")
       end
     end
+  
+
+end
 
 
+
+--JiPi_Multifuse
+ImgAttrs_Global = {
+        { IMG_Channel = "Red", },
+        { IMG_Channel = "Green", },
+        { IMG_Channel = "Blue", },
+        { IMG_Channel = "Alpha", },
+        IMG_Width = Width,
+        IMG_Height = Height,
+  	    IMG_DeferAlloc = false,
+        }
+Image_Buff_GlobalA = Image(ImgAttrs_Global)
+
+
+function Process(req)
+
+  local rebuild = false
+
+  if InRebuildCheckBox:GetValue(req).Value == 1 then
+    verbose("Process: do rebuild and clear the flag")
+    InRebuildCheckBox:SetSource(Number(0),0)
+    rebuild=true
   end
 
 
+
+  if rebuild then
+    ConversionSourcecode  = ""
+    local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
+    ConversionFusename    = item.Name
+    ConversionShaderID    = item.ShadertoyID
+
+    InShadertoyButton:SetAttrs({
+      BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
+      INP_Disabled=  ConversionShaderID=="TEST" and true or false
+      })
+
+    verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
+
+    file = io.open(item.Path .. item.Filename,"r")
+
+    if file ~= nil then
+      ConversionSourcecode = "\n" .. file:read("*all")
+      file:close()
+    end
+
+
+    --JiPi_Multifuse
+    if (InBufferATest:GetValue(req).Value > 0) then
+      ConversionKernelname = ConversionFusename .. "Fuse"
+    else
+
+        -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
+        -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
+        -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
+        -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
+        -- drangehaengt.
+
+      ConversionKernelname = ConversionFusename .. "Fuse" -- .. self.Name
+    end
+
+    ----------------------------- Kerneldeklaration -----------------------------
+    Kerneldeclaration(ConversionFusename, ConversionKernelname )
+
+    --Kerneldeclaration(ConversionFusename, (ConversionKernelname.."_BufferA") ) -- geht nicht 
+
+print(ConversionSourcecode)
+
+  end --rebuild
 
 
   if ConversionSourcecode == ""  then
