@@ -860,8 +860,6 @@ function Process(req)
 
   params.width  = dst.Width
   params.height = dst.Height
---params.width            = iChannel[0].DataWindow:Width()
---params.height           = iChannel[0].DataWindow:Height()
 
   params.iResolution[0] = dst.Width
   params.iResolution[1] = dst.Height
@@ -891,9 +889,8 @@ function Process(req)
 
   for i=0,NUM_INPUT_CHANNELS-1 do
     params.iChannelTime[i] = 0
-    for j=0,1 do
-      params.iChannelResolution[i][j] = 0
-    end
+    params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()
+    params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()
   end
 
   -- params.iChannel0_width  = iChannel[0].Width
