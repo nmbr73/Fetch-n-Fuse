@@ -5,6 +5,7 @@
 
 #define in
 
+
 // ---------------------------------------------------------------------------
 // 2x2 matrix
 // ---------------------------------------------------------------------------
@@ -17,10 +18,6 @@
   __DEVICE__ inline float2  mat2_multi_f2(  mat2  m, float2 v )  { return m*v; }
 
 #else
-//typedef struct
-//  {
-//    float2 r0, r1;
-//  } mat2;
 
 __DEVICE__ inline mat2 make_mat2( float A, float B, float C, float D)
   {
@@ -29,19 +26,17 @@ __DEVICE__ inline mat2 make_mat2( float A, float B, float C, float D)
     E.r1 = to_float2(C,D);
     return E;
   }
-
+  
 __DEVICE__ inline float2 f2_multi_mat2( float2 A, mat2 B )
   {
 	float2 C;
 	C.x = A.x * B.r0.x + A.y * B.r0.y;
 	C.y = A.x * B.r1.x + A.y * B.r1.y;
 	return C;
-  }
+  }  
 
 #endif
 
-__DEVICE__ float fract(float A){return A - _floor(A);}
-__DEVICE__ float3 fract_f3(float3 A){return make_float3(A.x - _floor(A.x), A.y - _floor(A.y), A.z - _floor(A.z));}
 __DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
 #define swiyzx(V) to_float3((V).y,(V).z,(V).x)
@@ -171,7 +166,8 @@ __DEVICE__ float2 animation(float2 p, float t, float bodySize, int modus)
 
     if(modus==2) return p;
 
-    p.x += walk(t)*0.1f;
+    if (modus==0) p.x += walk(t)*0.1f;
+
     p.x *= stretch(t, modus)*-0.2f+1.0f;
 
     // bounce stretch with collision
