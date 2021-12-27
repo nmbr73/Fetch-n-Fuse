@@ -13,13 +13,12 @@ from dotenv import load_dotenv
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
 
-def convert(code,fuse_name,buffer_name):
-
-  # uncomment to see the code before conversion:
-  #
-  # with open(fuse_filename+"_raw.c", 'w') as f:
-  #    f.write(code)
+def patchForDCTL(code,fuse_name,buffer_name):
+  """
+  Do some text replacememt to make some WebGL to DCTL conversions.
+  """
 
   code = code.replace("\t", "  ")
 
@@ -125,7 +124,15 @@ def convert(code,fuse_name,buffer_name):
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+
 def copyTextFile(src,dst):
+  """
+  Copy file src to dst.
+
+  There seems to be no such function in `os`or in `io`, but I don't
+  want to include another big package just for that simple functionality.
+  """
   txt=""
   with open(src, "r") as f:
     txt=f.read()
@@ -135,6 +142,8 @@ def copyTextFile(src,dst):
 
 
 
+
+# ---------------------------------------------------------------------------------------------------------------------
 
 def getCacheFilename(path,id):
 
@@ -172,14 +181,23 @@ def getCacheFilename(path,id):
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+
 def convertToFusename(shader_name):
+  """
+  Derive an identifier from shader_name.
+
+  Remove whitespace, leading digits, special characters, etc to make something that can be used as an identifier out of `shader_name`.
+  """
   return''.join(x for x in re.sub(r'[^A-Za-z0-9 ]+',' ', shader_name).title() if not x.isspace())
 
 
 
 
 
-def doFetch(id,force=False,nocache=False,noassets=False):
+# ---------------------------------------------------------------------------------------------------------------------
+
+def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
 
   path = './Conversions/'
   url = "https://www.shadertoy.com/view/"+id
@@ -306,11 +324,19 @@ def doFetch(id,force=False,nocache=False,noassets=False):
   for entry in json_data['renderpass']:
 
 
-
-    code="\n// ----------------------------------------------------------------------------------\n"+ \
+    header="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
-      "// ----------------------------------------------------------------------------------\n"+ \
-      "\n\n\n"+convert(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
+      "// ----------------------------------------------------------------------------------\n\n\n"
+
+    if nopatch:
+      code = header + entry['code'] + code
+    else:
+      code = header + patchForDCTL(entry['code'],fuse_name,entry['name']) + code
+
+    # code="\n// ----------------------------------------------------------------------------------\n"+ \
+    #   "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
+    #   "// ----------------------------------------------------------------------------------\n"+ \
+    #   "\n\n\n"+patchForDCTL(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
 
     if not noassets:
 
@@ -352,7 +378,6 @@ def doFetch(id,force=False,nocache=False,noassets=False):
                     f.write(data.content)
 
 
-  #code = convert(code,fuse_name)
 
   with open(fuse_filename+".c", 'w') as f:
      f.write(code)
@@ -360,12 +385,7 @@ def doFetch(id,force=False,nocache=False,noassets=False):
 
 
 
-
-# ltfXzj - tut's nicht
-# td2SDz - tut's
-# MlKGWK - hat mehrere Buffer
-# lstXRl - hat assets
-# Wl3fzM - den will ich als Test dann hiermit mal machen
+# =====================================================================================================================
 
 if not(os.path.isfile(".env")):
   with open(".env", 'w') as f:
@@ -379,12 +399,13 @@ load_dotenv()
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
+parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
-parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
+parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
 args = parser.parse_args()
 
 try:
-  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets)
+  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
 except Exception as e:
   print("ERROR: "+str(e))
