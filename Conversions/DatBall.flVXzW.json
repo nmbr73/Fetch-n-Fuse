@@ -1,0 +1,74 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flVXzW",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork dat ball JiPi 161",
+  "description": "Shane's texture bump mapping on IQ's raymarching base code.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "3d",
+   "raymarch",
+   "bumpmap"
+  ],
+  "hasliked": 0,
+  "parentid": "XtSXRV",
+  "parentname": "dat ball"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGRn",
+     "filepath": "/media/a/cd4c518bc6ef165c39d4405b347b51ba40f8d7a065ab0e8d2e4f422cbc1e8a43.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsX3Rn",
+     "filepath": "/media/a/92d7758c402f0927011ca8d0a7e40251439fba3a1dac26f5b8b62026323501aa.jpg",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "/*\n\tToying with code from :\n\tShane's texture bump mapping -> https://www.shadertoy.com/view/MlXSWX\n\tIQ's raymarch code -> https://www.shadertoy.com/view/Xds3zN\n\tNimitz's fog -> https://www.shadertoy.com/view/4ts3z2\n\n\tThanks to Shane for the very useful help.\n*/\n\nmat3 rotate3(vec3 angles)\n{\n    vec3 c = cos(angles);\n    vec3 s = sin(angles);\n    \n    mat3 rotX = mat3( 1.0, 0.0, 0.0, 0.0,c.x,s.x, 0.0,-s.x, c.x);\n    mat3 rotY = mat3( c.y, 0.0,-s.y, 0.0,1.0,0.0, s.y, 0.0, c.y);\n    mat3 rotZ = mat3( c.z, s.z, 0.0,-s.z,c.z,0.0, 0.0, 0.0, 1.0);\n\n    return rotX * rotY * rotZ;\n}\n\nfloat sdSphere( vec3 p, float s )\n{\n    return length(p)-s;\n}\n\nfloat customShape( vec3 p, vec2 t )\n{\t// 3 torus with displacements\n  \tfloat t1 = length( vec2(length(p.xz)-t.x,p.y*0.2) )-t.y*cos(p.z*1.4);\n  \tfloat t2 = length( vec2(length(p.yx)-t.x,p.z*0.2) )-t.y*cos(p.x*1.4);\n  \tfloat t3 = length( vec2(length(p.zy)-t.x,p.x*0.2) )-t.y*cos(p.y*1.4);  \n  \treturn min(min(t1,t2),t3);\n}\n\nfloat tri(in float x){return abs(fract(x)-.5);}\nvec3 tri3(in vec3 p){return vec3( tri(p.z+tri(p.y*1.)), tri(p.z+tri(p.x*1.)), tri(p.y+tri(p.x*1.)));}\n                                 \nmat2 m2 = mat2(0.970,  0.242, -0.242,  0.970);\n\nfloat triNoise3d(in vec3 p, in float spd)\n{\n    float z=1.4;\n\tfloat rz = 0.;\n    vec3 bp = p;\n\tfor (float i=0.; i<=3.; i++ )\n\t{\n        vec3 dg = tri3(bp*2.);\n        p += (dg+iTime*spd);\n\n        bp *= 1.8;\n\t\tz *= 1.5;\n\t\tp *= 1.2;\n        //p.xz*= m2;\n        \n        rz+= (tri(p.z+tri(p.x+tri(p.y))))/z;\n        bp += 0.14;\n\t}\n\treturn rz;\n}\n\nfloat fogmap(in vec3 p, in float d)\n{\n    p.x += iTime*1.5;\n    p.z += sin(p.x*.5);\n    return triNoise3d(p*2.2/(d+20.),0.2)*(1.-smoothstep(0.,.7,p.y));\n}\n\nvec3 fog(in vec3 col, in vec3 ro, in vec3 rd, in float mt)\n{\n    float d = .5;\n    for(int i=0; i<7; i++)\n    {\n        vec3  pos = ro + rd*d;\n        float rz = fogmap(pos, d);\n\t\tfloat grd =  clamp((rz - fogmap(pos+.8-float(i)*0.1,d))*3., 0.1, 1. );\n        vec3 col2 = (vec3(.1,0.1,.1)*.5 + .5*vec3(.1, .1, 0.1)*(1.7-grd))*0.55;\n        col = mix(col,col2,clamp(rz*smoothstep(d-0.4,d+2.+d*.75,mt),0.,1.) );\n        d *= 1.5+0.3;\n        if (d>mt)break;\n    }\n    return col;\n}\n\n//----------------------------------------------------------------------\nfloat getGrey(vec3 p){ return p.x*0.299 + p.y*0.587 + p.z*0.114; }\n\nvec3 tex3D( sampler2D tex, in vec3 p, in vec3 n ){\n  \n    n = max((abs(n) - 0.2)*7., 0.001); // max(abs(n), 0.001), etc.\n    n /= (n.x + n.y + n.z );  \n    \n\treturn (texture(tex, p.yz)*n.x + texture(tex, p.zx)*n.y + texture(tex, p.xy)*n.z).xyz;\n}\n\n// from Shane : https://www.shadertoy.com/view/MlXSWX\nvec3 doBumpMap( sampler2D tex, in vec3 p, in vec3 nor, float bumpfactor){\n   \n    const float eps = 0.001;\n    float ref = getGrey(tex3D(tex,  p , nor));                 \n    vec3 grad = vec3( getGrey(tex3D(tex, vec3(p.x-eps, p.y, p.z), nor))-ref,\n                      getGrey(tex3D(tex, vec3(p.x, p.y-eps, p.z), nor))-ref,\n                      getGrey(tex3D(tex, vec3(p.x, p.y, p.z-eps), nor))-ref )/eps;\n             \n    grad -= nor*dot(nor, grad);          \n                      \n    return normalize( nor + grad*bumpfactor );\n\t\n}\n\nvec2 opU( vec2 d1, vec2 d2 )\n{\n\treturn (d1.x<d2.x) ? d1 : d2;\n}\n\nvec2 map( in vec3 p )\n{\n    float dist;\n    vec2 obj1, obj2, rmap;\n       \n   \tvec3 pr1 = rotate3(vec3(0.2,0.13,0.)*iTime*2.)*p;\n   \tvec3 pr2 = rotate3(vec3(-0.24,-0.13,1.1)*iTime)*p;    \n\n\tdist = sdSphere(pr1,0.8) ;\n    obj1 = vec2 ( dist, 1 );\n\n    dist = customShape( pr2-vec3( 0.0, 0.0, 0.0), vec2(1.3,0.1) );\n    obj2 = vec2 ( dist, 2 );\n    \n    rmap = opU(obj1,obj2);\n    return rmap;\n}\n\nvec3 calcNormal( in vec3 pos )\n{\n\tvec3 eps = vec3( 0.01, 0.0, 0.0 );\n\tvec3 nor = vec3(\n\t    map(pos+eps.xyy).x - map(pos-eps.xyy).x,\n\t    map(pos+eps.yxy).x - map(pos-eps.yxy).x,\n\t    map(pos+eps.yyx).x - map(pos-eps.yyx).x );\n\treturn normalize(nor);\n}\n\nvec2 castRay( in vec3 ro, in vec3 rd )\n{\n    float tmax = 20.0;  \n    float t = 1.;\n    float oid = -1.0;\n    \n    for( int i=0; i<550; i++ )\n    {\n\t    vec2 res = map( ro+rd*t );\n        if( res.x< 0.001 || t>tmax ) break;\n        t += res.x;\n        oid = res.y; \n    }\n\n    if( t>tmax ) oid=-1.0;\n    return vec2(t,oid);\n}\n\nvec3 render( in vec3 ro, in vec3 rd )\n{ \n    vec3 col = vec3(0.);\n    vec2 res = castRay(ro,rd);\n    vec3 p = ro +rd*res.x;        \n    \n    if ( res.x < 20. ) \n    {\n        \n        vec3 n = calcNormal(p);\n        vec3 lightDir=normalize(vec3(1.,1.,-1.));\n        \n        vec3 light2Pos=vec3(2.,-1.,-4.);\n        vec3 light2Dir=normalize(light2Pos-p);\n\n        vec3 tex = vec3(0.);\n        mat3 rotMat = mat3( 0. );\n        if ( res.y == 1. ) // sphere\n        {\n            vec3 rotationValues = vec3(0.2,0.13,0.) * iTime*2.;\n            rotMat = rotate3( rotationValues );\n        \tp = rotMat * p;\n            n = rotMat * n;\n            \n            n = doBumpMap( iChannel1, p, n, 0.045);\n            tex = tex3D( iChannel1, p, n);\n        } else //( res.y == 2. ) // custom shape\n        {\n            vec3 rotationValues = vec3(-0.24,-0.13,1.1) * iTime; \n            rotMat = rotate3( rotationValues );\n        \tp = rotMat * p;\n            n = rotMat * n;\n        \n            n = doBumpMap( iChannel2, p, n, 0.045);\n            tex = tex3D( iChannel2, p, n);\n        }\n\t\t\n        lightDir = rotMat * lightDir;\n        light2Dir = rotMat * light2Dir;\n        float b=dot(lightDir,n);\n        float b2=dot(light2Dir,n);\n        col = vec3( (b+b2)*tex+pow( (b+b2)*0.5,9.0));    \n        \n    } else \n    {\n        col = vec3(0.,0.,0.);\n        p = mix(p,ro+rd*20.,exp(rd/20.));\n        vec3 btex = tex3D(iChannel1,p/20., -rd).xyz;\n        col = mix(col,btex,0.9);\n    }\n    \n    col = fog( col, ro, rd, 2.2);\n    \n \treturn vec3( clamp(col,0.0,1.0) );\n}\n\nmat3 setCamera( in vec3 ro, in vec3 ta, float cr )\n{\n\tvec3 cw = normalize(ta-ro);\n\tvec3 cp = vec3(sin(cr), cos(cr),0.0);\n\tvec3 cu = normalize( cross(cw,cp) );\n\tvec3 cv = normalize( cross(cu,cw) );\n    return mat3( cu, cv, cw );\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 q = fragCoord.xy/iResolution.xy;\n    vec2 p = -1.0+2.0*q;\n\tp.x *= iResolution.x/iResolution.y;\n    vec2 mo = iMouse.xy/iResolution.xy;\n\t\t \n\tfloat time = 15.0 + iTime;\n\n\t// camera\t\n\tvec3 ro = vec3( 4., 0., 0.);\n    \n\tvec3 ta = vec3( 0., 0., 0. );\n\t\n\t// camera-to-world transformation\n    mat3 ca = setCamera( ro, ta, 0.0 );\n    \n    // ray direction\n\tvec3 rd = ca * normalize( vec3(p.xy,2.0) );\n\n    // render\t\n    vec3 col = render( ro, rd );\n\n\tcol = pow( col, vec3(0.6) );\n\n   \t// vignetting from : https://www.shadertoy.com/view/4lSXDm\n   \tfloat falloff = 0.6;\n    float rf = sqrt(dot(p, p)) * falloff;\n    float rf2_1 = rf * rf + 1.0;\n    float e = 1.0 / (rf2_1 * rf2_1);\n    \n\tfragColor = vec4(col * e * 1.3, 1.0);\n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}
