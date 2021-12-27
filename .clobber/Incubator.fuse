@@ -790,17 +790,16 @@ function Process(req)
 
   if InMouseDrag:GetValue(req).Value ~= 0 then
     -- hm, okay ... was mache ich mit einem Mausklick bei Position 0|0 ?!?
-    if params.iMouse[2]==0 and params.iMouse[3]==0 then
+    if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
       params.iMouse[2]=params.iMouse[0]
       params.iMouse[3]=params.iMouse[1]
     end
   else
-    params.iMouse[2] = 0
-    params.iMouse[3] = 0
+    params.iMouse[2] = -1
+    params.iMouse[3] = -1
   end
 
   if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
-    -- print(mouse_zw.X.." != "..params.iMouse[2])
     InMouseZW:SetAttrs({INP_Disabled=false})
     InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
     InMouseZW:SetAttrs({INP_Disabled=true})
@@ -808,8 +807,13 @@ function Process(req)
 
   params.iMouse[0] = params.iMouse[0] * Width
   params.iMouse[1] = params.iMouse[1] * Height
-  params.iMouse[2] = params.iMouse[2] * Width
-  params.iMouse[3] = params.iMouse[3] * Height
+  if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
+  else
+    params.iMouse[2] = params.iMouse[2] * Width
+    params.iMouse[3] = params.iMouse[3] * Height
+  end
 
   text = string.format("{%.1f, %.1f, %.1f, %.1f}", params.iMouse[0], params.iMouse[1],params.iMouse[2],params.iMouse[3])
 
@@ -881,20 +885,18 @@ function Process(req)
 
 
   -- -----
-  -- TODO: The following parameters are not yet
-  -- initialized:
+  -- TODO: The following parameters are
+  -- not yet (correctly) initialized:
+  -- -----
 
   params.iTimeDelta=0
   params.iFrame=0
 
   for i=0,NUM_INPUT_CHANNELS-1 do
     params.iChannelTime[i] = 0
-    params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()
-    params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()
+    params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()    -- or maybe: iChannel[0].Width
+    params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()   -- or maybe: iChannel[0].Height
   end
-
-  -- params.iChannel0_width  = iChannel[0].Width
-  -- params.iChannel0_height = iChannel[0].Height
 
 
   params.iDate[0] = 0
@@ -907,7 +909,6 @@ function Process(req)
 
   node:SetParamBlock(params)
 
---node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   for i=0,NUM_INPUT_CHANNELS-1 do
     node:AddInput("iChannel"..i,iChannel[i])
