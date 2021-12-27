@@ -43,15 +43,18 @@ __DEVICE__ float3 calcNormal( float4 ball, float2 uv )
 //************************
 __KERNEL__ void PaintballFuse(
     float2 fragCoord,
-    float3 iResolution,
+    float2 iResolution,
     float4 iMouse,
     float  iTime
    )
 {
 
     const int nBalls = 40;
-    const int nLights = 4;
-    const int numColors = 3; //max 4
+    // const int nLights = 4;
+    CONNECT_TINYINT0(nLights,0,10,4);
+    const int nLightsMax = 10;
+    //const int numColors = 3; //max 4
+    CONNECT_TINYINT1(numColors,0,4,3);
     const float lightZ = -0.2f;
 
     float3 colors[] = {
@@ -100,7 +103,8 @@ __KERNEL__ void PaintballFuse(
     float speed = 0.3f;
 
     float4 balls[nBalls];
-    float4 lights[nLights];
+    //float4 lights[nLights];
+    float4 lights[nLightsMax];
 
     for( i = 0; i < nBalls; i++ ){
 

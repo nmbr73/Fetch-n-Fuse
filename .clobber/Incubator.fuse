@@ -29,10 +29,14 @@ ConversionFusename     = ""
 ConversionKernelname   = ""
 ConversionSourcecode   = ""
 
-NUM_INPUT_CHANNELS        = 1
+NUM_INPUT_CHANNELS        = 5
+
 NUM_COLOR_CONTROLS        = 5
 NUM_TINYSLIDER_CONTROLS   = 4
 NUM_SMALLSLIDER_CONTROLS  = 4
+
+NUM_TINYINT_CONTROLS   = 4
+
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 ConversionSourcecode_fallback = nil
@@ -137,7 +141,13 @@ function Create()
   KernelInputCtrlDefines =""
 
   for i=0,NUM_COLOR_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME) float4 NAME     = to_float4(_shaderParameters->color["..i.."][0],_shaderParameters->color["..i.."][1],_shaderParameters->color["..i.."][2],_shaderParameters->color["..i.."][3])\n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A) "..
+      "float4 NAME = to_float4( "..
+      "(_shaderParameters->useDefaultValues?DEFAULT_R:_shaderParameters->color["..i.."][0]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_G:_shaderParameters->color["..i.."][1]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_B:_shaderParameters->color["..i.."][2]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_A:_shaderParameters->color["..i.."][3])"..
+      ")\n"
   end
 
   for i=0,NUM_TINYSLIDER_CONTROLS-1 do
@@ -146,6 +156,16 @@ function Create()
 
   for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->smallSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+  end
+
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYINT"..i.."(NAME,SMIN,SMAX,SDEFAULT) "..
+    "const int NAME = ( "..
+    "_shaderParameters->useDefaultValues ? SDEFAULT : ("..
+    "_shaderParameters->tinyInt["..i.."] < SMIN ? SMIN : ("..
+    "_shaderParameters->tinyInt["..i.."] > SMAX ? SMAX : _shaderParameters->tinyInt["..i.."])))\n"
+
   end
 
   verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
@@ -196,21 +216,28 @@ function Create()
 
   ShaderParameters=[[
 
+  float iResolution[2];
   float iTime;
   float iMouse[4];
+  float iTimeDelta;
+  int   iFrame;
+  float iChannelTime[]]..NUM_INPUT_CHANNELS..[[];
+  float iChannelResolution[]]..NUM_INPUT_CHANNELS..[[][2];
+  float iDate[4];
+  float iSampleRate;
+  int width, height; // you should prefer to use iResolution instead
+  int compOrder;
 
   float color[]]..NUM_COLOR_CONTROLS..[[][4];
   float tinySlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
   float smallSlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
 
-  int   width, height;
-  int   compOrder;
-  int iChannel0_width;
-  int iChannel0_height;
+  int tinyInt[]]..NUM_TINYINT_CONTROLS..[[];
 
-  int useDefaultValues;
+  int useDefaultValues; // do not use - will not exists in the final fuse!
 
   ]]
+
 
 
   print(ShaderParameters)
@@ -304,7 +331,7 @@ function Create()
   InUseDefaultValues = self:AddInput("don't use controls for input", "useDefaultValues", {
     LINKID_DataType = "Number",
     INPID_InputControl = "CheckboxControl",
-    INP_Default = 0,
+    INP_Default = 1,
     INP_MinScale = 0,
     INP_MaxScale = 1,
     IC_Visible = true,
@@ -413,10 +440,10 @@ function Create()
       end
     end
 
-    self:EndControlNest()
+  self:EndControlNest()
 
 
-  -- some sliders controls to play with colors in the kernel
+  -- some sliders controls to play with
 
   self:BeginControlNest("Slider Controls", "Sliders", false, {})
 
@@ -446,7 +473,26 @@ function Create()
 
   self:EndControlNest()
 
+  -- some int sliders
 
+  self:BeginControlNest("Integer Slider", "SlidersInt", false, {})
+
+
+  InTinyInt={}
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    InTinyInt[i] = self:AddInput("Tiny Int Slider "..i, "tinyint"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale 	     = -10,
+      INP_MaxScale 	     = 10,
+      INP_Default        = 0,
+      INP_Integer = true,
+    })
+  end
+
+
+  self:EndControlNest()
 
   -- controls for the tool itself, not passed to the kernel
 
@@ -472,9 +518,14 @@ function Create()
 
 
   -- node's inputs and its output
+  InChannel = {}
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    InChannel[i] = self:AddInput(   "iChannel"..i,  "iChannel"..i,  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+  end
 
-  InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
-	OutImage   = self:AddOutput(  "Output",     "Output",     { LINKID_DataType = "Image", LINK_Main = 1                        })
+  -- InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+
+  OutImage   = self:AddOutput(  "Output",     "Output",     { LINKID_DataType = "Image", LINK_Main = 1                        })
 
 end
 
@@ -551,29 +602,54 @@ function Process(req)
     local count=0
 
 
-
-    -- float4 fragColor,
-    -- float2 fragCoord,
-
-
-
     local has_param={
-      ['iResolution']           = { Type='float3',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+      -- ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+      ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
       ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
       ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
 
-      -- ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
-      -- ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
-      -- ['iChannelTime']          = { Type='float*',     Present=false, Code='float4 iChannelTime = to_float4(_shaderParameters->iChannelTime[0],_shaderParameters->iChannelTime[1],_shaderParameters->iChannelTime[2],_shaderParameters->iChannelTime[3]);'  },
-      -- ['iChannelResolution']    = { Type='float3*',    Present=false, Code='float3 iChannelResolution[4] = { to_float3(_shaderParameters->iChannelTime[0][0],_shaderParameters->iChannelTime[0][1],_shaderParameters->iChannelTime[0][2] ), to_float3(_shaderParameters->iChannelTime[1][0],_shaderParameters->iChannelTime[1][1],_shaderParameters->iChannelTime[1][2] ), to_float3(_shaderParameters->iChannelTime[2][0],_shaderParameters->iChannelTime[2][1],_shaderParameters->iChannelTime[2][2] ), to_float3(_shaderParameters->iChannelTime[3][0],_shaderParameters->iChannelTime[3][1],_shaderParameters->iChannelTime[3][2] )};'  },
-      -- ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
-      -- ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
+      ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
+      ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
+      ['iChannelTime']          = { Type='float*',    Present=false, Code='ohoh!'  },
+      ['iChannelResolution']    = { Type='float2*',   Present=false, Code='whoops!'  },
+      ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
+      ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
 
-      ['iChannel0']             = { Type='sampler2D', Present=false },
-      ['iChannel1']             = { Type='sampler2D', Present=false },
-      ['iChannel2']             = { Type='sampler2D', Present=false },
-      ['iChannel3']             = { Type='sampler2D', Present=false },
+
+      -- ['iChannel0']             = { Type='sampler2D', Present=false },
+      -- ['iChannel1']             = { Type='sampler2D', Present=false },
+      -- ['iChannel2']             = { Type='sampler2D', Present=false },
+      -- ['iChannel3']             = { Type='sampler2D', Present=false },
+
+      -- Some special variables not known to shadertoys,
+      -- but you may want to use them in a Fuse, so we
+      -- allow to add them to the kernel's parameters:
+      ['width']             = { Type='int', Present=false, Code='int width = _shaderParameters->width;' },
+      ['height']            = { Type='int', Present=false, Code='int height = _shaderParameters->height;' },
+      ['compOrder']         = { Type='int', Present=false, Code='int width = _shaderParameters->compOrder;' },
+      ['x']                 = { Type='int', Present=false, Code='int x = fusion_x;' },
+      ['y']                 = { Type='int', Present=false, Code='int y = fusion_y;' },
+
     }
+
+    has_param['iChannelResolution']['Code']='float2 iChannelResolution['..NUM_INPUT_CHANNELS..'];\n'
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      has_param['iChannelResolution']['Code']=has_param['iChannelResolution']['Code']
+        .."iChannelResolution["..i.."] = to_float2(_shaderParameters->iChannelResolution["..i.."][0],_shaderParameters->iChannelResolution["..i.."][1]);\n"
+    end
+
+
+    has_param['iChannelTime']['Code']='float iChannelTime['..NUM_INPUT_CHANNELS..'];\n'
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      has_param['iChannelTime']['Code']=has_param['iChannelTime']['Code']
+        .."iChannelTime["..i.."] = _shaderParameters->iChannelTime["..i.."];\n"
+    end
+
+
+
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      has_param['iChannel'..i]={ Type='sampler2D', Present=false }
+    end
 
     local fragColor_name=nil -- float4
     local fragCoord_name=nil -- float2
@@ -631,20 +707,14 @@ function Process(req)
         end
       end
     end
-    
+
 
     kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
-    for i=0,3 do
+    for i=0,NUM_INPUT_CHANNELS-1 do
       if has_param["iChannel"..i].Present then
-        if i >= NUM_INPUT_CHANNELS then
-          print("iChannel"..i.." not available")
-        else
-          kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
-        end
+        kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
       else
-        if i<NUM_INPUT_CHANNELS then
-          kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
-        end
+        kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
       end
     end
     kernel_parameters = kernel_parameters .. "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
@@ -789,12 +859,17 @@ print("\n SourceCode",ConversionSourcecode,"\n")
 
 
   -- Extern Texture or create a new one
-  iChannel0 = InChannel0:GetValue(req)
 
-  if (iChannel0 == nil) then
-    iChannel0 = Image(imgattrs)
-    local p = Pixel({R=0,G=0,B=0,A=0})
-    iChannel0:Fill(p)
+  local iChannel={}
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    iChannel[i] = InChannel[i]:GetValue(req)
+
+    if (iChannel[i] == nil) then
+      iChannel[i] = Image(imgattrs)
+      local p = Pixel({R=0,G=0,B=0,A=0})
+      iChannel[i]:Fill(p)
+    end
   end
 
   local dst = Image {IMG_Like = iChannel0, IMG_DeferAlloc = true}
@@ -835,17 +910,16 @@ print("\n SourceCode",ConversionSourcecode,"\n")
 
   if InMouseDrag:GetValue(req).Value ~= 0 then
     -- hm, okay ... was mache ich mit einem Mausklick bei Position 0|0 ?!?
-    if params.iMouse[2]==0 and params.iMouse[3]==0 then
+    if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
       params.iMouse[2]=params.iMouse[0]
       params.iMouse[3]=params.iMouse[1]
     end
   else
-    params.iMouse[2] = 0
-    params.iMouse[3] = 0
+    params.iMouse[2] = -1
+    params.iMouse[3] = -1
   end
 
   if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
-    -- print(mouse_zw.X.." != "..params.iMouse[2])
     InMouseZW:SetAttrs({INP_Disabled=false})
     InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
     InMouseZW:SetAttrs({INP_Disabled=true})
@@ -853,8 +927,13 @@ print("\n SourceCode",ConversionSourcecode,"\n")
 
   params.iMouse[0] = params.iMouse[0] * Width
   params.iMouse[1] = params.iMouse[1] * Height
-  params.iMouse[2] = params.iMouse[2] * Width
-  params.iMouse[3] = params.iMouse[3] * Height
+  if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
+  else
+    params.iMouse[2] = params.iMouse[2] * Width
+    params.iMouse[3] = params.iMouse[3] * Height
+  end
 
   text = string.format("{%.1f, %.1f, %.1f, %.1f}", params.iMouse[0], params.iMouse[1],params.iMouse[2],params.iMouse[3])
 
@@ -898,13 +977,19 @@ print("\n SourceCode",ConversionSourcecode,"\n")
   end
 
 
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    params.tinyInt[i] = InTinyInt[i]:GetValue(req).Value
+  end
+
+
   -- Resolution
   params.width  = dst.Width
   params.height = dst.Height
---params.width            = iChannel0.DataWindow:Width()
---params.height           = iChannel0.DataWindow:Height()
 
-  text = string.format("{%.0f, %.0f}", params.width, params.height )
+  params.iResolution[0] = dst.Width
+  params.iResolution[1] = dst.Height
+
+  text = string.format("{%.0f, %.0f}", params.iResolution[0], params.iResolution[1] )
 
   if InShaderInputs_iResolution:GetValue(req).Value ~= text then
     InShaderInputs_iResolution:SetAttrs({INP_Disabled=false})
@@ -913,9 +998,35 @@ print("\n SourceCode",ConversionSourcecode,"\n")
   end
 
 
-  params.compOrder        = iChannel0:IsMask() and 1 or 15
-  params.iChannel0_width  = iChannel0.Width
-  params.iChannel0_height = iChannel0.Height
+
+
+  params.compOrder        = iChannel[0]:IsMask() and 1 or 15
+
+
+
+
+  -- -----
+  -- TODO: The following parameters are
+  -- not yet (correctly) initialized:
+  -- -----
+
+  params.iTimeDelta=0
+  params.iFrame=0
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    params.iChannelTime[i] = 0
+    params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()    -- or maybe: iChannel[0].Width
+    params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()   -- or maybe: iChannel[0].Height
+  end
+
+
+  params.iDate[0] = 0
+  params.iDate[1] = 0
+  params.iDate[2] = 0
+  params.iDate[3] = 0
+
+  params.iSampleRate = 0
+
 
   node:SetParamBlock(params)
 

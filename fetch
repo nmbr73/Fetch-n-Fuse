@@ -72,7 +72,7 @@ def convert(code,fuse_name,buffer_name):
 
   for e in [
       ['iTime','float iTime'],
-      ['iResolution','float3 iResolution'],
+      ['iResolution','float2 iResolution'],
       ['iMouse','float4 iMouse'],
       ['iTimeDelta' , 'float iTimeDelta'],
       ['iFrame' , 'int iFrame'],

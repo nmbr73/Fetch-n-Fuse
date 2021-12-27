@@ -1,13 +1,31 @@
 
-// ACHTUNG - DEN HIER BENUTZE ICH, UM DIE FUSE-GENERIERUNG ZU TESTEN
-// BITTE NICHT AN DIESER DATEI HIER ARBEITEN - UND AUCH NICHT DAS
-// FRAGMENT IN DEM ANDEREN REPO IN EINE FUSE VERPFLANZEN ... DAS SOLL
-// EBEN HALBWEGS AUSTOMATISIERT GESCHEHEN - HEISST, DAS ES ZU KONFLIKTEN
-// UND UEBERSCHREIBUNGEN MIT MEINEN EXPERIMENTEN FUEREN WUERDE!!!
-
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
+
+
+// Notlösung, da in CompatibiltyCode anders - aber ich wollte nur Apollian einchecken
+#if defined(DEVICE_IS_CUDA)
+  __DEVICE__ inline float2 prod_f2_mat2( float2 v, mat2 m )
+  {
+    float2 t; t.x = v.x*m.r0.x + v.y*m.r0.y; t.y = v.x*m.r1.x + v.y*m.r1.y; return t;
+  }
+#endif  
+
+#if defined(USE_NATIVE_METAL_IMPL)
+  #define abs_f3(A) abs(A)   
+  #define fract_f4_(A) fract(A)
+  #define sqrt_f3(A) sqrt(A) 
+  #define pow_f3(A) pow(A)
+
+#else
+  #define abs_f3(a) to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z))
+  #define fract_f4_(A) (make_float4(A.x - _floor(A.x), A.y - _floor(A.y), A.z - _floor(A.w), A.w - _floor(A.w)))
+  #define sqrt_f3(a) (make_float3(_sqrtf(a.x), _sqrtf(a.y), _sqrtf(a.z)))
+
+  #define pow_f3(a,b) (to_float3(_powf(a.x,b.x),_powf(a.y,b.y),_powf(a.z,b.z)))
+
+#endif
 
 
 
@@ -17,12 +35,12 @@
 #define PI              3.141592654
 #define TAU             (2.0f*PI)
 #define L2(x)           dot(x, x)
-#define ROT(a)          mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a))
+#define ROT(a)          to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a))
 #define PSIN(x)         (0.5f+0.5f*_sinf(x))
 
 __DEVICE__ float3 hsv2rgb(float3 c) {
   const float4 K = to_float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
-  float3 p = _fabs(fract(swixxx(c) + swixyz(K)) * 6.0f - swiwww(K));
+  float3 p = abs_f3(fract_f3((swixxx(c) + swixyz(K)) * 6.0f - swiwww(K)));
   return c.z * _mix(swixxx(K), clamp(p - swixxx(K), 0.0f, 1.0f), c.y);
 }
 
@@ -30,7 +48,7 @@ __DEVICE__ float apollian(float4 p, float s,float scale) {
   //float scale = 1.0f;
 
   for(int i=0; i<7; ++i) {
-    p        = -1.0f + 2.0f*fract(0.5f*p+0.5f);
+    p        = -1.0f + 2.0f*fract_f4_((0.5f*p+0.5f));
 
     float r2 = dot(p,p);
 
@@ -44,7 +62,7 @@ __DEVICE__ float apollian(float4 p, float s,float scale) {
 
 __DEVICE__ float weird(float2 p,float iTime,float scale) {
   float z = 4.0f;
-  p *= ROT(iTime*0.1f);
+  p = prod_f2_mat2(p,ROT(iTime*0.1f));
   float tm = 0.2f*iTime;
   float r = 0.5f;
   float4 off = to_float4(r*PSIN(tm*_sqrtf(3.0f)), r*PSIN(tm*_sqrtf(1.5f)), r*PSIN(tm*_sqrtf(2.0f)), 0.0f);
@@ -55,13 +73,13 @@ __DEVICE__ float weird(float2 p,float iTime,float scale) {
   tmp_mat2=ROT(tm);
   float2 tmp_float2;
   tmp_float2=to_float2(pp.y,pp.z);
-  tmp_float2=tmp_float2*tmp_mat2;
+  tmp_float2=prod_f2_mat2(tmp_float2,tmp_mat2);
   pp.y=tmp_float2.x;
   pp.z=tmp_float2.y;
   // swixz(pp) *= ROT(tm*_sqrtf(0.5f));
   tmp_mat2=ROT(tm*_sqrtf(0.5f));
   tmp_float2=to_float2(pp.x,pp.z);
-  tmp_float2=tmp_float2*tmp_mat2;
+  tmp_float2=prod_f2_mat2(tmp_float2,tmp_mat2);
   pp.x=tmp_float2.x;
   pp.z*=tmp_float2.y;
   pp /= z;
@@ -126,14 +144,13 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
   float3 bcol = hsv2rgb(hsv);
   col       *= (1.0f-_tanhf(0.75f*l))*0.5f;
   col       = _mix(col, bcol, smoothstep(-aa, aa, -d));
-  col       += 0.5f*_sqrtf(swizxy(bcol))*(_expf(-(10.0f+100.0f*_tanhf(l))*_fmaxf(d, 0.0f)));
-
+  col       += 0.5f*sqrt_f3(swizxy(bcol))*(_expf(-(10.0f+100.0f*_tanhf(l))*_fmaxf(d, 0.0f)));
   return col;
 }
 
 
 
-__KERNEL__ void ApollianWithATwistFuse(
+__KERNEL__ void ApollianWithATwist_CudaFuse(
   float4 fragColor,
   float2 fragCoord,
   float2 iResolution,
@@ -143,12 +160,12 @@ __KERNEL__ void ApollianWithATwistFuse(
 {
 
   CONNECT_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
-  CONNECT_SMALLSLIDER0(Scale,0.0f,10.0f,1.0f);
+  CONNECT_SMALLSLIDER0(Scale,1.0f,10.0f,1.0f);
   CONNECT_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
   CONNECT_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
   CONNECT_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
 
-  float2 q = fragCoord/swixy(iResolution);
+  float2 q = fragCoord/iResolution;
   float2 p = -1.0f + 2.0f * q;
   p.x *= iResolution.x/iResolution.y;
 
@@ -158,13 +175,13 @@ __KERNEL__ void ApollianWithATwistFuse(
 // --- Post Process:
 
 #if 1
-  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+  col=pow_f3(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
   col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
   col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
   col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
   fragColor = to_float4_aw(col, 1.0f);
 #else
-  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+  col=pow_f3(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
   col=col*Contrast+0.4f*col*col*(3.0f-2.0f*col);  // contrast
   col=_mix(col, to_float3_s(dot(col, to_float3_s(Saturation))), -0.4f);  // saturation
   col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),Vigneting);  // vigneting

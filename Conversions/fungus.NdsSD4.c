@@ -5,19 +5,27 @@
 
 
 
-#define A(u) _tex2DVecN(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
+#define A(u) texture(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
 
-__KERNEL__ void fungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
-{
-  PROLOGUE(fragColor,u);
+	__KERNEL__ void Kernel(
+    __CONSTANTREF__ Params*  params,
+    __TEXTURE2D__            iChannel0,
+    __TEXTURE2D_WRITE__      dst
+    ) {
 
-    u+=0.5f;
-    
+	DEFINE_KERNEL_ITERATORS_XY(x, y);                                                               \
+    if (x >= params->width || y >= params->height)                                                  \
+      return;                                                                                       \
+                                                                                                    \
+    float2 iResolution = to_float2(params->width, params->height);                                  \
+    float  iTime       = params->iTime * params->frequency;                                         \
+    float2 u   = to_float2(x, y);                                                           \
+    float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w); \
+    float4 fragColor   = to_float4_s(0.0f);
+
     float4 a = A((u+to_float2(0,0)));
     float b = 0.0f;
-    
-    float iFrame = iTime*30.0f;
-    
+
     //kernel convolution that pointifies
     {
         float z = 2.0f;//kernel convolution size
@@ -83,8 +91,7 @@ __KERNEL__ void fungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE
 
     fragColor = a;
 
-
-  EPILOGUE(fragColor);
+	SHADER_EPILOGUE;
 }
 
 
@@ -95,7 +102,7 @@ __KERNEL__ void fungusKernel_BufferA( __CONSTANTREF__ Params*  params, __TEXTURE
 
 
 
-__KERNEL__ void fungusKernel( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+__KERNEL__ void fungusFuse( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
   PROLOGUE(fragColor,fragCoord);
 
