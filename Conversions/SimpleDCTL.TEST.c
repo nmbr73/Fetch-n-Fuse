@@ -29,7 +29,7 @@ __KERNEL__ void SimpleDCTLFuse(
   )
 {
 
-  CONNECT_COLOR0(Farbenspiel); // Name der 'float4' Variable - wird nachher fuer das Control in der Fuse verwendet
+  CONNECT_COLOR0(Farbenspiel,1.0f,1.0f,1.0f,1.0f); // Name der 'float4' Variable - wird nachher fuer das Control in der Fuse verwendet
   CONNECT_TINYSLIDER0(Ich_mach_Blau,0.0f,1.0f,0.5f); // Name der 'float' Variable, Min, Max, und Default-Wert (Default wird hier nicht, aber spaeter in der Fuse verwendet)
   CONNECT_TINYSLIDER1(slider,0.0f,1.0f,0.5f);
 

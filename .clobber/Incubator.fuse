@@ -126,7 +126,13 @@ function Create()
   KernelInputCtrlDefines =""
 
   for i=0,NUM_COLOR_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME) float4 NAME     = to_float4(_shaderParameters->color["..i.."][0],_shaderParameters->color["..i.."][1],_shaderParameters->color["..i.."][2],_shaderParameters->color["..i.."][3])\n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A) "..
+      "float4 NAME = to_float4( "..
+      "(_shaderParameters->useDefaultValues?DEFAULT_R:_shaderParameters->color["..i.."][0]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_G:_shaderParameters->color["..i.."][1]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_B:_shaderParameters->color["..i.."][2]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_A:_shaderParameters->color["..i.."][3])"..
+      ")\n"
   end
 
   for i=0,NUM_TINYSLIDER_CONTROLS-1 do
