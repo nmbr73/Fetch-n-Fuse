@@ -17,7 +17,7 @@ ConversionFusename     = ""
 ConversionKernelname   = ""
 ConversionSourcecode   = ""
 
-NUM_INPUT_CHANNELS        = 1
+NUM_INPUT_CHANNELS        = 5
 
 NUM_COLOR_CONTROLS        = 5
 NUM_TINYSLIDER_CONTROLS   = 4
@@ -434,9 +434,14 @@ function Create()
 
 
   -- node's inputs and its output
+  InChannel = {}
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    InChannel[i] = self:AddInput(   "iChannel"..i,  "iChannel"..i,  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+  end
 
-  InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
-	OutImage   = self:AddOutput(  "Output",     "Output",     { LINKID_DataType = "Image", LINK_Main = 1                        })
+  -- InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+
+  OutImage   = self:AddOutput(  "Output",     "Output",     { LINKID_DataType = "Image", LINK_Main = 1                        })
 
 end
 
@@ -733,15 +738,22 @@ function Process(req)
 
 
   -- Extern Texture or create a new one
-  iChannel0 = InChannel0:GetValue(req)
 
-  if (iChannel0 == nil) then
-    iChannel0 = Image(imgattrs)
-    local p = Pixel({R=0,G=0,B=0,A=0})
-    iChannel0:Fill(p)
+  local iChannel={}
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    iChannel[i] = InChannel[i]:GetValue(req)
+
+    if (iChannel[i] == nil) then
+      iChannel[i] = Image(imgattrs)
+      local p = Pixel({R=0,G=0,B=0,A=0})
+      iChannel[i]:Fill(p)
+    end
   end
 
-  local dst = Image {IMG_Like = iChannel0, IMG_DeferAlloc = true}
+
+
+  local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
 
 
   if req:IsPreCalc() then
@@ -848,8 +860,8 @@ function Process(req)
 
   params.width  = dst.Width
   params.height = dst.Height
---params.width            = iChannel0.DataWindow:Width()
---params.height           = iChannel0.DataWindow:Height()
+--params.width            = iChannel[0].DataWindow:Width()
+--params.height           = iChannel[0].DataWindow:Height()
 
   params.iResolution[0] = dst.Width
   params.iResolution[1] = dst.Height
@@ -865,7 +877,7 @@ function Process(req)
 
 
 
-  params.compOrder        = iChannel0:IsMask() and 1 or 15
+  params.compOrder        = iChannel[0]:IsMask() and 1 or 15
 
 
 
@@ -884,8 +896,8 @@ function Process(req)
     end
   end
 
-  -- params.iChannel0_width  = iChannel0.Width
-  -- params.iChannel0_height = iChannel0.Height
+  -- params.iChannel0_width  = iChannel[0].Width
+  -- params.iChannel0_height = iChannel[0].Height
 
 
   params.iDate[0] = 0
@@ -900,7 +912,9 @@ function Process(req)
 
 --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
-	node:AddInput("iChannel0",iChannel0)
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    node:AddInput("iChannel"..i,iChannel[i])
+  end
 	node:AddOutput("dst", dst)
 
   if rebuild then
