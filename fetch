@@ -179,7 +179,7 @@ def convertToFusename(shader_name):
 
 
 
-def doFetch(id,force=False,nocache=False):
+def doFetch(id,force=False,nocache=False,noassets=False):
 
   path = './Conversions/'
   url = "https://www.shadertoy.com/view/"+id
@@ -312,42 +312,44 @@ def doFetch(id,force=False,nocache=False):
       "// ----------------------------------------------------------------------------------\n"+ \
       "\n\n\n"+convert(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
 
-    inputs=entry.get('inputs',None)
+    if not noassets:
 
-    if inputs!=None and len(inputs)>0:
-      buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
+      inputs=entry.get('inputs',None)
 
-      if not assets_exists and not os.path.exists(fuse_filename+'.assets'):
-          os.makedirs(fuse_filename+'.assets')
-          assets_exists = True
+      if inputs!=None and len(inputs)>0:
+        buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
 
-      for input in inputs:
+        if not assets_exists and not os.path.exists(fuse_filename+'.assets'):
+            os.makedirs(fuse_filename+'.assets')
+            assets_exists = True
 
-          src=None
+        for input in inputs:
 
-          if 'src' in input:
-            src=input['src']
-          elif 'filepath' in input:
-            src=input['filepath']
+            src=None
 
-
-          ctype=None
-
-          if 'ctype' in input:
-            ctype=input['ctype']
-          elif 'type' in input:
-            ctype=input['type']
+            if 'src' in input:
+              src=input['src']
+            elif 'filepath' in input:
+              src=input['filepath']
 
 
-          if src!=None and ctype!=None:
-            filename, suffix = os.path.splitext(src)
-            filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
+            ctype=None
 
-            if not os.path.exists(filename):
-              data = requests.get("https://www.shadertoy.com"+src)
+            if 'ctype' in input:
+              ctype=input['ctype']
+            elif 'type' in input:
+              ctype=input['type']
 
-              with open(filename, 'wb') as f:
-                  f.write(data.content)
+
+            if src!=None and ctype!=None:
+              filename, suffix = os.path.splitext(src)
+              filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
+
+              if not os.path.exists(filename):
+                data = requests.get("https://www.shadertoy.com"+src)
+
+                with open(filename, 'wb') as f:
+                    f.write(data.content)
 
 
   #code = convert(code,fuse_name)
@@ -378,10 +380,11 @@ load_dotenv()
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
 parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
+parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 args = parser.parse_args()
 
 try:
-  doFetch(args.id,force=args.force,nocache=args.no_cache)
+  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets)
 except Exception as e:
   print("ERROR: "+str(e))
