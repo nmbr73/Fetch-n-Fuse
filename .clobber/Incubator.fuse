@@ -22,6 +22,9 @@ NUM_INPUT_CHANNELS        = 5
 NUM_COLOR_CONTROLS        = 5
 NUM_TINYSLIDER_CONTROLS   = 4
 NUM_SMALLSLIDER_CONTROLS  = 4
+
+NUM_TINYINT_CONTROLS   = 4
+
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 ConversionSourcecode_fallback = nil
@@ -143,6 +146,16 @@ function Create()
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->smallSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYINT"..i.."(NAME,SMIN,SMAX,SDEFAULT) "..
+    "const int NAME = ( "..
+    "_shaderParameters->useDefaultValues ? SDEFAULT : ("..
+    "_shaderParameters->tinyInt["..i.."] < SMIN ? SMIN : ("..
+    "_shaderParameters->tinyInt["..i.."] > SMAX ? SMAX : _shaderParameters->tinyInt["..i.."])))\n"
+
+  end
+
   verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
 
 
@@ -207,6 +220,7 @@ function Create()
   float tinySlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
   float smallSlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
 
+  int tinyInt[]]..NUM_TINYINT_CONTROLS..[[];
 
   int useDefaultValues; // do not use - will not exists in the final fuse!
 
@@ -267,7 +281,7 @@ function Create()
   InUseDefaultValues = self:AddInput("don't use controls for input", "useDefaultValues", {
     LINKID_DataType = "Number",
     INPID_InputControl = "CheckboxControl",
-    INP_Default = 0,
+    INP_Default = 1,
     INP_MinScale = 0,
     INP_MaxScale = 1,
     IC_Visible = true,
@@ -381,10 +395,10 @@ function Create()
       end
     end
 
-    self:EndControlNest()
+  self:EndControlNest()
 
 
-  -- some sliders controls to play with colors in the kernel
+  -- some sliders controls to play with
 
   self:BeginControlNest("Slider Controls", "Sliders", false, {})
 
@@ -414,7 +428,26 @@ function Create()
 
   self:EndControlNest()
 
+  -- some int sliders
 
+  self:BeginControlNest("Integer Slider", "SlidersInt", false, {})
+
+
+  InTinyInt={}
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    InTinyInt[i] = self:AddInput("Tiny Int Slider "..i, "tinyint"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale 	     = -10,
+      INP_MaxScale 	     = 10,
+      INP_Default        = 0,
+      INP_Integer = true,
+    })
+  end
+
+
+  self:EndControlNest()
 
   -- controls for the tool itself, not passed to the kernel
 
@@ -863,6 +896,11 @@ function Process(req)
 
   for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
     params.smallSlider[i] = InSmallSlider[i]:GetValue(req).Value
+  end
+
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    params.tinyInt[i] = InTinyInt[i]:GetValue(req).Value
   end
 
 
