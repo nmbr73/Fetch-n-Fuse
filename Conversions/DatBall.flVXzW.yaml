@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  name: DatBall
+shader:
+  author: N.N.
+  description: Shane's texture bump mapping on IQ's raymarching base code.
+  id: flVXzW
+  name: dat ball
+  parent:
+    id: XtSXRV
+    name: dat ball
+    url: https://www.shadertoy.com/view/XtSXRV
+  tags:
+  - 3d
+  - raymarch
+  - bumpmap
+  url: https://www.shadertoy.com/view/flVXzW
