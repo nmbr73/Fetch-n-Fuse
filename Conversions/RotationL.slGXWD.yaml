@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  name: RotationL
+shader:
+  author: N.N.
+  description: rotation based lava lamp
+  id: slGXWD
+  name: rotation l
+  parent:
+    id: flyGWt
+    name: rotation lava lamp
+    url: https://www.shadertoy.com/view/flyGWt
+  tags:
+  - rotation
+  url: https://www.shadertoy.com/view/slGXWD
