@@ -14,17 +14,17 @@ __DEVICE__ float de(float3 p, inout float4 *o, float iTime) {
 
   *o = to_float4_s(10000.0f);
   
-  q = to_float4_aw(swi3(x,y,z,q) * _fabs(_cosf(iTime*0.1f)),q.w);
+  q = to_float4_aw(swi3(q,x,y,z) * _fabs(_cosf(iTime*0.1f)),q.w);
   for(int i = 0; i < 10; i++) {
-    q = to_float4_aw( 2.0f*clamp(swi3(x,y,z,q), -1.0f, 1.0f) - swi3(x,y,z,q), q.w);
-    q *= clamp(1.0f/dot(swi3(x,y,z,q), swi3(x,y,z,q)), 1.0f, 1.0f/0.5f);
+    q = to_float4_aw( 2.0f*clamp(swi3(q,x,y,z), -1.0f, 1.0f) - swi3(q,x,y,z), q.w);
+    q *= clamp(1.0f/dot(swi3(q,x,y,z), swi3(q,x,y,z)), 1.0f, 1.0f/0.5f);
     
     q = 3.0f*q - c;
 
-    *o = _fminf(*o, to_float4_aw(abs_f3(swi3(x,z,y,q)), length(swi3(x,y,z,q))));
+    *o = _fminf(*o, to_float4_aw(abs_f3(swi3(q,x,z,y)), length(swi3(q,x,y,z))));
   }
 
-  return _fminf(length(p) - 1.0f - smoothstep(-2.0f, -1.97f, -length(p))*(length(swi3(x,y,z,q))/q.w - 0.001f), p.y + 1.0f);
+  return _fminf(length(p) - 1.0f - smoothstep(-2.0f, -1.97f, -length(p))*(length(swi3(q,x,y,z))/q.w - 0.001f), p.y + 1.0f);
 }
 
 __DEVICE__ float3 render(float3 ro, float3 rd, inout float3 *pos, inout float3 *ref, float iTime) {
@@ -42,9 +42,9 @@ __DEVICE__ float3 render(float3 ro, float3 rd, inout float3 *pos, inout float3 *
     *pos = ro + rd*t;
     float2 eps = to_float2(0.001f, 0.0f);
     float3 nor = normalize(to_float3(
-                    de(*pos + swi3(x,y,y,eps), &tmp, iTime) - de(*pos - swi3(x,y,y,eps), &tmp, iTime),
-                    de(*pos + swi3(y,x,y,eps), &tmp, iTime) - de(*pos - swi3(y,x,y,eps), &tmp, iTime),
-                    de(*pos + swi3(y,y,x,eps), &tmp, iTime) - de(*pos - swi3(y,y,x,eps), &tmp, iTime)
+                    de(*pos + swi3(eps,x,y,y), &tmp, iTime) - de(*pos - swi3(eps,x,y,y), &tmp, iTime),
+                    de(*pos + swi3(eps,y,x,y), &tmp, iTime) - de(*pos - swi3(eps,y,x,y), &tmp, iTime),
+                    de(*pos + swi3(eps,y,y,x), &tmp, iTime) - de(*pos - swi3(eps,y,y,x), &tmp, iTime)
     ));
     *ref = reflect(rd, nor);
     float3 key = normalize(to_float3(0.8f, 0.7f, -0.6f));

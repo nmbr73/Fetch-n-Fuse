@@ -20,7 +20,7 @@ __DEVICE__ float2 rot(float2 uv,float a,float2 origin){
 }
 
 __DEVICE__ float random (in float2 _st) {
-    return fract(_sinf(dot(swi2(x,y,_st),
+    return fract(_sinf(dot(swi2(_st,x,y),
                  to_float2(12.9898f,78.233f)))*
                  43758.5453123f);
 }
@@ -78,14 +78,14 @@ __DEVICE__ float snoise(float2 v) {
                                // 1.0f / 41.0
 
     // First corner (x0)
-    float2 i  = _floor(v + dot(v, swi2(y,y,C)));
-    float2 x0 = v - i + dot(i, swi2(x,x,C));
+    float2 i  = _floor(v + dot(v, swi2(C,y,y)));
+    float2 x0 = v - i + dot(i, swi2(C,x,x));
 
     // Other two corners (x1, x2)
     float2 i1 = to_float2_s(0.0f);
     i1 = (x0.x > x0.y)? to_float2(1.0f, 0.0f):to_float2(0.0f, 1.0f);
-    float2 x1 = swi2(x,y,x0) + swi2(x,x,C) - i1;
-    float2 x2 = swi2(x,y,x0) + swi2(z,z,C);
+    float2 x1 = swi2(x0,x,y) + swi2(C,x,x) - i1;
+    float2 x2 = swi2(x0,x,y) + swi2(C,z,z);
 
     // Do some permutations to avoid
     // truncation effects in permutation
@@ -108,7 +108,7 @@ __DEVICE__ float snoise(float2 v) {
     //  The ring size 17*17 = 289 is close to a multiple
     //      of 41 (41*7 = 287)
 
-    float3 x = 2.0f * fract_f3(p * swi3(w,w,w,C)) - 1.0f;
+    float3 x = 2.0f * fract_f3(p * swi3(C,w,w,w)) - 1.0f;
     float3 h = abs_f3(x) - 0.5f;
     float3 ox = _floor(x + 0.5f);
     float3 a0 = x - ox;
@@ -120,8 +120,8 @@ __DEVICE__ float snoise(float2 v) {
     // Compute final noise value at P
     float3 g = to_float3_s(0.0f);
     g.x  = a0.x  * x0.x  + h.x  * x0.y;
-    //swi2(y,z,g) = swi2(y,z,a0) * to_float2(x1.x,x2.x) + swi2(y,z,h) * to_float2(x1.y,x2.y);
-    float2 gyz = swi2(y,z,a0) * to_float2(x1.x,x2.x) + swi2(y,z,h) * to_float2(x1.y,x2.y);
+    //swi2(g,y,z) = swi2(a0,y,z) * to_float2(x1.x,x2.x) + swi2(h,y,z) * to_float2(x1.y,x2.y);
+    float2 gyz = swi2(a0,y,z) * to_float2(x1.x,x2.x) + swi2(h,y,z) * to_float2(x1.y,x2.y);
     g.y=gyz.x;g.z=gyz.y;
     
     return 130.0f * dot(m, g);

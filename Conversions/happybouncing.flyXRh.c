@@ -75,8 +75,8 @@ __DEVICE__ float hash11(float p)
 __DEVICE__ float3 hash31(float p)
 {
    float3 p3 = fract_f3(to_float3_s(p) * to_float3(0.1031f, 0.1030f, 0.0973f));
-   p3 += dot(p3, swi3(y,z,x,p3)+33.33f);
-   return fract_f3((swi3(x,x,y,p3)+swi3(y,z,z,p3))*swi3(z,y,x,p3));
+   p3 += dot(p3, swi3(p3,y,z,x)+33.33f);
+   return fract_f3((swi3(p3,x,x,y)+swi3(p3,y,z,z))*swi3(p3,z,y,x));
 }
 
 
@@ -236,7 +236,7 @@ __KERNEL__ void happybouncingFuse(
 
     // ground
     //color.rgb += _mix(to_float3(0.945f,0.945f,0.792f), to_float3(0.820f,0.482f,0.694f), smoothstep(0.0f,0.2f,uv.y-0.2f));
-    if(modus==2) color = to_float4_aw(swi3(x,y,z,color) + to_float3_s(0.25f)*step(uv.y,0.1f), color.w);
+    if(modus==2) color = to_float4_aw(swi3(color,x,y,z) + to_float3_s(0.25f)*step(uv.y,0.1f), color.w);
 
     // number of friends
     float buddies = 5.0f;
@@ -293,10 +293,10 @@ __KERNEL__ void happybouncingFuse(
           col += tint*fill(body);
           shape = _fminf(shape, body);
           float4 eyes = sdEyes(pp, t-0.03f, tint, -1.0f,bodySize,modus,size,divergence);
-          col = _mix(col, swi3(x,y,z,eyes), step(eyes.w,0.0f));
+          col = _mix(col, swi3(eyes,x,y,z), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
           eyes = sdEyes(pp, t-0.01f, tint, 1.0f,bodySize,modus,size,divergence);
-          col = _mix(col, swi3(x,y,z,eyes), step(eyes.w,0.0f));
+          col = _mix(col, swi3(eyes,x,y,z), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
 
           // smile animation
@@ -318,7 +318,7 @@ __KERNEL__ void happybouncingFuse(
           // add buddy to frame
           float ao = clamp(shape+0.9f,0.0f,1.0f);
 
-          color = to_float4_aw(_mix(swi3(x,y,z,color) * ao, col, step(shape, 0.0f)),color.w);
+          color = to_float4_aw(_mix(swi3(color,x,y,z) * ao, col, step(shape, 0.0f)),color.w);
         }
         else
         {
@@ -379,7 +379,7 @@ __KERNEL__ void happybouncingFuse(
           col = _mix(col, tint*0.5f, fill(d+0.05f));
 
           // add color to frame
-          color = to_float4_aw(_mix(swi3(x,y,z,color), col, step(shape, 0.0f)),color.w);
+          color = to_float4_aw(_mix(swi3(color,x,y,z), col, step(shape, 0.0f)),color.w);
         }
     }
 
