@@ -1,42 +1,4 @@
 
-// ----------------------------------------------------------------------------------
-// - Common                                                                         -
-// ----------------------------------------------------------------------------------
-
-#define in
-
-
-// ---------------------------------------------------------------------------
-// 2x2 matrix
-// ---------------------------------------------------------------------------
-#if defined(USE_NATIVE_METAL_IMPL)
-
-  typedef float2x2 mat2;
-
-  __DEVICE__ inline mat2 make_mat2( float  a, float  b, float c, float d) { return mat2(a,b,c,d);}
-  __DEVICE__ inline float2  f2_multi_mat2( float2 v, mat2   m )  { return v*m; }
-  __DEVICE__ inline float2  mat2_multi_f2(  mat2  m, float2 v )  { return m*v; }
-
-#else
-
-__DEVICE__ inline mat2 make_mat2( float A, float B, float C, float D)
-  {
-    mat2 E;
-    E.r0 = to_float2(A,B);
-    E.r1 = to_float2(C,D);
-    return E;
-  }
-  
-__DEVICE__ inline float2 f2_multi_mat2( float2 A, mat2 B )
-  {
-	float2 C;
-	C.x = A.x * B.r0.x + A.y * B.r0.y;
-	C.y = A.x * B.r1.x + A.y * B.r1.y;
-	return C;
-  }  
-
-#endif
-
 __DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
 
@@ -122,7 +84,7 @@ __DEVICE__ float walk (float t)
 
 __DEVICE__ float swing (float t, int modus)
 {
-    if(!modus==2)
+    if(modus!=2)
     {
       if (modus==0) t = t*2.0f;
       t = _powf(t, 0.5f);
