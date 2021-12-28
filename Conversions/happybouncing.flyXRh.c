@@ -39,7 +39,7 @@ __DEVICE__ inline float2 f2_multi_mat2( float2 A, mat2 B )
 
 __DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
-#define swiyzx(V) to_float3((V).y,(V).z,(V).x)
+
 
 // Inigo Quilez
 // https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
@@ -75,8 +75,8 @@ __DEVICE__ float hash11(float p)
 __DEVICE__ float3 hash31(float p)
 {
    float3 p3 = fract_f3(to_float3_s(p) * to_float3(0.1031f, 0.1030f, 0.0973f));
-   p3 += dot(p3, swiyzx(p3)+33.33f);
-   return fract_f3((swixxy(p3)+swiyzz(p3))*swizyx(p3));
+   p3 += dot(p3, swi3(y,z,x,p3)+33.33f);
+   return fract_f3((swi3(x,x,y,p3)+swi3(y,z,z,p3))*swi3(z,y,x,p3));
 }
 
 
@@ -236,7 +236,7 @@ __KERNEL__ void happybouncingFuse(
 
     // ground
     //color.rgb += _mix(to_float3(0.945f,0.945f,0.792f), to_float3(0.820f,0.482f,0.694f), smoothstep(0.0f,0.2f,uv.y-0.2f));
-    if(modus==2) color = to_float4_aw(swixyz(color) + to_float3_s(0.25f)*step(uv.y,0.1f), color.w);
+    if(modus==2) color = to_float4_aw(swi3(x,y,z,color) + to_float3_s(0.25f)*step(uv.y,0.1f), color.w);
 
     // number of friends
     float buddies = 5.0f;
@@ -293,10 +293,10 @@ __KERNEL__ void happybouncingFuse(
           col += tint*fill(body);
           shape = _fminf(shape, body);
           float4 eyes = sdEyes(pp, t-0.03f, tint, -1.0f,bodySize,modus,size,divergence);
-          col = _mix(col, swixyz(eyes), step(eyes.w,0.0f));
+          col = _mix(col, swi3(x,y,z,eyes), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
           eyes = sdEyes(pp, t-0.01f, tint, 1.0f,bodySize,modus,size,divergence);
-          col = _mix(col, swixyz(eyes), step(eyes.w,0.0f));
+          col = _mix(col, swi3(x,y,z,eyes), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
 
           // smile animation
@@ -318,7 +318,7 @@ __KERNEL__ void happybouncingFuse(
           // add buddy to frame
           float ao = clamp(shape+0.9f,0.0f,1.0f);
 
-          color = to_float4_aw(_mix(swixyz(color) * ao, col, step(shape, 0.0f)),color.w);
+          color = to_float4_aw(_mix(swi3(x,y,z,color) * ao, col, step(shape, 0.0f)),color.w);
         }
         else
         {
@@ -379,7 +379,7 @@ __KERNEL__ void happybouncingFuse(
           col = _mix(col, tint*0.5f, fill(d+0.05f));
 
           // add color to frame
-          color = to_float4_aw(_mix(swixyz(color), col, step(shape, 0.0f)),color.w);
+          color = to_float4_aw(_mix(swi3(x,y,z,color), col, step(shape, 0.0f)),color.w);
         }
     }
 

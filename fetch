@@ -13,13 +13,12 @@ from dotenv import load_dotenv
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
 
-def convert(code,fuse_name,buffer_name):
-
-  # uncomment to see the code before conversion:
-  #
-  # with open(fuse_filename+"_raw.c", 'w') as f:
-  #    f.write(code)
+def patchForDCTL(code,fuse_name,buffer_name):
+  """
+  Do some text replacememt to make some WebGL to DCTL conversions.
+  """
 
   code = code.replace("\t", "  ")
 
@@ -160,7 +159,15 @@ def convert(code,fuse_name,buffer_name):
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+
 def copyTextFile(src,dst):
+  """
+  Copy file src to dst.
+
+  There seems to be no such function in `os`or in `io`, but I don't
+  want to include another big package just for that simple functionality.
+  """
   txt=""
   with open(src, "r") as f:
     txt=f.read()
@@ -171,12 +178,19 @@ def copyTextFile(src,dst):
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+
 def getCacheFilename(path,id):
+  """
+  See if there is a JSON file with the given `id`.
+
+  This checks `path` and the environments `DOWNLOADS` folder for a file containing the shader `id`.
+  """
 
   files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.json")]
 
   if len(files) > 1:
-    raise Exception(f"multiple files matching '{path}*.{id}.{suffix}'")
+    raise Exception(f"multiple files matching '{path}*.{id}.json'")
 
   if len(files) < 1:
 
@@ -207,22 +221,50 @@ def getCacheFilename(path,id):
 
 
 
-def convertToFusename(shader_name):
+# ---------------------------------------------------------------------------------------------------------------------
+
+def asFuseID(shader_name,shader_id):
+  """
+  Derive an identifier from shader_name.
+
+  Remove whitespace, leading digits, special characters, etc to make something that can be used as an identifier out of `shader_name`.
+  """
+
+  m=re.match(r'^Fork (.+) ([^ ]+) \d+$',shader_name)
+
+  if m != None:
+    shader_name=m.group(1)
+
   return''.join(x for x in re.sub(r'[^A-Za-z0-9 ]+',' ', shader_name).title() if not x.isspace())
 
+# ---------------------------------------------------------------------------------------------------------------------
+
+def asFusename(shader_name,shader_id):
+  return asFuseID(shader_name,shader_id)
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def asKernelname(shader_name,shader_id):
+  return asFuseID(shader_name,shader_id)
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def asConversionBasefilename(shader_name,shader_id):
+  return asFuseID(shader_name,shader_id)+"."+shader_id
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
 
-def doFetch(id,force=False,nocache=False):
-
-  path = './Conversions/'
-  url = "https://www.shadertoy.com/view/"+id
+def getJsonData(id,path,nocache=False):
+  """
+  Get all the Shadertoy information as a JSON structure.
+  """
 
   json_text = None
   cache_filename = None
 
-
+  # --- try to read from cache
 
   if not nocache:
 
@@ -234,52 +276,39 @@ def doFetch(id,force=False,nocache=False):
       with open(path+cache_filename, "r") as f:
         json_text=f.read()
 
+
+  # --- fetch from shadertoy.com
+
   if json_text == None:
 
     print("fetch from shadertoy.com")
     response = requests.get("https://www.shadertoy.com/api/v1/shaders/" +id+"?key="+os.getenv('APIKEY'))
 
     if response.status_code != 200:
-      raise Exception(url+"\nHTTP Error "+str(response.status_code))
+      raise Exception("HTTP Error "+str(response.status_code))
 
     json_text = response.text
 
 
-
-
+  # --- parse json
 
   json_data = json.loads(json_text)
 
   error = json_data.get('Error',None)
 
   if error != None:
-    raise Exception(url+"\n"+error)
+    raise Exception(error)
 
   if 'Shader' in json_data:
      json_data = json_data['Shader']
 
-  info = json_data['info']
 
-  shader_name=info['name']
-
-  m=re.match(r'^Fork (.+) ([^ ]+) \d+$',shader_name)
-
-  if m != None:
-    shader_name=m.group(1)
-
-  if 'username' in info:
-    shader_author = info['username']
-  else:
-    shader_author = "N.N."
-
-  shader_description=info['description']
-
-
-  fuse_name = convertToFusename(shader_name)
-
-  fname=f"{fuse_name}.{id}.json"
+  # --- write to cache
 
   if not nocache:
+
+    fname = asConversionBasefilename(json_data['info']['name'],id) + ".json"
+
     if cache_filename == None:
       print("write to cache")
       with io.open(path+fname, 'w') as f:
@@ -293,28 +322,87 @@ def doFetch(id,force=False,nocache=False):
         cache_filename=fname
       else:
         if cache_filename != fname:
-          raise Exception(f"cache filename is {cache_filename} but should be '{fuse_name}.{id}.json'")
+          raise Exception(f"cache filename is {cache_filename} but should be '{fname}'")
+
+
+  # --- fix json data
+
+  if not ('username' in json_data['info']):
+    json_data['info']['username']="N.N."
+
+  for entry in json_data['renderpass']:
+
+    for input in entry.get('inputs',{}):
+
+        if not 'ctype' in input:
+          input['ctype']=input['type']
+
+        if not 'src' in input:
+          input['src']=input['filepath']
+
+        if 'name' in input:
+          raise Exception("input already has a name?!?")
+
+        input['name']=input['src']
+
+        if input['ctype']=='buffer':
+          m=re.match(r'^/media/previz/buffer0([0-3])\.png$',input['src'])
+          if m:
+            input['name']="Buffer "+chr( ord('A') + (ord(m.group(1))-ord('0')))
+        elif input['ctype']=='keyboard':
+          if input['src']=="/presets/tex00.jpg":
+            input['name']="Keyboard"
 
 
 
-  fuse_author=os.getenv('AUTHOR')
+  return json_data
 
-  fuse_filename='Conversions/'+fuse_name+'.'+id
 
-  if os.path.isfile(fuse_filename+".c") and not force:
-    raise Exception(url+"\nconversion already exists (use -f to overwrite)")
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def writeYaml(json_data):
+  pass
+
+
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
+
+  path = './Conversions/'
+
+  json_data=getJsonData(id,path,nocache)
+
+  info = json_data['info']
+
+
+  shader_name = json_data['info']['name']
+  fuse_author = os.getenv('AUTHOR')
+  fuse_basefname  = path+asConversionBasefilename(shader_name,id)
+
+  if not ('username' in json_data['info']):
+    json_data['info']['username']="N.N."
+
+  if os.path.isfile(fuse_basefname+".c") and not force:
+    raise Exception("conversion already exists (use -f to overwrite)")
 
   yaml_data={
         'shader':{
           'id':id,
           'name':shader_name,
-          'author':shader_author,
+          'author': info['username'],
           'url':'https://www.shadertoy.com/view/'+id,
           'description':info['description'],
           'tags':info['tags'],
         },
         'fuse':{
-          'name':fuse_name,
+          'id':asFuseID(shader_name,id),
+          'name':asFusename(shader_name,id),
           'author':fuse_author
 
         }
@@ -328,77 +416,77 @@ def doFetch(id,force=False,nocache=False):
       }
 
 
-  with io.open(fuse_filename+".yaml", 'w', encoding='utf8') as outfile:
+  with io.open(fuse_basefname+".yaml", 'w', encoding='utf8') as outfile:
       yaml.dump(yaml_data
       ,outfile, default_flow_style=False, allow_unicode=True)
+
+
+
+
 
   code=""
 
   assets_exists=False
 
+  fuse_name=asFusename(shader_name,id)
 
-# for entry in json_data['Shader']['renderpass']:
   for entry in json_data['renderpass']:
 
 
-
-    code="\n// ----------------------------------------------------------------------------------\n"+ \
+    header="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
-      "// ----------------------------------------------------------------------------------\n"+ \
-      "\n\n\n"+convert(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
+      "// ----------------------------------------------------------------------------------\n"
+
+
+    # code="\n// ----------------------------------------------------------------------------------\n"+ \
+    #   "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
+    #   "// ----------------------------------------------------------------------------------\n"+ \
+    #   "\n\n\n"+patchForDCTL(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
+
 
     inputs=entry.get('inputs',None)
 
     if inputs!=None and len(inputs)>0:
       buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
 
-      if not assets_exists and not os.path.exists(fuse_filename+'.assets'):
-          os.makedirs(fuse_filename+'.assets')
+      if not (noassets or assets_exists or os.path.exists(fuse_basefname+'.assets')):
+          os.makedirs(fuse_basefname+'.assets')
           assets_exists = True
 
       for input in inputs:
 
-          src=None
-
-          if 'src' in input:
-            src=input['src']
-          elif 'filepath' in input:
-            src=input['filepath']
+          src=input['src']
 
 
-          ctype=None
+          ctype=input['ctype']
 
-          if 'ctype' in input:
-            ctype=input['ctype']
-          elif 'type' in input:
-            ctype=input['type']
+          input_name = input['name']
 
+          header=header + "// Connect '"+input_name+"' to iChannel"+str(input['channel'])+"\n"
 
           if src!=None and ctype!=None:
             filename, suffix = os.path.splitext(src)
-            filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
+            filename=f"{fuse_basefname}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
 
-            if not os.path.exists(filename):
+            if not (noassets or os.path.exists(filename)):
               data = requests.get("https://www.shadertoy.com"+src)
 
               with open(filename, 'wb') as f:
                   f.write(data.content)
 
+    if nopatch:
+      code = header + "\n\n" + entry['code'] + code
+    else:
+      code = header + "\n\n" + patchForDCTL(entry['code'],fuse_name,entry['name']) + code
 
-  #code = convert(code,fuse_name)
 
-  with open(fuse_filename+".c", 'w') as f:
+  with open(fuse_basefname+".c", 'w') as f:
      f.write(code)
 
 
 
 
-
-# ltfXzj - tut's nicht
-# td2SDz - tut's
-# MlKGWK - hat mehrere Buffer
-# lstXRl - hat assets
-# Wl3fzM - den will ich als Test dann hiermit mal machen
+# =====================================================================================================================
 
 if not(os.path.isfile(".env")):
   with open(".env", 'w') as f:
@@ -412,11 +500,13 @@ load_dotenv()
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
-parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
+parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
+parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
+parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
 args = parser.parse_args()
 
 try:
-  doFetch(args.id,force=args.force,nocache=args.no_cache)
+  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
 except Exception as e:
   print("ERROR: "+str(e))

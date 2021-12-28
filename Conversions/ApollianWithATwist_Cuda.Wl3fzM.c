@@ -40,8 +40,8 @@
 
 __DEVICE__ float3 hsv2rgb(float3 c) {
   const float4 K = to_float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
-  float3 p = abs_f3(fract_f3((swixxx(c) + swixyz(K)) * 6.0f - swiwww(K)));
-  return c.z * _mix(swixxx(K), clamp(p - swixxx(K), 0.0f, 1.0f), c.y);
+  float3 p = abs_f3(fract_f3((swi3(x,x,x,c) + swi3(x,y,z,K)) * 6.0f - swi3(w,w,w,K)));
+  return c.z * _mix(swi3(x,x,x,K), clamp(p - swi3(x,x,x,K), 0.0f, 1.0f), c.y);
 }
 
 __DEVICE__ float apollian(float4 p, float s,float scale) {
@@ -67,7 +67,7 @@ __DEVICE__ float weird(float2 p,float iTime,float scale) {
   float r = 0.5f;
   float4 off = to_float4(r*PSIN(tm*_sqrtf(3.0f)), r*PSIN(tm*_sqrtf(1.5f)), r*PSIN(tm*_sqrtf(2.0f)), 0.0f);
   float4 pp = to_float4(p.x, p.y, 0.0f, 0.0f)+off;
-  pp.w = 0.125f*(1.0f-_tanhf(length(swixyz(pp))));
+  pp.w = 0.125f*(1.0f-_tanhf(length(swi3(x,y,z,pp))));
   // swiyz(pp) *= ROT(tm);
   mat2 tmp_mat2;
   tmp_mat2=ROT(tm);
@@ -129,8 +129,8 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
   float3 sp2 = bp + srd2*st1;
 
   // float bd = df(swixz(bp),iTime);
-  float sd1= df(swixz(sp1),iTime,scale);
-  float sd2= df(swixz(sp2),iTime,scale);
+  float sd1= df(swi2(x,z,sp1),iTime,scale);
+  float sd2= df(swi2(x,z,sp2),iTime,scale);
 
   float3 col  = to_float3_s(0.0f);
   const float ss =15.0f;
@@ -144,7 +144,7 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
   float3 bcol = hsv2rgb(hsv);
   col       *= (1.0f-_tanhf(0.75f*l))*0.5f;
   col       = _mix(col, bcol, smoothstep(-aa, aa, -d));
-  col       += 0.5f*sqrt_f3(swizxy(bcol))*(_expf(-(10.0f+100.0f*_tanhf(l))*_fmaxf(d, 0.0f)));
+  col       += 0.5f*sqrt_f3(swi3(z,x,y,bcol))*(_expf(-(10.0f+100.0f*_tanhf(l))*_fmaxf(d, 0.0f)));
   return col;
 }
 
