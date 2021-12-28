@@ -82,7 +82,7 @@
 
     if(iMouse.z>0.0f)
     {
-        float2 m1 = 2.0f*(u-swi2(x,y,iMouse))/iResolution.y;
+        float2 m1 = 2.0f*(u-swi2(iMouse,x,y))/iResolution.y;
         a *= 1.0f-1.0f/_expf(dot(m1,m1));
     }
     if(iTime*30.0f<1)

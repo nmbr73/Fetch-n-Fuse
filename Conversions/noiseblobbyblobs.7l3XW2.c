@@ -27,7 +27,7 @@ __DEVICE__ float3 thc(float a, float3 b) {
 }
 
 __DEVICE__ float h21 (float2 a) {
-    return fract_f(_sinf(dot(swi2(x,y,a), to_float2(12.9898f, 78.233f))) * 43758.5453123f);
+    return fract_f(_sinf(dot(swi2(a,x,y), to_float2(12.9898f, 78.233f))) * 43758.5453123f);
 }
 
 __DEVICE__ float h21 (float a, float b, float sc) {

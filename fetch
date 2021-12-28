@@ -39,9 +39,9 @@ def patchForDCTL(code,fuse_name,buffer_name):
   code=re.sub(r'(\w+\.)(a)([\s\)\,\;\*\\\-\+])',r'\1w\2', code)
 
 #  code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
-  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi2(\2,\3,\1)\4', code)
-  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi3(\2,\3,\4,\1)\5', code)
-  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi4(\2,\3,\4,\5,\1)\6', code)
+  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi2(\1,\2,\3)\4', code)
+  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi3(\1,\2,\3,\4)\5', code)
+  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi4(\1,\2,\3,\4,\5)\6', code)
   
   
 #--- Arrays ---
