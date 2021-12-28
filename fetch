@@ -146,11 +146,16 @@ def copyTextFile(src,dst):
 # ---------------------------------------------------------------------------------------------------------------------
 
 def getCacheFilename(path,id):
+  """
+  See if there is a JSON file with the given `id`.
+
+  This checks `path` and the environments `DOWNLOADS` folder for a file containing the shader `id`.
+  """
 
   files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.json")]
 
   if len(files) > 1:
-    raise Exception(f"multiple files matching '{path}*.{id}.{suffix}'")
+    raise Exception(f"multiple files matching '{path}*.{id}.json'")
 
   if len(files) < 1:
 
@@ -326,57 +331,66 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
 
     header="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
-      "// ----------------------------------------------------------------------------------\n\n\n"
+      "// ----------------------------------------------------------------------------------\n"
 
-    if nopatch:
-      code = header + entry['code'] + code
-    else:
-      code = header + patchForDCTL(entry['code'],fuse_name,entry['name']) + code
 
     # code="\n// ----------------------------------------------------------------------------------\n"+ \
     #   "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
     #   "// ----------------------------------------------------------------------------------\n"+ \
     #   "\n\n\n"+patchForDCTL(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
 
-    if not noassets:
 
-      inputs=entry.get('inputs',None)
+    inputs=entry.get('inputs',None)
 
-      if inputs!=None and len(inputs)>0:
-        buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
+    if inputs!=None and len(inputs)>0:
+      buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
 
-        if not assets_exists and not os.path.exists(fuse_filename+'.assets'):
-            os.makedirs(fuse_filename+'.assets')
-            assets_exists = True
+      if not (noassets or assets_exists or os.path.exists(fuse_filename+'.assets')):
+          os.makedirs(fuse_filename+'.assets')
+          assets_exists = True
 
-        for input in inputs:
+      for input in inputs:
 
-            src=None
+          src=None
 
-            if 'src' in input:
-              src=input['src']
-            elif 'filepath' in input:
-              src=input['filepath']
+          if 'src' in input:
+            src=input['src']
+          elif 'filepath' in input:
+            src=input['filepath']
 
+          ctype=None
 
-            ctype=None
+          if 'ctype' in input:
+            ctype=input['ctype']
+          elif 'type' in input:
+            ctype=input['type']
 
-            if 'ctype' in input:
-              ctype=input['ctype']
-            elif 'type' in input:
-              ctype=input['type']
+          input_name = src
 
+          if ctype=='buffer':
+            m=re.match(r'^/media/previz/buffer0([0-3])\.png$',src)
+            if m:
+              input_name="Buffer "+chr( ord('A') + (ord(m.group(1))-ord('0')))
+          elif ctype=='keyboard':
+            if src=="/presets/tex00.jpg":
+              input_name="Keyboard"
 
-            if src!=None and ctype!=None:
-              filename, suffix = os.path.splitext(src)
-              filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
+          header=header + "// Connect '"+input_name+"' to iChannel"+str(input['channel'])+"\n"
 
-              if not os.path.exists(filename):
-                data = requests.get("https://www.shadertoy.com"+src)
+          if src!=None and ctype!=None:
+            filename, suffix = os.path.splitext(src)
+            filename=f"{fuse_filename}.assets/{buffer_name}-Channel{input['channel']}-{ctype}{suffix}"
 
-                with open(filename, 'wb') as f:
-                    f.write(data.content)
+            if not (noassets or os.path.exists(filename)):
+              data = requests.get("https://www.shadertoy.com"+src)
 
+              with open(filename, 'wb') as f:
+                  f.write(data.content)
+
+    if nopatch:
+      code = header + "\n\n" + entry['code'] + code
+    else:
+      code = header + "\n\n" + patchForDCTL(entry['code'],fuse_name,entry['name']) + code
 
 
   with open(fuse_filename+".c", 'w') as f:
