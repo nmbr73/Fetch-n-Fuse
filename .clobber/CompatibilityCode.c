@@ -29,52 +29,16 @@
 
   #if defined(USE_NATIVE_METAL_IMPL)
 
-    #define swixz(V) (V).xz
-    #define swiyz(V) (V).yz
-
-    #define swixy(V) (V).xy
-    #define swiyx(V) (V).yx
-    #define swixxy(V) (V).xxy
-    #define swixyx(V) (V).xyx
-    #define swiyxz(V) (V).yxz
-    #define swiyzz(V) (V).yzz
-    #define swizyx(V) (V).zyx
-
-    #define swixyz(V) (V).xyz
-    #define swixxx(V) (V).xxx
-    #define swiwww(V) (V).www
-
-    #define swizxy(V) (V).zxy
+    #define swi2(a,b,A)     (A).ab
+    #define swi3(a,b,c,A)   (A).abc
+    #define swi4(a,b,c,d,A) (A).abcd
 
   #else
-    #define swixz(V) to_float2((V).x,(V).z)
-    #define swiyz(V) to_float2((V).x,(V).z)
+    
+    #define swi2(a,b,A)     to_float2((A).a,(A).b)
+    #define swi3(a,b,c,A)   to_float3((A).a,(A).b,(A).c)
+    #define swi4(a,b,c,d,A) to_float4((A).a,(A).b,(A).c,(A).d)
 
-    #define swixy(V) to_float2((V).x,(V).y)
-    #define swiyx(V) to_float2((V).y,(V).x)
-    #define swixxy(V) to_float3((V).x,(V).x,(V).y)
-    #define swixyx(V) to_float3((V).x,(V).y,(V).x)
-    #define swiyxz(V) to_float3((V).y,(V).x,(V).z)
-    #define swiyzz(V) to_float3((V).y,(V).z,(V).z)
-    #define swizyx(V) to_float3((V).z,(V).y,(V).x)
-
-    #define swixyz(V) to_float3((V).x,(V).y,(V).z)
-    #define swixxx(V) to_float3((V).x,(V).x,(V).x)
-    #define swiwww(V) to_float3((V).w,(V).w,(V).w)
-
-    #define swizxy(V) to_float3((V).z,(V).x,(V).y)
-  #endif
-
-  #if defined(USE_NATIVE_METAL_IMPL)
-    __DEVICE__ inline float length1f      ( float  x ) { return abs(x);    }
-    __DEVICE__ inline float length_float3 ( float3 v ) { return length(v); }
-    __DEVICE__ inline float3 fract_float3(float3 v) { return fract(v); }
-    __DEVICE__ inline float4 pow_float4(float4 a, float4 b) { return pow(a,b); }
-  #else
-    __DEVICE__ inline float length1f      ( float  x ) { return _fabs(x);                                 }
-    __DEVICE__ inline float length_float3 ( float3 v ) { return _sqrtf(v.x*v.x+v.y*v.y+v.z*v.z);          }
-    __DEVICE__ inline float3 fract_float3(float3 v)          { return to_float3(v.x - _floor(v.x), v.y - _floor(v.y), v.z - _floor(v.z)                   ); }
-    __DEVICE__ inline float4 pow_float4(float4 a, float4 b) { return to_float4( pow(a.x,b.x),pow(a.y,b.y),pow(a.z,b.z),pow(a.w,b.w) ); }
   #endif
 
 
@@ -88,33 +52,33 @@
 
   typedef float2x2 mat2;
 
-  __DEVICE__ inline mat2 to_mat2    ( float  a, float  b, float c, float d) { return mat2(a,b,c,d);       }
-  __DEVICE__ inline mat2 to_mat2_1f ( float  a                            ) { return mat2(a,a,a,a);       }
-  __DEVICE__ inline mat2 to_mat2_s  ( float  a                            ) { return mat2(a);             }
+  __DEVICE__ inline mat2 to_mat2      ( float  a, float  b, float c, float d) { return mat2(a,b,c,d);       }
+  __DEVICE__ inline mat2 to_mat2_f    ( float  a                            ) { return mat2(a,a,a,a);       }
+  __DEVICE__ inline mat2 to_mat2_s    ( float  a                            ) { return mat2(a);             }
   __DEVICE__ inline mat2 to_mat2_f2_f2 ( float2 a, float2 b                  ) { return mat2(a,b);           }
-  __DEVICE__ inline mat2 to_mat2_1f_f3 ( float  a, float3 b                  ) { return mat2(a,b.x,b.y,b.z); }
-  __DEVICE__ inline mat2 to_mat2_f3_1f ( float3 a, float  b                  ) { return mat2(a.x,a.y,a.z,b); }
+  __DEVICE__ inline mat2 to_mat2_f_f3 ( float  a, float3 b                  ) { return mat2(a,b.x,b.y,b.z); }
+  __DEVICE__ inline mat2 to_mat2_f3_f ( float3 a, float  b                  ) { return mat2(a.x,a.y,a.z,b); }
 
 
-  __DEVICE__ inline mat2    prod_mat2_mat2  ( mat2   a, mat2   b )  { return a*b; }
-  __DEVICE__ inline float2  prod_f2_mat2    ( float2 v, mat2   m )  { return v*m; }
-  __DEVICE__ inline float2  prod_mat2_f2    ( mat2   m, float2 v )  { return m*v; }
-  __DEVICE__ inline mat2    prod_mat2_1f    ( mat2   m, float  s )  { return m*s; }
-  __DEVICE__ inline mat2    prod_1f_mat2    ( float  s, mat2   m )  { return s*m; }
+  __DEVICE__ inline mat2    mul_mat2_mat2 ( mat2   a, mat2   b )  { return a*b; }
+  __DEVICE__ inline float2  mul_f2_mat2   ( float2 v, mat2   m )  { return v*m; }
+  __DEVICE__ inline float2  mulmat2_f2    ( mat2   m, float2 v )  { return m*v; }
+  __DEVICE__ inline mat2    mul_mat2_f    ( mat2   m, float  s )  { return m*s; }
+  __DEVICE__ inline mat2    mul_f_mat2    ( float  s, mat2   m )  { return s*m; }
 
 #else
 
   typedef struct { float2 r0; float2 r1; } mat2;
 
-  __DEVICE__ inline mat2 to_mat2    ( float  a, float  b, float c, float d)  { mat2 t; t.r0.x = a; t.r0.y = b; t.r1.x = c; t.r1.y = d;         return t; }
-  __DEVICE__ inline mat2 to_mat2_1f ( float  a                            )  { mat2 t; t.r0.x = a; t.r0.y = a; t.r1.x = a; t.r1.y = a;         return t; }
-  __DEVICE__ inline mat2 to_mat2_s  ( float  a                            )  { mat2 t; t.r0.x = a;  t.r0.y = 0.0f; t.r1.x = 0.0f; t.r1.y = a;  return t; }
+  __DEVICE__ inline mat2 to_mat2      ( float  a, float  b, float c, float d)  { mat2 t; t.r0.x = a; t.r0.y = b; t.r1.x = c; t.r1.y = d;         return t; }
+  __DEVICE__ inline mat2 to_mat2_f    ( float  a                            )  { mat2 t; t.r0.x = a; t.r0.y = a; t.r1.x = a; t.r1.y = a;         return t; }
+  __DEVICE__ inline mat2 to_mat2_s    ( float  a                            )  { mat2 t; t.r0.x = a;  t.r0.y = 0.0f; t.r1.x = 0.0f; t.r1.y = a;  return t; }
   __DEVICE__ inline mat2 to_mat2_f2_f2 ( float2 a, float2 b                  )  { mat2 t; t.r0 = a; t.r1 = b;                                     return t; }
-  __DEVICE__ inline mat2 to_mat2_1f_f3 ( float  a, float3 b                  )  { mat2 t; t.r0.x = a; t.r0.y = b.x; t.r1.x = b.y; t.r1.y = b.z;   return t; }
-  __DEVICE__ inline mat2 to_mat2_f3_1f ( float3 a, float  b                  )  { mat2 t; t.r0.x = a.x; t.r0.y = a.y; t.r1.x = a.z; t.r1.y = b;   return t; }
+  __DEVICE__ inline mat2 to_mat2_f_f3 ( float  a, float3 b                  )  { mat2 t; t.r0.x = a; t.r0.y = b.x; t.r1.x = b.y; t.r1.y = b.z;   return t; }
+  __DEVICE__ inline mat2 to_mat2_f3_f ( float3 a, float  b                  )  { mat2 t; t.r0.x = a.x; t.r0.y = a.y; t.r1.x = a.z; t.r1.y = b;   return t; }
 
 
-  __DEVICE__ inline mat2 prod_mat2_mat2( mat2 a, mat2 b)
+  __DEVICE__ inline mat2 mul_mat2_mat2( mat2 a, mat2 b)
   {
     mat2 t;
     t.r0.x = a.r0.x * b.r0.x + a.r0.y * b.r1.x;   t.r0.y = a.r0.x * b.r0.y + a.r0.y * b.r1.y;
@@ -123,19 +87,19 @@
   }
 
 
-  __DEVICE__ inline float2 prod_float2_mat2( float2 v, mat2 m )
+  __DEVICE__ inline float2 mul_f2_mat2( float2 v, mat2 m )
   {
     float2 t; t.x = v.x*m.r0.x + v.y*m.r0.y; t.y = v.x*m.r1.x + v.y*m.r1.y; return t;
   }
 
 
-  __DEVICE__ inline float2 prod_mat2_float2( mat2 m, float2 v )
+  __DEVICE__ inline float2 mul_mat2_f2( mat2 m, float2 v )
   {
     float2 t; t.x = v.x*m.r0.x + v.y*m.r1.x; t.y = v.x*m.r0.y + v.y*m.r1.y; return t;
   }
 
 
-  __DEVICE__ inline mat2 prod_mat2_1f( mat2 m, float s)
+  __DEVICE__ inline mat2 mul_mat2_f( mat2 m, float s)
   {
     mat2 t;
     t.r0.x = s * m.r0.x; t.r0.y = s * m.r0.y;
@@ -143,7 +107,7 @@
     return t;
   }
 
-  __DEVICE__ inline mat2 prod_1f_mat2( float s, mat2 m) { return prod_mat2_1f(m,s); }
+  __DEVICE__ inline mat2 mul_f_mat2( float s, mat2 m) { return mul_mat2_f(m,s); }
 
 #endif // end of mat2 implementation
 
@@ -156,18 +120,21 @@
 
   typedef float3x3 mat3;
 
-  __DEVICE__ inline mat3 to_mat3    ( float a, float b, float c, float d, float e, float f, float g, float h, float i)
+  __DEVICE__ inline mat3 to_mat3( float a, float b, float c, float d, float e, float f, float g, float h, float i)
   {
     return mat3(a,b,c,d,e,f,g,h,i);
   }
 
-  __DEVICE__ inline mat3 to_mat3_1f ( float a ) { return mat3(a,a,a,a,a,a,a,a,a); }
+  __DEVICE__ inline mat3 to_mat3_f( float a ) { return mat3(a,a,a,a,a,a,a,a,a); }
+  __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }  
+  __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) { return (A*B); } 
+  __DEVICE__ inline float3 mul_mat3_mat3( mat3 A, mat3 B) { return (A*B); } 
 
 #else
 
   typedef struct { float3 r0; float3 r1; float3 r2; } mat3;
 
-  __DEVICE__ inline mat3 to_mat3    ( float  a, float  b, float c,   float d, float e, float f,   float g, float h, float i)
+  __DEVICE__ inline mat3 to_mat3( float  a, float  b, float c,   float d, float e, float f,   float g, float h, float i)
   {
     mat3 t;
     t.r0.x = a; t.r0.y = b; t.r0.z = c;
@@ -176,7 +143,7 @@
     return t;
   }
 
-  __DEVICE__ inline mat3 to_mat3_1f ( float  a )
+  __DEVICE__ inline mat3 to_mat3_1( float  a )
   {
     mat3 t;
     t.r0.x = t.r0.y = t.r0.z = t.r1.x = t.r1.y = t.r1.z = t.r2.x = t.r2.y = t.r2.z = a;
@@ -184,7 +151,51 @@
   }
 
 
-#endif // end of mat2 implementation
+__DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {  
+	float3 C;  
+
+	C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;  
+	C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;  
+	C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;  
+	return C;  
+  }
+ 
+__DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {  
+  float3 C; 
+  
+  C.x = A.x * B.r0.x + A.y * B.r0.y + A.z * B.r0.z;  
+  C.y = A.x * B.r1.x + A.y * B.r1.y + A.z * B.r1.z;  
+  C.z = A.x * B.r2.x + A.y * B.r2.y + A.z * B.r2.z; 
+  return C;
+ }
+ 
+ __DEVICE__ mat3 mul_mat3_mat3( mat3 A, mat3 B)
+{
+  float r[3][3];  
+  float a[3][3] = {{A.r0.x, A.r0.y, A.r0.z},  
+                   {A.r1.x, A.r1.y, A.r1.z},  
+                   {A.r2.x, A.r2.y, A.r2.z}};  
+  float b[3][3] = {{B.r0.x, B.r0.y, B.r0.z},  
+                   {B.r1.x, B.r1.y, B.r1.z},  
+                   {B.r2.x, B.r2.y, B.r2.z}};  
+     
+  for( int i = 0; i < 3; ++i)  
+  {  
+	  for( int j = 0; j < 3; ++j)  
+	  {  
+		  r[i][j] = 0.0f;  
+		  for( int k = 0; k < 3; ++k)  
+		  {  
+			  r[i][j] = r[i][j] + a[i][k] * b[k][j];  
+		  }  
+	  }  
+  }  
+  mat3 R = to_mat3(r[0][0], r[0][1], r[0][2],   
+                   r[1][0], r[1][1], r[1][2], 
+					         r[2][0], r[2][1], r[2][2]);  
+  return R;  
+}  
+#endif // end of mat3 implementation
 
 
 
@@ -200,6 +211,11 @@
 
   #define mod_f(a,b)  modf((a),(b))
   #define mod_f2(value,divisor) modf(value,divisor)
+  #define mod_f3(value,divisor) modf(value,divisor)
+  #define mod_f4(value,divisor) modf(value,divisor)
+  #define mod_f2f2(value,divisor) modf(value,divisor)
+  #define mod_f3f3(value,divisor) modf(value,divisor)
+  #define mod_f4f4(value,divisor) modf(value,divisor)
 
 #else
 
@@ -216,5 +232,11 @@
 
   #define mod_f(a,b) ((a)-(b)*_floor((a)/(b)))
   #define mod_f2(value,divisor) to_float2(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)))
+  #define mod_f3(value,divisor) to_float3(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)))
+  #define mod_f4(value,divisor) to_float4(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)),mod_f((value).w, (divisor)))
+  
+  #define mod_f2f2(value,divisor) to_float2(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y));}
+  #define mod_f3f3(value,divisor) to_float3(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z));}
+  #define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w));}
 
 #endif
