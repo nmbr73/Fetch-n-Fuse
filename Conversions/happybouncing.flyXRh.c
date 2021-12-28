@@ -9,7 +9,7 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 {
     float2 sca = to_float2(_sinf(ta),_cosf(ta));
     float2 scb = to_float2(_sinf(tb),_cosf(tb));
-    p = f2_multi_mat2(p,make_mat2(sca.x,sca.y,-sca.y,sca.x));
+    p = mul_f2_mat2(p,to_mat2(sca.x,sca.y,-sca.y,sca.x));
     p.x = _fabs(p.x);
     float k = (scb.y*p.x>scb.x*p.y) ? dot(p,scb) : length(p);
     return _sqrtf( dot(p,p) + ra*ra - 2.0f*ra*k ) - rb;
@@ -19,7 +19,7 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 #define fill(sdf) (smoothstep(0.001f, 0.0f, sdf))
 #define repeat(p,r) (mod_f(p,r)-r/2.0f)
 
-__DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return make_mat2(c,-s,s,c); }
+__DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return to_mat2(c,-s,s,c); }
 __DEVICE__ float circle (float2 p, float size)
 {
     return length(p)-size;
@@ -147,7 +147,7 @@ __DEVICE__ float4 sdEyes (float2 p, float t, float3 tint, float sens, float body
 
     // eyes positions
     p = animation(p, t,bodySize, modus);
-    p = f2_multi_mat2(p,rot(swing(t,modus)*-0.5f));
+    p = mul_f2_mat2(p,rot(swing(t,modus)*-0.5f));
     p -= to_float2(0.03f, bodySize+size.x*0.2f);
     p.x -= divergence*sens;
 
@@ -298,7 +298,7 @@ __KERNEL__ void happybouncingFuse(
 
           // eyes positions
           p = animation(pp, t+0.02f,bodySize, modus);
-          p = f2_multi_mat2(p,rot(swing(t, modus)*-0.5f));
+          p = mul_f2_mat2(p,rot(swing(t, modus)*-0.5f));
           p -= to_float2(0.03f, bodySize+size.x*0.2f);
           p.x = _fabs(p.x)-divergence;
 
@@ -321,7 +321,7 @@ __KERNEL__ void happybouncingFuse(
 
           // smile position
           p = animation(pp, t-0.02f, bodySize, modus);
-          p = f2_multi_mat2(p,rot(swing(t, modus)*- (modus==1?0.5f:0.9f)));
+          p = mul_f2_mat2(p,rot(swing(t, modus)*- (modus==1?0.5f:0.9f)));
           p -= bodySize*to_float2(0.5f, 0.5f+anim*0.5f);
           if (modus==1)   p -= bodySize*to_float2(0.4f, 1.0f-1.5f*anim);
 
