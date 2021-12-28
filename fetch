@@ -23,8 +23,35 @@ def patchForDCTL(code,fuse_name,buffer_name):
   code = code.replace("\t", "  ")
 
   code=re.sub(r'([^\w])(fragCoord)\.xy([^\w])',r'\1\2\3', code)
-  code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
-  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
+  code=re.sub(r'([^\w])(iResolution)\.xy([^\w])',r'\1\2\3', code)
+  
+
+
+#---- Dimensionen ----
+  #rgba noch verbesserbar ").rgb" 
+  code=re.sub(r'(\w+\.)(rgba)',r'\1xyzw', code)
+  code=re.sub(r'(\w+\.)(rgb)',r'\1xyz', code)
+  code=re.sub(r'(\w+\.)(rbg)',r'\1xzy', code)
+  code=re.sub(r'(\w+\.)(rg)',r'\1xy', code)
+  code=re.sub(r'(\w+\.)(r)([\s\)\,\;\*\\\-\+])',r'\1x\2', code)
+  code=re.sub(r'(\w+\.)(g)([\s\)\,\;\*\\\-\+])',r'\1y\2', code)
+  code=re.sub(r'(\w+\.)(b)([\s\)\,\;\*\\\-\+])',r'\1z\2', code)
+  code=re.sub(r'(\w+\.)(a)([\s\)\,\;\*\\\-\+])',r'\1w\2', code)
+
+#  code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
+  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi2(\2,\3,\1)\4', code)
+  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi3(\2,\3,\4,\1)\5', code)
+  code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi4(\2,\3,\4,\5,\1)\6', code)
+  
+  
+#--- Arrays ---
+  code=re.sub(r'(^\s?)(\w+)(\[\s?\])\s*(\w+)',r'\1\2 \4\3', code) #Deklaration
+  
+#  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
+  code=re.sub(r'(.)texture(\s*)\(\s*(\w+)\s*\,\s*(\w+)\s*\)','\g<1>_tex2DVecN\2(\3,\4,\4,15)',code)
+#  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geändert werden
+
+
 
   for s in [
       # prefix, suffix, fuctions
@@ -49,15 +76,23 @@ def patchForDCTL(code,fuse_name,buffer_name):
   code=re.sub(r'\n(\s*)vec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1float\2\3', code)
   code=re.sub(r'\n(\s*)const(\s+)vec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1const\2float\3\4', code)
 
+  # ivecN ... =  -> intN ... =
+  code=re.sub(r'\n(\s*)ivec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1int\2\3', code)
+  code=re.sub(r'\n(\s*)const(\s+)ivec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1const\2int\3\4', code)
+
+
+
   # vecN(float) -> to_floatN_s(float)
   code=re.sub(r'vec([234])(\s*\(\s*[0-9]+\.[0-9]+f\s*\))',r'to_float\1_s\2', code)
 
   # versuche floatN_aw zu erwischen - geht aber natuerlich nur sehr bedingt
   code=re.sub(r'vec([34])(\s*\([^,]+,[^,\)]+\))',r'to_float\1_aw\2', code)
 
+  code=re.sub(r'ivec([234])(\s*\()',r'to_int\1\2', code)
   code=re.sub(r'vec([234])(\s*\()',r'to_float\1\2', code)
 
   # am Schluss alle verbleibenden 'vecN' weghauen:
+  code=re.sub(r'([\s\(\)\*\+\-;,=])ivec([234])(\s)',r'\1int\2\3', code)
   code=re.sub(r'([\s\(\)\*\+\-;,=])vec([234])(\s)',r'\1float\2\3', code)
 
   kernel_name=fuse_name+'Fuse'
@@ -115,7 +150,7 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
   # Mal versuchen Funktionen zu finden:
 
-  code=re.sub(r'(\n\s*)(mat[2-4]|float[1-4]{0,1}|int|void)(\s+[A-Za-z_]\w*\s*\([^\)]*\)\s*{)',r'\g<1>__DEVICE__ \g<2>\g<3>',code)
+  code=re.sub(r'(\n\s*)(mat[2-4]|float[1-4]{0,1}|int|void|bool)(\s+[A-Za-z_]\w*\s*\([^\)]*\)\s*{)',r'\g<1>__DEVICE__ \g<2>\g<3>',code)
 
 
   return code
