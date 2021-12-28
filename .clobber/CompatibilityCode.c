@@ -44,72 +44,67 @@
 
 
 
-// ----------------------------------------------------------------------------------------------------------
-// mat2 implementation
-// ----------------------------------------------------------------------------------------------------------
-
-#if defined(USE_NATIVE_METAL_IMPL)
-
-  typedef float2x2 mat2;
-
-  __DEVICE__ inline mat2 to_mat2      ( float  a, float  b, float c, float d) { return mat2(a,b,c,d);       }
-  __DEVICE__ inline mat2 to_mat2_f    ( float  a                            ) { return mat2(a,a,a,a);       }
-  __DEVICE__ inline mat2 to_mat2_s    ( float  a                            ) { return mat2(a);             }
-  __DEVICE__ inline mat2 to_mat2_f2_f2 ( float2 a, float2 b                  ) { return mat2(a,b);           }
-  __DEVICE__ inline mat2 to_mat2_f_f3 ( float  a, float3 b                  ) { return mat2(a,b.x,b.y,b.z); }
-  __DEVICE__ inline mat2 to_mat2_f3_f ( float3 a, float  b                  ) { return mat2(a.x,a.y,a.z,b); }
-
-
-  __DEVICE__ inline mat2    mul_mat2_mat2 ( mat2   a, mat2   b )  { return a*b; }
-  __DEVICE__ inline float2  mul_f2_mat2   ( float2 v, mat2   m )  { return v*m; }
-  __DEVICE__ inline float2  mul_mat2_f2    ( mat2   m, float2 v )  { return m*v; }
-  __DEVICE__ inline mat2    mul_mat2_f    ( mat2   m, float  s )  { return m*s; }
-  __DEVICE__ inline mat2    mul_f_mat2    ( float  s, mat2   m )  { return s*m; }
-
-#else
-
-  typedef struct { float2 r0; float2 r1; } mat2;
-
-  __DEVICE__ inline mat2 to_mat2      ( float  a, float  b, float c, float d)  { mat2 t; t.r0.x = a; t.r0.y = b; t.r1.x = c; t.r1.y = d;         return t; }
-  __DEVICE__ inline mat2 to_mat2_f    ( float  a                            )  { mat2 t; t.r0.x = a; t.r0.y = a; t.r1.x = a; t.r1.y = a;         return t; }
-  __DEVICE__ inline mat2 to_mat2_s    ( float  a                            )  { mat2 t; t.r0.x = a;  t.r0.y = 0.0f; t.r1.x = 0.0f; t.r1.y = a;  return t; }
-  __DEVICE__ inline mat2 to_mat2_f2_f2 ( float2 a, float2 b                  )  { mat2 t; t.r0 = a; t.r1 = b;                                     return t; }
-  __DEVICE__ inline mat2 to_mat2_f_f3 ( float  a, float3 b                  )  { mat2 t; t.r0.x = a; t.r0.y = b.x; t.r1.x = b.y; t.r1.y = b.z;   return t; }
-  __DEVICE__ inline mat2 to_mat2_f3_f ( float3 a, float  b                  )  { mat2 t; t.r0.x = a.x; t.r0.y = a.y; t.r1.x = a.z; t.r1.y = b;   return t; }
-
-
-  __DEVICE__ inline mat2 mul_mat2_mat2( mat2 a, mat2 b)
-  {
-    mat2 t;
-    t.r0.x = a.r0.x * b.r0.x + a.r0.y * b.r1.x;   t.r0.y = a.r0.x * b.r0.y + a.r0.y * b.r1.y;
-    t.r1.x = a.r1.x * b.r0.x + a.r1.y * b.r1.x;   t.r1.y = a.r1.x * b.r0.y + a.r1.y * b.r1.y;
-    return t;
-  }
-
-
-  __DEVICE__ inline float2 mul_f2_mat2( float2 v, mat2 m )
-  {
-    float2 t; t.x = v.x*m.r0.x + v.y*m.r0.y; t.y = v.x*m.r1.x + v.y*m.r1.y; return t;
-  }
-
-
-  __DEVICE__ inline float2 mul_mat2_f2( mat2 m, float2 v )
-  {
-    float2 t; t.x = v.x*m.r0.x + v.y*m.r1.x; t.y = v.x*m.r0.y + v.y*m.r1.y; return t;
-  }
-
-
-  __DEVICE__ inline mat2 mul_mat2_f( mat2 m, float s)
-  {
-    mat2 t;
-    t.r0.x = s * m.r0.x; t.r0.y = s * m.r0.y;
-    t.r1.x = s * m.r1.x; t.r1.y = s * m.r1.y;
-    return t;
-  }
-
-  __DEVICE__ inline mat2 mul_f_mat2( float s, mat2 m) { return mul_mat2_f(m,s); }
-
-#endif // end of mat2 implementation
+/*| mat2          |*/// ----------------------------------------------------------------------------------------------------------
+/*| mat2          |*/// mat2 implementation
+/*| mat2          |*/// ----------------------------------------------------------------------------------------------------------
+/*| mat2          |*/
+/*| mat2          |*/#if defined(USE_NATIVE_METAL_IMPL)
+/*|               |*/
+/*| mat2          |*/  typedef float2x2 mat2;
+/*|               |*/
+/*| to_mat2       |*/  #define to_mat2(A,B,C,D)   mat2((A),(B),(C),(D))
+/*| to_mat2_f     |*/  #define to_mat2_f(A)       mat2((A),(A),(A),(A))
+/*| to_mat2_s     |*/  #define to_mat2_s(A)       mat2(A)
+/*| to_mat2_f2_f2 |*/  #define to_mat2_f2_f2(A,B) mat2((A),(B))
+/*| to_mat2_f_f3  |*/  #define to_mat2_f_f3(A,B)  mat2((A),(B).x,(B).y,(B).z)
+/*| to_mat2_f3_f  |*/  #define to_mat2_f3_f(A,B)  mat2((A).x,(A).y,(A).z,(B))
+/*|               |*/
+/*| mul_mat2_mat2 |*/  #define mul_mat2_mat2(A,B) ((A)*(B))
+/*| mul_f2_mat2   |*/  #define mul_f2_mat2(A,B)   ((A)*(B))
+/*| mul_mat2_f2   |*/  #define mul_mat2_f2(A,B)   ((A)*(B))
+/*| mul_mat2_f    |*/  #define mul_mat2_f(A,B)    ((A)*(B))
+/*| mul_f_mat2    |*/  #define mul_f_mat2(A,B)    ((A)*(B))
+/*|               |*/
+/*| mat2          |*/#else
+/*|               |*/
+/*| mat2          |*/  typedef struct { float2 r0; float2 r1; } mat2;
+/*|               |*/
+/*| to_mat2       |*/  __DEVICE__ inline mat2 to_mat2      ( float  a, float  b, float c, float d)  { mat2 t; t.r0.x = a; t.r0.y = b; t.r1.x = c; t.r1.y = d;         return t; }
+/*| to_mat2_f     |*/  __DEVICE__ inline mat2 to_mat2_f    ( float  a                            )  { mat2 t; t.r0.x = a; t.r0.y = a; t.r1.x = a; t.r1.y = a;         return t; }
+/*| to_mat2_s     |*/  __DEVICE__ inline mat2 to_mat2_s    ( float  a                            )  { mat2 t; t.r0.x = a;  t.r0.y = 0.0f; t.r1.x = 0.0f; t.r1.y = a;  return t; }
+/*| to_mat2_f2_f2 |*/  __DEVICE__ inline mat2 to_mat2_f2_f2( float2 a, float2 b                  )  { mat2 t; t.r0 = a; t.r1 = b;                                     return t; }
+/*| to_mat2_f_f3  |*/  __DEVICE__ inline mat2 to_mat2_f_f3 ( float  a, float3 b                  )  { mat2 t; t.r0.x = a; t.r0.y = b.x; t.r1.x = b.y; t.r1.y = b.z;   return t; }
+/*| to_mat2_f3_f  |*/  __DEVICE__ inline mat2 to_mat2_f3_f ( float3 a, float  b                  )  { mat2 t; t.r0.x = a.x; t.r0.y = a.y; t.r1.x = a.z; t.r1.y = b;   return t; }
+/*|               |*/
+/*| mul_mat2_mat2 |*/  __DEVICE__ inline mat2 mul_mat2_mat2( mat2 a, mat2 b)
+/*| mul_mat2_mat2 |*/  {
+/*| mul_mat2_mat2 |*/    mat2 t;
+/*| mul_mat2_mat2 |*/    t.r0.x = a.r0.x * b.r0.x + a.r0.y * b.r1.x;   t.r0.y = a.r0.x * b.r0.y + a.r0.y * b.r1.y;
+/*| mul_mat2_mat2 |*/    t.r1.x = a.r1.x * b.r0.x + a.r1.y * b.r1.x;   t.r1.y = a.r1.x * b.r0.y + a.r1.y * b.r1.y;
+/*| mul_mat2_mat2 |*/    return t;
+/*| mul_mat2_mat2 |*/  }
+/*|               |*/
+/*| mul_f2_mat2   |*/  __DEVICE__ inline float2 mul_f2_mat2( float2 v, mat2 m )
+/*| mul_f2_mat2   |*/  {
+/*| mul_f2_mat2   |*/    float2 t; t.x = v.x*m.r0.x + v.y*m.r0.y; t.y = v.x*m.r1.x + v.y*m.r1.y; return t;
+/*| mul_f2_mat2   |*/  }
+/*|               |*/
+/*| mul_mat2_f2   |*/  __DEVICE__ inline float2 mul_mat2_f2( mat2 m, float2 v )
+/*| mul_mat2_f2   |*/  {
+/*| mul_mat2_f2   |*/    float2 t; t.x = v.x*m.r0.x + v.y*m.r1.x; t.y = v.x*m.r0.y + v.y*m.r1.y; return t;
+/*| mul_mat2_f2   |*/  }
+/*|               |*/
+/*| mul_mat2_f    |*/  __DEVICE__ inline mat2 mul_mat2_f( mat2 m, float s)
+/*| mul_mat2_f    |*/  {
+/*| mul_mat2_f    |*/    mat2 t;
+/*| mul_mat2_f    |*/    t.r0.x = s * m.r0.x; t.r0.y = s * m.r0.y;
+/*| mul_mat2_f    |*/    t.r1.x = s * m.r1.x; t.r1.y = s * m.r1.y;
+/*| mul_mat2_f    |*/    return t;
+/*| mul_mat2_f    |*/  }
+/*|               |*/
+/*| mul_f_mat2    |*/  __DEVICE__ inline mat2 mul_f_mat2( float s, mat2 m) { return mul_mat2_f(m,s); }
+/*|               |*/
+/*| mat2          |*/#endif // end of mat2 implementation
 
 
 // ----------------------------------------------------------------------------------------------------------
