@@ -5,14 +5,18 @@
 
 
 
-#define A(u) texture(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
+#define A(u) _tex2DVecN(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
 
-	__KERNEL__ void Kernel(
-    __CONSTANTREF__ Params*  params,
-    __TEXTURE2D__            iChannel0,
-    __TEXTURE2D_WRITE__      dst
-    ) {
+	__KERNEL__ void fungusFuse(
+  float4 fragColor,
+  float2 u,
+  float2 iResolution,
+  float  iTime,
+  float4 iMouse
+  ) {
 
+
+#ifdef XXX
 	DEFINE_KERNEL_ITERATORS_XY(x, y);                                                               \
     if (x >= params->width || y >= params->height)                                                  \
       return;                                                                                       \
@@ -22,6 +26,8 @@
     float2 u   = to_float2(x, y);                                                           \
     float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w); \
     float4 fragColor   = to_float4_s(0.0f);
+#endif
+
 
     float4 a = A((u+to_float2(0,0)));
     float b = 0.0f;
@@ -44,12 +50,13 @@
           }}
           if(s0==0.0f)s0 = 1.0f;
           if(s1==0.0f)s1 = 1.0f;
-          float2 c = -to_float2(i,j)*blur;
-          float d = A(u+to_float2(i,j)).x;
-          float e = 1./_expf(dot(c,c))*d*(1.0f-_fminf(_fabs(d)+0.01f,1.0f));
+          float2 c = -1.0f*to_float2(i,j)*blur;
+          float d = A((u+to_float2(i,j))).x;
+          float e = 1.0f/_expf(dot(c,c))*d*(1.0f-_fminf(_fabs(d)+0.01f,1.0f));
           b +=(+_fmaxf(0.0f,+a.x)/s0
                +_fmaxf(0.0f,-a.x)/s1)*e;
         }}
+
     }
     //kernel convolution that blurs
     {
@@ -66,19 +73,19 @@
           s += 1.0f/_expf(dot(c,c));
           }}
           if(s==0.0f)s = 1.0f;
-          float2 c = -to_float2(i,j)*blur;
-          float d = A(u+to_float2(i,j)).x;
+          float2 c = -1.0f*to_float2(i,j)*blur;
+          float d = A((u+to_float2(i,j))).x;
           b += d/s/_expf(dot(c,c))*(_fminf(_fabs(d)+0.0f,1.0f))*1.0f;
         }}
     }
-    a = to_float4_aw(b,swixyz(a));
+    a = to_float4(b,a.x,a.y,a.z);
 
     if(iMouse.z>0.0f)
     {
-        float2 m1 = 2.0f*(u-swixy(iMouse))/iResolution.y;
+        float2 m1 = 2.0f*(u-swi2(iMouse,x,y))/iResolution.y;
         a *= 1.0f-1.0f/_expf(dot(m1,m1));
     }
-    if(iFrame==0)
+    if(iTime*30.0f<1)
     {
         float2 m1 = (2.0f*u-iResolution)/iResolution.y-to_float2(-0.02f,0);
         float2 m2 = (2.0f*u-iResolution)/iResolution.y-to_float2(+0.02f,0);
@@ -89,7 +96,7 @@
     //if(keyA!=0.0f)a = texture( iChannel2, u/iResolution).xxxx-0.6f;
     fragColor = a;
 
-	SHADER_EPILOGUE;
+	SetFragmentShaderComputedColor(fragColor);
 }
 
 
@@ -98,10 +105,10 @@
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
 
-#ifdef XXX
+#ifdef XXX //Buffer to Do
 
 
-__KERNEL__ void fungusFuse( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+__KERNEL__ void fungusFuse_Image( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
     float2 u = fragCoord/iResolution;
     float4 a = texture(iChannel0,u);

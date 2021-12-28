@@ -1,45 +1,7 @@
 
-// ----------------------------------------------------------------------------------
-// - Common                                                                         -
-// ----------------------------------------------------------------------------------
-
-#define in
-
-
-// ---------------------------------------------------------------------------
-// 2x2 matrix
-// ---------------------------------------------------------------------------
-#if defined(USE_NATIVE_METAL_IMPL)
-
-  typedef float2x2 mat2;
-
-  __DEVICE__ inline mat2 make_mat2( float  a, float  b, float c, float d) { return mat2(a,b,c,d);}
-  __DEVICE__ inline float2  f2_multi_mat2( float2 v, mat2   m )  { return v*m; }
-  __DEVICE__ inline float2  mat2_multi_f2(  mat2  m, float2 v )  { return m*v; }
-
-#else
-
-__DEVICE__ inline mat2 make_mat2( float A, float B, float C, float D)
-  {
-    mat2 E;
-    E.r0 = to_float2(A,B);
-    E.r1 = to_float2(C,D);
-    return E;
-  }
-  
-__DEVICE__ inline float2 f2_multi_mat2( float2 A, mat2 B )
-  {
-	float2 C;
-	C.x = A.x * B.r0.x + A.y * B.r0.y;
-	C.y = A.x * B.r1.x + A.y * B.r1.y;
-	return C;
-  }  
-
-#endif
-
 __DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
-#define swiyzx(V) to_float3((V).y,(V).z,(V).x)
+
 
 // Inigo Quilez
 // https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
@@ -47,7 +9,7 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 {
     float2 sca = to_float2(_sinf(ta),_cosf(ta));
     float2 scb = to_float2(_sinf(tb),_cosf(tb));
-    p = f2_multi_mat2(p,make_mat2(sca.x,sca.y,-sca.y,sca.x));
+    p = mul_f2_mat2(p,to_mat2(sca.x,sca.y,-sca.y,sca.x));
     p.x = _fabs(p.x);
     float k = (scb.y*p.x>scb.x*p.y) ? dot(p,scb) : length(p);
     return _sqrtf( dot(p,p) + ra*ra - 2.0f*ra*k ) - rb;
@@ -57,7 +19,7 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 #define fill(sdf) (smoothstep(0.001f, 0.0f, sdf))
 #define repeat(p,r) (mod_f(p,r)-r/2.0f)
 
-__DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return make_mat2(c,-s,s,c); }
+__DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return to_mat2(c,-s,s,c); }
 __DEVICE__ float circle (float2 p, float size)
 {
     return length(p)-size;
@@ -75,8 +37,8 @@ __DEVICE__ float hash11(float p)
 __DEVICE__ float3 hash31(float p)
 {
    float3 p3 = fract_f3(to_float3_s(p) * to_float3(0.1031f, 0.1030f, 0.0973f));
-   p3 += dot(p3, swiyzx(p3)+33.33f);
-   return fract_f3((swixxy(p3)+swiyzz(p3))*swizyx(p3));
+   p3 += dot(p3, swi3(p3,y,z,x)+33.33f);
+   return fract_f3((swi3(p3,x,x,y)+swi3(p3,y,z,z))*swi3(p3,z,y,x));
 }
 
 
@@ -122,7 +84,7 @@ __DEVICE__ float walk (float t)
 
 __DEVICE__ float swing (float t, int modus)
 {
-    if(!modus==2)
+    if(modus!=2)
     {
       if (modus==0) t = t*2.0f;
       t = _powf(t, 0.5f);
@@ -185,7 +147,7 @@ __DEVICE__ float4 sdEyes (float2 p, float t, float3 tint, float sens, float body
 
     // eyes positions
     p = animation(p, t,bodySize, modus);
-    p = f2_multi_mat2(p,rot(swing(t,modus)*-0.5f));
+    p = mul_f2_mat2(p,rot(swing(t,modus)*-0.5f));
     p -= to_float2(0.03f, bodySize+size.x*0.2f);
     p.x -= divergence*sens;
 
@@ -236,7 +198,7 @@ __KERNEL__ void happybouncingFuse(
 
     // ground
     //color.rgb += _mix(to_float3(0.945f,0.945f,0.792f), to_float3(0.820f,0.482f,0.694f), smoothstep(0.0f,0.2f,uv.y-0.2f));
-    if(modus==2) color = to_float4_aw(swixyz(color) + to_float3_s(0.25f)*step(uv.y,0.1f), color.w);
+    if(modus==2) color = to_float4_aw(swi3(color,x,y,z) + to_float3_s(0.25f)*step(uv.y,0.1f), color.w);
 
     // number of friends
     float buddies = 5.0f;
@@ -293,10 +255,10 @@ __KERNEL__ void happybouncingFuse(
           col += tint*fill(body);
           shape = _fminf(shape, body);
           float4 eyes = sdEyes(pp, t-0.03f, tint, -1.0f,bodySize,modus,size,divergence);
-          col = _mix(col, swixyz(eyes), step(eyes.w,0.0f));
+          col = _mix(col, swi3(eyes,x,y,z), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
           eyes = sdEyes(pp, t-0.01f, tint, 1.0f,bodySize,modus,size,divergence);
-          col = _mix(col, swixyz(eyes), step(eyes.w,0.0f));
+          col = _mix(col, swi3(eyes,x,y,z), step(eyes.w,0.0f));
           shape = _fminf(shape, eyes.w);
 
           // smile animation
@@ -318,7 +280,7 @@ __KERNEL__ void happybouncingFuse(
           // add buddy to frame
           float ao = clamp(shape+0.9f,0.0f,1.0f);
 
-          color = to_float4_aw(_mix(swixyz(color) * ao, col, step(shape, 0.0f)),color.w);
+          color = to_float4_aw(_mix(swi3(color,x,y,z) * ao, col, step(shape, 0.0f)),color.w);
         }
         else
         {
@@ -336,7 +298,7 @@ __KERNEL__ void happybouncingFuse(
 
           // eyes positions
           p = animation(pp, t+0.02f,bodySize, modus);
-          p = f2_multi_mat2(p,rot(swing(t, modus)*-0.5f));
+          p = mul_f2_mat2(p,rot(swing(t, modus)*-0.5f));
           p -= to_float2(0.03f, bodySize+size.x*0.2f);
           p.x = _fabs(p.x)-divergence;
 
@@ -359,7 +321,7 @@ __KERNEL__ void happybouncingFuse(
 
           // smile position
           p = animation(pp, t-0.02f, bodySize, modus);
-          p = f2_multi_mat2(p,rot(swing(t, modus)*- (modus==1?0.5f:0.9f)));
+          p = mul_f2_mat2(p,rot(swing(t, modus)*- (modus==1?0.5f:0.9f)));
           p -= bodySize*to_float2(0.5f, 0.5f+anim*0.5f);
           if (modus==1)   p -= bodySize*to_float2(0.4f, 1.0f-1.5f*anim);
 
@@ -379,7 +341,7 @@ __KERNEL__ void happybouncingFuse(
           col = _mix(col, tint*0.5f, fill(d+0.05f));
 
           // add color to frame
-          color = to_float4_aw(_mix(swixyz(color), col, step(shape, 0.0f)),color.w);
+          color = to_float4_aw(_mix(swi3(color,x,y,z), col, step(shape, 0.0f)),color.w);
         }
     }
 
