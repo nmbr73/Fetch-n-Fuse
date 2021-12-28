@@ -29,12 +29,12 @@
 
   #if defined(USE_NATIVE_METAL_IMPL)
 
-    #define swi2(a,b,A)     (A).ab
-    #define swi3(a,b,c,A)   (A).abc
-    #define swi4(a,b,c,d,A) (A).abcd
+    #define swi2(a,b,A)     (A).a##b
+    #define swi3(a,b,c,A)   (A).a##b##c
+    #define swi4(a,b,c,d,A) (A).a##b##c##d
 
   #else
-    
+
     #define swi2(a,b,A)     to_float2((A).a,(A).b)
     #define swi3(a,b,c,A)   to_float3((A).a,(A).b,(A).c)
     #define swi4(a,b,c,d,A) to_float4((A).a,(A).b,(A).c,(A).d)
@@ -126,9 +126,9 @@
   }
 
   __DEVICE__ inline mat3 to_mat3_f( float a ) { return mat3(a,a,a,a,a,a,a,a,a); }
-  __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }  
-  __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) { return (A*B); } 
-  __DEVICE__ inline float3 mul_mat3_mat3( mat3 A, mat3 B) { return (A*B); } 
+  __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }
+  __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) { return (A*B); }
+  __DEVICE__ inline mat3 mul_mat3_mat3( mat3 A, mat3 B) { return (A*B); }
 
 #else
 
@@ -151,50 +151,50 @@
   }
 
 
-__DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {  
-	float3 C;  
+__DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {
+	float3 C;
 
-	C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;  
-	C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;  
-	C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;  
-	return C;  
+	C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;
+	C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;
+	C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;
+	return C;
   }
- 
-__DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {  
-  float3 C; 
-  
-  C.x = A.x * B.r0.x + A.y * B.r0.y + A.z * B.r0.z;  
-  C.y = A.x * B.r1.x + A.y * B.r1.y + A.z * B.r1.z;  
-  C.z = A.x * B.r2.x + A.y * B.r2.y + A.z * B.r2.z; 
+
+__DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
+  float3 C;
+
+  C.x = A.x * B.r0.x + A.y * B.r0.y + A.z * B.r0.z;
+  C.y = A.x * B.r1.x + A.y * B.r1.y + A.z * B.r1.z;
+  C.z = A.x * B.r2.x + A.y * B.r2.y + A.z * B.r2.z;
   return C;
  }
- 
+
  __DEVICE__ mat3 mul_mat3_mat3( mat3 A, mat3 B)
 {
-  float r[3][3];  
-  float a[3][3] = {{A.r0.x, A.r0.y, A.r0.z},  
-                   {A.r1.x, A.r1.y, A.r1.z},  
-                   {A.r2.x, A.r2.y, A.r2.z}};  
-  float b[3][3] = {{B.r0.x, B.r0.y, B.r0.z},  
-                   {B.r1.x, B.r1.y, B.r1.z},  
-                   {B.r2.x, B.r2.y, B.r2.z}};  
-     
-  for( int i = 0; i < 3; ++i)  
-  {  
-	  for( int j = 0; j < 3; ++j)  
-	  {  
-		  r[i][j] = 0.0f;  
-		  for( int k = 0; k < 3; ++k)  
-		  {  
-			  r[i][j] = r[i][j] + a[i][k] * b[k][j];  
-		  }  
-	  }  
-  }  
-  mat3 R = to_mat3(r[0][0], r[0][1], r[0][2],   
-                   r[1][0], r[1][1], r[1][2], 
-					         r[2][0], r[2][1], r[2][2]);  
-  return R;  
-}  
+  float r[3][3];
+  float a[3][3] = {{A.r0.x, A.r0.y, A.r0.z},
+                   {A.r1.x, A.r1.y, A.r1.z},
+                   {A.r2.x, A.r2.y, A.r2.z}};
+  float b[3][3] = {{B.r0.x, B.r0.y, B.r0.z},
+                   {B.r1.x, B.r1.y, B.r1.z},
+                   {B.r2.x, B.r2.y, B.r2.z}};
+
+  for( int i = 0; i < 3; ++i)
+  {
+	  for( int j = 0; j < 3; ++j)
+	  {
+		  r[i][j] = 0.0f;
+		  for( int k = 0; k < 3; ++k)
+		  {
+			  r[i][j] = r[i][j] + a[i][k] * b[k][j];
+		  }
+	  }
+  }
+  mat3 R = to_mat3(r[0][0], r[0][1], r[0][2],
+                   r[1][0], r[1][1], r[1][2],
+					         r[2][0], r[2][1], r[2][2]);
+  return R;
+}
 #endif // end of mat3 implementation
 
 
@@ -234,7 +234,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
   #define mod_f2(value,divisor) to_float2(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)))
   #define mod_f3(value,divisor) to_float3(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)))
   #define mod_f4(value,divisor) to_float4(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)),mod_f((value).w, (divisor)))
-  
+
   #define mod_f2f2(value,divisor) to_float2(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y));}
   #define mod_f3f3(value,divisor) to_float3(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z));}
   #define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w));}
