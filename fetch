@@ -24,11 +24,11 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
   code=re.sub(r'([^\w])(fragCoord)\.xy([^\w])',r'\1\2\3', code)
   code=re.sub(r'([^\w])(iResolution)\.xy([^\w])',r'\1\2\3', code)
-  
+
 
 
 #---- Dimensionen ----
-  #rgba noch verbesserbar ").rgb" 
+  #rgba noch verbesserbar ").rgb"
   code=re.sub(r'(\w+\.)(rgba)',r'\1xyzw', code)
   code=re.sub(r'(\w+\.)(rgb)',r'\1xyz', code)
   code=re.sub(r'(\w+\.)(rbg)',r'\1xzy', code)
@@ -42,11 +42,11 @@ def patchForDCTL(code,fuse_name,buffer_name):
   code=re.sub(r'(\w+)\.([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi2(\1,\2,\3)\4', code)
   code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi3(\1,\2,\3,\4)\5', code)
   code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi4(\1,\2,\3,\4,\5)\6', code)
-  
-  
+
+
 #--- Arrays ---
   code=re.sub(r'(^\s?)(\w+)(\[\s?\])\s*(\w+)',r'\1\2 \4\3', code) #Deklaration
-  
+
 #  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
   code=re.sub(r'(.)texture(\s*)\(\s*(\w+)\s*\,\s*(\w+)\s*\)','\g<1>_tex2DVecN\2(\3,\4,\4,15)',code)
 #  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geändert werden
@@ -98,9 +98,7 @@ def patchForDCTL(code,fuse_name,buffer_name):
   kernel_name=fuse_name+'Fuse'
 
   if buffer_name!="Image":
-    kernel_name=fuse_name+'Fuse_'+buffer_name
-
-  kernel_name=kernel_name.replace(" ", "")
+    kernel_name=fuse_name+'Fuse__'+buffer_name.replace(" ","_")
 
   kernel_parameters=""
 
@@ -123,29 +121,30 @@ def patchForDCTL(code,fuse_name,buffer_name):
       kernel_parameters=kernel_parameters+", "+e[1]
 
 
-  # Kernelaufruf
-  #   Ich erwische dabei nur die mit fragColor und fragCoord? Gibt's bei Shadertoy auch Aufrufe ohne diese beiden,
-  #   gar oder mit mehr Parametern?!?
-  #
-  match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{'
+  if buffer_name!='Common':
+    # Kernelaufruf
+    #   Ich erwische dabei nur die mit fragColor und fragCoord? Gibt's bei Shadertoy auch Aufrufe ohne diese beiden,
+    #   gar oder mit mehr Parametern?!?
+    #
+    match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*in\s+float2\s+([A-Za-z_]\w*)\s*\)\s*{'
 
-  m = re.search(match_kernel,code)
+    m = re.search(match_kernel,code)
 
-  if m:
-    fragColor=m.group(1)
+    if m:
+      fragColor=m.group(1)
 
-    code = re.sub(match_kernel,
-      '__KERNEL__ void '+kernel_name+'(float4 \\1, float2 \\2'+kernel_parameters+')\n{\n'
-      , code)
+      code = re.sub(match_kernel,
+        '__KERNEL__ void '+kernel_name+'(float4 \\1, float2 \\2'+kernel_parameters+')\n{\n'
+        , code)
 
-    # Versuche jetzt am Ende noch etwas reinzuschmieren:
+      # Versuche jetzt am Ende noch etwas reinzuschmieren:
 
-    p=code.rfind("}")
+      p=code.rfind("}")
 
-    if p!=-1:
-      code=code[0:p] + "\n\n  SetFragmentShaderComputedColor("+ fragColor +");\n" +code[p]
-  else:
-    print("no kernel")
+      if p!=-1:
+        code=code[0:p] + "\n\n  SetFragmentShaderComputedColor("+ fragColor +");\n" +code[p]
+    else:
+      print("attention: no kernel found in "+buffer_name)
 
 
   # Mal versuchen Funktionen zu finden:
@@ -424,25 +423,26 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
 
 
 
-  code=""
 
   assets_exists=False
 
   fuse_name=asFusename(shader_name,id)
 
+  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image']
+
+  code_parts={}
+
+  for part in known_code_parts:
+    code_parts[part]={ 'code' : ''}
+
   for entry in json_data['renderpass']:
 
+    if not entry['name'] in known_code_parts:
+      raise Exception("unknown code section '"+entry['name']+"'")
 
     header="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
       "// ----------------------------------------------------------------------------------\n"
-
-
-    # code="\n// ----------------------------------------------------------------------------------\n"+ \
-    #   "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
-    #   "// ----------------------------------------------------------------------------------\n"+ \
-    #   "\n\n\n"+patchForDCTL(entry['code'],fuse_name,entry['name'])+"\n\n\n"+code
-
 
     inputs=entry.get('inputs',None)
 
@@ -475,9 +475,16 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
                   f.write(data.content)
 
     if nopatch:
-      code = header + "\n\n" + entry['code'] + code
+      code_parts[entry['name']]['code'] = header + "\n\n" + entry['code']
     else:
-      code = header + "\n\n" + patchForDCTL(entry['code'],fuse_name,entry['name']) + code
+      code_parts[entry['name']]['code'] = header + "\n\n" + patchForDCTL(entry['code'],fuse_name,entry['name'])
+
+
+  code=""
+
+  for part in known_code_parts:
+    code=code + code_parts[part]['code']
+
 
 
   with open(fuse_basefname+".c", 'w') as f:
