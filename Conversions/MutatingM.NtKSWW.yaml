@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  id: MutatingM
+  name: MutatingM
+shader:
+  author: N.N.
+  description: A mandelbox distance used as the radius of a sphere.  A mandelball....
+  id: NtKSWW
+  name: Fork Mutating M JiPi 835
+  parent:
+    id: MlcGzX
+    name: Mutating Mandelball
+    url: https://www.shadertoy.com/view/MlcGzX
+  tags:
+  - raymarching
+  - fractal
+  - reflection
+  url: https://www.shadertoy.com/view/NtKSWW

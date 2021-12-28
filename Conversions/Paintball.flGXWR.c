@@ -28,14 +28,14 @@ __DEVICE__ float random (float i){
 
 __DEVICE__ float calcInfluence( float4 ball, float2 uv)
 {
-    float d = distance_f2(swixy(ball), uv);
+    float d = distance_f2(swi2(x,y,ball), uv);
     float inf = _powf( ball.z/d, 3.0f);
     return  inf;
 }
 
 __DEVICE__ float3 calcNormal( float4 ball, float2 uv )
 {
-    return to_float3_aw( swixy(ball) - uv, 0.1f);
+    return to_float3_aw( swi2(x,y,ball) - uv, 0.1f);
 }
 
 
@@ -204,8 +204,8 @@ __KERNEL__ void PaintballFuse(
     for( i = 0; i < nLights; i++ )
     {
         float4 light = lights[i];
-        float3 lightDir = normalize( to_float3_aw(swixy(light), lightZ) - to_float3_aw( uv, 0.0f ) );
-        float intensity = _fminf( 1.0f, (lightFalloff * light.w) / _powf( distance_f2( swixy(light), uv ), 2.0f ));
+        float3 lightDir = normalize( to_float3_aw(swi2(x,y,light), lightZ) - to_float3_aw( uv, 0.0f ) );
+        float intensity = _fminf( 1.0f, (lightFalloff * light.w) / _powf( distance_f2(swi2(x,y,light), uv ), 2.0f ));
 
         //diffuse
         float lighting = _fmaxf(0.0f,dot( -normal, lightDir) );

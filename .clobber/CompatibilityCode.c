@@ -62,7 +62,7 @@
 
   __DEVICE__ inline mat2    mul_mat2_mat2 ( mat2   a, mat2   b )  { return a*b; }
   __DEVICE__ inline float2  mul_f2_mat2   ( float2 v, mat2   m )  { return v*m; }
-  __DEVICE__ inline float2  mulmat2_f2    ( mat2   m, float2 v )  { return m*v; }
+  __DEVICE__ inline float2  mul_mat2_f2    ( mat2   m, float2 v )  { return m*v; }
   __DEVICE__ inline mat2    mul_mat2_f    ( mat2   m, float  s )  { return m*s; }
   __DEVICE__ inline mat2    mul_f_mat2    ( float  s, mat2   m )  { return s*m; }
 
