@@ -60,7 +60,7 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 -- @param[type=string] msg The message to output in DaFusions console window.
 --
 function verbose(msg)
-  print(msg)
+  -- print(msg)
 end
 
 
@@ -249,6 +249,16 @@ function Create()
     INP_Integer = true,
     attrs
     })
+
+  InKernel = self:AddInput("Kernel", "Kernel", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ComboControl",
+      INP_DoNotifyChanged = true,
+      INP_Default = 0,
+      INP_Integer = true,
+      { "Image" }
+      })
+
 
   InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
     { LINKID_DataType = "Text",
@@ -490,6 +500,223 @@ end
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
+-- Rename the kernel and its parameters.
+--
+function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
+
+
+  ConversionFusenameExtension=""
+  if Part ~= "Image" then
+    ConversionFusenameExtension="__"..Part:gsub('%s+','_')
+  end
+
+  ConversionKernelname = ConversionFusename .. "Fuse"..ConversionFusenameExtension.."_" .. NodeName
+
+  local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse"..ConversionFusenameExtension.."%s*%(([^%)]*)%)%s*%{")
+
+
+  if kernel_parameters==nil then
+    if Part=="Image" then
+      print("kernel for 'Image' not found!")
+      return "", nil
+    end
+    return ConversionSourcecode, nil
+  end
+
+
+
+  local has_param={
+    -- ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
+    ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
+    ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
+    ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
+
+    ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
+    ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
+    ['iChannelTime']          = { Type='float*',    Present=false, Code='ohoh!'  },
+    ['iChannelResolution']    = { Type='float2*',   Present=false, Code='whoops!'  },
+    ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
+    ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
+
+
+    -- ['iChannel0']             = { Type='sampler2D', Present=false },
+    -- ['iChannel1']             = { Type='sampler2D', Present=false },
+    -- ['iChannel2']             = { Type='sampler2D', Present=false },
+    -- ['iChannel3']             = { Type='sampler2D', Present=false },
+
+    -- Some special variables not known to shadertoys,
+    -- but you may want to use them in a Fuse, so we
+    -- allow to add them to the kernel's parameters:
+    ['width']             = { Type='int', Present=false, Code='int width = _shaderParameters->width;' },
+    ['height']            = { Type='int', Present=false, Code='int height = _shaderParameters->height;' },
+    ['compOrder']         = { Type='int', Present=false, Code='int width = _shaderParameters->compOrder;' },
+    ['x']                 = { Type='int', Present=false, Code='int x = fusion_x;' },
+    ['y']                 = { Type='int', Present=false, Code='int y = fusion_y;' },
+
+  }
+
+  has_param['iChannelResolution']['Code']='float2 iChannelResolution['..NUM_INPUT_CHANNELS..'];\n'
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    has_param['iChannelResolution']['Code']=has_param['iChannelResolution']['Code']
+      .."iChannelResolution["..i.."] = to_float2(_shaderParameters->iChannelResolution["..i.."][0],_shaderParameters->iChannelResolution["..i.."][1]);\n"
+  end
+
+
+  has_param['iChannelTime']['Code']='float iChannelTime['..NUM_INPUT_CHANNELS..'];\n'
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    has_param['iChannelTime']['Code']=has_param['iChannelTime']['Code']
+      .."iChannelTime["..i.."] = _shaderParameters->iChannelTime["..i.."];\n"
+  end
+
+
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    has_param['iChannel'..i]={ Type='sampler2D', Present=false }
+  end
+
+  local fragColor_name=nil -- float4
+  local fragCoord_name=nil -- float2
+
+
+  -- ja, okay, jetzt wird's echt bescheuert ...
+
+  local i=-1 -- iteration to allow fragColor and Coord only as the first two parameters
+
+  if kernel_parameters==nil then
+    print("no kernel found - unable to determine parameters")
+  else
+    -- kernel_parameters=kernel_parameters:gsub("^%s*(.-)%s*$", "%1") -- trim
+    -- verbose("kernel parameters='"..kernel_parameters.."'")
+
+    for p in kernel_parameters:gmatch('([^,]+)') do
+
+      i=i+1;
+
+      t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type name"
+      if t==nil then
+        t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s*%*%s*([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type * name" (yes, type*name matches, so what)
+        if t~=nil then
+          t=t..'*'
+        else
+          t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$") -- match "type name [ ]"
+          if t~=nil then
+            t=t..'*'
+          end
+        end
+      end
+
+      if t==nil then
+        print("parameter='"..p.."' has bad format")
+      else
+        verbose("parameter"..i..": type='"..t.."', name='"..n.."'")
+        if has_param[n]==nil then
+          if i==0 and t=='float4' and fragColor_name==nil then
+            fragColor_name=n -- first and only the first parameter can be the color (yes, stupid idea to call that color iDate)
+          elseif i<2 and t=='float2' and fragCoord_name==nil then
+            fragCoord_name=n -- first or second parameter can be the coord
+          else
+            print("i don't know '"..t.." "..n.."'")
+          end
+        else
+          if t ~= has_param[n].Type then
+            print("bad type '"..t.."' for '"..n.."' ('"..(has_param[n].Type).."' expected)")
+          else
+            if has_param[n].Present then
+              print("multiple occurences of '"..t.." "..n.."'")
+            else
+              has_param[n].Present=true
+            end
+          end
+        end
+      end
+    end
+  end
+
+
+  kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    if has_param["iChannel"..i].Present then
+      kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
+    else
+      kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
+    end
+  end
+  kernel_parameters = kernel_parameters .. "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
+
+
+  local variable_declarations = ""
+
+  if fragColor_name ~= nil then
+    variable_declarations=variable_declarations.."float4 "..fragColor_name.."=to_float4_s(0.0f);\n"
+  end
+
+  if fragCoord_name ~= nil then
+    variable_declarations=variable_declarations.."float2 "..fragCoord_name.."=to_float2(fusion_x,fusion_y);\n"
+  end
+
+
+  for n,p in pairs(has_param) do
+    if p.Present and p.Code then
+      variable_declarations = variable_declarations .. p.Code .. "\n"
+    end
+  end
+
+
+  local count
+
+  ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+    "__KERNEL__%s+void%s+"..ConversionFusename.."Fuse"..ConversionFusenameExtension.."%s*%([^%)]*%)%s*%{",
+
+    KernelInputCtrlDefines.."\n\n"..
+    "__KERNEL__ void "..ConversionKernelname.."("..kernel_parameters..")\n{\n"..
+    [[
+        DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);
+        if (fusion_x >= _shaderParameters->width || fusion_y >= _shaderParameters->height)
+          return;
+    ]]
+    ..variable_declarations.."\n\n// --------\n\n"
+    )
+
+  -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
+  -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
+  -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
+  -- falsche Namen in 99% der Faelle
+
+  if count ~=1 then
+    print(ConversionFusename.." kernel found for "..Part.." "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
+    ConversionSourcecode = ""
+    return ConversionSourcecode, nil
+  end
+
+  return ConversionSourcecode, ConversionKernelname
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Rename all kernels and their parameters.
+function PatchKernels(ConversionSourcecode,ConversionFusename,NodeName)
+
+  local kernels={}
+  local i=0
+
+  for k,v in pairs({"Image","Buffer A","Buffer B","Buffer C","Buffer D"}) do
+    ConversionSourcecode,ConversionKernelname =  PatchKernel(ConversionSourcecode,ConversionFusename,v,NodeName)
+    if ConversionKernelname ~= nil then
+      kernels[i]={ Label = v, Name= ConversionKernelname}
+      i=i+1
+    end
+  end
+
+  ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+      "(%s+)SetFragmentShaderComputedColor%s*%(%s*",
+      "%1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, "
+    )
+
+  return ConversionSourcecode, kernels
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to render the node.
 --
 function Process(req)
@@ -532,192 +759,26 @@ function Process(req)
     -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
     -- drangehaengt.
 
-    ConversionKernelname = ConversionFusename .. "Fuse_" .. self.Name
 
     -- --------------------------------------------------------------------------------------------------------------
 
-    local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%(([^%)]*)%)%s*%{")
-    local count=0
+    ConversionSourcecode, kernels = PatchKernels(ConversionSourcecode,ConversionFusename,self.Name)
+
+    dump(kernels)
+
+    ConversionKernelname=kernels[0].Name -- bis auf weiteres nur den Image-Kernel!
 
 
-    local has_param={
-      -- ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
-      ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
-      ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
-      ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
-
-      ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
-      ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
-      ['iChannelTime']          = { Type='float*',    Present=false, Code='ohoh!'  },
-      ['iChannelResolution']    = { Type='float2*',   Present=false, Code='whoops!'  },
-      ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
-      ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
-
-
-      -- ['iChannel0']             = { Type='sampler2D', Present=false },
-      -- ['iChannel1']             = { Type='sampler2D', Present=false },
-      -- ['iChannel2']             = { Type='sampler2D', Present=false },
-      -- ['iChannel3']             = { Type='sampler2D', Present=false },
-
-      -- Some special variables not known to shadertoys,
-      -- but you may want to use them in a Fuse, so we
-      -- allow to add them to the kernel's parameters:
-      ['width']             = { Type='int', Present=false, Code='int width = _shaderParameters->width;' },
-      ['height']            = { Type='int', Present=false, Code='int height = _shaderParameters->height;' },
-      ['compOrder']         = { Type='int', Present=false, Code='int width = _shaderParameters->compOrder;' },
-      ['x']                 = { Type='int', Present=false, Code='int x = fusion_x;' },
-      ['y']                 = { Type='int', Present=false, Code='int y = fusion_y;' },
-
-    }
-
-    has_param['iChannelResolution']['Code']='float2 iChannelResolution['..NUM_INPUT_CHANNELS..'];\n'
-    for i=0,NUM_INPUT_CHANNELS-1 do
-      has_param['iChannelResolution']['Code']=has_param['iChannelResolution']['Code']
-        .."iChannelResolution["..i.."] = to_float2(_shaderParameters->iChannelResolution["..i.."][0],_shaderParameters->iChannelResolution["..i.."][1]);\n"
-    end
-
-
-    has_param['iChannelTime']['Code']='float iChannelTime['..NUM_INPUT_CHANNELS..'];\n'
-    for i=0,NUM_INPUT_CHANNELS-1 do
-      has_param['iChannelTime']['Code']=has_param['iChannelTime']['Code']
-        .."iChannelTime["..i.."] = _shaderParameters->iChannelTime["..i.."];\n"
-    end
-
-
-
-    for i=0,NUM_INPUT_CHANNELS-1 do
-      has_param['iChannel'..i]={ Type='sampler2D', Present=false }
-    end
-
-    local fragColor_name=nil -- float4
-    local fragCoord_name=nil -- float2
-
-
-    -- ja, okay, jetzt wird's echt bescheuert ...
-
-    local i=-1 -- iteration to allow fragColor and Coord only as the first two parameters
-    if kernel_parameters==nil then
-      print("no kernel found - unable to determine parameters")
+    if CompatibilityCode~=nil then
+      ConversionSourcecode=CompatibilityCode..ConversionSourcecode
     else
-      -- kernel_parameters=kernel_parameters:gsub("^%s*(.-)%s*$", "%1") -- trim
-      -- verbose("kernel parameters='"..kernel_parameters.."'")
-
-      for p in kernel_parameters:gmatch('([^,]+)') do
-
-        i=i+1;
-
-        t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type name"
-        if t==nil then
-          t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s*%*%s*([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type * name" (yes, type*name matches, so what)
-          if t~=nil then
-            t=t..'*'
-          else
-            t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$") -- match "type name [ ]"
-            if t~=nil then
-              t=t..'*'
-            end
-          end
-        end
-
-        if t==nil then
-          print("parameter='"..p.."' has bad format")
-        else
-          verbose("parameter"..i..": type='"..t.."', name='"..n.."'")
-          if has_param[n]==nil then
-            if i==0 and t=='float4' and fragColor_name==nil then
-              fragColor_name=n -- first and only the first parameter can be the color (yes, stupid idea to call that color iDate)
-            elseif i<2 and t=='float2' and fragCoord_name==nil then
-              fragCoord_name=n -- first or second parameter can be the coord
-            else
-              print("i don't know '"..t.." "..n.."'")
-            end
-          else
-            if t ~= has_param[n].Type then
-              print("bad type '"..t.."' for '"..n.."' ('"..(has_param[n].Type).."' expected)")
-            else
-              if has_param[n].Present then
-                print("multiple occurences of '"..t.." "..n.."'")
-              else
-                has_param[n].Present=true
-              end
-            end
-          end
-        end
-      end
+      print("no compatibility code?!?")
     end
 
-
-    kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
-    for i=0,NUM_INPUT_CHANNELS-1 do
-      if has_param["iChannel"..i].Present then
-        kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
-      else
-        kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
-      end
-    end
-    kernel_parameters = kernel_parameters .. "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
-
-
-    local variable_declarations = ""
-
-    if fragColor_name ~= nil then
-      variable_declarations=variable_declarations.."float4 "..fragColor_name.."=to_float4_s(0.0f);\n"
-    end
-
-    if fragCoord_name ~= nil then
-      variable_declarations=variable_declarations.."float2 "..fragCoord_name.."=to_float2(fusion_x,fusion_y);\n"
-    end
-
-
-    for n,p in pairs(has_param) do
-      if p.Present and p.Code then
-        variable_declarations = variable_declarations .. p.Code .. "\n"
-      end
-    end
-
-
-    local count
-
-    ConversionSourcecode, count = string.gsub(ConversionSourcecode,
-      "__KERNEL__%s+void%s+"..ConversionFusename.."Fuse%s*%([^%)]*%)%s*%{",
-
-      KernelInputCtrlDefines.."\n\n"..
-      "__KERNEL__ void "..ConversionKernelname.."("..kernel_parameters..")\n{\n"..
-      [[
-          DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);
-          if (fusion_x >= _shaderParameters->width || fusion_y >= _shaderParameters->height)
-            return;
-      ]]
-      ..variable_declarations.."\n\n// --------\n\n"
-      )
-
-
-    -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
-    -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
-    -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
-    -- falsche Namen in 99% der Faelle
-
-    if count ~=1 then
-      print("void "..ConversionFusename.."Fuse() found "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
-      ConversionSourcecode = ""
-    else
-
-      ConversionSourcecode, count = string.gsub(ConversionSourcecode,
-        "(%s+)SetFragmentShaderComputedColor%s*%(%s*",
-        "%1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, "
-      )
-
-      -- print(ConversionSourcecode)
-
-      if CompatibilityCode~=nil then
-        ConversionSourcecode=CompatibilityCode..ConversionSourcecode
-      else
-        print("no compatibility code?!?")
-      end
-    end
 
 
   end
+
 
 
 
@@ -733,7 +794,7 @@ function Process(req)
     ConversionKernelname="IncubatorFallbackKernel"
     ConversionFusename="IncubatorFallback"
 
-    print(ConversionSourcecode)
+    -- print(ConversionSourcecode)
     rebuild=true
   end
 
