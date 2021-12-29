@@ -250,14 +250,63 @@ function Create()
     attrs
     })
 
-  InKernel = self:AddInput("Kernel", "Kernel", {
+  -- ComboControl ist schon mal nicht wirklich so gut geeignet
+  --
+  -- InKernel = self:AddInput("Kernel", "Kernel", {
+  --     LINKID_DataType = "Number",
+  --     INPID_InputControl = "ComboControl",
+  --     INP_DoNotifyChanged = true,
+  --     INP_Default = 0,
+  --     INP_Integer = true,
+  --     { "Image" }
+  --     })
+
+
+
+
+  -- MultiButton wird, wenn man ihn wie in der VFxPedia beschrieben verwendet,
+  -- einfach zu einer ComboBox. Aber so habe ich jetzt zumindest schon mal
+  -- separate Buttons hinbekommen ... aber noch nicht komplett verstanden und
+  -- auch nicht wirklich schön.
+
+  InSelectKernel={}
+
+  InSelectKernel[0]= self:AddInput("Image", "Image", {
       LINKID_DataType = "Number",
-      INPID_InputControl = "ComboControl",
-      INP_DoNotifyChanged = true,
-      INP_Default = 0,
-      INP_Integer = true,
-      { "Image" }
+      INPID_InputControl = "MultiButtonControl",
+      INP_Default = 0.0,
+      -- INP_DoNotifyChanged = true,
+
+      MBTNC_StretchToFit= true,
+      MBTNC_ShowBasicButton = true,
+      MBTNC_ShowName=false,
+
+      MBTNC_Type="Toggle",
+
+      -- INP_Disabled=true,
+
+      IC_ControlGroup = 42, IC_ControlID = 1,
+      { MBTNC_AddButton = "I", }, -- MBTNCD_ButtonWidth = 0.25,
       })
+
+
+  for i,v in ipairs({'A','B','C','D'}) do
+    InSelectKernel[i]=self:AddInput("Buffer "..v, "Buffer_"..v, {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "MultiButtonControl",
+      INP_Default = 0.0,
+      -- INP_DoNotifyChanged = true,
+
+      MBTNC_StretchToFit= true,
+      MBTNC_ShowBasicButton = true,
+      MBTNC_ShowName=false,
+
+      MBTNC_Type="Toggle",
+
+      IC_ControlGroup = 42, IC_ControlID = 1+i,
+      { MBTNC_AddButton = v, }, -- MBTNCD_ButtonWidth = 0.25,
+      })
+  end
 
 
   InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
