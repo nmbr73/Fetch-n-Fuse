@@ -5,14 +5,18 @@
 
 
 
-#define A(u) texture(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
+#define A(u) _tex2DVecN(iChannel0,(u.x)/iResolution.x,(u.y)/iResolution.y,15)
 
-	__KERNEL__ void Kernel(
-    __CONSTANTREF__ Params*  params,
-    __TEXTURE2D__            iChannel0,
-    __TEXTURE2D_WRITE__      dst
-    ) {
+	__KERNEL__ void fungusFuse(
+  float4 fragColor,
+  float2 u,
+  float2 iResolution,
+  float  iTime,
+  float4 iMouse
+  ) {
 
+
+#ifdef XXX
 	DEFINE_KERNEL_ITERATORS_XY(x, y);                                                               \
     if (x >= params->width || y >= params->height)                                                  \
       return;                                                                                       \
@@ -22,6 +26,8 @@
     float2 u   = to_float2(x, y);                                                           \
     float4 iMouse      = to_float4(params->mouse_x,params->mouse_y,params->mouse_z,params->mouse_w); \
     float4 fragColor   = to_float4_s(0.0f);
+#endif
+
 
     float4 a = A((u+to_float2(0,0)));
     float b = 0.0f;
@@ -50,6 +56,7 @@
           b +=(+_fmaxf(0.0f,+a.x)/s0
                +_fmaxf(0.0f,-a.x)/s1)*e;
         }}
+
     }
     //kernel convolution that blurs
     {
@@ -75,10 +82,10 @@
 
     if(iMouse.z>0.0f)
     {
-        float2 m1 = 2.0f*(u-swixy(iMouse))/iResolution.y;
+        float2 m1 = 2.0f*(u-swi2(iMouse,x,y))/iResolution.y;
         a *= 1.0f-1.0f/_expf(dot(m1,m1));
     }
-    if(iFrame==0)
+    if(iTime*30.0f<1)
     {
         a = to_float4_s(0.5f);
         float2 m1 = (2.0f*u-iResolution)/iResolution.y-to_float2(-0.02f,0);
@@ -91,7 +98,7 @@
 
     fragColor = a;
 
-	SHADER_EPILOGUE;
+	SetFragmentShaderComputedColor(fragColor);
 }
 
 
@@ -100,9 +107,10 @@
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
 
+#ifdef XXX //Buffer to Do
 
 
-__KERNEL__ void fungusFuse( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
+__KERNEL__ void fungusFuse_Image( __CONSTANTREF__ Params*  params, __TEXTURE2D__ iChannel0, __TEXTURE2D_WRITE__ dst )
 {
   PROLOGUE(fragColor,fragCoord);
 

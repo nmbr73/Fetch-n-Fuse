@@ -25,7 +25,7 @@ __KERNEL__ void SimpleDCTLFuse(
   float iTime   ,
   float2 iResolution,
   float4 iMouse,
-  float3 * iChannelResolution
+  float2 * iChannelResolution
   )
 {
 

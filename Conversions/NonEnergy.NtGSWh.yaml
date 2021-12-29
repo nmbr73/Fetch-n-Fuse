@@ -1,5 +1,6 @@
 fuse:
   author: JiPi
+  id: NonEnergy
   name: NonEnergy
 shader:
   author: N.N.
@@ -8,7 +9,7 @@ shader:
 
     inspired by suture fluid: https://www.shadertoy.com/view/XddSRX'
   id: NtGSWh
-  name: non-energy
+  name: Fork non-energy JiPi 185
   parent:
     id: 4ddczX
     name: non-energy-preserving (click)
