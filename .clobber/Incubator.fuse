@@ -764,6 +764,21 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to render the node.
 --
+
+--JiPi_Multifuse
+ImgAttrs_Global = {
+        { IMG_Channel = "Red", },
+        { IMG_Channel = "Green", },
+        { IMG_Channel = "Blue", },
+        { IMG_Channel = "Alpha", },
+        IMG_Width = Width,
+        IMG_Height = Height,
+  	    IMG_DeferAlloc = false,
+        }
+Image_Buff_GlobalA = Image(ImgAttrs_Global)
+
+
+
 function Process(req)
 
   local rebuild = false
@@ -816,8 +831,6 @@ function Process(req)
     -- ConversionKernelname=ShaderKernels[0].Name
 
 
-
-
     if CompatibilityCode~=nil then
       ConversionSourcecode=CompatibilityCode..ConversionSourcecode
     else
@@ -828,72 +841,7 @@ function Process(req)
 end
 
 
-
---JiPi_Multifuse
-ImgAttrs_Global = {
-        { IMG_Channel = "Red", },
-        { IMG_Channel = "Green", },
-        { IMG_Channel = "Blue", },
-        { IMG_Channel = "Alpha", },
-        IMG_Width = Width,
-        IMG_Height = Height,
-  	    IMG_DeferAlloc = false,
-        }
-Image_Buff_GlobalA = Image(ImgAttrs_Global)
-
-
-function Process(req)
-
-  local rebuild = false
-
-  end
-
-
   -- ConversionSourcecode=""
-
-  if rebuild then
-    ConversionSourcecode  = ""
-    local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
-    ConversionFusename    = item.Name
-    ConversionShaderID    = item.ShadertoyID
-
-    InShadertoyButton:SetAttrs({
-      BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
-      INP_Disabled=  ConversionShaderID=="TEST" and true or false
-      })
-
-    verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
-
-    file = io.open(item.Path .. item.Filename,"r")
-
-    if file ~= nil then
-      ConversionSourcecode = "\n" .. file:read("*all")
-      file:close()
-    end
-
-
-    --JiPi_Multifuse
-    if (InBufferATest:GetValue(req).Value > 0) then
-      ConversionKernelname = ConversionFusename .. "Fuse"
-    else
-
-        -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
-        -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
-        -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
-        -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
-        -- drangehaengt.
-
-      ConversionKernelname = ConversionFusename .. "Fuse" -- .. self.Name
-    end
-
-    ----------------------------- Kerneldeklaration -----------------------------
-    Kerneldeclaration(ConversionFusename, ConversionKernelname )
-
-    --Kerneldeclaration(ConversionFusename, (ConversionKernelname.."_BufferA") ) -- geht nicht
-
-print(ConversionSourcecode)
-
-  end --rebuild
 
 
   if ConversionSourcecode == ""  then
@@ -915,9 +863,11 @@ print(ConversionSourcecode)
   end
 
 
-
-  ConversionKernelname=ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel!
-
+  if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1) then
+    ConversionKernelname=ShaderKernels[1].Name -- zunächst BufferA 
+  else
+    ConversionKernelname=ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel!
+  end
 
   if rebuild then
     attrs={}
@@ -952,35 +902,12 @@ print(ConversionSourcecode)
     verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
   end
 
-  -- JiPi Multibuffertest
-  -- ev überrpüfen, ob entsprechender Buffer überhaupt vorhanden ist
-  --print("KerneltoUse", InKerneltoUse:GetValue(req).Value)
-
-  _ConversionKernelname = ConversionKernelname --Image
-
-  if (InBufferATest:GetValue(req).Value > 0)  then    -- Buffer allgemein testen
-    if (InKerneltoUse:GetValue(req).Value == 1) then       -- BufferA
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferA")
-    else if (InKerneltoUse:GetValue(req).Value == 2) then  -- BufferB
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferB")
-    else if (InKerneltoUse:GetValue(req).Value == 3) then  -- BufferC
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferC")
-    else if (InKerneltoUse:GetValue(req).Value == 4) then  -- BufferD
-      _ConversionKernelname = string.gsub(ConversionKernelname, ConversionKernelname, ConversionKernelname.."_BufferD")
-    end
-    end
-    end
-    end
-  end
---print("\n SourceCode",ConversionSourcecode,"\n")
-
   local node = DVIPComputeNode(req,
     ConversionKernelname,
     ConversionSourcecode,
     "ShaderParameters",
     ShaderParameters
     )
-
 
   local imgattrs = {
     IMG_Document = self.Comp,
@@ -1156,8 +1083,8 @@ print(ConversionSourcecode)
   -- not yet (correctly) initialized:
   -- -----
 
-  params.iTimeDelta=0
-  params.iFrame=0
+  params.iTimeDelta = 1/framerate
+  params.iFrame = req.Time
 
   for i=0,NUM_INPUT_CHANNELS-1 do
     params.iChannelTime[i] = 0
@@ -1176,11 +1103,20 @@ print(ConversionSourcecode)
 
   node:SetParamBlock(params)
 
-  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+  --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
 
   --JiPi_Multifuse
   if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1 and InRecursive:GetValue(req).Value == 1 ) then
-    node:AddInput("iChannel0",Image_Buff_GlobalA)
+    --node:AddInput("iChannel0",Image_Buff_GlobalA)
+
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      if (i==0) then
+        node:AddInput("iChannel0",Image_Buff_GlobalA)
+      else
+        node:AddInput("iChannel"..i,iChannel[i])
+      end  
+    end
     --print("----- BufferA-------")
   else
     for i=0,NUM_INPUT_CHANNELS-1 do
@@ -1242,8 +1178,6 @@ print(ConversionSourcecode)
   collectgarbage();
 
 end
-
-
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to handle UI control events.

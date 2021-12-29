@@ -1,5 +1,6 @@
 
 __DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
+__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
 __DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
 
 // ----------------------------------------------------------------------------------
@@ -56,8 +57,10 @@ __DEVICE__ float3 texTiedCylinder(float2 uv, __TEXTURE2D__ iChannel0) {
 #define tex texTiedCylinder
 
 // inspired by suture fluid: https://www.shadertoy.com/view/XddSRX
-__KERNEL__ void NonEnergyFuse__Buffer_A(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
+__KERNEL__ void NonEnergyFuse__Buffer_A(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
+
+    fragCoord +=0.5f;
 
     float2 vUv = fragCoord / iResolution;
     float2 step = 1.0f / iResolution;
@@ -132,6 +135,7 @@ __KERNEL__ void NonEnergyFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
       fragColor = to_float4(newFlow.x,newFlow.y, 0.0f, 1.0f);
     }
 
+  //Store(make_float2(0.0f, 0.0f), make_float4(iFrame,0.5f,0.5f, 0.5f), &fragColor, fragCoord);
 
   SetFragmentShaderComputedColor(fragColor);
 }
