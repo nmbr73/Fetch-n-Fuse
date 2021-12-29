@@ -11,13 +11,69 @@ from dotenv import load_dotenv
 
 
 
-load_dotenv()
+def get_compatibility_code(conversionCode):
 
-def da_fuse(id):
+  # copatibility code laden
+
+  with open("./.clobber/CompatibilityCode.c", "r") as f:
+    compatibilityCode=f.read()
+
+
+  # gucken, welche keys es im compatibility code gibt
+
+  keys = {}
+
+  for line in compatibilityCode.split("\n"):
+    match=re.match(r'^\s*\/\*\|([^\|]*)\|\*\/(.*)$',line)
+    if match != None:
+      key=match.group(1).strip()
+      if key != '' and not key in keys:
+        keys[key]=False
+
+  # gucken, welche keys im conversion code vorkommen
+
+  for key in keys:
+    if re.search(r'[^\w]'+key+r'[^\w]',conversionCode) != None:
+      keys[key]=True
+
+
+  # zeilen rausfiltern, deren key nicht verwendet wird
+
+  abridgedCompatibilityCode=""
+
+  for line in compatibilityCode.split("\n"):
+    match=re.match(r'^\s*\/\*\|([^\|]*)\|\*\/(.*)$',line)
+    if match==None:
+      abridgedCompatibilityCode = abridgedCompatibilityCode+line+"\n"
+    else:
+      key  = match.group(1).strip()
+      code = match.group(2)
+      if key=='' or keys[key]:
+        abridgedCompatibilityCode = abridgedCompatibilityCode+code+"\n"
+
+
+  # ueberfluessegen whitespace eliminieren
+
+  abridgedCompatibilityCode=re.sub(r'\t','  ',abridgedCompatibilityCode)
+  abridgedCompatibilityCode=re.sub(r' +\n','\n',abridgedCompatibilityCode)
+  abridgedCompatibilityCode=re.sub(r'\n +\n','\n\n',abridgedCompatibilityCode)
+  abridgedCompatibilityCode=re.sub(r'\n{3,}','\n\n',abridgedCompatibilityCode)
+
+
+  # und damit ist der compatibility code entsprechend angepasst
+
+  return abridgedCompatibilityCode
+
+
+
+
+
+def fuse_it(id):
 
   path='./Conversions/'
 
   files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.c")]
+
 
   if len(files) < 1:
     raise Exception(f"no such file '{path}*.{id}.c'")
@@ -26,6 +82,8 @@ def da_fuse(id):
     raise Exception(f"there are multiple files matching '{path}*.{id}.c'")
 
   name = re.sub(r'^(.+)\.'+id+'\.c$',r'\1',files[0].name)
+
+  print(f"fuse conversion '{path}{name}.{id}.c'")
 
   info=None
   with open(f"{path}{name}.{id}.yaml", "r") as f:
@@ -37,7 +95,7 @@ def da_fuse(id):
   shader_id = info['shader']['id']
   shader_name = info['shader']['name']
 
-  shader_description= info['shader']['description']
+  shader_description= info['shader'].get('description','')
 
   if shader_id != id or fuse_name!=name:
     raise Exception("inconsistency in your source and yaml file")
@@ -52,6 +110,21 @@ def da_fuse(id):
         +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n"+shader_description+"\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
         )
 
+  # read conversion code
+
+  with open(f"{path}{name}.{id}.c", "r") as f:
+    conversionCode=f.read()
+
+  conversionCode=re.sub(r'\t','  ',conversionCode)
+  conversionCode=re.sub(r' +\n','\n',conversionCode)
+
+  # create compatibility code for this conversion
+
+  compatibilityCode=get_compatibility_code(conversionCode)
+
+
+
+  print(compatibilityCode)
 
   #print(str(info))
   #print(f"file: '{fuse_name}'")
@@ -62,11 +135,16 @@ def da_fuse(id):
 
 
 
+
+load_dotenv()
+
 parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
 parser.add_argument('-i','--id', help="shadertoy id as it can be found in the conversion's filename right before the'.c' suffix", required=True)
 args = parser.parse_args()
 
-try:
-  da_fuse(args.id)
-except Exception as e:
-  print("outch: "+str(e))
+fuse_it(args.id)
+
+# try:
+#   fuse_it(args.id)
+# except Exception as e:
+#   print("outch: "+str(e))
