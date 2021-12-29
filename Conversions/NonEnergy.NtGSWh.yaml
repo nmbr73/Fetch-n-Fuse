@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  id: NonEnergy
+  name: NonEnergy
+shader:
+  author: N.N.
+  description: 'click to generate a ball of force and watch it evolve!
+
+
+    inspired by suture fluid: https://www.shadertoy.com/view/XddSRX'
+  id: NtGSWh
+  name: Fork non-energy JiPi 185
+  parent:
+    id: 4ddczX
+    name: non-energy-preserving (click)
+    url: https://www.shadertoy.com/view/4ddczX
+  tags:
+  - test
+  - fluid
+  - diffusion
+  url: https://www.shadertoy.com/view/NtGSWh

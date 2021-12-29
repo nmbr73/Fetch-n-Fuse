@@ -223,7 +223,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
   #define fract_f(A)  fract(A)
   #define fract_f2(A) to_float2(fract((A).x),fract((A).y))
   #define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
-  #define fract_f4(A) to_float4(fract((A).x),fract((A).y),fract((A).z,fract((A).w))
+  #define fract_f4(A) to_float4(fract((A).x),fract((A).y),fract((A).z),fract((A).w))
 
   #define mod_f(a,b) ((a)-(b)*_floor((a)/(b)))
   #define mod_f2(value,divisor) to_float2(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)))
