@@ -762,11 +762,15 @@ function Process(req)
 
     -- --------------------------------------------------------------------------------------------------------------
 
-    ConversionSourcecode, kernels = PatchKernels(ConversionSourcecode,ConversionFusename,self.Name)
+    ShaderKernels=nil
 
-    dump(kernels)
+    ConversionSourcecode, ShaderKernels = PatchKernels(ConversionSourcecode,ConversionFusename,self.Name)
 
-    ConversionKernelname=kernels[0].Name -- bis auf weiteres nur den Image-Kernel!
+    -- dump(ShaderKernels)
+
+    -- ConversionKernelname=ShaderKernels[0].Name
+
+
 
 
     if CompatibilityCode~=nil then
@@ -780,7 +784,7 @@ function Process(req)
   end
 
 
-
+  -- ConversionSourcecode=""
 
 
   if ConversionSourcecode == ""  then
@@ -794,9 +798,41 @@ function Process(req)
     ConversionKernelname="IncubatorFallbackKernel"
     ConversionFusename="IncubatorFallback"
 
+    ShaderKernels={}
+    ShaderKernels[0] = { Label = "Image", Name=ConversionKernelname }
+
     -- print(ConversionSourcecode)
     rebuild=true
   end
+
+
+
+  ConversionKernelname=ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel!
+
+
+  if rebuild then
+    attrs={}
+
+    for k,v in pairs(ShaderKernels) do
+      table.insert(attrs,{ CCS_AddString = v.Label })
+      print("add kernel "..v.Name.." to combobox")
+    end
+
+    -- Geht so leider nicht
+    --
+    -- InKernel:SetAttrs(
+    --   {
+    --     LINKID_DataType = "Number",
+    --     INPID_InputControl = "ComboControl",
+    --     INP_DoNotifyChanged = true,
+    --     INP_Default = 0,
+    --     INP_Integer = true,
+    --     attrs
+    --     }
+    -- )
+
+  end
+
 
   if ShaderParameters==nil then
     print("this will never ever work")
