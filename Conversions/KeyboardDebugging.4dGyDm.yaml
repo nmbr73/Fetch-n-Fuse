@@ -1,0 +1,15 @@
+fuse:
+  author: nmbr73
+  id: KeyboardDebugging
+  name: KeyboardDebugging
+shader:
+  author: mattz
+  description: I just wanted a shader to debug the keyboard texture a little more
+    easily. Sometimes I forget which keys have which codes.
+  id: 4dGyDm
+  name: keyboard debugging
+  tags:
+  - visualization
+  - keyboard
+  - debug
+  url: https://www.shadertoy.com/view/4dGyDm
