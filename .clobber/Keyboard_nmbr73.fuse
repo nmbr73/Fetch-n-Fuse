@@ -32,7 +32,9 @@ FuRegisterClass("nmnr73Keyboard", CT_SourceTool, {
     })
 
 
-KEYCODES = {}
+KEY_CODE_TO_NAME  = {} -- code -> tastenname
+KEY_NAME_TO_CODE = {} -- tastenname -> code
+KEY_IDEX_TO_CODE  = {} -- laufnummer -> code
 
 function init_keycodes()
 
@@ -62,20 +64,38 @@ function init_keycodes()
   return kc
 end
 
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- COnvert keyname to code
+
+function init_keylookup(kc)
+
+  local lookup={}
+
+  for i,key in pairs(KEY_CODE_TO_NAME) do
+    lookup[key]=i
+  end
+
+  return lookup
+end
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to initialize the tool.
 --
 function Create()
 
-  print("go")
-
-  KEYCODES = init_keycodes()
+  KEY_CODE_TO_NAME  = init_keycodes()
+  KEY_NAME_TO_CODE  = init_keylookup(KEY_CODE_TO_NAME)
+  KEY_IDEX_TO_CODE  = {}
 
   keys={}
 
-  for i,key in pairs(KEYCODES) do
+  local j=0
+  for i,key in pairs(KEY_CODE_TO_NAME) do
     -- print("insert no "..i.." = "..key)
     table.insert(keys,{ CCS_AddString = key })
+    KEY_IDEX_TO_CODE[j]=i
+    j=j+1
   end
 
 
@@ -143,9 +163,21 @@ function Process(req)
     IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
   })
 
-  -- Eigentlich erstmal komplett in Schwarz fuellen
-  local p = Pixel({R=1,G=0,B=0,A=0.5})
-  dst:Fill(p)
+
+  local inactive  = Pixel({R=0,G=0,B=0,A=0})
+  local active    = Pixel({R=1,G=0,B=0,A=0})
+
+  dst:Fill(inactive)
+
+  keyindex  = InKeyPressed:GetValue(req).Value
+  keycode   = KEY_IDEX_TO_CODE[keyindex]
+  keyname   = KEY_CODE_TO_NAME[keycode]
+
+  print("key: '"..keycode.."' ('"..keyname.."')")
+
+  dst:SetPixel( keycode , 0, active)
+  dst:SetPixel( keycode , 1, active)
+  dst:SetPixel( keycode , 2, active)
 
   -- und dann das x der Pixel auf 1 setzen je nach Tastendruck setzen
 
