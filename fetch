@@ -130,6 +130,17 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
     m = re.search(match_kernel,code)
 
+    if not m:
+      # schnellschuss und keine wirkliche loesung; hatte einen shader ohne 'in' an dem vec2
+      match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*float2\s+([A-Za-z_]\w*)\s*\)\s*{'
+      m = re.search(match_kernel,code)
+
+      if not m:
+        # schnellschuss und keine wirkliche loesung; hatte einen shader mit kommentar hinter dem kernelnamen
+        match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*float2\s+([A-Za-z_]\w*)\s*\)\s*//[^\n]*\n{'
+        m = re.search(match_kernel,code)
+
+
     if m:
       fragColor=m.group(1)
 
