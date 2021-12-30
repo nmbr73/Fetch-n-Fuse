@@ -1,0 +1,34 @@
+fuse:
+  author: nmbr73
+  id: IresolutionImouseIdateEtc
+  name: IresolutionImouseIdateEtc
+shader:
+  author: FabriceNeyret2
+  description: 'Utils:  (more here: [url]https://shadertoyunofficial.wordpress.com/[/url])
+
+    - see current values ( resolution of screen & texture, mouse, keyboard, time,
+    sound )
+
+    - ready-to-use code + comments ( keyboard, printing... )
+
+    - draw & blend antialiased lines/disc'
+  id: llySRh
+  name: iResolution, iMouse, iDate, etc
+  tags:
+  - mouse
+  - time
+  - text
+  - line
+  - antialiasing
+  - textures
+  - hue
+  - keyboard
+  - hash
+  - utils
+  - segment
+  - tuto
+  - message
+  - fonts
+  - keycode
+  - resolution
+  url: https://www.shadertoy.com/view/llySRh
