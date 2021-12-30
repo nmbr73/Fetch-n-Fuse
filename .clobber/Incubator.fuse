@@ -344,6 +344,17 @@ function Create()
 
   })
 
+  InOutIMGRes = self:AddInput("OutResolution Image1", "OutIMGRes", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "CheckboxControl",
+      INP_Default = 1,
+      INP_Integer = true,
+      IC_Visible = true,
+      INP_External = false,
+    })
+
+
+
   self:BeginControlNest("MultiBuffer", "MultiBuffer", true, {})
   --JiPi Multibuffertest
 
@@ -991,20 +1002,17 @@ end
   end
 
 
-#ifdef OUT_IMG_RES
+  
+  -- Auflösung des OutImage
+  dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  dst2 = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
 
-  local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-  local dst2 = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-
-#else
-
-  -- local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-  local dst=Image(imgattrs)
-  local dst2 = Image {IMG_Like = dst, IMG_DeferAlloc = true}
-  local p = Pixel({R=0,G=0,B=0,A=0})
-  dst:Fill(p)
-
-#endif
+  if (InOutIMGRes:GetValue(req).Value == 0) then
+    dst = Image(imgattrs)
+    dst2 = Image {IMG_Like = dst, IMG_DeferAlloc = true}
+    local p = Pixel({R=0,G=0,B=0,A=0})
+    dst:Fill(p)
+  end
 
 
   if req:IsPreCalc() then
@@ -1203,16 +1211,26 @@ end
   if (InBufferATest:GetValue(req).Value == 2) then   -- ImageKernel after BufferA
 
     local nodeI = DVIPComputeNode(req,
-          ConversionFusename.."Kernel",          --Image
-          CompatibilityCode .. ConversionSourcecode,
-          "Params",
-          ShaderParameters
-          )
+    ShaderKernels[0].Name,
+    ConversionSourcecode,
+    "ShaderParameters",
+    ShaderParameters
+    )      
+     
 
     nodeI:SetParamBlock(params)
     nodeI:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
 
-    nodeI:AddInput("iChannel0",Image_Buff_GlobalA)
+        
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      if (i==0) then
+        nodeI:AddInput("iChannel0",Image_Buff_GlobalA)
+      else
+        nodeI:AddInput("iChannel"..i,iChannel[i])
+      end
+    end
+    
+    
    	nodeI:AddOutput("dst", dst2)
 
     if rebuild then
