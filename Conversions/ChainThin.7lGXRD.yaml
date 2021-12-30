@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  id: ChainThin
+  name: ChainThin
+shader:
+  author: N.N.
+  description: Click and drag with the mouse.
+  id: 7lGXRD
+  name: Fork Chain Thin JiPi 644
+  parent:
+    id: Nl3XWX
+    name: Chain Thing
+    url: https://www.shadertoy.com/view/Nl3XWX
+  tags:
+  - string
+  - path
+  - following
+  url: https://www.shadertoy.com/view/7lGXRD
