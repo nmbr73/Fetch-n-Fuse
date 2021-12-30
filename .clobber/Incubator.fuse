@@ -934,7 +934,11 @@ function Process(req)
 
 
 
-  local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  -- local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  local dst=Image(imgattrs)
+  local p = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(p)
+
 
 
   if req:IsPreCalc() then
