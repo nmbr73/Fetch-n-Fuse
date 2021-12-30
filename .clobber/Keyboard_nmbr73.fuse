@@ -1,0 +1,193 @@
+--- Serves as an input for shader toys that need a keyboard
+--
+-- Die Idee: man nimmt den Inkubator, und laedt KeyboardDebugging (das ist die 4dGyDM).
+-- An Channel 0 des Inkubators haent man dann die "Font 1.png"-Textur (Datei
+-- Image-Channel0-texture.png in den Assets). An der Stelle sieht man leider schon,
+-- das der KeyBoardDebugging-Shader leider noch nicht so funktioniert, wie er sollte,
+-- denn eigentlich muesste er doch die Zahlencodes anzeigen, oder?!?
+-- Dann wuerde man diese Fuse hier (zu finden per Kuerzel "kbd") als Knoten einfuegen
+-- und ihren Ausgang an Channel 1 des Inkubators als Eingang fuer das KeyBoard
+-- debugging anklemmen.
+--
+-- Die Keyboard-Fuse macht noch nichts sinnvolles - sie ist halt schwer zu entwickeln,
+-- so lange die KeyboardDebugging nicht funktioniert.
+
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+FuRegisterClass("nmnr73Keyboard", CT_SourceTool, {
+    REGS_Name = "Keyboard",
+	  REGS_Category = "Fuses",
+    REGS_OpDescription = "A keyboard input for Shaderfuses",
+	  REGS_OpIconString = "kbd",
+    REG_Source_GlobalCtrls = true,
+    REG_Source_SizeCtrls = true,
+    REG_Source_AspectCtrls = true,
+	  REG_TimeVariant = true,
+	  REGS_Company = "nmbr73",
+	  REGS_URL = "https://nmbr73.github.io/",
+	  REG_Version	= 000001,
+    REG_Fuse_NoEdit = false,
+    REG_Fuse_NoReload = false, -- true,
+    })
+
+
+KEYCODES = {}
+
+function init_keycodes()
+
+  -- just some keys to play with
+  -- to be complemented later
+
+  kc={}
+
+  kc[0]  = '<none>'
+  kc[9]  = 'tab'
+  kc[16] = 'shift'
+  kc[32] = 'spacebar'
+  kc[37] = 'left arrow'
+  kc[38] = 'up arrow'
+  kc[39] = 'right arrow'
+  kc[40] = 'down arrow'
+
+  for i=0,9 do
+    kc[48+i] = string.char( string.byte('0') + i)
+  end
+
+  for i=0,25 do
+    kc[65+i] = string.char( string.byte('a') + i)
+  end
+
+
+  return kc
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to initialize the tool.
+--
+function Create()
+
+  print("go")
+
+  KEYCODES = init_keycodes()
+
+  keys={}
+
+  for i,key in pairs(KEYCODES) do
+    -- print("insert no "..i.." = "..key)
+    table.insert(keys,{ CCS_AddString = key })
+  end
+
+
+  InKeyPressed = self:AddInput("Key", "key", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ComboControl",
+      INP_DoNotifyChanged = false,
+      INP_Default = 0,
+      INP_Integer = true,
+
+      keys
+
+      })
+
+
+  OutImage   = self:AddOutput("Output", "Output", {
+    LINKID_DataType = "Image",
+    LINK_Main = 1
+  })
+
+end
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to render the node.
+--
+function Process(req)
+
+
+
+  local node = DVIPComputeNode(req,
+    ConversionKernelname,
+    ConversionSourcecode,
+    "ShaderParameters",
+    ShaderParameters
+    )
+
+
+
+
+
+
+  local dst = Image({
+    IMG_Document = self.Comp,
+    { IMG_Channel = "Red", },
+    { IMG_Channel = "Green", },
+    { IMG_Channel = "Blue", },
+    { IMG_Channel = "Alpha", },
+    IMG_Width   = 256,  -- Width,
+    IMG_Height  = 3,    -- Height,
+    IMG_XScale  = 1.0,  -- XAspect,
+    IMG_YScale  = 1.0,  -- YAspect,
+    IMAT_OriginalWidth =  256, -- realwidth,
+    IMAT_OriginalHeight = 3, -- realheight, -- nil !?!
+    IMG_Quality = not req:IsQuick(),
+    IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
+    IMG_DeferAlloc = true,
+    IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+  })
+
+  -- Eigentlich erstmal komplett in Schwarz fuellen
+  local p = Pixel({R=1,G=0,B=0,A=0.5})
+  dst:Fill(p)
+
+  -- und dann das x der Pixel auf 1 setzen je nach Tastendruck setzen
+
+  --    (ascii+.5)/256, 0.5/3. : gerade gedrueckt
+  --    (ascii+.5)/256, 1.5/3. : wurde gedrueckt
+  --    (ascii+.5)/256, 2.5/3. : toggle
+
+  -- ... ist aber ohne Ansicht schwierig - daher erst mal den
+  -- KeyboardDebug-Shader ans Laufen kriegen :-/
+
+
+
+  if req:IsPreCalc() then
+    print("precalc")
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    return
+  end
+
+
+  local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
+
+
+  -- Output our result
+  OutImage:Set(req,dst)
+
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to handle UI control events.
+--
+function NotifyChanged(inp, param, time)
+	if inp ~= nil and param ~= nil then
+		-- if (inp == InReloadCodeButton) then
+		-- 	if (param.Value == 1) then
+    --     verbose("NotifyChanged: reload button pressend")
+    --     InRebuildCheckBox:SetSource(Number(1),0)
+    --   end
+    -- end
+
+
+	end
+end
