@@ -511,6 +511,7 @@ if not(os.path.isfile(".env")):
      f.write( "AUTHOR=\"\"\n"
               "APIKEY=\"\"\n"
               "DOWNLOADS=\"\"\n"
+              "FUSEPATH=\"\"\n"
             )
   print(".env file created - please enter your credentials to use")
 
