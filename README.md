@@ -45,6 +45,8 @@ It should look something like this afterwards:
 AUTHOR="nmbr73"
 APIKEY="******"
 DOWNLOADS="/Users/nmbr73/Downloads/"
+FUSEPATH="/Users/nmbr73/Library/Application Support/Blackmagic Design/Fusion/Fuses/"
+REPOPATH="/Users/nmbr73/Projects/Fetch-n-Fuse/"
 ```
 ... `DOWNLOADS` is optional, but it's recommended to set it to your browsers download folder (do not forget the trailing slash!). If set, then the downloads folder is used to search for shaders - otherwise you have to copy such downloads into the `Conversions/` folder before calling `fetch`.
 
