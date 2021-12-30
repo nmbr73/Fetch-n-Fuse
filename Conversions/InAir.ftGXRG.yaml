@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  id: InAir
+  name: InAir
+shader:
+  author: N.N.
+  description: Attempt to show why bubbles form when you pour water
+  id: ftGXRG
+  name: Fork In Air JiPi 196
+  parent:
+    id: 7tVXDw
+    name: In Air
+    url: https://www.shadertoy.com/view/7tVXDw
+  tags:
+  - fluid
+  - automata
+  url: https://www.shadertoy.com/view/ftGXRG
