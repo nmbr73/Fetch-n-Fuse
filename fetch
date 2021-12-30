@@ -130,6 +130,17 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
     m = re.search(match_kernel,code)
 
+    if not m:
+      # schnellschuss und keine wirkliche loesung; hatte einen shader ohne 'in' an dem vec2
+      match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*float2\s+([A-Za-z_]\w*)\s*\)\s*{'
+      m = re.search(match_kernel,code)
+
+      if not m:
+        # schnellschuss und keine wirkliche loesung; hatte einen shader mit kommentar hinter dem kernelnamen
+        match_kernel=r'void\s+mainImage\s*\(\s*out\s+float4\s+([A-Za-z_]\w*)\s*,\s*float2\s+([A-Za-z_]\w*)\s*\)\s*//[^\n]*\n{'
+        m = re.search(match_kernel,code)
+
+
     if m:
       fragColor=m.group(1)
 
@@ -507,6 +518,7 @@ load_dotenv()
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
 parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
+#parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
 parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')

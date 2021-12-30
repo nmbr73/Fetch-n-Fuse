@@ -29,15 +29,15 @@
 
   #if defined(USE_NATIVE_METAL_IMPL)
 
-    #define swi2(A,a,b)     (A).a##b
-    #define swi3(A,a,b,c)   (A).a##b##c
-    #define swi4(A,a,b,c,d) (A).a##b##c##d
+/*| swi2          |*/    #define swi2(A,a,b)     (A).a##b
+/*| swi3          |*/    #define swi3(A,a,b,c)   (A).a##b##c
+/*| swi4          |*/    #define swi4(A,a,b,c,d) (A).a##b##c##d
 
   #else
 
-    #define swi2(A,a,b)     to_float2((A).a,(A).b)
-    #define swi3(A,a,b,c)   to_float3((A).a,(A).b,(A).c)
-    #define swi4(A,a,b,c,d) to_float4((A).a,(A).b,(A).c,(A).d)
+/*| swi2          |*/    #define swi2(A,a,b)     to_float2((A).a,(A).b)
+/*| swi3          |*/    #define swi3(A,a,b,c)   to_float3((A).a,(A).b,(A).c)
+/*| swi4          |*/    #define swi4(A,a,b,c,d) to_float4((A).a,(A).b,(A).c,(A).d)
 
   #endif
 

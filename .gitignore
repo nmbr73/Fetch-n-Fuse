@@ -1,6 +1,6 @@
 # output directory for creating the fuses:
 DaFuses/
-
+Conversions/*.*.assets/
 
 # -------- MACOS
 

@@ -253,7 +253,7 @@ function Create()
     table.insert(attrs,{ CCS_AddString = v.Label })
   end
 
-  InFileToUseCombo = self:AddInput("Code Fragment", "FragementFileSelection", {
+  InFileToUseCombo = self:AddInput("Code", "FragementFileSelection", {
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
 	  INP_DoNotifyChanged = true,
@@ -262,14 +262,59 @@ function Create()
     attrs
     })
 
-  InKernel = self:AddInput("Kernel", "Kernel", {
-      LINKID_DataType = "Number",
-      INPID_InputControl = "ComboControl",
-      INP_DoNotifyChanged = true,
-      INP_Default = 0,
-      INP_Integer = true,
-      { "Image" }
+  -- ComboControl ist schon mal nicht wirklich so gut geeignet
+  --
+  -- InKernel = self:AddInput("Kernel", "Kernel", {
+  --     LINKID_DataType = "Number",
+  --     INPID_InputControl = "ComboControl",
+  --     INP_DoNotifyChanged = true,
+  --     INP_Default = 0,
+  --     INP_Integer = true,
+  --     { "Image" }
+  --     })
+
+
+
+  -- MultiButton wird, wenn man ihn wie in der VFxPedia beschrieben verwendet,
+  -- einfach zu einer ComboBox. Aber so habe ich jetzt zumindest schon mal
+  -- separate Buttons hinbekommen ... aber noch nicht komplett verstanden und
+  -- auch nicht wirklich schön.
+
+  attrs={
+    LINKID_DataType = "Number",
+    INPID_InputControl = "MultiButtonControl",
+    INP_Default = 0.0,
+    -- INP_DoNotifyChanged = true,
+
+    -- MBTNC_StretchToFit= true,
+    -- MBTNC_ShowBasicButton = true,
+    -- MBTNC_ShowName=false,
+
+    MBTNC_Type="Toggle",
+    -- MBTNC_Type="TriState",
+    -- MBTNC_Type="Normal",
+
+    -- INP_Disabled=true, -- Aendert leider die Oprtik nicht - dabei wuerde genau das fuer nicht vorhandene Buffer benoetigt :-/
+    IC_ControlGroup = 42,
+  }
+
+
+  InSelectKernel={}
+
+  InSelectKernel[0]= self:AddInput("Kernel", "Image", {
+      attrs,
+      IC_ControlID = 1,
+      { MBTNC_AddButton = "Image", MBTNCD_ButtonWidth = 0.5 }, -- MBTNCD_ButtonWidth = 0.25,
       })
+
+
+  for i,v in ipairs({'A','B','C','D'}) do
+    InSelectKernel[i]=self:AddInput("Buffer "..v, "Buffer_"..v, {
+      attrs,
+      IC_ControlID = 1+i,
+      { MBTNC_AddButton = v, MBTNCD_ButtonWidth = 0.125 }, -- MBTNCD_ButtonWidth = 0.25,
+      })
+  end
 
 
   InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
@@ -864,7 +909,7 @@ end
 
 
   if (InBufferATest:GetValue(req).Value > 0 and InKerneltoUse:GetValue(req).Value == 1) then
-    ConversionKernelname=ShaderKernels[1].Name -- zunächst BufferA 
+    ConversionKernelname=ShaderKernels[1].Name -- zunächst BufferA
   else
     ConversionKernelname=ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel!
   end
@@ -945,8 +990,21 @@ end
     end
   end
 
+
+#ifdef OUT_IMG_RES
+
   local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
   local dst2 = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+
+#else
+
+  -- local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  local dst=Image(imgattrs)
+  local dst2 = Image {IMG_Like = dst, IMG_DeferAlloc = true}
+  local p = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(p)
+
+#endif
 
 
   if req:IsPreCalc() then
@@ -1115,7 +1173,7 @@ end
         node:AddInput("iChannel0",Image_Buff_GlobalA)
       else
         node:AddInput("iChannel"..i,iChannel[i])
-      end  
+      end
     end
     --print("----- BufferA-------")
   else
