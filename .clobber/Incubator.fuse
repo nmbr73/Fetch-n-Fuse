@@ -39,15 +39,16 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 	  REGS_Category = "Fuses",
     REGS_OpDescription = "An Incubator for Shadertoys",
 	  REGS_OpIconString = "incubus",
-    REG_Source_GlobalCtrls = true,
     REG_Source_SizeCtrls = true,
     REG_Source_AspectCtrls = true,
 	  REG_TimeVariant = true,
 	  REGS_Company = "nmbr73",
 	  REGS_URL = "https://nmbr73.github.io/",
 	  REG_Version	= 000001,
-    REG_Fuse_NoEdit = false,
-    REG_Fuse_NoReload = false, -- true,
+
+    REG_Source_GlobalCtrls = true, REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
+    -- REG_Source_GlobalCtrls = false, REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
+    -- REG_Source_GlobalCtrls = false, REG_Fuse_NoEdit = true,  REG_Fuse_NoReload = true,
     })
 
 
@@ -156,7 +157,7 @@ function Create()
 
   end
 
-  verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
+  -- verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
 
 
 
@@ -228,9 +229,11 @@ function Create()
 
 
 
-  print(ShaderParameters)
 
   -- combo box with all the conversions + a reload button
+
+  local next_ctrl_group = 1   -- increment every time you used it for a new control group
+  local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
 
   local attrs
 
@@ -242,6 +245,7 @@ function Create()
   end
 
   InFileToUseCombo = self:AddInput("Code", "FragementFileSelection", {
+    IC_ControlPage = control_page ,
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
 	  INP_DoNotifyChanged = true,
@@ -250,98 +254,64 @@ function Create()
     attrs
     })
 
-  -- ComboControl ist schon mal nicht wirklich so gut geeignet
-  --
-  -- InKernel = self:AddInput("Kernel", "Kernel", {
-  --     LINKID_DataType = "Number",
-  --     INPID_InputControl = "ComboControl",
-  --     INP_DoNotifyChanged = true,
-  --     INP_Default = 0,
-  --     INP_Integer = true,
-  --     { "Image" }
-  --     })
 
-
-    -- InLabel = self:AddInput('<font color="#ff0000">Test</font> This is a Label', "Label1", {
-    --   LINKID_DataType = "Text",
-    --   INPID_InputControl = "LabelControl",
-    --   INP_External = false,
-    --   INP_Passive = true,
-    --   INP_DoNotifyChanged = true,
-    -- })
-
-    local next_ctrl_group=1
-
-
-  -- MultiButton wird, wenn man ihn wie in der VFxPedia beschrieben verwendet,
-  -- einfach zu einer ComboBox. Aber so habe ich jetzt zumindest schon mal
-  -- separate Buttons hinbekommen ... aber noch nicht komplett verstanden und
-  -- auch nicht wirklich schön.
-
-  attrs={
-    LINKID_DataType = "Number",
-    INPID_InputControl = "MultiButtonControl",
-    INP_Default = 0.0,
-    INP_DoNotifyChanged = true,
-
-    -- MBTNC_StretchToFit= true,
-    MBTNC_ShowBasicButton = true,
-    MBTNC_ShowName=false,
-
-    MBTNC_Type="Toggle",
-    --MBTNC_Type="TriState",
-    --MBTNC_Type="Normal",
-
-    -- INP_Disabled=true, -- Aendert leider die Oprtik nicht - dabei wuerde genau das fuer nicht vorhandene Buffer benoetigt :-/
-
-    IC_ControlGroup = next_ctrl_group,
-  }
-
-  next_ctrl_group=next_ctrl_group+1
-
-
-  InSelectKernel={}
-
-  InSelectKernel[0]= self:AddInput("Kernel", "Image", {
-      attrs,
-
-      IC_ControlID = 1,
-      { MBTNC_AddButton = "IMAGE", MBTNCD_ButtonWidth = 0.25 }, -- MBTNCD_ButtonWidth = 0.25,
-      })
-
-
-  for i,v in ipairs({'A','B','C','D'}) do
-
-    InSelectKernel[i]=self:AddInput("Buffer "..v, "Buffer_"..v, {
-      attrs,
-      IC_ControlID = 1+i,
-      { MBTNC_AddButton = v, MBTNCD_ButtonWidth = 0.125 }, -- MBTNCD_ButtonWidth = 0.25,
-      })
-  end
-
-  InSelectKernel[5]= self:AddInput("final", "Final", {
-    attrs,
-    IC_ControlID = 6,
-    { MBTNC_AddButton = "FINAL", MBTNCD_ButtonWidth = 0.25 }, -- MBTNCD_ButtonWidth = 0.25,
-    })
-
-
-
-  InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
-    { LINKID_DataType = "Text",
-      INPID_InputControl = "ButtonControl",
+  InSelectKernelCombo = self:AddInput("Kernel", "selectKernelCombo", {
+    IC_ControlPage = control_page ,
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ComboControl",
       INP_DoNotifyChanged = true,
-      INP_External = false,
-    })
+      INP_Default = 0,
+      INP_Integer = true,
+      { CCS_AddString = "Image", },
+      { CCS_AddString = "Buffer A", },
+      { CCS_AddString = "Buffer B", },
+      { CCS_AddString = "Buffer C", },
+      { CCS_AddString = "Buffer D", },
+      { CCS_AddString = "Final", },
+  })
+
+
+  InSelectedKernelLabel = self:AddInput(
+    '<center>&nbsp;&nbsp;&nbsp;'
+      .. '<font color="#404040">IMAGE</font>&nbsp;&nbsp;&nbsp;'
+      .. '<font color="#404040">A</font>&nbsp;&nbsp;&nbsp;'
+      .. '<font color="#404040">B</font>&nbsp;&nbsp;&nbsp;'
+      .. '<font color="#404040">C</font>&nbsp;&nbsp;&nbsp;'
+      .. '<font color="#404040">D</font>&nbsp;&nbsp;&nbsp;'
+      .. '<font color="#404040">FINAL</font>&nbsp;&nbsp;&nbsp;'
+      .. '</center>'
+      , "seletedKernelLabel", {
+        IC_ControlPage = control_page ,
+        LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    INP_External = false,
+    INP_Passive = true,
+    INP_DoNotifyChanged = false,
+    INP_Disabled=false,
+
+  })
+
 
   InShadertoyButton=self:AddInput("Show on shadertoy.com", "ShowOnShadertoy", {
+    IC_ControlPage = control_page ,
     LINKID_DataType = "Text",
+    ICD_Width =0.5,
     INPID_InputControl = "ButtonControl",
     INP_DoNotifyChanged = false,
     INP_External = false,
     BTNCS_Execute = 'print("does nothing")',
     INP_Disabled=true,
   })
+
+  InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment", {
+    IC_ControlPage = control_page ,
+    LINKID_DataType = "Text",
+    ICD_Width =0.5,
+    INPID_InputControl = "ButtonControl",
+    INP_DoNotifyChanged = true,
+    INP_External = false,
+  })
+
 
   InFrequency = self:AddInput("Speedup", "speed", {
     LINKID_DataType    = "Number",
@@ -351,7 +321,6 @@ function Create()
     INP_MaxScale 	     = 5.0,
     SLCS_LowName       = "stop",
     SLCS_HighName      = "5x",
-
   })
 
 
@@ -386,7 +355,7 @@ function Create()
 			INP_DoNotifyChanged  = false,
       INP_Disabled = true,
       INP_Passive = true,
-		  })
+		})
 
 		InShaderInputs_iTime = self:AddInput("iTime", "iTime", {
 			LINKID_DataType = "Text",
@@ -404,7 +373,7 @@ function Create()
 			INP_DoNotifyChanged  = false,
       INP_Disabled = true,
       INP_Passive = true,
-			})
+		})
 
 		InShaderInputs_iMouse = self:AddInput("iMouse", "iMouse", {
 			LINKID_DataType = "Text",
@@ -422,7 +391,7 @@ function Create()
 			INP_DoNotifyChanged  = false,
       INP_Disabled = true,
       INP_Passive = true,
-			})
+		})
 
 
 
@@ -767,13 +736,33 @@ function PatchKernels(ConversionSourcecode,ConversionFusename,NodeName)
   local kernels={}
   local i=0
 
+  -- for k,v in pairs({"Image","Buffer A","Buffer B","Buffer C","Buffer D"}) do
+  --   ConversionSourcecode,ConversionKernelname =  PatchKernel(ConversionSourcecode,ConversionFusename,v,NodeName)
+  --   if ConversionKernelname ~= nil then
+  --     kernels[i]={ Label = v, Name= ConversionKernelname}
+  --     i=i+1
+  --   end
+  -- end
+
+  n2l={"IMAGE","A","B","C","D"}
+
   for k,v in pairs({"Image","Buffer A","Buffer B","Buffer C","Buffer D"}) do
     ConversionSourcecode,ConversionKernelname =  PatchKernel(ConversionSourcecode,ConversionFusename,v,NodeName)
     if ConversionKernelname ~= nil then
-      kernels[i]={ Label = v, Name= ConversionKernelname}
+      kernels[k-1]={ Label = n2l[k], Name = ConversionKernelname, Active="#00ff00", Inactive="#ffffff"}
       i=i+1
+    else
+      kernels[k-1]={ Label = n2l[k], Name = nil, Active="#ff0000", Inactive="#404040"}
     end
   end
+
+  if i>1 then
+    kernels[5]={ Label = "FINAL", Name = nil, Active="#00ff00", Inactive="#ffffff"}
+  else
+    kernels[5]={ Label = "FINAL", Name = nil, Active="#0000ff", Inactive="#404040"}
+  end
+
+  print(i.." kernels found")
 
   ConversionSourcecode, count = string.gsub(ConversionSourcecode,
       "(%s+)SetFragmentShaderComputedColor%s*%(%s*",
@@ -835,7 +824,7 @@ function Process(req)
 
     ConversionSourcecode, ShaderKernels = PatchKernels(ConversionSourcecode,ConversionFusename,self.Name)
 
-    -- dump(ShaderKernels)
+    dump(ShaderKernels)
 
     -- ConversionKernelname=ShaderKernels[0].Name
 
@@ -853,7 +842,26 @@ function Process(req)
   end
 
 
-  -- ConversionSourcecode=""
+
+  -- -----------------------
+
+  local htm='<center>&nbsp;&nbsp;&nbsp;'
+  local s = InSelectKernelCombo:GetValue(req).Value
+
+  for i=0,5 do
+    htm=htm..'<font color="'..
+      (i==s and ShaderKernels[i].Active or ShaderKernels[i].Inactive )
+      ..'">'.. ShaderKernels[i].Label ..'</font>&nbsp;&nbsp;&nbsp;'
+  end
+  htm=htm..'</center>'
+
+  -- print(htm)
+  -- InSelectedKernelLabel:SetSource( Text("Foo") ,0) -- verdammt, wie aendert man das label?!?
+
+
+
+  -- ConversionSourcecode = "" -- Nur den Fallback-Kernel!!!
+  ConversionKernelname = ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel !!!
 
 
   if ConversionSourcecode == ""  then
@@ -868,7 +876,12 @@ function Process(req)
     ConversionFusename="IncubatorFallback"
 
     ShaderKernels={}
-    ShaderKernels[0] = { Label = "Image", Name=ConversionKernelname }
+    ShaderKernels[0] = { Label = "IMAGE", Name=ConversionKernelname , Active="#ff0000", Inactive="#900000" }
+    ShaderKernels[1] = { Label = "A",                                 Active="#ff0000", Inactive="#404040" }
+    ShaderKernels[2] = { Label = "B",                                 Active="#ff0000", Inactive="#404040" }
+    ShaderKernels[3] = { Label = "C",                                 Active="#ff0000", Inactive="#404040" }
+    ShaderKernels[4] = { Label = "D",                                 Active="#ff0000", Inactive="#404040" }
+    ShaderKernels[5] = { Label = "FINAL",                             Active="#ff0000", Inactive="#404040" }
 
     -- print(ConversionSourcecode)
     rebuild=true
@@ -876,31 +889,8 @@ function Process(req)
 
 
 
-  ConversionKernelname=ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel!
 
 
-  if rebuild then
-    attrs={}
-
-    for k,v in pairs(ShaderKernels) do
-      table.insert(attrs,{ CCS_AddString = v.Label })
-      print("add kernel "..v.Name.." to combobox")
-    end
-
-    -- Geht so leider nicht
-    --
-    -- InKernel:SetAttrs(
-    --   {
-    --     LINKID_DataType = "Number",
-    --     INPID_InputControl = "ComboControl",
-    --     INP_DoNotifyChanged = true,
-    --     INP_Default = 0,
-    --     INP_Integer = true,
-    --     attrs
-    --     }
-    -- )
-
-  end
 
 
   if ShaderParameters==nil then
@@ -1173,15 +1163,6 @@ function NotifyChanged(inp, param, time)
       verbose("NotifyChanged: file to use changed - set flag for a rebuild")
       InRebuildCheckBox:SetSource(Number(1),0)
       return
-    end
-
-
-    for i=0,5 do
-      if (inp== InSelectKernel[i]) then
-        s=InSelectKernel[i]
-        print("ksel "..i..", value='"..param.Value.."'")
-        break
-      end
     end
 
 
