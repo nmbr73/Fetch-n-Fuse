@@ -855,9 +855,7 @@ function Process(req)
   end
   htm=htm..'</center>'
 
-  -- print(htm)
-  -- InSelectedKernelLabel:SetSource( Text("Foo") ,0) -- verdammt, wie aendert man das label?!?
-
+  InSelectedKernelLabel:SetAttrs({LINKS_Name = htm,}) -- LBLC_LabelColor = 3,
 
 
   -- ConversionSourcecode = "" -- Nur den Fallback-Kernel!!!
