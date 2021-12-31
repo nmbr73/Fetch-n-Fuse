@@ -262,6 +262,16 @@ function Create()
   --     })
 
 
+    -- InLabel = self:AddInput('<font color="#ff0000">Test</font> This is a Label', "Label1", {
+    --   LINKID_DataType = "Text",
+    --   INPID_InputControl = "LabelControl",
+    --   INP_External = false,
+    --   INP_Passive = true,
+    --   INP_DoNotifyChanged = true,
+    -- })
+
+    local next_ctrl_group=1
+
 
   -- MultiButton wird, wenn man ihn wie in der VFxPedia beschrieben verwendet,
   -- einfach zu einer ComboBox. Aber so habe ich jetzt zumindest schon mal
@@ -272,37 +282,49 @@ function Create()
     LINKID_DataType = "Number",
     INPID_InputControl = "MultiButtonControl",
     INP_Default = 0.0,
-    -- INP_DoNotifyChanged = true,
+    INP_DoNotifyChanged = true,
 
     -- MBTNC_StretchToFit= true,
-    -- MBTNC_ShowBasicButton = true,
-    -- MBTNC_ShowName=false,
+    MBTNC_ShowBasicButton = true,
+    MBTNC_ShowName=false,
 
     MBTNC_Type="Toggle",
-    -- MBTNC_Type="TriState",
-    -- MBTNC_Type="Normal",
+    --MBTNC_Type="TriState",
+    --MBTNC_Type="Normal",
 
     -- INP_Disabled=true, -- Aendert leider die Oprtik nicht - dabei wuerde genau das fuer nicht vorhandene Buffer benoetigt :-/
-    IC_ControlGroup = 42,
+
+    IC_ControlGroup = next_ctrl_group,
   }
+
+  next_ctrl_group=next_ctrl_group+1
 
 
   InSelectKernel={}
 
   InSelectKernel[0]= self:AddInput("Kernel", "Image", {
       attrs,
+
       IC_ControlID = 1,
-      { MBTNC_AddButton = "Image", MBTNCD_ButtonWidth = 0.5 }, -- MBTNCD_ButtonWidth = 0.25,
+      { MBTNC_AddButton = "IMAGE", MBTNCD_ButtonWidth = 0.25 }, -- MBTNCD_ButtonWidth = 0.25,
       })
 
 
   for i,v in ipairs({'A','B','C','D'}) do
+
     InSelectKernel[i]=self:AddInput("Buffer "..v, "Buffer_"..v, {
       attrs,
       IC_ControlID = 1+i,
       { MBTNC_AddButton = v, MBTNCD_ButtonWidth = 0.125 }, -- MBTNCD_ButtonWidth = 0.25,
       })
   end
+
+  InSelectKernel[5]= self:AddInput("final", "Final", {
+    attrs,
+    IC_ControlID = 6,
+    { MBTNC_AddButton = "FINAL", MBTNCD_ButtonWidth = 0.25 }, -- MBTNCD_ButtonWidth = 0.25,
+    })
+
 
 
   InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment",
@@ -446,9 +468,11 @@ function Create()
     for i=0,NUM_COLOR_CONTROLS-1 do
       InColor[i]={}
       for j=0,3 do
-        InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+        InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = next_ctrl_group+i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
       end
     end
+
+    next_ctrl_group = next_ctrl_group + NUM_COLOR_CONTROLS + 1
 
   self:EndControlNest()
 
@@ -1141,13 +1165,25 @@ function NotifyChanged(inp, param, time)
 			if (param.Value == 1) then
         verbose("NotifyChanged: reload button pressend")
         InRebuildCheckBox:SetSource(Number(1),0)
+        return
       end
     end
 
 		if (inp == InFileToUseCombo) then
       verbose("NotifyChanged: file to use changed - set flag for a rebuild")
       InRebuildCheckBox:SetSource(Number(1),0)
+      return
     end
+
+
+    for i=0,5 do
+      if (inp== InSelectKernel[i]) then
+        s=InSelectKernel[i]
+        print("ksel "..i..", value='"..param.Value.."'")
+        break
+      end
+    end
+
 
 	end
 end
