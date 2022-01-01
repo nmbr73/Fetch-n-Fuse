@@ -155,22 +155,32 @@ function getConversions(path)
   local handle	= bmd.readdir(path.."*.*.c")
 
   for k, v in pairs(handle) do
+    -- print(k.." "..v.Name)
+
     if v.Name and not(v.IsDir) then
 
-      local filename = v.Name
-      local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
+      files[k] = v.Name
 
-      files[k]={
-        Name=fusename,
-        Path=path,
-        Filename=filename,
-        ShadertoyID=shadertoyid,
-        Label=fusename.." ("..shadertoyid..")",
-      }
     end
   end
 
-  return files
+  table.sort(files) -- grrr, it's case sensitive :-(
+
+  local entries={}
+
+  for k, filename in pairs(files) do
+    local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
+
+    entries[k]={
+      Name=fusename,
+      Path=path,
+      Filename=filename,
+      ShadertoyID=shadertoyid,
+      Label=fusename.." ("..shadertoyid..")",
+    }
+  end
+
+  return entries
 end
 
 
@@ -876,20 +886,6 @@ function Process(req)
   -- -----------------------
 
 
-  local ConversionKernelname = ShaderKernels.Entries[ShaderKernels.Current].KernelName
-
-  if ConversionKernelname==nil or ConversionKernelname=="" then
-    -- dump(ShaderKernels)
-    print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
-    ShaderKernels.RenderErrors = true
-    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
-    OutImage:Set(req,nil)
-    return
-  end
-
-  if rebuild then
-    verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
-  end
 
 
 
@@ -924,6 +920,26 @@ function Process(req)
   dst:Fill(p)
 
 
+  local ConversionKernelname = ShaderKernels.Entries[ShaderKernels.Current].KernelName
+
+  if ConversionKernelname==nil or ConversionKernelname=="" then
+    -- dump(ShaderKernels)
+    ShaderKernels.RenderErrors = true
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+
+    if ConversionKernelname==nil then
+      dst:Fill(Pixel({R=0,G=0,B=0,A=0}))
+    else
+      print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
+      dst:Fill(Pixel({R=0.5,G=0,B=0,A=0}))
+    end
+    OutImage:Set(req,dst)
+    return
+  end
+
+  if rebuild then
+    verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
+  end
 
 
 
