@@ -9,12 +9,73 @@
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
+ShaderKernels = nil
+
+
+function ShaderKernels_resetData()
+  ShaderKernels = {
+    Current       = 0,
+    Main          = 5,
+    Quantity      = 0,
+    RenderErrors  = false,
+    MaxEntries    = 0,
+    Entries       = {
+      [0] = { ComboName  = "<none>",    InputName  = "",         InfoName = "",        KernelName=nil, },
+            { ComboName  = "Buffer A",  InputName  = "Buffer A", InfoName = "A",       KernelName="", },
+            { ComboName  = "Buffer B",  InputName  = "Buffer B", InfoName = "B",       KernelName="", },
+            { ComboName  = "Buffer C",  InputName  = "Buffer C", InfoName = "C",       KernelName="", },
+            { ComboName  = "Buffer D",  InputName  = "Buffer D", InfoName = "D",       KernelName="", },
+            { ComboName  = "Image",     InputName  = "Image",    InfoName = "IMAGE",   KernelName="", },
+            { ComboName  = "=final=",   InputName  = "",         InfoName = "FINAL",   KernelName="", },
+    },
+  }
+end
+
+
+function ShaderKernels_getLabelText()
+
+  local htm = {}
+
+  for i,e in pairs(ShaderKernels.Entries) do
+    if e.KernelName ~= nil then
+      if e.KernelName ~= "" then
+        -- has kernel
+        if i == ShaderKernels.Current then
+          -- is currently selected kernel
+          if not ShaderKernels.RenderErrors then
+            -- did successfully render
+            table.insert(htm,'<font style="color:#00ff00; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+          else
+            -- had errors
+            table.insert(htm,'<font style="color:#ff0000; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+          end
+        else
+          -- is currently not selected
+          table.insert(htm,'<font style="color:#ffffff; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+        end
+      else
+        -- has no kernel
+        if i == ShaderKernels.Current then
+          -- is currently selected
+          table.insert(htm,'<font style="color:#909090; background-color:#900000; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+        else
+          -- is currently not selected
+          table.insert(htm,'<font style="color:#404040; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+        end
+      end
+    end
+  end
+
+  return '<center>'..table.concat(htm,'&nbsp;')..'</center>'
+
+end
+
+
 ShaderParameters       = nil
 CompatibilityCode      = nil
 KernelInputCtrlDefines = nil
 ConversionShaderID     = ""
 ConversionFusename     = ""
-ConversionKernelname   = ""
 ConversionSourcecode   = ""
 
 NUM_INPUT_CHANNELS        = 5
@@ -25,9 +86,6 @@ NUM_SMALLSLIDER_CONTROLS  = 4
 
 NUM_TINYINT_CONTROLS   = 4
 
--- ----------------------------------------------------------------------------------------------------------------------------------------
-
-ConversionSourcecode_fallback = nil
 
 
 
@@ -168,22 +226,6 @@ function Create()
     channels=channels.."__TEXTURE2D__ iChannel"..i..", "
   end
 
-  ConversionSourcecode_fallback =
-  [[__KERNEL__ void IncubatorFallbackKernel(
-      __CONSTANTREF__ ShaderParameters *params,
-      ]]..channels..[[
-      __TEXTURE2D_WRITE__ dst
-      )
-  {
-    DEFINE_KERNEL_ITERATORS_XY(x, y);
-
-    if (x >= params->width || y >= params->height)
-      return;
-
-    _tex2DVec4Write(dst, x, y, to_float4(1.0f,0.0f,0.0f,0.0f) );
-  }
-  ]]
-
 
 
   -- get the list of conversions and read compatibility and params code
@@ -255,40 +297,34 @@ function Create()
     })
 
 
-  InSelectKernelCombo = self:AddInput("Kernel", "selectKernelCombo", {
+  ShaderKernels_resetData()
+
+  attrs={}
+
+  for i,e in pairs(ShaderKernels.Entries) do
+    table.insert(attrs,{ CCS_AddString = e.ComboName })
+  end
+
+  ShaderKernels_ComboControl = self:AddInput("Kernel", "selectKernelCombo", {
     IC_ControlPage = control_page ,
       LINKID_DataType = "Number",
       INPID_InputControl = "ComboControl",
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      { CCS_AddString = "Image", },
-      { CCS_AddString = "Buffer A", },
-      { CCS_AddString = "Buffer B", },
-      { CCS_AddString = "Buffer C", },
-      { CCS_AddString = "Buffer D", },
-      { CCS_AddString = "Final", },
+      attrs
   })
 
-
-  InSelectedKernelLabel = self:AddInput(
-    '<center>&nbsp;&nbsp;&nbsp;'
-      .. '<font color="#404040">IMAGE</font>&nbsp;&nbsp;&nbsp;'
-      .. '<font color="#404040">A</font>&nbsp;&nbsp;&nbsp;'
-      .. '<font color="#404040">B</font>&nbsp;&nbsp;&nbsp;'
-      .. '<font color="#404040">C</font>&nbsp;&nbsp;&nbsp;'
-      .. '<font color="#404040">D</font>&nbsp;&nbsp;&nbsp;'
-      .. '<font color="#404040">FINAL</font>&nbsp;&nbsp;&nbsp;'
-      .. '</center>'
-      , "seletedKernelLabel", {
-        IC_ControlPage = control_page ,
-        LINKID_DataType = "Text",
+  ShaderKernels_LabelControl = self:AddInput(
+    ShaderKernels_getLabelText(),
+    "seletedKernelLabel", {
+    IC_ControlPage = control_page ,
+    LINKID_DataType = "Text",
     INPID_InputControl = "LabelControl",
     INP_External = false,
     INP_Passive = true,
     INP_DoNotifyChanged = false,
     INP_Disabled=false,
-
   })
 
 
@@ -548,7 +584,7 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
     ConversionFusenameExtension="__"..Part:gsub('%s+','_')
   end
 
-  ConversionKernelname = ConversionFusename .. "Fuse"..ConversionFusenameExtension.."_" .. NodeName
+  local ConversionKernelname = ConversionFusename .. "Fuse"..ConversionFusenameExtension.."_" .. NodeName
 
   local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse"..ConversionFusenameExtension.."%s*%(([^%)]*)%)%s*%{")
 
@@ -729,47 +765,37 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
   return ConversionSourcecode, ConversionKernelname
 end
 
+
+function KernelComboNames()
+  return {"<none>", "Buffer A", "Buffer B", "Buffer C", "Buffer D", "Image", "FINAL" }
+end
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Rename all kernels and their parameters.
-function PatchKernels(ConversionSourcecode,ConversionFusename,NodeName)
+--
+function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
 
-  local kernels={}
+  ShaderKernels_resetData()
+
   local i=0
+  local kn
 
-  -- for k,v in pairs({"Image","Buffer A","Buffer B","Buffer C","Buffer D"}) do
-  --   ConversionSourcecode,ConversionKernelname =  PatchKernel(ConversionSourcecode,ConversionFusename,v,NodeName)
-  --   if ConversionKernelname ~= nil then
-  --     kernels[i]={ Label = v, Name= ConversionKernelname}
-  --     i=i+1
-  --   end
-  -- end
-
-  n2l={"IMAGE","A","B","C","D"}
-
-  for k,v in pairs({"Image","Buffer A","Buffer B","Buffer C","Buffer D"}) do
-    ConversionSourcecode,ConversionKernelname =  PatchKernel(ConversionSourcecode,ConversionFusename,v,NodeName)
-    if ConversionKernelname ~= nil then
-      kernels[k-1]={ Label = n2l[k], Name = ConversionKernelname, Active="#00ff00", Inactive="#ffffff"}
-      i=i+1
-    else
-      kernels[k-1]={ Label = n2l[k], Name = nil, Active="#ff0000", Inactive="#404040"}
+  for i,e in pairs(ShaderKernels.Entries) do
+    if e.InputName ~= "" then
+      ConversionSourcecode,kn =  PatchKernel(ConversionSourcecode,ConversionFusename,e.InputName,NodeName)
+      if kn ~= nil then
+        e.KernelName=kn
+        ShaderKernels.Quantity=ShaderKernels.Quantity+1
+      end
     end
   end
-
-  if i>1 then
-    kernels[5]={ Label = "FINAL", Name = nil, Active="#00ff00", Inactive="#ffffff"}
-  else
-    kernels[5]={ Label = "FINAL", Name = nil, Active="#0000ff", Inactive="#404040"}
-  end
-
-  print(i.." kernels found")
 
   ConversionSourcecode, count = string.gsub(ConversionSourcecode,
       "(%s+)SetFragmentShaderComputedColor%s*%(%s*",
       "%1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, "
     )
 
-  return ConversionSourcecode, kernels
+  return ConversionSourcecode
 end
 
 
@@ -780,6 +806,10 @@ end
 function Process(req)
 
   local rebuild = false
+
+  ShaderKernels.RenderErrors = false
+  ShaderKernels.Current      = ShaderKernels_ComboControl:GetValue(req).Value
+
 
   if InRebuildCheckBox:GetValue(req).Value == 1 then
     verbose("Process: do rebuild and clear the flag")
@@ -820,15 +850,15 @@ function Process(req)
 
     -- --------------------------------------------------------------------------------------------------------------
 
-    ShaderKernels=nil
+    ShaderKernels_resetData()
+    ShaderKernels.Current = ShaderKernels_ComboControl:GetValue(req).Value
 
-    ConversionSourcecode, ShaderKernels = PatchKernels(ConversionSourcecode,ConversionFusename,self.Name)
-
-    dump(ShaderKernels)
-
-    -- ConversionKernelname=ShaderKernels[0].Name
+    ConversionSourcecode = InitializeKernels(ConversionSourcecode,ConversionFusename,self.Name)
 
 
+--  ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+
+    -- dump(ShaderKernels)
 
 
     if CompatibilityCode~=nil then
@@ -845,54 +875,15 @@ function Process(req)
 
   -- -----------------------
 
-  local htm='<center>&nbsp;&nbsp;&nbsp;'
-  local s = InSelectKernelCombo:GetValue(req).Value
 
-  for i=0,5 do
-    htm=htm..'<font color="'..
-      (i==s and ShaderKernels[i].Active or ShaderKernels[i].Inactive )
-      ..'">'.. ShaderKernels[i].Label ..'</font>&nbsp;&nbsp;&nbsp;'
-  end
-  htm=htm..'</center>'
+  local ConversionKernelname = ShaderKernels.Entries[ShaderKernels.Current].KernelName
 
-  InSelectedKernelLabel:SetAttrs({LINKS_Name = htm,}) -- LBLC_LabelColor = 3,
-
-
-  -- ConversionSourcecode = "" -- Nur den Fallback-Kernel!!!
-  ConversionKernelname = ShaderKernels[0].Name -- bis auf weiteres nur den Image-Kernel !!!
-
-
-  if ConversionSourcecode == ""  then
-    print("no shader to render - using some default kernel")
-    ConversionSourcecode=ConversionSourcecode_fallback
-
-    -- No need for a '_ShadersIncN' extension across
-    -- multiple instances as the fallback kernel code
-    -- is always the same.
-
-    ConversionKernelname="IncubatorFallbackKernel"
-    ConversionFusename="IncubatorFallback"
-
-    ShaderKernels={}
-    ShaderKernels[0] = { Label = "IMAGE", Name=ConversionKernelname , Active="#ff0000", Inactive="#900000" }
-    ShaderKernels[1] = { Label = "A",                                 Active="#ff0000", Inactive="#404040" }
-    ShaderKernels[2] = { Label = "B",                                 Active="#ff0000", Inactive="#404040" }
-    ShaderKernels[3] = { Label = "C",                                 Active="#ff0000", Inactive="#404040" }
-    ShaderKernels[4] = { Label = "D",                                 Active="#ff0000", Inactive="#404040" }
-    ShaderKernels[5] = { Label = "FINAL",                             Active="#ff0000", Inactive="#404040" }
-
-    -- print(ConversionSourcecode)
-    rebuild=true
-  end
-
-
-
-
-
-
-
-  if ShaderParameters==nil then
-    print("this will never ever work")
+  if ConversionKernelname==nil or ConversionKernelname=="" then
+    -- dump(ShaderKernels)
+    print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
+    ShaderKernels.RenderErrors = true
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+    OutImage:Set(req,nil)
     return
   end
 
@@ -900,12 +891,6 @@ function Process(req)
     verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
   end
 
-  local node = DVIPComputeNode(req,
-    ConversionKernelname,
-    ConversionSourcecode,
-    "ShaderParameters",
-    ShaderParameters
-    )
 
 
 
@@ -930,6 +915,46 @@ function Process(req)
 
 
 
+
+
+
+  -- local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  local dst=Image(imgattrs)
+  local p = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(p)
+
+
+
+
+
+
+  if ConversionSourcecode == "" or ConversionKernelname == "" or ShaderParameters == nil then
+    print("whoops - something went terribly wrong?!?!!")
+    ShaderKernels.RenderErrors = true
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+    -- dst:Fill(Pixel({R=0,G=0,B=1,A=0}))
+    dst = nil
+    OutImage:Set(req,dst)
+    return
+  end
+
+
+  if req:IsPreCalc() then
+    print("precalc")
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+    return
+  end
+
+
+  local node = DVIPComputeNode(req,
+    ConversionKernelname,
+    ConversionSourcecode,
+    "ShaderParameters",
+    ShaderParameters
+    )
+
   -- Extern Texture or create a new one
 
   local iChannel={}
@@ -942,22 +967,6 @@ function Process(req)
       local p = Pixel({R=0,G=0,B=0,A=0})
       iChannel[i]:Fill(p)
     end
-  end
-
-
-
-  -- local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-  local dst=Image(imgattrs)
-  local p = Pixel({R=0,G=0,B=0,A=0})
-  dst:Fill(p)
-
-
-
-  if req:IsPreCalc() then
-    print("precalc")
-    local out = Image({IMG_Like = dst, IMG_NoData = true})
-    OutImage:Set(req, out)
-    return
   end
 
 
@@ -1129,10 +1138,14 @@ function Process(req)
   local ok = node:RunSession(req)
 
 	if (not ok) then
+    ShaderKernels.RenderErrors = true
 		dst = nil
     print("--- Errors ---")
     dump(node:GetErrorLog())
 	end
+
+  ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+
 
 
   -- Output our result
