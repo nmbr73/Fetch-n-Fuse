@@ -10,7 +10,6 @@
   #define inout
 #endif
 
-
 #undef USE_NATIVE_METAL_IMPL
 #undef USE_NATIVE_CUDA_IMPL
 #undef USE_NATIVE_OPENCL_IMPL
@@ -204,13 +203,13 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
   #define fract_f3(A) fract(A)
   #define fract_f4(A) fract(A)
 
-  #define mod_f(a,b)  modf((a),(b))
-  #define mod_f2(value,divisor) modf(value,divisor)
-  #define mod_f3(value,divisor) modf(value,divisor)
-  #define mod_f4(value,divisor) modf(value,divisor)
-  #define mod_f2f2(value,divisor) modf(value,divisor)
-  #define mod_f3f3(value,divisor) modf(value,divisor)
-  #define mod_f4f4(value,divisor) modf(value,divisor)
+  #define mod_f(a,b)  fmod((a),(b))
+  #define mod_f2(value,divisor) fmod(value,divisor)
+  #define mod_f3(value,divisor) fmod(value,divisor)
+  #define mod_f4(value,divisor) fmod(value,divisor)
+  #define mod_f2f2(value,divisor) fmod(value,divisor)
+  #define mod_f3f3(value,divisor) fmod(value,divisor)
+  #define mod_f4f4(value,divisor) fmod(value,divisor)
 
 #else
 
