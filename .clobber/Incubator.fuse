@@ -11,6 +11,7 @@
 
 ShaderKernels = nil
 
+PathToRepository = ""
 
 function ShaderKernels_resetData()
   ShaderKernels = {
@@ -184,6 +185,22 @@ function getConversions(path)
 end
 
 
+-------------------------------------------------------------------------------------------------------------------------------------------
+function LoadCompatibilityCode()
+
+
+  f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
+
+  if not f then
+    CompatibilityCode = nil
+    print("failed to read compatibility code")
+  else
+    CompatibilityCode = f:read("*all")
+    f:close()
+  end
+
+end
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to initialize the tool.
@@ -191,6 +208,10 @@ end
 function Create()
 
   local REPOSITORYPATH=[[]]
+
+  PathToRepository=REPOSITORYPATH
+
+  verbose("Create: repository used is "..REPOSITORYPATH)
 
 
   -- create defined to connect input contols to kernel
@@ -241,19 +262,10 @@ function Create()
   -- get the list of conversions and read compatibility and params code
 
 
-  verbose("Create: repository used is "..REPOSITORYPATH)
 
   Conversions=getConversions(REPOSITORYPATH..'Conversions/')
 
-  f = io.open(REPOSITORYPATH..'.clobber/CompatibilityCode.c', "r")
-
-  if not f then
-    CompatibilityCode = nil
-    print("failed to read compatibility code")
-  else
-    CompatibilityCode = f:read("*all")
-    f:close()
-  end
+  LoadCompatibilityCode()
 
   ShaderParameters=[[
 
@@ -869,6 +881,8 @@ function Process(req)
 --  ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
 
     -- dump(ShaderKernels)
+
+    LoadCompatibilityCode()
 
 
     if CompatibilityCode~=nil then
