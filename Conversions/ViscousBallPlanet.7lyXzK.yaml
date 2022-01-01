@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  id: ViscousBallPlanet
+  name: ViscousBallPlanet
+shader:
+  author: ShnitzelKiller
+  description: Draw new mass with the mouse. Hold E to erase with the mouse. Try out
+    fullscreen mode.
+  id: 7lyXzK
+  name: Viscous ball planet
+  tags:
+  - particles
+  - planet
+  - physics
+  url: https://www.shadertoy.com/view/7lyXzK
