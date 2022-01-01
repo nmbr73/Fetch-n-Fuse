@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 
 # TODO: https://www.shadertoy.com/view/XtlSD7 ... bringt 'fetch' aus dem Tritt wegen der Sound-Section.
+# TODO: to_float2(-1.0f) ... nicht erkannt
 
 MEDIAMAP = {
   "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg" : { "type": "Texture", "folder":"Textures", "name":"Abstract 1"       },

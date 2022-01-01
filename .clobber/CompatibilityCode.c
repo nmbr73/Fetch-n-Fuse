@@ -195,7 +195,6 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
 
 
 
-
 #if defined(USE_NATIVE_METAL_IMPL)
 
   #define fract_f(A)  fract(A)
@@ -234,3 +233,17 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
   #define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w));}
 
 #endif
+
+
+//#define floor_f2(V) to_float2(_floor((V).x),_floor((V).y)) // not needed?!?
+#define to_int2_f2(V) to_int2((int)((V).x),(int)((V).y))
+#define to_int2_2f(A,B) to_int2((int)(A),(int)(B))
+#define to_int2_s(V) to_int2((V),(V))
+#define mod_i2(V,I) to_int2( (V).x % (I), (V).y % (I)  )
+#define eq_i2_i2(A,B) ((A).x==(B).x && (A).y==(B).y)
+#define eq_f2_f2(A,B) ((A).x==(B).x && (A).y==(B).y)
+#define eq_i2_1i(A,I) ((A).x==(I) && (A).y==(I))
+#define eq_f2_1f(A,I) ((A).x==(I) && (A).y==(I))
+
+#define to_float2_i2(V) to_float2((float)((V).x),(float)((V).y))
+#define to_float4_f2f2(A,B) to_float4((A).x,(A).y,(B).x,(B).y ) // or is there some to_float_..() for that?!?
