@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  id: Slimemolds
+  name: Slimemolds
+shader:
+  author: N.N.
+  description: Simple slime mold simulation
+  id: 7tVXRG
+  name: Fork SlimeMoldS JiPi 115
+  parent:
+    id: NlySzy
+    name: SlimeMoldSim
+    url: https://www.shadertoy.com/view/NlySzy
+  tags:
+  - slime
+  - buffer
+  - mold
+  - slimemould
+  - slimemold
+  url: https://www.shadertoy.com/view/7tVXRG

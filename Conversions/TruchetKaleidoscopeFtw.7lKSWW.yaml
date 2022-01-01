@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  id: TruchetKaleidoscopeFtw
+  name: TruchetKaleidoscopeFtw
+shader:
+  author: mrange
+  description: 'CC0: Truchet + Kaleidoscope FTW
+
+    Bit of experimenting with kaleidoscopes and truchet turned out nice
+
+    Quite similar to an earlier shader I did but I utilized a different truchet pattern
+    this time'
+  id: 7lKSWW
+  name: Truchet + Kaleidoscope FTW
+  tags:
+  - kaleidoscope
+  - truchet
+  url: https://www.shadertoy.com/view/7lKSWW

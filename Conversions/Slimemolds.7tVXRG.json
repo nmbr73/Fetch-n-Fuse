@@ -1,0 +1,159 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tVXRG",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork SlimeMoldS JiPi 115",
+  "description": "Simple slime mold simulation",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "slime",
+   "buffer",
+   "mold",
+   "slimemould",
+   "slimemold"
+  ],
+  "hasliked": 0,
+  "parentid": "NlySzy",
+  "parentname": "SlimeMoldSim"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "vec4 Particle(vec2 fragCoord) { \n    //return texelFetch(iChannel0, ivec2(fragCoord),0);\n    return texture(iChannel0, (fragCoord+0.5)/iResolution.xy);\n}\n\nfloat drawParticle(vec2 uv, vec2 coord) {\n    float d = length(vec2(uv.x - coord.x, uv.y - coord.y));\n    return .5/d < .5 ? 0. : 1.;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n    //vec2 screensize = vec2(SCREEN_X,SCREEN_Y);\n    vec2 screensize = iResolution.xy;\n    vec2 uv = fragCoord;\n   \n    vec4 col = vec4(0);\n    \n    for(float i = 0.;i<=400.;i++){\n        for(float t = 0.;t<=15.;t+=1.0){\n            vec4 particle = Particle(vec2(i,t));\n           //vec4 fish1 = Fish(fragCoord.xy);\n            col += drawParticle(uv, particle.xy);\n        }\n    }\n    \n    //col += texelFetch(iChannel1, ivec2(uv),0);\n    col += texture(iChannel1, (uv+0.5)/iResolution.xy); //Interessante Variante ohne 0.5\n    // Output to screen\n    fragColor = col;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Cell management\n\nvec2 hash(float n) { \n    return fract(sin(vec2(n,n*7.))* 43758.5453); \n}\n\nvec4 Particle(vec2 fragCoord) { \n    //return texelFetch(iChannel0, ivec2(fragCoord),0);\n    return texture(iChannel0, (fragCoord)/iResolution.xy); //interessante Vaiante mit 0.5f\n}\n\nfloat sense(vec2 pos, float size){\n    float total = 0.;\n    for(float x = -size/2.; x <= size/2.; x++){\n        for(float y = -size/2.; y <= size/2.; y++) {\n            vec2 sense_loc = pos + vec2(x , y);\n            \n            //total += length(texelFetch(iChannel1, ivec2(sense_loc),0));\n            total += length(texture(iChannel1, (sense_loc+0.0)/iResolution.xy)); //interessante Vaiante\n            \n            //total += length(texture(iChannel1, (vec2(ivec2(sense_loc))+0.5)/iResolution.xy));\n            \n        }\n    }\n    return total;\n}\n\nvec4 changeDirection(vec4 fish) {\n    float sense_angle = radians(SENSE_ANGLE);\n    float dist = SENSE_DIST;\n    float size = SENSE_SIZE;\n    \n    float angle = atan(fish.w, fish.z);\n    float new_angle = 0.;\n    \n    float sense_angle1 = angle + sense_angle;\n    vec2 sense_pixel1 = fish.xy + vec2(cos(sense_angle1)*dist,sin(sense_angle1)*dist);\n    float sense_value1 = sense(sense_pixel1,size);\n    \n    float sense_angle2 = angle;\n    vec2 sense_pixel2 = fish.xy + vec2(cos(sense_angle2)*dist,sin(sense_angle2)*dist);\n    float sense_value2 = sense(sense_pixel2,size);\n    \n    float sense_angle3 = angle - sense_angle;\n    vec2 sense_pixel3 = fish.xy + vec2(cos(sense_angle3)*dist,sin(sense_angle3)*dist);\n    float sense_value3 = sense(sense_pixel3,size);\n    \n    float explore = fract(sin(dot(fish.zw, fish.xy)) * 43758.43758);\n    if(explore < EXPLORE){\n        float rand = fract(sin(dot(fish.zw, fish.xy)) * 5453.5453);\n        if(rand > 0.5) \n            new_angle = sense_angle1;\n        else\n            new_angle = sense_angle3;\n    } \n    else if(sense_value1 > sense_value2 && sense_value1 > sense_value3) {\n        new_angle = sense_angle1;\n    } \n    \n    //else if(sense_value2 > sense_value1 && sense_value2 > sense_value3){\n    //    new_angle = sense_angle2  ;   \n    //}\n    \n    else if(sense_value3 > sense_value2 && sense_value3 > sense_value1) {\n        new_angle = sense_angle3 ;    \n    }\n    \n    else {\n        float rand = fract(sin(dot(fish.zw, fish.xy)) * 43758.5453);\n        if(rand > 0.5) \n            new_angle = sense_angle1;\n        else\n            new_angle = sense_angle3;\n    }\n\n    fish.zw = vec2(cos(new_angle)*SPEED, sin(new_angle)*SPEED);\n    return fish;\n    \n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n    vec2 screensize = iResolution.xy;\n    //vec2 screensize = vec2(SCREEN_X,SCREEN_Y);\n    \n    vec4 col = vec4(0);\n    \n    if(iFrame < 10){\n        float id = getId(screensize,fragCoord);\n        vec2 random_pos = hash(id)*screensize;\n        float angle = radians(hash(id).x*hash(id).y*360.);\n        \n        vec2 random_direction = vec2(cos(angle)*SPEED,sin(angle)*SPEED);\n        fragColor = vec4(fragCoord,random_direction);\n    }\n    else {\n        //col = vec4(uv.x,.0,.0,.1);\n        //vec4 fish1 = Fish(0)\n        vec4 fish = Particle(fragCoord);\n        fish = changeDirection(fish);\n\n        \n        fish.xy += fish.zw;\n        \n        //Edge detection\n        if(fish.x < 0.){\n            fish.x = 0.;\n            fish.z *= -1.;\n        }\n        if(fish.y < 0.){\n            fish.y = 0.;\n            fish.w *= -1.;\n        }\n        if(fish.x > screensize.x){\n            fish.x = screensize.x;\n            fish.z *= -1.;\n        }\n        if(fish.y > screensize.y){\n            fish.y = screensize.y;\n            fish.w *= -1.;\n        }\n            \n            \n        \n        fragColor = fish;\n        \n    }\n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Scent\nvec4 Particle(vec2 fragCoord) { \n    //return texelFetch(iChannel0, ivec2(fragCoord),0);\n    return texture(iChannel0, (fragCoord+0.5)/iResolution.xy);\n}\nfloat drawScent(vec2 uv, vec2 coord) {\n    float d = length(vec2(uv.x - coord.x, uv.y - coord.y));\n    //return .03/d;\n    return .3/d < .2 ? 0. : SCENT_INTENSITY;\n}\n\nfloat removeScent(vec2 uv, vec2 coord) {\n    float d = length(vec2(uv.x - coord.x, uv.y - coord.y));\n    //return .03/d;\n    return .3/d < .5 ? 0. : SCENT_INTENSITY;\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n      \n    vec2 screensize = iResolution.xy;\n\n    vec4 col = vec4(0.);\n    vec2 uv = fragCoord;\n    float id = getId(screensize,fragCoord);\n    \n    // = Initialization ===================================\n    if(iFrame > 10){\n        \n        //col = texture(iChannel1, fragCoord);\n        //col = texelFetch(iChannel1, ivec2(fragCoord),0)*0.995;\n        //col = texelFetch(iChannel1, ivec2(fragCoord),0);\n        \n\n        float blur = SCENT_DESPERSION;\n\n        for(int i = -1;i<2;i++)\n            for(int j = -1;j<2;j++)\n                col += texture(iChannel1,vec2(fragCoord/iResolution.xy)+vec2(i,j)/iChannelResolution[1].xy*blur*1.,blur);\n        col/=9.05;\n        \n        col-=SCENT_DECAY;\n        \n        \n \n        for(float i = 0.;i<=400.;i++){\n            for(float t = 0.;t<=15.;t++){\n                vec4 particle = Particle(vec2(i,t));\n                col += drawScent(fragCoord, particle.xy);\n            }\n        }\n    \n    }\n    \n    fragColor = min(col,1.);\n    \n    //fragColor = .3/length(vec2(fragCoord-iMouse.xy)) > 0.01 ? vec4(0.) : col ;  \n    \n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define NB      10000.\n\n#define SENSE_ANGLE      15.\n#define SENSE_DIST      5.\n#define SENSE_SIZE      3.\n\n#define SPEED 2.5\n\n#define SCENT_INTENSITY      .9\n#define SCENT_DECAY      .001\n#define SCENT_DESPERSION  .1\n\n#define SCREEN_X      450.\n#define SCREEN_Y      450.\n\n#define EXPLORE 0.001\n\nfloat getId(vec2 resolution, vec2 fragCoord) { \n    return floor(fragCoord.x*resolution.y + fragCoord.y);\n    //return floor(fragCoord.x);\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}
