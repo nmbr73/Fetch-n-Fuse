@@ -49,7 +49,7 @@ __DEVICE__ float3 render(float3 ro, float3 rd, inout float3 *pos, inout float3 *
       float d = de(*pos + nor*s, &tmp, iTime);
       occ += (s - d)*w;
       w *= 0.95f;
-      s += s/(float(i) + 1.0f);
+      s += s/((float)(i) + 1.0f);
     }
     occ = 1.0f - clamp(occ, 0.0f, 1.0f);
     

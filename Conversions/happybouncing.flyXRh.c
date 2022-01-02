@@ -74,7 +74,7 @@ __DEVICE__ float jump (float t, int modus)
 {
     t = _fminf(1.0f, t*4.0f);
     t = _fabs(_sinf(t*3.1415f));
-    return _powf(sin(t*3.14/2.), (modus==2?0.5f:1.9f));
+    return _powf(sin(t*3.14f/2.0f), (modus==2?0.5f:1.9f));
 }
 
 __DEVICE__ float walk (float t)
@@ -207,7 +207,7 @@ __KERNEL__ void happybouncingFuse(
     if (modus == 1) buddies = 3.0f;
     if (modus == 2) buddies = 6.0f;
 
-    for (float i = 0.0f; i < buddies; ++i)
+    for (float i = 0.0f; i < buddies; i+=1.0f)
     {
         // usefull to dissociate instances
         float ii = i/(buddies-(modus==2?0.0f:1.0f));

@@ -61,9 +61,9 @@ __DEVICE__ float fbm ( in float2 _st) {
     return v;
 }
 
-__DEVICE__ float3 mod289(float3 x) { return x - _floor(x * (1.0f / 289.0f)) * 289.0f; }
-__DEVICE__ float2 mod289(float2 x) { return x - _floor(x * (1.0f / 289.0f)) * 289.0f; }
-__DEVICE__ float3 permute(float3 x) { return mod289(((x*34.0f)+1.0f)*x); }
+__DEVICE__ float3 mod289_f3(float3 x) { return x - _floor(x * (1.0f / 289.0f)) * 289.0f; }
+__DEVICE__ float2 mod289_f2(float2 x) { return x - _floor(x * (1.0f / 289.0f)) * 289.0f; }
+__DEVICE__ float3 permute(float3 x) { return mod289_f3(((x*34.0f)+1.0f)*x); }
 
 __DEVICE__ float snoise(float2 v) {
 
@@ -89,7 +89,7 @@ __DEVICE__ float snoise(float2 v) {
 
     // Do some permutations to avoid
     // truncation effects in permutation
-    i = mod289(i);
+    i = mod289_f2(i);
     float3 p = permute(
                permute( i.y + to_float3(0.0f, i1.y, 1.0f))
                + i.x + to_float3(0.0f, i1.x, 1.0f ));

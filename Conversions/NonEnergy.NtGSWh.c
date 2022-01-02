@@ -107,9 +107,9 @@ __KERNEL__ void NonEnergyFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
     float2 me_give_ne = computeGive(uv, ne);
     float2 me_give_se = computeGive(uv, se);
     
-    float2 transfer =  (n_give_me + e_give_me + s_give_me + w_give_me) / 4.
-                      +(nw_give_me + sw_give_me + ne_give_me + se_give_me) / 16.
-                      -(me_give_n + me_give_e + me_give_s + me_give_w) / 4.
+    float2 transfer =  (n_give_me + e_give_me + s_give_me + w_give_me) / 4.0f
+                      +(nw_give_me + sw_give_me + ne_give_me + se_give_me) / 16.0f
+                      -(me_give_n + me_give_e + me_give_s + me_give_w) / 4.0f
                       -(me_give_nw + me_give_sw + me_give_ne + me_give_se) / 16.0f;
 
     // float transferAmount = _sinf(iTime) * 1.4f;

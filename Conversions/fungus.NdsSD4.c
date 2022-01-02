@@ -24,12 +24,12 @@
         float t = z*2.0f+1.0f;
               t = 1./(t*t-1.0f);
         float blur = 1.5/z;
-        for(float i = -z; i<=z;++i){
-        for(float j = -z; j<=z;++j){
+        for(float i = -z; i<=z;i+=1.0f){
+        for(float j = -z; j<=z;j+=1.0f){
           float s0 = 0.0f;
           float s1 = 0.0f;
-          for(float i2 = -z; i2<=z;++i2){
-          for(float j2 = -z; j2<=z;++j2){
+          for(float i2 = -z; i2<=z;i2+=1.0f){
+          for(float j2 = -z; j2<=z;j2+=1.0f){
           float2 c = to_float2(i2,j2)*blur;
           s0 += _fmaxf(0.0f,+A(u+to_float2(i,j)+to_float2(i2,j2)).x)/_expf(dot(c,c));
           s1 += _fmaxf(0.0f,-A(u+to_float2(i,j)+to_float2(i2,j2)).x)/_expf(dot(c,c));
@@ -50,11 +50,11 @@
         float t = z*2.0f+1.0f;
               t = 1.0f/(t*t-1.0f);
         float blur = 1.5/z;
-        for(float i = -z; i<=z;++i){
-        for(float j = -z; j<=z;++j){
+        for(float i = -z; i<=z;i+=1.0f){
+        for(float j = -z; j<=z;j+=1.0f){
           float s = 0.0f;
-          for(float i2 = -z; i2<=z;++i2){
-          for(float j2 = -z; j2<=z;++j2){
+          for(float i2 = -z; i2<=z;i2+=1.0f){
+          for(float j2 = -z; j2<=z;j2+=1.0f){
           float2 c = to_float2(i2,j2)*blur;
           s += 1.0f/_expf(dot(c,c));
           }}

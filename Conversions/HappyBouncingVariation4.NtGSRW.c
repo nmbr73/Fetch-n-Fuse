@@ -11,14 +11,14 @@
 #define clp(t) (clamp(t,0.0f,1.0f))
 
 // add shape to layer
-__DEVICE__ void add (in float sdf, in float3 col, inout float *sdfLayers, inout float3 *colLayers)
+__DEVICE__ void add(in float sdf, in float3 col, inout float *sdfLayers, inout float3 *colLayers)
 {
     *colLayers = _mix(*colLayers, col, fill(sdf));
     *sdfLayers = _fminf(sdf, *sdfLayers);
 }
 
 // add shape to frame
-__DEVICE__ void add(in float4 shape, inout float4 *frame)
+__DEVICE__ void add_f4(in float4 shape, inout float4 *frame)
 {
     if (shape.w < 0.0f) *frame = to_float4_aw(swi3(shape,x,y,z),(*frame).w);
 }
@@ -149,17 +149,17 @@ __KERNEL__ void HappyBouncingVariation4Fuse(float4 color, float2 pixel, float iT
     p.x -= fract_f(iTime*globalSpeed*0.5f+0.61f)*2.0f-1.0f;
     p = mul_f2_mat2(p,rot(pos.x*20.0f));
     shape = to_float4_aw(to_float3(0.976f,0.976f,0.424f)*ss(0.1f,0.0f,length(p)), circle(p,0.04f));
-    add(shape, &color);
+    add_f4(shape, &color);
     p.y += 0.02f;
-    add(to_float4_aw(to_float3_s(0), sdArc(p, pi/-2.0f, 1.0f, 0.02f, 0.005f)), &color);
+    add_f4(to_float4_aw(to_float3_s(0), sdArc(p, pi/-2.0f, 1.0f, 0.02f, 0.005f)), &color);
     p.x = _fabs(p.x)-0.01f;
     p.y -= 0.03f;
-    add(to_float4_aw(to_float3_s(0), circle(p, 0.006f)), &color);
+    add_f4(to_float4_aw(to_float3_s(0), circle(p, 0.006f)), &color);
     color = to_float4_aw(swi3(color,x,y,z) * shadow(shape.w),color.w);
     
     // bouncing buddies
     const float instances = 5.0f;
-    for (float i = 0.0f; i < instances; ++i)
+    for (float i = 0.0f; i < instances; i+=1.0f)
     {
         float ii = i/(instances);
         float iy = i/(instances-1.0f);
@@ -172,7 +172,7 @@ __KERNEL__ void HappyBouncingVariation4Fuse(float4 color, float2 pixel, float iT
         
         // scale
         p *= 2.0f;
-float zzzzzzzzzzzzzzzzzzzzzzzzzzzzz;        
+
         // jump animation
         float ta = fract(t)*6.283f;
         float tt = _sinf(clp(fract_f(t*0.5f)*3.0f)*3.14f);
@@ -188,7 +188,7 @@ float zzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
         color = to_float4_aw(swi3(color,x,y,z) + tint * clp(-dist+0.4f)*2.0f,color.w);
         
         // add shape to frame
-        add(buddy(p, tint, t, ii), &color);
+        add_f4(buddy(p, tint, t, ii), &color);
     }
 
 

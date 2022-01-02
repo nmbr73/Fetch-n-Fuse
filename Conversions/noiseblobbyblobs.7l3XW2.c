@@ -15,7 +15,6 @@
 #define pi 3.14159
 
 __DEVICE__ float thc(float a, float b) {
-  float zzzzzzzzzzzzzzzzzzzzzzzz;
     return _tanhf(a * _cosf(b)) / _tanhf(a);
 }
 
@@ -23,7 +22,7 @@ __DEVICE__ float ths(float a, float b) {
     return _tanhf(a * _sinf(b)) / _tanhf(a);
 }
 
-__DEVICE__ float3 thc(float a, float3 b) {
+__DEVICE__ float3 thc2(float a, float3 b) {
     return tanh_f3(a * cos_f3(b)) / _tanhf(a);
 }
 
@@ -31,7 +30,7 @@ __DEVICE__ float h21 (float2 a) {
     return fract_f(_sinf(dot(swi2(a,x,y), to_float2(12.9898f, 78.233f))) * 43758.5453123f);
 }
 
-__DEVICE__ float h21 (float a, float b, float sc) {
+__DEVICE__ float h21_2 (float a, float b, float sc) {
     a = mod_f(a, sc); b = mod_f(b, sc);
     return fract_f(_sinf(dot(to_float2(a, b), to_float2(12.9898f, 78.233f)))*43758.5453123f);
 }
@@ -44,7 +43,7 @@ __DEVICE__ float sdSegment( in float2 p, in float2 a, in float2 b )
 }
 
 __DEVICE__ float2 pnt(float2 ipos, float sc, float iTime) {
-    float h = h21(ipos.x, ipos.y, sc);
+    float h = h21_2(ipos.x, ipos.y, sc);
     float t = iTime + 10.0f * h;
     float k = 1.5f +  h;
     return 0.4f * to_float2(thc(4.0f * (1.0f-h), 100.0f + k * t),
