@@ -120,6 +120,7 @@
   }
 
   __DEVICE__ inline mat3 to_mat3_f( float a ) { return mat3(a,a,a,a,a,a,a,a,a); }
+  __DEVICE__ inline mat3 to_mat3_f3( float3 a, float3 a, float3 a ) { return mat3(a,b,c); }
   __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }
   __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) { return (A*B); }
   __DEVICE__ inline mat3 mul_mat3_mat3( mat3 A, mat3 B) { return (A*B); }
@@ -137,13 +138,21 @@
     return t;
   }
 
-  __DEVICE__ inline mat3 to_mat3_1( float  a )
+  __DEVICE__ inline mat3 to_mat3_f( float  a )
   {
     mat3 t;
     t.r0.x = t.r0.y = t.r0.z = t.r1.x = t.r1.y = t.r1.z = t.r2.x = t.r2.y = t.r2.z = a;
     return t;
   }
-
+  
+  __DEVICE__ inline mat3 to_mat3_f3( float3 A, float3 B, float3 C)  
+  {  
+	mat3 D;  
+	D.r0 = A;  
+	D.r1 = B;  
+	D.r2 = C;  
+	return D;  
+  } 
 
 __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {
 	float3 C;
