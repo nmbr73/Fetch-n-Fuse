@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  id: BranchingPaths
+  name: BranchingPaths
+shader:
+  author: wyatt
+  description: 'Try to kill them all!
+
+
+    Thanks for the inspo mathmasterzach'
+  id: ts33DS
+  name: Branching Paths
+  tags:
+  - particles
+  url: https://www.shadertoy.com/view/ts33DS
