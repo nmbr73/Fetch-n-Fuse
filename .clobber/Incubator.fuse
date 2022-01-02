@@ -73,7 +73,7 @@ end
 
 
 ShaderParameters       = nil
-CompatibilityCode      = nil
+CompatibilityCode      = ""
 KernelInputCtrlDefines = nil
 ConversionShaderID     = ""
 ConversionFusename     = ""
@@ -188,15 +188,20 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 function LoadCompatibilityCode()
 
+  CompatibilityCode = ""
 
   f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
 
   if not f then
-    CompatibilityCode = nil
     print("failed to read compatibility code")
   else
     CompatibilityCode = f:read("*all")
     f:close()
+
+    if CompatibilityCode=="" then
+      print("no compatibility code?!?")
+    end
+
   end
 
 end
@@ -308,7 +313,7 @@ function Create()
     table.insert(attrs,{ CCS_AddString = v.Label })
   end
 
-  InFileToUseCombo = self:AddInput("Code", "FragementFileSelection", {
+  InFileToUseCombo = self:AddInput("Code", "conversion", {
     IC_ControlPage = control_page ,
     LINKID_DataType = "Number",
     INPID_InputControl = "ComboControl",
@@ -327,7 +332,7 @@ function Create()
     table.insert(attrs,{ CCS_AddString = e.ComboName })
   end
 
-  ShaderKernels_ComboControl = self:AddInput("Kernel", "selectKernelCombo", {
+  ShaderKernels_ComboControl = self:AddInput("Kernel", "kernel", {
     IC_ControlPage = control_page ,
       LINKID_DataType = "Number",
       INPID_InputControl = "ComboControl",
@@ -339,7 +344,7 @@ function Create()
 
   ShaderKernels_LabelControl = self:AddInput(
     ShaderKernels_getLabelText(),
-    "seletedKernelLabel", {
+    "kernelInfo", {
     IC_ControlPage = control_page ,
     LINKID_DataType = "Text",
     INPID_InputControl = "LabelControl",
@@ -350,7 +355,7 @@ function Create()
   })
 
 
-  InShadertoyButton=self:AddInput("Show on shadertoy.com", "ShowOnShadertoy", {
+  InShadertoyButton=self:AddInput("Show on shadertoy.com", "openShaderInBrowser", {
     IC_ControlPage = control_page ,
     LINKID_DataType = "Text",
     ICD_Width =0.5,
@@ -361,7 +366,7 @@ function Create()
     INP_Disabled=true,
   })
 
-  InReloadCodeButton= self:AddInput("Reload Code", "ReloadCodeFragment", {
+  InReloadCodeButton= self:AddInput("Reload Code", "reloadConversion", {
     IC_ControlPage = control_page ,
     LINKID_DataType = "Text",
     ICD_Width =0.5,
@@ -622,7 +627,6 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
 
 
   local has_param={
-    -- ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->width, _shaderParameters->height);' },
     ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
     ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
     ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
@@ -634,15 +638,9 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
     ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
     ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
 
+    -- Some special variables not known to shadertoys, but you may want to use
+    -- them in a Fuse, so we allow to add them to the kernel's parameters:
 
-    -- ['iChannel0']             = { Type='sampler2D', Present=false },
-    -- ['iChannel1']             = { Type='sampler2D', Present=false },
-    -- ['iChannel2']             = { Type='sampler2D', Present=false },
-    -- ['iChannel3']             = { Type='sampler2D', Present=false },
-
-    -- Some special variables not known to shadertoys,
-    -- but you may want to use them in a Fuse, so we
-    -- allow to add them to the kernel's parameters:
     ['width']             = { Type='int', Present=false, Code='int width = _shaderParameters->width;' },
     ['height']            = { Type='int', Present=false, Code='int height = _shaderParameters->height;' },
     ['compOrder']         = { Type='int', Present=false, Code='int width = _shaderParameters->compOrder;' },
@@ -651,21 +649,21 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
 
   }
 
+  -- iChannelResolution[]
   has_param['iChannelResolution']['Code']='float2 iChannelResolution['..NUM_INPUT_CHANNELS..'];\n'
   for i=0,NUM_INPUT_CHANNELS-1 do
     has_param['iChannelResolution']['Code']=has_param['iChannelResolution']['Code']
       .."iChannelResolution["..i.."] = to_float2(_shaderParameters->iChannelResolution["..i.."][0],_shaderParameters->iChannelResolution["..i.."][1]);\n"
   end
 
-
+  -- iChannelTime[]
   has_param['iChannelTime']['Code']='float iChannelTime['..NUM_INPUT_CHANNELS..'];\n'
   for i=0,NUM_INPUT_CHANNELS-1 do
     has_param['iChannelTime']['Code']=has_param['iChannelTime']['Code']
       .."iChannelTime["..i.."] = _shaderParameters->iChannelTime["..i.."];\n"
   end
 
-
-
+  -- iChannel<0..N>
   for i=0,NUM_INPUT_CHANNELS-1 do
     has_param['iChannel'..i]={ Type='sampler2D', Present=false }
   end
@@ -788,9 +786,6 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
 end
 
 
-function KernelComboNames()
-  return {"<none>", "Buffer A", "Buffer B", "Buffer C", "Buffer D", "Image", "FINAL" }
-end
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Rename all kernels and their parameters.
@@ -864,35 +859,17 @@ function Process(req)
 
 
     -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
-    -- Instanzen hinweg unterschieden werden. Die fertige Fuse braucht das nachher aber
-    -- nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren Kernel nicht einfach
-    -- so zwischendurch ... da wird dann nachher einfach nichts mehr an den Namen
-    -- drangehaengt.
+    -- Instanzen hinweg unterschieden werden (per self.name). Die fertige Fuse braucht
+    -- das nachher aber nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren
+    -- Kernel nicht einfach so zwischendurch ... da wird dann nachher einfach nichts
+    -- mehr an den Namen drangehaengt.
 
-
-    -- --------------------------------------------------------------------------------------------------------------
 
     ShaderKernels_resetData()
     ShaderKernels.Current = ShaderKernels_ComboControl:GetValue(req).Value
-
-    ConversionSourcecode = InitializeKernels(ConversionSourcecode,ConversionFusename,self.Name)
-
-
---  ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
-
-    -- dump(ShaderKernels)
-
     LoadCompatibilityCode()
 
-
-    if CompatibilityCode~=nil then
-      ConversionSourcecode=CompatibilityCode..ConversionSourcecode
-    else
-      print("no compatibility code?!?")
-    end
-
-
-
+    ConversionSourcecode = CompatibilityCode..InitializeKernels(ConversionSourcecode,ConversionFusename,self.Name)
   end
 
 
@@ -928,7 +905,6 @@ function Process(req)
 
 
 
-  -- local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
   local dst=Image(imgattrs)
   local p = Pixel({R=0,G=0,B=0,A=0})
   dst:Fill(p)
@@ -937,11 +913,11 @@ function Process(req)
   local ConversionKernelname = ShaderKernels.Entries[ShaderKernels.Current].KernelName
 
   if ConversionKernelname==nil or ConversionKernelname=="" then
-    -- dump(ShaderKernels)
     ShaderKernels.RenderErrors = true
-    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
 
     if ConversionKernelname==nil then
+      verbose("<none> selected for kernel")
       dst:Fill(Pixel({R=0,G=0,B=0,A=0}))
     else
       print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
@@ -961,19 +937,17 @@ function Process(req)
   if ConversionSourcecode == "" or ConversionKernelname == "" or ShaderParameters == nil then
     print("whoops - something went terribly wrong?!?!!")
     ShaderKernels.RenderErrors = true
-    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
-    -- dst:Fill(Pixel({R=0,G=0,B=1,A=0}))
-    dst = nil
-    OutImage:Set(req,dst)
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
+    OutImage:Set(req,nil)
     return
   end
 
 
   if req:IsPreCalc() then
-    print("precalc")
+    verbose("precalc")
     local out = Image({IMG_Like = dst, IMG_NoData = true})
     OutImage:Set(req, out)
-    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
     return
   end
 
@@ -1025,7 +999,7 @@ function Process(req)
   -- die position beim click zu merken
 
   if InMouseDrag:GetValue(req).Value ~= 0 then
-    -- hm, okay ... was mache ich mit einem Mausklick bei Position 0|0 ?!?
+    -- hm, okay ... was mache ich mit einem Mausklick bei Position -1|-1 ?!?
     if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
       params.iMouse[2]=params.iMouse[0]
       params.iMouse[3]=params.iMouse[1]
@@ -1170,7 +1144,6 @@ function Process(req)
 	if (not ok) then
     ShaderKernels.RenderErrors = true
 		dst = nil
-    print("--- Errors ---")
     dump(node:GetErrorLog())
 	end
 
