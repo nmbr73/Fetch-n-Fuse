@@ -4,6 +4,27 @@
 // ----------------------------------------------------------------------------------
 // Connect 'Texture: Abstract 1' to iChannel0
 
+
+    /*| refract_f3    |*/__DEVICE__ float3 _refract_f3(float3 I, float3 N, float eta) {
+    /*| refract_f3    |*/    float dotNI = dot(N, I);
+    /*| refract_f3    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+    /*| refract_f3    |*/    if (k < 0.0f) {
+    /*| refract_f3    |*/      return to_float3_s(0.0f);
+    /*| refract_f3    |*/    }
+    /*| refract_f3    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * (N*-1.5f); //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
+    /*| refract_f3    |*/ }
+    
+    
+  __DEVICE__ float3 _refract_f3_2(float3 I, float3 N, float eta) {
+
+    float cosI  = 1.0f-dot(N*1.0f,I*1.0f);
+    float sinT2 = eta * eta * (1.0f - cosI * cosI);
+    if ( sinT2 > 1.0f) return to_float3_s(0.0f);
+    float cosT = _sqrtf(1.0f-sinT2);
+    return eta * I + (eta * cosI - cosT) * (-N*2.0f);  // !!!! -N erzielt bessere Werte
+}
+
+
 __DEVICE__ float3 linearLight( float3 s, float3 d )
 {
   return 2.0f * s + d * 2.0f - 1.0f;
@@ -51,6 +72,8 @@ __KERNEL__ void Lighten2DFuse(float4 fragColor, float2 fragCoord, float iTime, f
         ballCoord = swi2(iMouse,x,y)/iResolution - 0.5f;
         ballCoord.x *= 3.5f;
         ballCoord.y *= 2.0f;
+        
+        cos_time = ballCoord.x;
     }
     
     float ballRadius = 0.5f;
@@ -63,7 +86,9 @@ __KERNEL__ void Lighten2DFuse(float4 fragColor, float2 fragCoord, float iTime, f
         float3 norm = to_float3(balluv.x, balluv.y, -_sqrtf(1.0f - dist / ballRadius));
         
         float3 spec = reflect(to_float3(0, 0, 1), norm);
-        float3 refr = refract_f3(to_float3(0, 0, 1), norm, eta);
+        float3 refr = _refract_f3_2(to_float3(0, 0, 1), norm, eta);
+        //refr = to_float3_s(0.0f);    
+            
             
         float4 ambient = to_float4(0.09f, 0.08f, 0.07f, 0.0f);
         float4 spec_light = texture(iChannel0, cuvToUv(swi2(spec,x,y) + ballCoord, maxuv));
