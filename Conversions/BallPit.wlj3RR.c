@@ -72,14 +72,14 @@ __KERNEL__ void BallPitFuse__Buffer_A(float4 state, float2 fragCoord, float4 iMo
         if (keystate > 0.5f && mousedist < float(hashEdge*16)) {
             state = to_float4(-1.0f,-1.0f,0.0f,0.0f);
 //      } else if ( ind % hashEdge == to_int2_s(0) && mousedist < float(hashEdge*drawRadius)) {
-        } else if ( eq_i2_1i(mod_i2(ind,hashEdge), 0) && mousedist < float(hashEdge*drawRadius)) {
+        } else if ( ind.x % hashEdge ==0 && ind.y % hashEdge ==0 && mousedist < float(hashEdge*drawRadius)) {
           state = to_float4_f2f2(to_float2_i2(id)*diameter+diameter*0.5f, (noise2D(fragCoord)*2.0f-1.0f)*speed);
         }
     }
     if (iFrame == 0) {
         //initialization
 //      if (ind % (hashEdge) == to_int2_s(0)) {
-        if ( eq_i2_1i(mod_i2(ind,hashEdge),0)) {
+        if (ind.x % hashEdge ==0 && ind.y % hashEdge ==0) {
             state = to_float4_f2f2(to_float2_i2(id)*diameter+diameter*0.5f, (noise2D(fragCoord)*2.0f-1.0f)*speed);
         } else {
       state = to_float4(-1.0f, -1.0f, 0.0f, 0.0f);
@@ -89,14 +89,15 @@ __KERNEL__ void BallPitFuse__Buffer_A(float4 state, float2 fragCoord, float4 iMo
 
         //particle leaving the cell
 //      if (to_int2_f2(_floor(state.xy/diameter)) != id) state = to_float4(-1.0f, -1.0f, 0.0f, 0.0f);
-        if ( !eq_i2_i2(to_int2_f2(_floor(state.xy/diameter)),id)) state = to_float4(-1.0f, -1.0f, 0.0f, 0.0f);
+        int2 dmy=to_int2_f2(_floor(state.xy/diameter));
+        if (dmy.x!=id.x || dmy.y!=id.y) state = to_float4(-1.0f, -1.0f, 0.0f, 0.0f);
 
         //particle entering the cell
         for (int i=-1; i<=1; i++) {
             for (int j=-1; j<=1; j++) {
                 int2 disp = to_int2(i, j);
 //              if (disp == to_int2_s(0)) continue;
-                if (eq_i2_1i(disp,0)) continue;
+                if (disp.x == 0 && disp.y==0) continue;
                 int2 otherid = id + disp;
                 if (otherid.x < 0 || otherid.y < 0 || otherid.x >= particleEdge.x || otherid.y >= particleEdge.y) continue;
                 //check every bin inside the other cell for particles entering this cell
@@ -106,16 +107,16 @@ __KERNEL__ void BallPitFuse__Buffer_A(float4 state, float2 fragCoord, float4 iMo
                         float4 otherstate = texelFetch_i2(iChannel0, otherid*hashEdge + offset, 0);
                         int2 id2 = to_int2_f2(_floor(otherstate.xy/diameter));
 //                      if (id2 == id) {
-                        if (eq_i2_i2(id2,id)) {
+                        if (id2.x == id.x && id.y == id.y) {
                             for (int h=0; h<numHashes; h++) {
                                 //receive the particle if this is the right bin
                                 int2 hashOffset = hash2D(swi2(otherstate,x,y)+float(h)*12345.0f);
                                 int2 hashInd = id*hashEdge+hashOffset;
                                 float2 state0 = texelFetch_i2(iChannel0, hashInd, 0).xy;
 //                              if (state0 == to_float2_s(-1.0f)) {
-                                if (eq_f2_1f(state0,-1.0f)) {
+                                if (state0.x == -1.0f && state0.y == -1.0f) {
 //                                  if (hashInd == ind) {
-                                    if (eq_i2_i2(hashInd,ind)) {
+                                    if (hashInd.x == ind.x && hashInd.y == ind.y) {
                                         state = otherstate;
                                         return;
                                     }
@@ -169,7 +170,8 @@ __KERNEL__ void BallPitFuse__Buffer_B(float4 state, float2 fragCoord, sampler2D 
         for (int i=-2; i<=2; i++) {
             for (int j=-2; j<=2; j++) {
                 int2 disp = to_int2(i, j);
-                if (eq_i2_1i(disp,0)) continue;
+//              if (eq_i2_1i(disp,0)) continue;
+                if (disp.x==0 && disp.y==0) continue;
                 int2 otherid = id + disp;
                 if (otherid.x < 0 || otherid.y < 0 || otherid.x >= particleEdge.x || otherid.y >= particleEdge.y) continue;
                 //check every bin inside the other cell for particles entering this cell
@@ -241,7 +243,7 @@ __KERNEL__ void BallPitFuse(float4 fragColor, float2 fragCoord, sampler2D iChann
     //ivec2 stripes = id % 2;
     //fragColor = to_float4_aw(to_float3(0.1f*float(_fabs(stripes.x-stripes.y))), 1.0f);
     fragColor = to_float4(0.0f,0.0f,0.0f,1.0f);
-    float3 bgcol = to_float3_s(0.0f);
+//  float3 bgcol = to_float3_s(0.0f);
     float totalW = 0.01f;
     for (int i=-2; i<=2; i++) {
         for (int j=-2; j<=2; j++) {
