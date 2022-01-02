@@ -270,24 +270,9 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
   /*| lessThan_f3   |*/#define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
   /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
 
-  //-------refract--------
-  __DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
-     float dotNI = dot(N, I);
-     float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
-     if (k < 0.0f) {
-       return to_float2_s(0.0f);
-     }
-     return eta * I - (eta * dotNI * _sqrtf(k)) * N;
-  }
-
-  __DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
-     float dotNI = dot(N, I);
-     float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
-     if (k < 0.0f) {
-       return to_float3_s(0.0);
-     }
-     return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
-  }
+  /*| refract_f2    |*/#define refract_f2(I,N,eta) refract(I,N,eta)
+  /*| refract_f3    |*/#define refract_f3(I,N,eta) refract(I,N,eta)
+  
 
 #else
 
@@ -362,28 +347,29 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
     /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
 
      
-    //-------refract--------
-    __DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
-       float dotNI = dot(N, I);
-       float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
-       if (k < 0.0f) {
-         return to_float2_s(0.0f);
-       }
-       return eta * I - (eta * dotNI * _sqrtf(k)) * N;
-    }
+    /*|               |*/ //-------refract--------
+    /*| refract_f2    |*/__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
+    /*| refract_f2    |*/    float dotNI = dot(N, I);
+    /*| refract_f2    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+    /*| refract_f2    |*/    if (k < 0.0f) {
+    /*| refract_f2    |*/       return to_float2_s(0.0f);
+    /*| refract_f2    |*/    }
+    /*| refract_f2    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * N;
+    /*| refract_f2    |*/ }
+    /*|               |*/
+    /*| refract_f3    |*/__DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
+    /*| refract_f3    |*/   float dotNI = dot(N, I);
+    /*| refract_f3    |*/   float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+    /*| refract_f3    |*/   if (k < 0.0f) {
+    /*| refract_f3    |*/      return to_float3_s(0.0f);
+    /*| refract_f3    |*/   }
+    /*| refract_f3    |*/   return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
+    /*| refract_f3    |*/ }
+    /*|               |*/
 
-    __DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
-       float dotNI = dot(N, I);
-       float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
-       if (k < 0.0f) {
-         return to_float3_s(0.0);
-       }
-       return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
-    }
+ #else // Generic
 
-  #else // Generic
-
-    #if defined(DEVICE_IS_OPENCL) || defined(DEVICE_IS_METAL)
+    #if defined(DEVICE_IS_OPENCL)
       __DEVICE__ float3 reflect(float3 I, float3 N) {return I - 2.0f * dot(N, I) * N;}
     #endif
 
@@ -458,25 +444,25 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
     /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
 
      
-    //-------refract--------
-    __DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
-       float dotNI = dot(N, I);
-       float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
-       if (k < 0.0f) {
-         return to_float2_s(0.0f);
-       }
-       return eta * I - (eta * dotNI * _sqrtf(k)) * N;
-    }
-
-    __DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
-       float dotNI = dot(N, I);
-       float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
-       if (k < 0.0f) {
-         return to_float3_s(0.0);
-       }
-       return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
-    }
-
+    /*|               |*/ //-------refract--------
+    /*| refract_f2    |*/__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
+    /*| refract_f2    |*/    float dotNI = dot(N, I);
+    /*| refract_f2    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+    /*| refract_f2    |*/    if (k < 0.0f) {
+    /*| refract_f2    |*/      return to_float2_s(0.0f);
+    /*| refract_f2    |*/    }
+    /*| refract_f2    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * N;
+    /*| refract_f2    |*/ }
+    /*|               |*/
+    /*| refract_f3    |*/__DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
+    /*| refract_f3    |*/    float dotNI = dot(N, I);
+    /*| refract_f3    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
+    /*| refract_f3    |*/    if (k < 0.0f) {
+    /*| refract_f3    |*/      return to_float3_s(0.0f);
+    /*| refract_f3    |*/    }
+    /*| refract_f3    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
+    /*| refract_f3    |*/ }
+    /*|               |*/
   #endif
 
 #endif
