@@ -49,10 +49,20 @@ __KERNEL__ void PaintballFuse(
    )
 {
 
-    const int nBalls = 40;
+    
     // const int nLights = 4;
     CONNECT_TINYINT0(nLights,0,10,4);
-    const int nLightsMax = 10;
+    
+    #if defined(DEVICE_IS_OPENCL)
+      //const int nBalls = 40;
+      #define nBalls 40
+      //const int nLightsMax = 10;
+      #define nLightsMax 10
+    #else  
+      const int nBalls = 40;
+      const int nLightsMax = 10;   
+    #endif
+    
     //const int numColors = 3; //max 4
     CONNECT_TINYINT1(numColors,0,4,3);
     const float lightZ = -0.2f;
