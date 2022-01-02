@@ -10,8 +10,12 @@ import argparse
 from dotenv import load_dotenv
 
 
+# ---------------------------------------------------------------------------------------------------------------------
 
 def get_compatibility_code(conversionCode):
+  """
+  Load the CompatibilityCode and adapt it.
+  """
 
   # copatibility code laden
 
@@ -67,6 +71,7 @@ def get_compatibility_code(conversionCode):
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------
 
 def fuse_it(id):
 
@@ -89,18 +94,18 @@ def fuse_it(id):
   with open(f"{path}{name}.{id}.yaml", "r") as f:
     info=yaml.safe_load(f)
 
-  fuse_author = info['fuse']['author']
-  fuse_name = info['fuse']['name']
+  fuse_author   = info['fuse']['author']
+  fuse_name     = info['fuse']['name']
   shader_author = info['shader']['author']
-  shader_id = info['shader']['id']
-  shader_name = info['shader']['name']
+  shader_id     = info['shader']['id']
+  shader_name   = info['shader']['name']
 
-  shader_description= info['shader'].get('description','')
+  shader_description = info['shader'].get('description','')
 
   if shader_id != id or fuse_name!=name:
     raise Exception("inconsistency in your source and yaml file")
 
-  target_path='./DaFuses/'
+  target_path='./Converted/'
   if not os.path.exists(target_path):
       os.makedirs(target_path)
 
