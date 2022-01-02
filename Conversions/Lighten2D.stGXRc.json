@@ -1,0 +1,53 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stGXRc",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork 2D Lighten JiPi 547",
+  "description": "For my education",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "refraction",
+   "glass",
+   "ball",
+   "education",
+   "caustic"
+  ],
+  "hasliked": 0,
+  "parentid": "stlGzj",
+  "parentname": "2D Lightened Glass Ball"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "float eta = 1.0 / 1.501;\nfloat FP = 1.24;\n\nvec3 linearLight( vec3 s, vec3 d )\n{\n\treturn 2.0 * s + d * 2.0 - 1.0;\n}\n\nvec2 uvToCuv( vec2 uv, vec2 maxuv )\n{\n    return 2.0 * uv - maxuv;\n}\n\nvec2 cuvToUv( vec2 cuv, vec2 maxuv )\n{\n    return (cuv + maxuv) * 0.5;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float fract_time = fract(iTime);\n    float cos_time = (cos(iTime));\n\n    vec2 uv = fragCoord/iResolution.y;\n    vec2 maxuv = vec2(iResolution.x / iResolution.y, 1.0);  \n    \n    //centrilize uv coordinates   \n    vec2 cuv = uvToCuv(uv, maxuv);\n    \n    fragColor = texture(iChannel0, uv);\n    \n    vec2 ballCoord = vec2(cos_time, 0.0);\n    \n    if (iMouse.z>0.0)\n    {\n        ballCoord = iMouse.xy/iResolution.xy - 0.5;\n        ballCoord.x *=2.5;\n    \n    }\n    \n    \n    float ballRadius = 0.5;\n    \n    float dist = distance(ballCoord, cuv);\n    \n    if (dist < ballRadius * 0.995)\n    {\t\n        vec2 balluv = (cuv - ballCoord) / ballRadius;\n        vec3 norm = vec3(balluv.x, balluv.y, -sqrt(1.0 - dist / ballRadius));\n        \n\t\tvec3 spec = reflect(vec3(0, 0, 1), norm);\n        vec3 refr = refract(vec3(0, 0, 1), norm, eta);\n        \n\t\tvec4 ambient = vec4(0.09, 0.08, 0.07, 0.0);\n\t\tvec4 spec_light = texture(iChannel0, cuvToUv(spec.xy + ballCoord, maxuv));\n        vec4 refr_light = texture(iChannel0, cuvToUv(refr.xy + ballCoord, maxuv));\n\n        float F = (1.0 - eta) * (1.0 - eta) / ((1.0 + eta) * (1.0 + eta));\n        float ratio = F + (1.0 - F) * pow(dist / ballRadius, FP);\n        \n        fragColor = mix(refr_light, spec_light, ratio) + ambient;\n\n        //glare drawing\n        vec2 lightPos = vec2(cos_time, 0.5);\n        float distanceToLight = abs(cos_time) * 0.5 + 0.5;\n        vec4 lightColor = vec4(0.8, 1.0, .85 ,1);\n        \n        float glareSize = 0.5;\n        glareSize *= distanceToLight;\n        \n        float glareHardness = 0.0;\n        float glareMax = 1.0;\n        \n        vec2 glareOffset = -lightPos * 0.5;   \n        \n        float refrGlareDistance = distance(glareOffset, refr.xy);\n        float specGlareDistance = distance(glareOffset, spec.xy);\n        \n        if (refrGlareDistance < glareSize)\n        {\n            float glarePower = 1.0 - smoothstep(glareSize * glareHardness, glareSize, refrGlareDistance);\n            fragColor = mix(fragColor, vec4(linearLight(fragColor.rgb, lightColor.rgb), 1.0 ), glarePower * glareMax);\n        }\n        \n        if (specGlareDistance < glareSize)\n        {\n            float glarePower = 1.0 - smoothstep(glareSize * glareHardness, glareSize, specGlareDistance);\n            fragColor = mix(fragColor, vec4(linearLight(fragColor.rgb, lightColor.rgb), 1.0), glarePower * glareMax);\n        }\n    }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

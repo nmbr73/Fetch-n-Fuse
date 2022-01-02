@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  id: 2DLighten
+  name: 2DLighten
+shader:
+  author: N.N.
+  description: For my education
+  id: stGXRc
+  name: Fork 2D Lighten JiPi 547
+  parent:
+    id: stlGzj
+    name: 2D Lightened Glass Ball
+    url: https://www.shadertoy.com/view/stlGzj
+  tags:
+  - refraction
+  - glass
+  - ball
+  - education
+  - caustic
+  url: https://www.shadertoy.com/view/stGXRc
