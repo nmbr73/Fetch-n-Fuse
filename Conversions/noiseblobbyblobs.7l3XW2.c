@@ -7,14 +7,15 @@
 // __DEVICE__ float fract_f(float A){return A - _floor(A);}
 // __DEVICE__ float2 fract_f2(float2 A){return make_float2(A.x - _floor(A.x), A.y - _floor(A.y));}
 // __DEVICE__ float mod_f(float value, float divisor) {  return value - divisor * _floor(value / divisor);}
-__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
-__DEVICE__ float3 tanh_f3(float3 i) {float3 r; r.x = _tanhf(i.x); r.y = _tanhf(i.y); r.z = _tanhf(i.z); return r;}
+//__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
+//__DEVICE__ float3 tanh_f3(float3 i) {float3 r; r.x = _tanhf(i.x); r.y = _tanhf(i.y); r.z = _tanhf(i.z); return r;}
 
 // #define in
 
 #define pi 3.14159
 
 __DEVICE__ float thc(float a, float b) {
+  float zzzzzzzzzzzzzzzzzzzzzzzz;
     return _tanhf(a * _cosf(b)) / _tanhf(a);
 }
 

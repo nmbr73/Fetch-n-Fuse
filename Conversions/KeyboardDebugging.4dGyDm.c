@@ -8,7 +8,7 @@
 
 // just debugging keyboard texture and scan codes!
 
-__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
+//__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
 
 
 __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1)

@@ -3,7 +3,7 @@
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
 
-__DEVICE__ float distance_f2(float2 pt1, float2 pt2){ float2 v = pt2 - pt1; return _sqrtf(dot(v,v));}
+//__DEVICE__ float distance_f2(float2 pt1, float2 pt2){ float2 v = pt2 - pt1; return _sqrtf(dot(v,v));}
 
 __DEVICE__ float _fwidth(float inp, float2 iR){
     //simulate fwidth

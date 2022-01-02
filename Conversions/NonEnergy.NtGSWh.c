@@ -1,6 +1,6 @@
 
-__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
-__DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
+//__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
+//__DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
 
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -

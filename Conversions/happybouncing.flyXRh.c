@@ -1,5 +1,5 @@
 
-__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
+//__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
 
 
@@ -22,6 +22,7 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 __DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return to_mat2(c,-s,s,c); }
 __DEVICE__ float circle (float2 p, float size)
 {
+  float zzzzzzzzzzzzzzzzzzzzzzzzz;
     return length(p)-size;
 }
 

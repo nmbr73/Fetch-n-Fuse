@@ -3,7 +3,7 @@
 // - Common                                                                         -
 // ----------------------------------------------------------------------------------
 
-__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
+//__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
 #define fill(sdf) (smoothstep(0.001f, 0.0f, sdf))
 #define repeat(p,r) (mod_f(p,r)-r/2.0f)
