@@ -6,12 +6,12 @@
 
 
 
+PathToRepository = ""
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 ShaderKernels = nil
 
-PathToRepository = ""
 
 function ShaderKernels_resetData()
   ShaderKernels = {
@@ -128,7 +128,7 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Local structure to manage vaialable source code.
 --
--- This table is initialized by getConversions() with filenames, IDs, etc. of the sources found in the
+-- This table is initialized by Conversions_resetData() with filenames, IDs, etc. of the sources found in the
 -- repositorie's *'Conversions/'* folder. It is used to proviede these sources i.e. in a ComboBox for
 -- selection.
 --
@@ -149,7 +149,9 @@ Conversions={}
 -- @param[type=string] path Path to where the conversions reside.
 -- @return[type=table] conversion information; `{}` if no conversions found
 --
-function getConversions(path)
+function Conversions_resetData(path)
+
+  Conversions={}
 
   local files={}
 
@@ -181,12 +183,12 @@ function getConversions(path)
     }
   end
 
-  return entries
+  Conversions=entries
 end
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
-function LoadCompatibilityCode()
+function CompatibilityCode_loadFile()
 
   CompatibilityCode = ""
 
@@ -268,9 +270,9 @@ function Create()
 
 
 
-  Conversions=getConversions(REPOSITORYPATH..'Conversions/')
+  Conversions_resetData(REPOSITORYPATH..'Conversions/')
 
-  LoadCompatibilityCode()
+  CompatibilityCode_loadFile()
 
   ShaderParameters=[[
 
@@ -867,7 +869,7 @@ function Process(req)
 
     ShaderKernels_resetData()
     ShaderKernels.Current = ShaderKernels_ComboControl:GetValue(req).Value
-    LoadCompatibilityCode()
+    CompatibilityCode_loadFile()
 
     ConversionSourcecode = CompatibilityCode..InitializeKernels(ConversionSourcecode,ConversionFusename,self.Name)
   end
