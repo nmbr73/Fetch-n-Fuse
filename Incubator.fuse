@@ -1,0 +1,1304 @@
+--- Special purpose Fuse to support shader kernel development.
+--
+-- Based on the work of Chris Ridings (www.chrisridings.com), Bryan Ray (http://www.bryanray.name/wordpress/opencl-fuses-index/),
+-- JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
+--
+
+-- Reload Parameter from ConversionSourcecode and Change Name, Min-,Max-,Defaultvalues - unused Parameter will be unvisible
+
+
+PathToRepository = ""
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+ShaderKernels = nil
+
+
+function ShaderKernels_resetData()
+  ShaderKernels = {
+    Current       = 0,
+    Main          = 5,
+    Quantity      = 0,
+    RenderErrors  = false,
+    MaxEntries    = 0,
+    Entries       = {
+      [0] = { ComboName  = "<none>",    InputName  = "",         InfoName = "",        KernelName=nil, },
+            { ComboName  = "Buffer A",  InputName  = "Buffer A", InfoName = "A",       KernelName="", },
+            { ComboName  = "Buffer B",  InputName  = "Buffer B", InfoName = "B",       KernelName="", },
+            { ComboName  = "Buffer C",  InputName  = "Buffer C", InfoName = "C",       KernelName="", },
+            { ComboName  = "Buffer D",  InputName  = "Buffer D", InfoName = "D",       KernelName="", },
+            { ComboName  = "Image",     InputName  = "Image",    InfoName = "IMAGE",   KernelName="", },
+            { ComboName  = "=final=",   InputName  = "",         InfoName = "FINAL",   KernelName="", },
+    },
+  }
+end
+
+
+function ShaderKernels_getLabelText()
+
+  local htm = {}
+
+  for i,e in pairs(ShaderKernels.Entries) do
+    if e.KernelName ~= nil then
+      if e.KernelName ~= "" then
+        -- has kernel
+        if i == ShaderKernels.Current then
+          -- is currently selected kernel
+          if not ShaderKernels.RenderErrors then
+            -- did successfully render
+            table.insert(htm,'<font style="color:#00ff00; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+          else
+            -- had errors
+            table.insert(htm,'<font style="color:#ff0000; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+          end
+        else
+          -- is currently not selected
+          table.insert(htm,'<font style="color:#ffffff; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+        end
+      else
+        -- has no kernel
+        if i == ShaderKernels.Current then
+          -- is currently selected
+          table.insert(htm,'<font style="color:#909090; background-color:#900000; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+        else
+          -- is currently not selected
+          table.insert(htm,'<font style="color:#404040; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
+        end
+      end
+    end
+  end
+
+  return '<center>'..table.concat(htm,'&nbsp;')..'</center>'
+
+end
+
+
+ShaderParameters       = nil
+CompatibilityCode      = ""
+KernelInputCtrlDefines = nil
+ConversionShaderID     = ""
+ConversionFusename     = ""
+ConversionSourcecode   = ""
+
+NUM_INPUT_CHANNELS        = 5
+
+NUM_COLOR_CONTROLS        = 5
+NUM_TINYSLIDER_CONTROLS   = 4
+NUM_SMALLSLIDER_CONTROLS  = 4
+
+NUM_TINYINT_CONTROLS   = 4
+
+
+
+
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
+    REGS_Name = "ShadersInc",
+	  REGS_Category = "Fuses",
+    REGS_OpDescription = "An Incubator for Shadertoys",
+	  REGS_OpIconString = "incubus",
+    REG_Source_SizeCtrls = true,
+    REG_Source_AspectCtrls = true,
+	  REG_TimeVariant = true,
+	  REGS_Company = "nmbr73",
+	  REGS_URL = "https://nmbr73.github.io/",
+	  REG_Version	= 000001,
+
+    REG_Source_GlobalCtrls = true, REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
+    -- REG_Source_GlobalCtrls = false, REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
+    -- REG_Source_GlobalCtrls = false, REG_Fuse_NoEdit = true,  REG_Fuse_NoReload = true,
+    })
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Print verbose message.
+--
+-- Use verbose() to print any non-error message just meant to help developing the Incubator.fuse itself.
+--
+-- @param[type=string] msg The message to output in DaFusions console window.
+--
+function verbose(msg)
+   print(msg)
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Local structure to manage vaialable source code.
+--
+-- This table is initialized by Conversions_resetData() with filenames, IDs, etc. of the sources found in the
+-- repositorie's *'Conversions/'* folder. It is used to proviede these sources i.e. in a ComboBox for
+-- selection.
+--
+-- @table Conversions
+-- @field Name Fusename of the conversion.
+-- @field Path Full path of the folder the conversion can be found in.
+-- @field Filename Full filename (indcluding the ID and '.c' suffix).
+-- @field ShadertoyID The ID of the Shadertoy the code originally came from.
+-- @field Label Name in human readable form identifying the converson to show in messages, the ComboBox, etc. .
+--
+Conversions={}
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Create a table to initializie in particular `Conversions` with.
+--
+-- @param[type=string] path Path to where the conversions reside.
+-- @return[type=table] conversion information; `{}` if no conversions found
+--
+function Conversions_resetData(path)
+
+  Conversions={}
+
+  local files={}
+
+  local handle	= bmd.readdir(path.."*.*.c")
+
+  for k, v in pairs(handle) do
+    -- print(k.." "..v.Name)
+
+    if v.Name and not(v.IsDir) then
+
+      files[k] = v.Name
+
+    end
+  end
+
+  table.sort(files) -- grrr, it's case sensitive :-(
+
+  
+  local entries={}
+
+  for k, filename in pairs(files) do
+    local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
+
+    entries[k]={
+      Name=fusename,
+      Path=path,
+      Filename=filename,
+      ShadertoyID=shadertoyid,
+      Label=fusename.." ("..shadertoyid..")",
+    }
+  end
+
+  Conversions=entries
+end
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+function CompatibilityCode_loadFile()
+
+  CompatibilityCode = ""
+
+  f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
+
+  if not f then
+    print("failed to read compatibility code")
+  else
+    CompatibilityCode = f:read("*all")
+    f:close()
+
+    if CompatibilityCode=="" then
+      print("no compatibility code?!?")
+    end
+
+  end
+
+end
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to initialize the tool.
+--
+function Create()
+
+  local REPOSITORYPATH=[]
+
+  PathToRepository=REPOSITORYPATH
+
+  verbose("Create: repository used is "..REPOSITORYPATH)
+
+
+  -- create defined to connect input contols to kernel
+
+  KernelInputCtrlDefines =""
+
+  for i=0,NUM_COLOR_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A) "..
+      "float4 NAME = to_float4( "..
+      "(_shaderParameters->useDefaultValues?DEFAULT_R:_shaderParameters->color["..i.."][0]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_G:_shaderParameters->color["..i.."][1]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_B:_shaderParameters->color["..i.."][2]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_A:_shaderParameters->color["..i.."][3])"..
+      ")\n"
+  end
+
+  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->tinySlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+  end
+
+  for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->smallSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+  end
+
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYINT"..i.."(NAME,SMIN,SMAX,SDEFAULT) "..
+    "const int NAME = ( "..
+    "_shaderParameters->useDefaultValues ? SDEFAULT : ("..
+    "_shaderParameters->tinyInt["..i.."] < SMIN ? SMIN : ("..
+    "_shaderParameters->tinyInt["..i.."] > SMAX ? SMAX : _shaderParameters->tinyInt["..i.."])))\n"
+
+  end
+
+  -- verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
+
+
+
+  -- create fallback kernel code
+
+  local channels=""
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    channels=channels.."__TEXTURE2D__ iChannel"..i..", "
+  end
+
+
+
+  -- get the list of conversions and read compatibility and params code
+
+
+
+  Conversions_resetData(REPOSITORYPATH..'Conversions/')
+
+  CompatibilityCode_loadFile()
+
+  ShaderParameters=[[
+
+  float iResolution[2];
+  float iTime;
+  float iMouse[4];
+  float iTimeDelta;
+  int   iFrame;
+  float iChannelTime[]]..NUM_INPUT_CHANNELS..[[];
+  float iChannelResolution[]]..NUM_INPUT_CHANNELS..[[][2];
+  float iDate[4];
+  float iSampleRate;
+  int width, height; // you should prefer to use iResolution instead
+  int compOrder;
+
+  float color[]]..NUM_COLOR_CONTROLS..[[][4];
+  float tinySlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
+  float smallSlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
+
+  int tinyInt[]]..NUM_TINYINT_CONTROLS..[[];
+
+  int useDefaultValues; // do not use - will not exists in the final fuse!
+
+  ]]
+
+
+
+
+  -- combo box with all the conversions + a reload button
+
+  local next_ctrl_group = 1   -- increment every time you used it for a new control group
+  local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
+
+  local attrs
+
+  attrs={}
+
+  for k,v in pairs(Conversions) do
+    verbose("Create: conversion '"..v.Label.."'")
+    table.insert(attrs,{ CCS_AddString = v.Label })
+  end
+
+  InFileToUseCombo = self:AddInput("Code", "conversion", {
+    IC_ControlPage = control_page ,
+    LINKID_DataType = "Number",
+    INPID_InputControl = "ComboControl",
+	  INP_DoNotifyChanged = true,
+    INP_Default = 0,
+    INP_Integer = true,
+    attrs
+    })
+
+
+  ShaderKernels_resetData()
+
+  attrs={}
+
+  for i,e in pairs(ShaderKernels.Entries) do
+    table.insert(attrs,{ CCS_AddString = e.ComboName })
+  end
+
+  ShaderKernels_ComboControl = self:AddInput("Kernel", "kernel", {
+    IC_ControlPage = control_page ,
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ComboControl",
+      INP_DoNotifyChanged = true,
+      INP_Default = 0,
+      INP_Integer = true,
+      attrs
+  })
+
+  ShaderKernels_LabelControl = self:AddInput(
+    ShaderKernels_getLabelText(),
+    "kernelInfo", {
+    IC_ControlPage = control_page ,
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    INP_External = false,
+    INP_Passive = true,
+    INP_DoNotifyChanged = false,
+    INP_Disabled=false,
+  })
+
+
+  InShadertoyButton=self:AddInput("Show on shadertoy.com", "openShaderInBrowser", {
+    IC_ControlPage = control_page ,
+    LINKID_DataType = "Text",
+    ICD_Width =0.5,
+    INPID_InputControl = "ButtonControl",
+    INP_DoNotifyChanged = false,
+    INP_External = false,
+    BTNCS_Execute = 'print("does nothing")',
+    INP_Disabled=true,
+  })
+
+  InReloadCodeButton= self:AddInput("Reload Code", "reloadConversion", {
+    IC_ControlPage = control_page ,
+    LINKID_DataType = "Text",
+    ICD_Width =0.5,
+    INPID_InputControl = "ButtonControl",
+    INP_DoNotifyChanged = true,
+    INP_External = false,
+  })
+
+
+--JiPi
+  InReloadParameterNames= self:AddInput("Reload Parameter Names", "ReloadParameterNames", {
+    IC_ControlPage      = control_page ,
+    LINKID_DataType     = "Text",
+    ICD_Width           = 1.0,
+    INPID_InputControl  = "ButtonControl",
+    INP_DoNotifyChanged = true,
+    INP_External        = false,
+  })
+
+  InFrequency = self:AddInput("Speedup", "speed", {
+    LINKID_DataType    = "Number",
+    INPID_InputControl = "SliderControl",
+    INP_Default        = 1.0,
+    INP_MinScale 	     = 0.0,
+    INP_MaxScale 	     = 5.0,
+    SLCS_LowName       = "stop",
+    SLCS_HighName      = "5x",
+  })
+
+
+  InUseDefaultValues = self:AddInput("don't use controls for input", "useDefaultValues", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default = 1,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    IC_Visible = true,
+  })
+
+
+
+  -- some general controls for data passed to the kernel
+
+  self:BeginControlNest("Common Shader Inputs", "shaderInputs", true, {})
+
+		InShaderInputs_iResolution = self:AddInput("iResolution", "iResolution", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			IC_NoLabel = false,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "-",
+			TEC_Lines = 1,
+			TEC_Wrap = false,
+			TEC_ReadOnly = true,
+			TEC_CharLimit = 0,
+			TEC_DeferSetInputs = false,
+
+			INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+		})
+
+		InShaderInputs_iTime = self:AddInput("iTime", "iTime", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			IC_NoLabel = false,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "-",
+			TEC_Lines = 1,
+			TEC_Wrap = false,
+			TEC_ReadOnly = true,
+			TEC_CharLimit = 0,
+			TEC_DeferSetInputs = false,
+
+			INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+		})
+
+		InShaderInputs_iMouse = self:AddInput("iMouse", "iMouse", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			IC_NoLabel = false,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "-",
+			TEC_Lines = 1,
+			TEC_Wrap = false,
+			TEC_ReadOnly = true,
+			TEC_CharLimit = 0,
+			TEC_DeferSetInputs = false,
+
+			INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+		})
+
+
+
+    InMouseXY = self:AddInput("iMouse.xy", "iMouseXY", {
+      LINKID_DataType = "Point",
+      INPID_InputControl = "OffsetControl",
+      INPID_PreviewControl = "CrosshairControl",
+    })
+
+    InMouseZW = self:AddInput("iMouse.zw", "iMouseZW", {
+      LINKID_DataType = "Point",
+      INPID_InputControl = "OffsetControl",
+      INPID_PreviewControl = "CrosshairControl",
+
+      INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+    })
+
+    InMouseDrag = self:AddInput("Mouse Button Pressed", "click", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "CheckboxControl",
+      INP_Default = 0,
+      INP_MinScale = 0,
+      INP_MaxScale = 1,
+      IC_Visible = true,
+    })
+
+
+
+  self:EndControlNest()
+
+
+  self:BeginControlNest("Color Controls", "Colors", false, {})
+  -- some color controls to play with colors in the kernel
+
+
+    InColor={}
+    --JiPi
+    InColorName={}
+
+    local rgba = {'Red','Green','Blue','Alpha'}
+
+    for i=0,NUM_COLOR_CONTROLS-1 do
+      InColor[i]={}
+      --JiPi
+      InColorName[i] = self:AddInput("color_"..i, "ColorName"..i , {LINKID_DataType    = "Text", INPID_InputControl = "LabelControl", INP_External = false, INP_Passive = true, IC_Visible = true, IC_NoLabel = true, })
+      
+      for j=0,3 do
+        InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = next_ctrl_group+i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
+      end
+    end
+
+    next_ctrl_group = next_ctrl_group + NUM_COLOR_CONTROLS + 1
+
+  self:EndControlNest()
+
+
+  -- some sliders controls to play with
+
+  self:BeginControlNest("Slider Controls", "Sliders", false, {})
+
+  InTinySlider={}
+
+  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    InTinySlider[i] = self:AddInput("Tiny Slider "..i, "tinyslider"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale 	     = -1.0,
+      INP_MaxScale 	     = 1.0,
+      INP_Default        = 0.0,
+    })
+  end
+
+  InSmallSlider={}
+
+  for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
+    InSmallSlider[i] = self:AddInput("Small Slider "..i, "smallslider"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale 	     = -10.0,
+      INP_MaxScale 	     = 10.0,
+      INP_Default        = 0.0,
+    })
+  end
+
+  self:EndControlNest()
+
+  -- some int sliders
+
+  self:BeginControlNest("Integer Slider", "SlidersInt", false, {})
+
+
+  InTinyInt={}
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    InTinyInt[i] = self:AddInput("Tiny Int Slider "..i, "tinyint"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale 	     = -10,
+      INP_MaxScale 	     = 10,
+      INP_Default        = 0,
+      INP_Integer = true,
+    })
+  end
+
+
+  self:EndControlNest()
+
+  -- controls for the tool itself, not passed to the kernel
+
+  InRebuildCheckBox = self:AddInput("InRebuildCheckBox", "InRebuildCheckBox", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default = 0,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    IC_Visible = false,
+  })
+  
+  
+--JiPi
+  InRebuildParameterNames = self:AddInput("RebuildParameterNames", "InRebuildParameterNames", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default     = 0,
+    INP_MinScale    = 0,
+    INP_MaxScale    = 1,
+    IC_Visible      = false,
+  })
+
+  -- InVerboseCheckBox = self:AddInput("VERBOSE", "VerboseCheckbox", {
+  --   LINKID_DataType = "Number",
+  --   INPID_InputControl = "CheckboxControl",
+  --   INP_Default = 1,
+  --   INP_MinScale = 0,
+  --   INP_MaxScale = 1,
+  --   IC_Visible = true,
+  -- })
+
+
+
+
+  -- node's inputs and its output
+  InChannel = {}
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    InChannel[i] = self:AddInput(   "iChannel"..i,  "iChannel"..i,  { LINKID_DataType = "Image", LINK_Main = i+1, INP_Required = false  })
+  end
+
+  -- InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+
+  OutImage   = self:AddOutput(  "Output",     "Output",     { LINKID_DataType = "Image", LINK_Main = 1                        })
+
+end
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Rename the kernel and its parameters.
+--
+function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
+
+
+  ConversionFusenameExtension=""
+  if Part ~= "Image" then
+    ConversionFusenameExtension="__"..Part:gsub('%s+','_')
+  end
+
+  local ConversionKernelname = ConversionFusename .. "Fuse"..ConversionFusenameExtension.."_" .. NodeName
+
+  local kernel_parameters=ConversionSourcecode:match("__KERNEL__%s+void%s+"..ConversionFusename.."Fuse"..ConversionFusenameExtension.."%s*%(([^%)]*)%)%s*%{")
+
+
+  if kernel_parameters==nil then
+    if Part=="Image" then
+      print("kernel for 'Image' not found!")
+      return "", nil
+    end
+    return ConversionSourcecode, nil
+  end
+
+
+
+  local has_param={
+    ['iResolution']           = { Type='float2',    Present=false, Code='float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
+    ['iTime']                 = { Type='float',     Present=false, Code='float iTime = _shaderParameters->iTime;' },
+    ['iMouse']                = { Type='float4',    Present=false, Code='float4 iMouse = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
+
+    ['iTimeDelta']            = { Type='float',     Present=false, Code='float iTimeDelta = _shaderParameters->iTimeDelta;' },
+    ['iFrame']                = { Type='int',       Present=false, Code='int iFrame = _shaderParameters->iFrame;' },
+    ['iChannelTime']          = { Type='float*',    Present=false, Code='ohoh!'  },
+    ['iChannelResolution']    = { Type='float2*',   Present=false, Code='whoops!'  },
+    ['iDate']                 = { Type='float4',    Present=false, Code='float4 iDate = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
+    ['iSampleRate']           = { Type='float',     Present=false, Code='float iSampleRate = _shaderParameters->iSampleRate;' },
+
+    -- Some special variables not known to shadertoys, but you may want to use
+    -- them in a Fuse, so we allow to add them to the kernel's parameters:
+
+    ['width']             = { Type='int', Present=false, Code='int width = _shaderParameters->width;' },
+    ['height']            = { Type='int', Present=false, Code='int height = _shaderParameters->height;' },
+    ['compOrder']         = { Type='int', Present=false, Code='int width = _shaderParameters->compOrder;' },
+    ['x']                 = { Type='int', Present=false, Code='int x = fusion_x;' },
+    ['y']                 = { Type='int', Present=false, Code='int y = fusion_y;' },
+
+  }
+
+  -- iChannelResolution[]
+  has_param['iChannelResolution']['Code']='float2 iChannelResolution['..NUM_INPUT_CHANNELS..'];\n'
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    has_param['iChannelResolution']['Code']=has_param['iChannelResolution']['Code']
+      .."iChannelResolution["..i.."] = to_float2(_shaderParameters->iChannelResolution["..i.."][0],_shaderParameters->iChannelResolution["..i.."][1]);\n"
+  end
+
+  -- iChannelTime[]
+  has_param['iChannelTime']['Code']='float iChannelTime['..NUM_INPUT_CHANNELS..'];\n'
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    has_param['iChannelTime']['Code']=has_param['iChannelTime']['Code']
+      .."iChannelTime["..i.."] = _shaderParameters->iChannelTime["..i.."];\n"
+  end
+
+  -- iChannel<0..N>
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    has_param['iChannel'..i]={ Type='sampler2D', Present=false }
+  end
+
+  local fragColor_name=nil -- float4
+  local fragCoord_name=nil -- float2
+
+
+  -- ja, okay, jetzt wird's echt bescheuert ...
+
+  local i=-1 -- iteration to allow fragColor and Coord only as the first two parameters
+
+  if kernel_parameters==nil then
+    print("no kernel found - unable to determine parameters")
+  else
+    -- kernel_parameters=kernel_parameters:gsub("^%s*(.-)%s*$", "%1") -- trim
+    -- verbose("kernel parameters='"..kernel_parameters.."'")
+
+    for p in kernel_parameters:gmatch('([^,]+)') do
+
+      i=i+1;
+
+      t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type name"
+      if t==nil then
+        t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s*%*%s*([A-Za-z_][A-Za-z_0-9]*)%s*$") -- match "type * name" (yes, type*name matches, so what)
+        if t~=nil then
+          t=t..'*'
+        else
+          t, n = p:match("^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$") -- match "type name [ ]"
+          if t~=nil then
+            t=t..'*'
+          end
+        end
+      end
+
+      if t==nil then
+        print("parameter='"..p.."' has bad format")
+      else
+        verbose("parameter"..i..": type='"..t.."', name='"..n.."'")
+        if has_param[n]==nil then
+          if i==0 and t=='float4' and fragColor_name==nil then
+            fragColor_name=n -- first and only the first parameter can be the color (yes, stupid idea to call that color iDate)
+          elseif i<2 and t=='float2' and fragCoord_name==nil then
+            fragCoord_name=n -- first or second parameter can be the coord
+          else
+            print("i don't know '"..t.." "..n.."'")
+          end
+        else
+          if t ~= has_param[n].Type then
+            print("bad type '"..t.."' for '"..n.."' ('"..(has_param[n].Type).."' expected)")
+          else
+            if has_param[n].Present then
+              print("multiple occurences of '"..t.." "..n.."'")
+            else
+              has_param[n].Present=true
+            end
+          end
+        end
+      end
+    end
+  end
+
+
+  kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    if has_param["iChannel"..i].Present then
+      kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", "
+    else
+      kernel_parameters = kernel_parameters .. " __TEXTURE2D__ iChannel"..i..", " -- ausprobieren, ob hier dummy geht!?!
+    end
+  end
+  kernel_parameters = kernel_parameters .. "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
+
+
+  local variable_declarations = ""
+
+  if fragColor_name ~= nil then
+    variable_declarations=variable_declarations.."float4 "..fragColor_name.."=to_float4_s(0.0f);\n"
+  end
+
+  if fragCoord_name ~= nil then
+    variable_declarations=variable_declarations.."float2 "..fragCoord_name.."=to_float2(fusion_x,fusion_y);\n"
+  end
+
+
+  for n,p in pairs(has_param) do
+    if p.Present and p.Code then
+      variable_declarations = variable_declarations .. p.Code .. "\n"
+    end
+  end
+
+
+  local count
+
+  ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+    "__KERNEL__%s+void%s+"..ConversionFusename.."Fuse"..ConversionFusenameExtension.."%s*%([^%)]*%)%s*%{",
+
+    KernelInputCtrlDefines.."\n\n"..
+    "__KERNEL__ void "..ConversionKernelname.."("..kernel_parameters..")\n{\n"..
+    [[
+        DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);
+        if (fusion_x >= _shaderParameters->width || fusion_y >= _shaderParameters->height)
+          return;
+    ]]
+    ..variable_declarations.."\n\n// --------\n\n"
+    )
+
+  -- Vorsicht: Der Test, ob der Kernelname gefunden wurde muss drinbleiben,
+  -- weil sonst die kleinste Aenderung im Kernelnamen Fusion auf dem Mac komplett
+  -- weghaut. Ist zwar nicht absolut wasserdicht, verhindert aber versehentlich
+  -- falsche Namen in 99% der Faelle
+
+  if count ~=1 then
+    print(ConversionFusename.." kernel found for "..Part.." "..count.."x ... there ".. (count<1 and "must be exactly" or "can be only") .. " one!")
+    ConversionSourcecode = ""
+    return ConversionSourcecode, nil
+  end
+
+  return ConversionSourcecode, ConversionKernelname
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Rename all kernels and their parameters.
+--
+function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
+
+  ShaderKernels_resetData()
+
+  local i=0
+  local kn
+
+  for i,e in pairs(ShaderKernels.Entries) do
+    if e.InputName ~= "" then
+      ConversionSourcecode,kn =  PatchKernel(ConversionSourcecode,ConversionFusename,e.InputName,NodeName)
+      if kn ~= nil then
+        e.KernelName=kn
+        ShaderKernels.Quantity=ShaderKernels.Quantity+1
+      end
+    end
+  end
+
+  ConversionSourcecode, count = string.gsub(ConversionSourcecode,
+      "(%s+)SetFragmentShaderComputedColor%s*%(%s*",
+      "%1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, "
+    )
+
+  return ConversionSourcecode
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to render the node.
+--
+function Process(req)
+
+  local rebuild = false
+
+  ShaderKernels.RenderErrors = false
+  ShaderKernels.Current      = ShaderKernels_ComboControl:GetValue(req).Value
+
+
+  if InRebuildCheckBox:GetValue(req).Value == 1 then
+    verbose("Process: do rebuild and clear the flag")
+    InRebuildCheckBox:SetSource(Number(0),0)
+    rebuild=true
+  end
+
+
+
+  if rebuild then
+    ConversionSourcecode  = ""
+    local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
+    ConversionFusename    = item.Name
+    ConversionShaderID    = item.ShadertoyID
+
+    InShadertoyButton:SetAttrs({
+      BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
+      INP_Disabled=  ConversionShaderID=="TEST" and true or false
+      })
+
+    verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
+
+    file = io.open(item.Path .. item.Filename,"r")
+
+    if file ~= nil then
+      ConversionSourcecode = "\n" .. file:read("*all")
+      file:close()
+    end
+
+
+
+    -- Für Incubator-Nodes (und nur für diese) müssen die Kernels über verschiedene
+    -- Instanzen hinweg unterschieden werden (per self.name). Die fertige Fuse braucht
+    -- das nachher aber nicht mehr - eine Fuse ist halt eine Fuse und die ändert ihren
+    -- Kernel nicht einfach so zwischendurch ... da wird dann nachher einfach nichts
+    -- mehr an den Namen drangehaengt.
+
+
+    ShaderKernels_resetData()
+    ShaderKernels.Current = ShaderKernels_ComboControl:GetValue(req).Value
+    CompatibilityCode_loadFile()
+
+    ConversionSourcecode = CompatibilityCode..InitializeKernels(ConversionSourcecode,ConversionFusename,self.Name)
+  end
+
+
+
+  -- -----------------------
+
+
+  --JiPi
+
+  --print("\n\n",ConversionSourcecode,"\n\n")
+
+  if InRebuildParameterNames:GetValue(req).Value == 1 then
+    verbose("Process: Parameter Names")
+    InRebuildParameterNames:SetSource(Number(0),0)
+        
+    --CONNECT_COLOR0(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A)
+    for i=0,NUM_COLOR_CONTROLS-1 do
+      
+      local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
+      --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--              
+      if (name ~= nil) then
+        InColorName[i]:SetAttrs({ IC_Visible = true })
+        InColor[i][0]:SetAttrs({ IC_Visible = true })
+      
+        InColorName[i]:SetAttrs({LINKS_Name = name})
+        InColor[i][0]:SetAttrs({INP_Default = tonumber(defRed)})
+        InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen)})
+        InColor[i][2]:SetAttrs({INP_Default = tonumber(defBlue)})
+        InColor[i][3]:SetAttrs({INP_Default = tonumber(defAlpha)})
+      else
+          InColorName[i]:SetAttrs({ IC_Visible = false })
+          InColor[i][0]:SetAttrs({ IC_Visible = false })
+      end
+    end    
+    
+    
+    --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+              
+      if (name ~= nil) then
+        InTinySlider[i]:SetAttrs({ IC_Visible = true })
+      
+        InTinySlider[i]:SetAttrs({LINKS_Name = name})
+        InTinySlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InTinySlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InTinySlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+      else
+        InTinySlider[i]:SetAttrs({ IC_Visible = false })
+      end
+    end 
+    
+    --CONNECT_SMALLSLIDER0(NAME,SMIN,SMAX,SDEFAULT) 
+    for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SMALLSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      --print("#SmallSlider#",name, smin, smax, sdef) --
+      
+      if (name ~= nil) then
+        InSmallSlider[i]:SetAttrs({ IC_Visible = true })
+      
+        InSmallSlider[i]:SetAttrs({LINKS_Name = name})
+        InSmallSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InSmallSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InSmallSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+      else
+        InSmallSlider[i]:SetAttrs({ IC_Visible = false })
+      end
+    end    
+
+    --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_TINYINT_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      --print("#TinyINTSlider#",name, smin, smax, sdef) --      
+      
+      if (name ~= nil) then
+        InTinyInt[i]:SetAttrs({ IC_Visible = true })
+      
+        InTinyInt[i]:SetAttrs({LINKS_Name = name})
+        InTinyInt[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InTinyInt[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InTinyInt[i]:SetAttrs({INP_Default = tonumber(sdef)})
+      else
+        InTinyInt[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+    
+  end
+
+
+  local imgattrs = {
+    IMG_Document = self.Comp,
+    { IMG_Channel = "Red", },
+    { IMG_Channel = "Green", },
+    { IMG_Channel = "Blue", },
+    { IMG_Channel = "Alpha", },
+    IMG_Width = Width,
+    IMG_Height = Height,
+    IMG_XScale = XAspect,
+    IMG_YScale = YAspect,
+    IMAT_OriginalWidth = realwidth, -- nil !?!
+    IMAT_OriginalHeight = realheight, -- nil !?!
+    IMG_Quality = not req:IsQuick(),
+    IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
+    IMG_DeferAlloc = true,
+    IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+  }
+
+
+
+
+
+
+  local dst=Image(imgattrs)
+  local p = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(p)
+
+
+  local ConversionKernelname = ShaderKernels.Entries[ShaderKernels.Current].KernelName
+
+  if ConversionKernelname==nil or ConversionKernelname=="" then
+    ShaderKernels.RenderErrors = true
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
+
+    if ConversionKernelname==nil then
+      verbose("<none> selected for kernel")
+      dst:Fill(Pixel({R=0,G=0,B=0,A=0}))
+    else
+      print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
+      dst:Fill(Pixel({R=0.5,G=0,B=0,A=0}))
+    end
+    OutImage:Set(req,dst)
+    return
+  end
+
+  if rebuild then
+    verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
+  end
+
+
+
+
+  if ConversionSourcecode == "" or ConversionKernelname == "" or ShaderParameters == nil then
+    print("whoops - something went terribly wrong?!?!!")
+    ShaderKernels.RenderErrors = true
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
+    OutImage:Set(req,nil)
+    return
+  end
+
+
+  if req:IsPreCalc() then
+    verbose("precalc")
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
+    return
+  end
+
+
+  local node = DVIPComputeNode(req,
+    ConversionKernelname,
+    ConversionSourcecode,
+    "ShaderParameters",
+    ShaderParameters
+    )
+
+  -- Extern Texture or create a new one
+
+  local iChannel={}
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    iChannel[i] = InChannel[i]:GetValue(req)
+
+    if (iChannel[i] == nil) then
+      iChannel[i] = Image(imgattrs)
+      local p = Pixel({R=0,G=0,B=0,A=0})
+      iChannel[i]:Fill(p)
+    end
+  end
+
+
+  -------------- Parameter für DCTL-Code ---------------------
+  local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
+
+  local params = {}
+
+  params = node:GetParamBlock(ShaderParameters)
+
+
+  local text  =  nil
+
+  -- iMouse
+
+  local mouse_xy  = InMouseXY:GetValue(req)
+  local mouse_zw  = InMouseZW:GetValue(req)
+
+  params.iMouse[0] = mouse_xy.X
+  params.iMouse[1] = mouse_xy.Y
+  params.iMouse[2] = mouse_zw.X
+  params.iMouse[3] = mouse_zw.Y
+
+  -- okay, tut's noch immer nicht - vermutlich muss ich da
+  -- mit einem weiteren versteckten feld arbeiten, um mir
+  -- die position beim click zu merken
+
+  if InMouseDrag:GetValue(req).Value ~= 0 then
+    -- hm, okay ... was mache ich mit einem Mausklick bei Position -1|-1 ?!?
+    if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
+      params.iMouse[2]=params.iMouse[0]
+      params.iMouse[3]=params.iMouse[1]
+    end
+  else
+    params.iMouse[2] = -1
+    params.iMouse[3] = -1
+  end
+
+  if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+    InMouseZW:SetAttrs({INP_Disabled=false})
+    InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
+    InMouseZW:SetAttrs({INP_Disabled=true})
+  end
+
+  params.iMouse[0] = params.iMouse[0] * Width
+  params.iMouse[1] = params.iMouse[1] * Height
+  if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
+  else
+    params.iMouse[2] = params.iMouse[2] * Width
+    params.iMouse[3] = params.iMouse[3] * Height
+  end
+
+  text = string.format("{%.1f, %.1f, %.1f, %.1f}", params.iMouse[0], params.iMouse[1],params.iMouse[2],params.iMouse[3])
+
+  if InShaderInputs_iMouse:GetValue(req).Value ~= text then
+    InShaderInputs_iMouse:SetAttrs({INP_Disabled=false})
+    InShaderInputs_iMouse:SetSource(Text( text ),0,0)
+    InShaderInputs_iMouse:SetAttrs({INP_Disabled=true})
+  end
+
+
+  -- iTime
+
+  local frequency = InFrequency:GetValue(req).Value
+
+  params.iTime            = (req.Time / framerate) * frequency;
+
+  text = string.format("(%.0f/%.2ffps)*%.3f= %.4f", req.Time,framerate,frequency,params.iTime)
+
+  if InShaderInputs_iTime:GetValue(req).Value ~= text then
+    InShaderInputs_iTime:SetAttrs({INP_Disabled=false})
+    InShaderInputs_iTime:SetSource(Text( text ),0,0)
+    InShaderInputs_iTime:SetAttrs({INP_Disabled=true})
+  end
+
+
+  params.useDefaultValues = InUseDefaultValues:GetValue(req).Value
+
+  -- Colors
+
+  for i=0,NUM_COLOR_CONTROLS-1 do
+    for j=0,3 do
+      params.color[i][j] = InColor[i][j]:GetValue(req).Value
+    end
+  end
+
+  -- Sliders
+
+  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    params.tinySlider[i] = InTinySlider[i]:GetValue(req).Value
+  end
+
+  for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
+    params.smallSlider[i] = InSmallSlider[i]:GetValue(req).Value
+  end
+
+
+  for i=0,NUM_TINYINT_CONTROLS-1 do
+    params.tinyInt[i] = InTinyInt[i]:GetValue(req).Value
+  end
+
+
+  -- Resolution
+
+  params.width  = dst.Width
+  params.height = dst.Height
+
+  params.iResolution[0] = dst.Width
+  params.iResolution[1] = dst.Height
+
+  text = string.format("{%.0f, %.0f}", params.iResolution[0], params.iResolution[1] )
+
+  if InShaderInputs_iResolution:GetValue(req).Value ~= text then
+    InShaderInputs_iResolution:SetAttrs({INP_Disabled=false})
+    InShaderInputs_iResolution:SetSource(Text( text ),0,0)
+    InShaderInputs_iResolution:SetAttrs({INP_Disabled=true})
+  end
+
+
+
+
+  params.compOrder        = iChannel[0]:IsMask() and 1 or 15
+
+
+
+
+  -- -----
+  -- TODO: The following parameters are
+  -- not yet (correctly) initialized:
+  -- -----
+
+  params.iTimeDelta=0
+  params.iFrame=0
+
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    params.iChannelTime[i] = 0
+    params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()    -- or maybe: iChannel[0].Width
+    params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()   -- or maybe: iChannel[0].Height
+  end
+
+
+  params.iDate[0] = 0
+  params.iDate[1] = 0
+  params.iDate[2] = 0
+  params.iDate[3] = 0
+
+  params.iSampleRate = 0
+
+
+  node:SetParamBlock(params)
+
+  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+  --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+  for i=0,NUM_INPUT_CHANNELS-1 do
+    node:AddInput("iChannel"..i,iChannel[i])
+  end
+	node:AddOutput("dst", dst)
+
+  if rebuild then
+    node:ForceRebuild()
+  end
+
+
+
+
+
+
+  local ok = node:RunSession(req)
+
+	if (not ok) then
+    ShaderKernels.RenderErrors = true
+		dst = nil
+    dump(node:GetErrorLog())
+	end
+
+  ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
+
+
+
+  -- Output our result
+  OutImage:Set(req,dst)
+  collectgarbage();
+
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to handle UI control events.
+--
+function NotifyChanged(inp, param, time)
+	if inp ~= nil and param ~= nil then
+
+		if (inp == InReloadCodeButton) then
+			if (param.Value == 1) then
+        verbose("NotifyChanged: reload button pressend")
+        InRebuildCheckBox:SetSource(Number(1),0)
+        return
+      end
+    end
+
+		if (inp == InFileToUseCombo) then
+      verbose("NotifyChanged: file to use changed - set flag for a rebuild")
+      InRebuildCheckBox:SetSource(Number(1),0)
+      return
+    end
+
+    --JiPi
+		if (inp == InReloadParameterNames) then
+			if (param.Value == 1) then
+        verbose("NotifyChanged: reload Parameter Names")
+        InRebuildParameterNames:SetSource(Number(1),0)
+        return
+      end
+    end
+
+
+	end
+end
