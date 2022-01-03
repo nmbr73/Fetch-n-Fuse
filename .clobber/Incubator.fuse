@@ -5,7 +5,7 @@
 --
 
 -- Reload Parameter from ConversionSourcecode and Change Name, Min-,Max-,Defaultvalues - unused Parameter will be unvisible
-
+-- 5 Checkboxen und 3 Pointparameter hinzugefügt
 
 PathToRepository = ""
 
@@ -85,8 +85,9 @@ NUM_INPUT_CHANNELS        = 5
 NUM_COLOR_CONTROLS        = 5
 NUM_TINYSLIDER_CONTROLS   = 4
 NUM_SMALLSLIDER_CONTROLS  = 4
-
-NUM_TINYINT_CONTROLS   = 4
+NUM_TINYINT_CONTROLS      = 4
+NUM_CHECKBOX_CONTROLS     = 5
+NUM_POINT_CONTROLS        = 3
 
 
 
@@ -216,7 +217,7 @@ end
 --
 function Create()
 
-  local REPOSITORYPATH=[]
+  local REPOSITORYPATH=[[D:\Zumsel\Dokumente\Github\Fetch-n-Fuse\]]
 
   PathToRepository=REPOSITORYPATH
 
@@ -255,9 +256,22 @@ function Create()
 
   end
 
+
+--NUM_CHECKBOX_CONTROLS
+  for i=0,NUM_CHECKBOX_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_CHECKBOX"..i.."(NAME,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->checkbox["..i.."]) \n"
+  end
+
+
+--NUM_POINT_CONTROLS
+  for i=0,NUM_POINT_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = ( _shaderParameters->useDefaultValues ? to_float2((SDEFAULTX),(SDEFAULTY)) : to_float2_v(_shaderParameters->point["..i.."])) \n"
+  end
+
+
+
+
   -- verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
-
-
 
   -- create fallback kernel code
 
@@ -295,7 +309,9 @@ function Create()
   float smallSlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
 
   int tinyInt[]]..NUM_TINYINT_CONTROLS..[[];
-
+  bool checkbox[]]..NUM_CHECKBOX_CONTROLS..[[];  
+  float point[]]..NUM_POINT_CONTROLS..[[][2];  
+  
   int useDefaultValues; // do not use - will not exists in the final fuse!
 
   ]]
@@ -575,8 +591,39 @@ function Create()
     })
   end
 
+  self:EndControlNest()
+
+  self:BeginControlNest("Checkboxes", "Checkbox", false, {})
+
+  InCheckbox={}
+
+  for i=0,NUM_CHECKBOX_CONTROLS-1 do
+  InCheckbox[i] = self:AddInput("Checkbox "..i, "Checkbox"..i, {
+    LINKID_DataType    = "Number",
+    INPID_InputControl = "CheckboxControl",
+	  INP_Integer        = true,
+    INP_Default        = 0,
+    })
+  end
 
   self:EndControlNest()
+
+ self:BeginControlNest("Point Controls", "PointControls", false, {})
+
+  InPoint={}
+
+  for i=0,NUM_POINT_CONTROLS-1 do
+  InPoint[i] = self:AddInput("Point "..i,"Point"..i, {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+	  INPID_PreviewControl = "CrosshairControl",
+    INP_DefaultX = 0.5,
+    INP_DefaultY = 0.5,
+    })
+  end
+
+  self:EndControlNest()
+
 
   -- controls for the tool itself, not passed to the kernel
 
@@ -844,6 +891,128 @@ function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
   return ConversionSourcecode
 end
 
+---------------------------------------------RebuildParameters--------------------------------------------
+function RebuildParameters()
+
+    --CONNECT_COLOR0(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A)
+    for i=0,NUM_COLOR_CONTROLS-1 do
+      
+      local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
+      --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--              
+      if (name ~= nil) then
+        InColorName[i]:SetAttrs({ IC_Visible = true })
+        InColor[i][0]:SetAttrs({ IC_Visible = true })
+      
+        InColorName[i]:SetAttrs({LINKS_Name = name})
+        InColor[i][0]:SetAttrs({INP_Default = tonumber(defRed)})
+        InColor[i][0]:SetSource(Number(tonumber(defRed)),0,0) 
+        InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen)})
+        InColor[i][1]:SetSource(Number(tonumber(defGreen)),0,0) 
+        InColor[i][2]:SetAttrs({INP_Default = tonumber(defBlue)})
+        InColor[i][2]:SetSource(Number(tonumber(defBlue)),0,0) 
+        InColor[i][3]:SetAttrs({INP_Default = tonumber(defAlpha)})
+        InColor[i][3]:SetSource(Number(tonumber(defAlpha)),0,0) 
+      else
+          InColorName[i]:SetAttrs({ IC_Visible = false })
+          InColor[i][0]:SetAttrs({ IC_Visible = false })
+      end
+    end    
+    
+    
+    --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+              
+      if (name ~= nil) then
+        InTinySlider[i]:SetAttrs({ IC_Visible = true })
+      
+        InTinySlider[i]:SetAttrs({LINKS_Name = name})
+        InTinySlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InTinySlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InTinySlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InTinySlider[i]:SetSource(Number(tonumber(sdef)),0,0) 
+      else
+        InTinySlider[i]:SetAttrs({ IC_Visible = false })
+      end
+    end 
+    
+    --CONNECT_SMALLSLIDER0(NAME,SMIN,SMAX,SDEFAULT) 
+    for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SMALLSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      --print("#SmallSlider#",name, smin, smax, sdef) --
+      
+      if (name ~= nil) then
+        InSmallSlider[i]:SetAttrs({ IC_Visible = true })
+      
+        InSmallSlider[i]:SetAttrs({LINKS_Name = name})
+        InSmallSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InSmallSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InSmallSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InSmallSlider[i]:SetSource(Number(tonumber(sdef)),0,0) 
+      else
+        InSmallSlider[i]:SetAttrs({ IC_Visible = false })
+      end
+    end    
+
+    --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_TINYINT_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      --print("#TinyINTSlider#",name, smin, smax, sdef) --      
+      
+      if (name ~= nil) then
+        InTinyInt[i]:SetAttrs({ IC_Visible = true })
+      
+        InTinyInt[i]:SetAttrs({LINKS_Name = name})
+        InTinyInt[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InTinyInt[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InTinyInt[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InTinyInt[i]:SetSource(Number(tonumber(sdef)),0,0)
+      else
+        InTinyInt[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
+    --CONNECT_CHECKBOX0(NAME,SDEFAULT)
+    for i=0,NUM_CHECKBOX_CONTROLS-1 do
+      
+      local name, sdef = ConversionSourcecode:match("%s+ CONNECT_CHECKBOX"..i.."%(([%a*_*%d*]*)%s*,%s*(%d*)%s*.*$") -- ev. [0|1] da bool ???
+      --print("#CHECKBOX#", name, sdef) --      
+      
+      if (name ~= nil) then
+        InCheckbox[i]:SetAttrs({ IC_Visible = true })
+      
+        InCheckbox[i]:SetAttrs({LINKS_Name = name})
+        InCheckbox[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InCheckbox[i]:SetSource(Number(tonumber(sdef)),0,0)
+      else
+        InCheckbox[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
+    --CONNECT_POINT0(NAME,SDEFAULT)
+    for i=0,NUM_POINT_CONTROLS-1 do
+  
+      local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      print("#POINT#", name, sdefx, sdefy) --      
+      
+      if (name ~= nil) then
+        InPoint[i]:SetAttrs({ IC_Visible = true })
+      
+        InPoint[i]:SetAttrs({LINKS_Name = name})
+        InPoint[i]:SetAttrs({INP_DefaultX = tonumber(sdefx)})
+        InPoint[i]:SetAttrs({INP_DefaultY = tonumber(sdefy)})
+        InPoint[i]:SetSource(Number(tonumber(sdef)),0,0)
+      else
+        InPoint[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
+
+end
+
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -894,6 +1063,10 @@ function Process(req)
     -- mehr an den Namen drangehaengt.
 
 
+
+    RebuildParameters() --Parameternamen, Min/Max und Defaultwerte aus ConversionCode auslesen und entsprechend Inputs anpassen
+
+
     ShaderKernels_resetData()
     ShaderKernels.Current = ShaderKernels_ComboControl:GetValue(req).Value
     CompatibilityCode_loadFile()
@@ -902,92 +1075,17 @@ function Process(req)
   end
 
 
-
   -- -----------------------
 
 
-  --JiPi
-
-  --print("\n\n",ConversionSourcecode,"\n\n")
-
+  --JiPi TestButton für Rebuildparameter
   if InRebuildParameterNames:GetValue(req).Value == 1 then
     verbose("Process: Parameter Names")
     InRebuildParameterNames:SetSource(Number(0),0)
-        
-    --CONNECT_COLOR0(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A)
-    for i=0,NUM_COLOR_CONTROLS-1 do
-      
-      local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
-      --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--              
-      if (name ~= nil) then
-        InColorName[i]:SetAttrs({ IC_Visible = true })
-        InColor[i][0]:SetAttrs({ IC_Visible = true })
-      
-        InColorName[i]:SetAttrs({LINKS_Name = name})
-        InColor[i][0]:SetAttrs({INP_Default = tonumber(defRed)})
-        InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen)})
-        InColor[i][2]:SetAttrs({INP_Default = tonumber(defBlue)})
-        InColor[i][3]:SetAttrs({INP_Default = tonumber(defAlpha)})
-      else
-          InColorName[i]:SetAttrs({ IC_Visible = false })
-          InColor[i][0]:SetAttrs({ IC_Visible = false })
-      end
-    end    
-    
-    
-    --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
-    for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-      
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
-              
-      if (name ~= nil) then
-        InTinySlider[i]:SetAttrs({ IC_Visible = true })
-      
-        InTinySlider[i]:SetAttrs({LINKS_Name = name})
-        InTinySlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InTinySlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InTinySlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
-      else
-        InTinySlider[i]:SetAttrs({ IC_Visible = false })
-      end
-    end 
-    
-    --CONNECT_SMALLSLIDER0(NAME,SMIN,SMAX,SDEFAULT) 
-    for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-      
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SMALLSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
-      --print("#SmallSlider#",name, smin, smax, sdef) --
-      
-      if (name ~= nil) then
-        InSmallSlider[i]:SetAttrs({ IC_Visible = true })
-      
-        InSmallSlider[i]:SetAttrs({LINKS_Name = name})
-        InSmallSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InSmallSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InSmallSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
-      else
-        InSmallSlider[i]:SetAttrs({ IC_Visible = false })
-      end
-    end    
 
-    --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
-    for i=0,NUM_TINYINT_CONTROLS-1 do
-      
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
-      --print("#TinyINTSlider#",name, smin, smax, sdef) --      
-      
-      if (name ~= nil) then
-        InTinyInt[i]:SetAttrs({ IC_Visible = true })
-      
-        InTinyInt[i]:SetAttrs({LINKS_Name = name})
-        InTinyInt[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InTinyInt[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InTinyInt[i]:SetAttrs({INP_Default = tonumber(sdef)})
-      else
-        InTinyInt[i]:SetAttrs({ IC_Visible = false })
-      end
-    end
-    
+    RebuildParameters()
+
+    print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
   end
 
 
@@ -1040,7 +1138,6 @@ function Process(req)
   if rebuild then
     verbose("Process: '"..ConversionKernelname.."' is now active for "..self.Name)
   end
-
 
 
 
@@ -1179,9 +1276,18 @@ function Process(req)
     params.smallSlider[i] = InSmallSlider[i]:GetValue(req).Value
   end
 
-
   for i=0,NUM_TINYINT_CONTROLS-1 do
     params.tinyInt[i] = InTinyInt[i]:GetValue(req).Value
+  end
+
+  -- Checkboxes
+  for i=0,NUM_CHECKBOX_CONTROLS-1 do
+    params.checkbox[i] = InCheckbox[i]:GetValue(req).Value
+  end
+
+  -- PointControls
+  for i=0,NUM_POINT_CONTROLS-1 do
+    params.point[i] = {InPoint[i]:GetValue(req).X,InPoint[i]:GetValue(req).Y}
   end
 
 
