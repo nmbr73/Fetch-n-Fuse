@@ -4,6 +4,7 @@
 -- JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
 --
 
+-- Reload Parameter from ConversionSourcecode and Change Name, Min-,Max-,Defaultvalues - unused Parameter will be unvisible
 
 
 PathToRepository = ""
@@ -120,7 +121,7 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 -- @param[type=string] msg The message to output in DaFusions console window.
 --
 function verbose(msg)
-  -- print(msg)
+   print(msg)
 end
 
 
@@ -169,6 +170,7 @@ function Conversions_resetData(path)
 
   table.sort(files) -- grrr, it's case sensitive :-(
 
+  
   local entries={}
 
   for k, filename in pairs(files) do
@@ -214,7 +216,7 @@ end
 --
 function Create()
 
-  local REPOSITORYPATH=[[]]
+  local REPOSITORYPATH=[]
 
   PathToRepository=REPOSITORYPATH
 
@@ -378,6 +380,16 @@ function Create()
   })
 
 
+--JiPi
+  InReloadParameterNames= self:AddInput("Reload Parameter Names", "ReloadParameterNames", {
+    IC_ControlPage      = control_page ,
+    LINKID_DataType     = "Text",
+    ICD_Width           = 1.0,
+    INPID_InputControl  = "ButtonControl",
+    INP_DoNotifyChanged = true,
+    INP_External        = false,
+  })
+
   InFrequency = self:AddInput("Speedup", "speed", {
     LINKID_DataType    = "Number",
     INPID_InputControl = "SliderControl",
@@ -490,17 +502,21 @@ function Create()
   self:EndControlNest()
 
 
-
+  self:BeginControlNest("Color Controls", "Colors", false, {})
   -- some color controls to play with colors in the kernel
 
-  self:BeginControlNest("Color Controls", "Colors", false, {})
 
     InColor={}
+    --JiPi
+    InColorName={}
 
     local rgba = {'Red','Green','Blue','Alpha'}
 
     for i=0,NUM_COLOR_CONTROLS-1 do
       InColor[i]={}
+      --JiPi
+      InColorName[i] = self:AddInput("color_"..i, "ColorName"..i , {LINKID_DataType    = "Text", INPID_InputControl = "LabelControl", INP_External = false, INP_Passive = true, IC_Visible = true, IC_NoLabel = true, })
+      
       for j=0,3 do
         InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = next_ctrl_group+i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
       end
@@ -572,6 +588,17 @@ function Create()
     INP_MaxScale = 1,
     IC_Visible = false,
   })
+  
+  
+--JiPi
+  InRebuildParameterNames = self:AddInput("RebuildParameterNames", "InRebuildParameterNames", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_Default     = 0,
+    INP_MinScale    = 0,
+    INP_MaxScale    = 1,
+    IC_Visible      = false,
+  })
 
   -- InVerboseCheckBox = self:AddInput("VERBOSE", "VerboseCheckbox", {
   --   LINKID_DataType = "Number",
@@ -588,7 +615,7 @@ function Create()
   -- node's inputs and its output
   InChannel = {}
   for i=0,NUM_INPUT_CHANNELS-1 do
-    InChannel[i] = self:AddInput(   "iChannel"..i,  "iChannel"..i,  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+    InChannel[i] = self:AddInput(   "iChannel"..i,  "iChannel"..i,  { LINKID_DataType = "Image", LINK_Main = i+1, INP_Required = false  })
   end
 
   -- InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
@@ -879,8 +906,89 @@ function Process(req)
   -- -----------------------
 
 
+  --JiPi
 
+  --print("\n\n",ConversionSourcecode,"\n\n")
 
+  if InRebuildParameterNames:GetValue(req).Value == 1 then
+    verbose("Process: Parameter Names")
+    InRebuildParameterNames:SetSource(Number(0),0)
+        
+    --CONNECT_COLOR0(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A)
+    for i=0,NUM_COLOR_CONTROLS-1 do
+      
+      local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
+      --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--              
+      if (name ~= nil) then
+        InColorName[i]:SetAttrs({ IC_Visible = true })
+        InColor[i][0]:SetAttrs({ IC_Visible = true })
+      
+        InColorName[i]:SetAttrs({LINKS_Name = name})
+        InColor[i][0]:SetAttrs({INP_Default = tonumber(defRed)})
+        InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen)})
+        InColor[i][2]:SetAttrs({INP_Default = tonumber(defBlue)})
+        InColor[i][3]:SetAttrs({INP_Default = tonumber(defAlpha)})
+      else
+          InColorName[i]:SetAttrs({ IC_Visible = false })
+          InColor[i][0]:SetAttrs({ IC_Visible = false })
+      end
+    end    
+    
+    
+    --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+              
+      if (name ~= nil) then
+        InTinySlider[i]:SetAttrs({ IC_Visible = true })
+      
+        InTinySlider[i]:SetAttrs({LINKS_Name = name})
+        InTinySlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InTinySlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InTinySlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+      else
+        InTinySlider[i]:SetAttrs({ IC_Visible = false })
+      end
+    end 
+    
+    --CONNECT_SMALLSLIDER0(NAME,SMIN,SMAX,SDEFAULT) 
+    for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SMALLSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      --print("#SmallSlider#",name, smin, smax, sdef) --
+      
+      if (name ~= nil) then
+        InSmallSlider[i]:SetAttrs({ IC_Visible = true })
+      
+        InSmallSlider[i]:SetAttrs({LINKS_Name = name})
+        InSmallSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InSmallSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InSmallSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+      else
+        InSmallSlider[i]:SetAttrs({ IC_Visible = false })
+      end
+    end    
+
+    --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_TINYINT_CONTROLS-1 do
+      
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      --print("#TinyINTSlider#",name, smin, smax, sdef) --      
+      
+      if (name ~= nil) then
+        InTinyInt[i]:SetAttrs({ IC_Visible = true })
+      
+        InTinyInt[i]:SetAttrs({LINKS_Name = name})
+        InTinyInt[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InTinyInt[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InTinyInt[i]:SetAttrs({INP_Default = tonumber(sdef)})
+      else
+        InTinyInt[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+    
+  end
 
 
   local imgattrs = {
@@ -1099,15 +1207,8 @@ function Process(req)
   params.compOrder        = iChannel[0]:IsMask() and 1 or 15
 
 
-
-
-  -- -----
-  -- TODO: The following parameters are
-  -- not yet (correctly) initialized:
-  -- -----
-
-  params.iTimeDelta=0
-  params.iFrame=0
+  params.iTimeDelta = 1/framerate
+  params.iFrame = req.Time
 
   for i=0,NUM_INPUT_CHANNELS-1 do
     params.iChannelTime[i] = 0
@@ -1126,7 +1227,8 @@ function Process(req)
 
   node:SetParamBlock(params)
 
-  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+  --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   for i=0,NUM_INPUT_CHANNELS-1 do
     node:AddInput("iChannel"..i,iChannel[i])
   end
@@ -1179,6 +1281,15 @@ function NotifyChanged(inp, param, time)
       verbose("NotifyChanged: file to use changed - set flag for a rebuild")
       InRebuildCheckBox:SetSource(Number(1),0)
       return
+    end
+
+    --JiPi
+		if (inp == InReloadParameterNames) then
+			if (param.Value == 1) then
+        verbose("NotifyChanged: reload Parameter Names")
+        InRebuildParameterNames:SetSource(Number(1),0)
+        return
+      end
     end
 
 
