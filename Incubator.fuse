@@ -1207,15 +1207,8 @@ function Process(req)
   params.compOrder        = iChannel[0]:IsMask() and 1 or 15
 
 
-
-
-  -- -----
-  -- TODO: The following parameters are
-  -- not yet (correctly) initialized:
-  -- -----
-
-  params.iTimeDelta=0
-  params.iFrame=0
+  params.iTimeDelta = 1/framerate
+  params.iFrame = req.Time
 
   for i=0,NUM_INPUT_CHANNELS-1 do
     params.iChannelTime[i] = 0
