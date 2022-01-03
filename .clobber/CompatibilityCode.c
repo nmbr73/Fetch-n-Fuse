@@ -120,7 +120,7 @@
   }
 
   __DEVICE__ inline mat3 to_mat3_f( float a ) { return mat3(a,a,a,a,a,a,a,a,a); }
-  __DEVICE__ inline mat3 to_mat3_f3( float3 a, float3 a, float3 a ) { return mat3(a,b,c); }
+  __DEVICE__ inline mat3 to_mat3_f3( float3 a, float3 b, float3 c ) { return mat3(a,b,c); }
   __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }
   __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) { return (A*B); }
   __DEVICE__ inline mat3 mul_mat3_mat3( mat3 A, mat3 B) { return (A*B); }
@@ -144,15 +144,15 @@
     t.r0.x = t.r0.y = t.r0.z = t.r1.x = t.r1.y = t.r1.z = t.r2.x = t.r2.y = t.r2.z = a;
     return t;
   }
-  
-  __DEVICE__ inline mat3 to_mat3_f3( float3 A, float3 B, float3 C)  
-  {  
-	mat3 D;  
-	D.r0 = A;  
-	D.r1 = B;  
-	D.r2 = C;  
-	return D;  
-  } 
+
+  __DEVICE__ inline mat3 to_mat3_f3( float3 A, float3 B, float3 C)
+  {
+	mat3 D;
+	D.r0 = A;
+	D.r1 = B;
+	D.r2 = C;
+	return D;
+  }
 
 __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {
 	float3 C;
@@ -272,7 +272,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
 
   /*| refract_f2    |*/#define refract_f2(I,N,eta) refract(I,N,eta)
   /*| refract_f3    |*/#define refract_f3(I,N,eta) refract(I,N,eta)
-  
+
 
 #else
 
@@ -346,7 +346,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
     /*| lessThan_f3   |*/#define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
     /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
 
-     
+
     /*|               |*/ //-------refract--------
     /*| refract_f2    |*/__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
     /*| refract_f2    |*/    float dotNI = dot(N, I);
@@ -376,7 +376,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
     #if defined(DEVICE_IS_CUDA)
        #define radians(a) a * M_PI/180.0f
     #endif
-   
+
     #define fract(a) ((a)-_floor(a))
 
     /*| fract_f       |*/#define fract_f(A)  fract(A)
@@ -443,7 +443,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
     /*| lessThan_f3   |*/#define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
     /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
 
-     
+
     /*|               |*/ //-------refract--------
     /*| refract_f2    |*/__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
     /*| refract_f2    |*/    float dotNI = dot(N, I);
@@ -469,7 +469,7 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
 
 
 //#define floor_f2(V) to_float2(_floor((V).x),_floor((V).y)) // not needed?!?
-#define to_int2_f2(V) to_int2_cfloat(V)   // float2 zu int2 
+#define to_int2_f2(V) to_int2_cfloat(V)   // float2 zu int2
 #define to_int2_ui2(V) to_int2_cuint(V)   // uint2 zu int2
 #define to_int2_2f(A,B) to_int2((int)(A),(int)(B))
 //#define to_int2_s(V) to_int2((V),(V))   // existiert schon
@@ -487,4 +487,4 @@ __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
 #define to_float4_i4(V) to_float4_cint(V)   // int2 zu float2
 #define to_float4_ui4(V) to_float4_cuint(V) // uint2 zu float2
 
-#define to_float4_f2f2(A,B) to_float4((A).x,(A).y,(B).x,(B).y ) // or is there some to_float_..() for that?!? - No - that is missing in DCTL :-) but now we have "one" 
+#define to_float4_f2f2(A,B) to_float4((A).x,(A).y,(B).x,(B).y ) // or is there some to_float_..() for that?!? - No - that is missing in DCTL :-) but now we have "one"
