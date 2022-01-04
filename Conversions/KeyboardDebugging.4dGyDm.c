@@ -8,7 +8,7 @@
 
 // just debugging keyboard texture and scan codes!
 
-__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
+//__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
 
 
 __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1)
@@ -35,7 +35,7 @@ __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2
 
         float2 cell = _floor(p/CELL_DIMS);
 
-        int keycode = int(cell.x) + int((15.0f-cell.y)*16.0f);
+        int keycode = (int)(cell.x) + (int)((15.0f-cell.y)*16.0f);
 
         bool hit = false;
 
@@ -83,7 +83,8 @@ __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2
                   float3 grad_dist = (swi3(_tex2DVecN(iChannel0, uv.x,uv.y, 15),y,z,w) - FONT_TEX_BIAS) * font_size;
 
                   grad_dist.y = -grad_dist.y;
-                  swi2(grad_dist,x,y) = normalize(swi2(grad_dist,x,y) + 1e-5);
+                  float2 grad_distxy = normalize(swi2(grad_dist,x,y) + 1e-5f);
+                  grad_dist.x=grad_distxy.x;grad_dist.y=grad_distxy.y;  
 
                   dtext = _fminf(dtext, _fmaxf(max(dbox.x, dbox.y), grad_dist.z));
                 }

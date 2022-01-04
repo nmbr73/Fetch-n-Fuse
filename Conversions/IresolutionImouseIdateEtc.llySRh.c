@@ -1,5 +1,5 @@
 
-#define to_int2_f2(A) to_int2(int((A).x),int((A).y))
+//#define to_int2_f2(A) to_int2(int((A).x),int((A).y))
 #define texelFetch(SAMPLER,INT2P,INT) _tex2DVecN( (SAMPLER), (INT2P).x, (INT2P).y, (INT))
 
 // #define sampler2D ... okay, an der Stelle, wo man jetzt iChannel durchschleifen muss habe ich fuer heute aufgegeben.

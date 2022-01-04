@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  id: BiologicalParticles
+  name: BiologicalParticles
+shader:
+  author: wyatt
+  description: 'From free particles emerged all things. '
+  id: 3tBGzh
+  name: Biological Particles
+  tags:
+  - fluid
+  - particles
+  - dynamics
+  - naturalselection
+  url: https://www.shadertoy.com/view/3tBGzh

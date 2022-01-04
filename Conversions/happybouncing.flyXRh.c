@@ -1,5 +1,5 @@
 
-__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
+//__DEVICE__ float3 cos_f3(float3 i) {float3 r; r.x = _cosf(i.x); r.y = _cosf(i.y); r.z = _cosf(i.z); return r;}
 
 
 
@@ -22,6 +22,7 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 __DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return to_mat2(c,-s,s,c); }
 __DEVICE__ float circle (float2 p, float size)
 {
+  float zzzzzzzzzzzzzzzzzzzzzzzzz;
     return length(p)-size;
 }
 
@@ -73,7 +74,7 @@ __DEVICE__ float jump (float t, int modus)
 {
     t = _fminf(1.0f, t*4.0f);
     t = _fabs(_sinf(t*3.1415f));
-    return _powf(sin(t*3.14/2.), (modus==2?0.5f:1.9f));
+    return _powf(sin(t*3.14f/2.0f), (modus==2?0.5f:1.9f));
 }
 
 __DEVICE__ float walk (float t)
@@ -206,7 +207,7 @@ __KERNEL__ void happybouncingFuse(
     if (modus == 1) buddies = 3.0f;
     if (modus == 2) buddies = 6.0f;
 
-    for (float i = 0.0f; i < buddies; ++i)
+    for (float i = 0.0f; i < buddies; i+=1.0f)
     {
         // usefull to dissociate instances
         float ii = i/(buddies-(modus==2?0.0f:1.0f));

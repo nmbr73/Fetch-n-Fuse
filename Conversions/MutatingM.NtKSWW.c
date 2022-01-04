@@ -3,11 +3,6 @@
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
 
-__DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
-#define lpowf _powf
-__DEVICE__ float3 pow_f3(float3 a, float3 b) {float3 r; r.x = lpowf(a.x,b.x); r.y = lpowf(a.y,b.y); r.z = lpowf(a.z,b.z); return r;}
-
-
 __DEVICE__ float de(float3 p, inout float4 *o, float iTime) {
   float4 q = to_float4_aw(p, 1);
   float4 c = q;
@@ -54,7 +49,7 @@ __DEVICE__ float3 render(float3 ro, float3 rd, inout float3 *pos, inout float3 *
       float d = de(*pos + nor*s, &tmp, iTime);
       occ += (s - d)*w;
       w *= 0.95f;
-      s += s/(float(i) + 1.0f);
+      s += s/((float)(i) + 1.0f);
     }
     occ = 1.0f - clamp(occ, 0.0f, 1.0f);
     
