@@ -139,7 +139,7 @@ def patchForDCTL(code,fuse_name,buffer_name):
       [ '_',   'f' , 'pow|log2|log10|log|copysign|saturate|sqrt|trunc|hypot|cos|sin|cospi|sinpi|tan|acos|asinh|atanh|cosh|sinh|tanh|cbrt|lgamma|tgamma|rsqrt|exp|exp2'],
       [ '_',   '2f', 'atan'],
       [ '_f',  'f' , 'max|min|dim'],
-      [ '_' ,  ''  , 'ceil|floor|round|mix'],
+      [ '_' ,  ''  , 'ceil|floor|mix'],
       [ '_f',  ''  , 'maf|divide|recip|abs|remainder']
     ]:
     code=re.sub(r'([^\w])('+s[2]+r')(\s*)\(',r'\g<1>'+s[0]+r'\g<2>'+s[1]+r'\3(', code)
