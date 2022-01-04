@@ -134,30 +134,133 @@ def patch_kernel(conversionCode,kernelName,part=""):
   if not m:
     if part=="":
       raise Exception("no image kernel found!")
-    return conversionCode
+    return conversionCode, ''
 
 
   kernel_parameters=m.group(1)
 
 
 
+
+
   has_param = {
     'iChannelTime'      : { 'Type' : 'float*',  },
     'iChannelResolution': { 'Type' : 'float2*', },
-    'iResolution' : { 'Type' : 'float2',  'Code' : '  float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
-    'iTime'       : { 'Type' : 'float',   'Code' : '  float  iTime       = _shaderParameters->iTime;' },
-    'iMouse'      : { 'Type' : 'float4',  'Code' : '  float4 iMouse      = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
-    'iTimeDelta'  : { 'Type' : 'float',   'Code' : '  float  iTimeDelta  = _shaderParameters->iTimeDelta;' },
-    'iFrame'      : { 'Type' : 'int',     'Code' : '  int    iFrame      = _shaderParameters->iFrame;' },
-    'iDate'       : { 'Type' : 'float4',  'Code' : '  float4 iDate       = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
-    'iSampleRate' : { 'Type' : 'float',   'Code' : '  float  iSampleRate = _shaderParameters->iSampleRate;' },
-    'width'       : { 'Type' : 'int',     'Code' : '  int    width       = _shaderParameters->width;' },
-    'height'      : { 'Type' : 'int',     'Code' : '  int    height      = _shaderParameters->height;' },
-    'compOrder'   : { 'Type' : 'int',     'Code' : '  int    width       = _shaderParameters->compOrder;' },
-    'x'           : { 'Type' : 'int',     'Code' : '  int    x           = fusion_x;' },
-    'y'           : { 'Type' : 'int',     'Code' : '  int    y           = fusion_y;' },
-  }
+    'iResolution' : { 'Type'  : 'float2',
+                      'Code'  : 'float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);',
+                      'Param' : 'float  iResolution[2];',
+                      'Proc'  : 'params.iResolution[0] = dst.Width\n'
+                                  'params.iResolution[1] = dst.Height',
+                      'Create': '',
+                    },
+    'iTime'       : { 'Type'  : 'float',
+                      'Code'  : 'float  iTime       = _shaderParameters->iTime;',
+                      'Param' : 'float  iTime;',
+                      'Proc'  : 'params.iTime       = (req.Time / framerate) * InFrequency:GetValue(req).Value',
+                      'Create':  '''InFrequency = self:AddInput( "Speedup", "speed", {
+                                      LINKID_DataType    = "Number",
+                                      INPID_InputControl = "SliderControl",
+                                      INP_Default        = 1.0,
+                                      INP_MinScale 	     = 0.0,
+                                      INP_MaxScale 	     = 5.0,
+                                      SLCS_LowName       = "stop",
+                                      SLCS_HighName      = "5x",
+                                    })'''.replace('\n                                    ','\n'),
+                    },
+    'iMouse'      : { 'Type'  : 'float4',
+                      'Code'  : 'float4 iMouse      = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);',
+                      'Param' : 'float  iMouse[4];',
+                      'Proc'  :  """local mouse_xy  = InMouseXY:GetValue(req)
+                                    local mouse_zw  = InMouseZW:GetValue(req)
 
+                                    params.iMouse[0] = mouse_xy.X
+                                    params.iMouse[1] = mouse_xy.Y
+                                    params.iMouse[2] = mouse_zw.X
+                                    params.iMouse[3] = mouse_zw.Y
+
+                                    if InMouseDrag:GetValue(req).Value ~= 0 then
+                                      if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
+                                        params.iMouse[2]=params.iMouse[0]
+                                        params.iMouse[3]=params.iMouse[1]
+                                      end
+                                    else
+                                      params.iMouse[2] = -1
+                                      params.iMouse[3] = -1
+                                    end
+
+                                    if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+                                      InMouseZW:SetAttrs({INP_Disabled=false})
+                                      InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
+                                      InMouseZW:SetAttrs({INP_Disabled=true})
+                                    end
+
+                                    params.iMouse[0] = params.iMouse[0] * Width
+                                    params.iMouse[1] = params.iMouse[1] * Height
+                                    if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+                                      params.iMouse[2] = 0
+                                      params.iMouse[3] = 0
+                                    else
+                                      params.iMouse[2] = params.iMouse[2] * Width
+                                      params.iMouse[3] = params.iMouse[3] * Height
+                                    end""".replace('\n                                    ','\n'),
+                      'Create':   'InMouseXY   = self:AddInput("iMouse.xy",            "iMouseXY",    { LINKID_DataType = "Point", INPID_InputControl = "OffsetControl",   INP_DoNotifyChanged  = false, INP_Passive = true, INPID_PreviewControl = "CrosshairControl",                      })\n'
+                                  'InMouseZW   = self:AddInput("iMouse.zw",            "iMouseZW",    { LINKID_DataType = "Point", INPID_InputControl = "OffsetControl",   INP_DoNotifyChanged  = false, INP_Passive = true, INPID_PreviewControl = "CrosshairControl", INP_Disabled = true, })\n'
+                                  'InMouseDrag = self:AddInput("Mouse Button Pressed", "iMouseClick", { LINKID_DataType = "Number",INPID_InputControl = "CheckboxControl", INP_DoNotifyChanged  = false, INP_Passive = true, INP_MinScale = 0, INP_MaxScale = 1, INP_Default = 0,            })',
+                    },
+    'iTimeDelta'  : { 'Type'  : 'float',
+                      'Code'  : 'float  iTimeDelta  = _shaderParameters->iTimeDelta;',
+                      'Param' : 'float  iTimeDelta;',
+                      'Proc'  : 'params.iTimeDelta = 1/framerate',
+                      'Create': '',
+
+                    },
+    'iFrame'      : { 'Type'  : 'int',
+                      'Code'  : 'int    iFrame      = _shaderParameters->iFrame;',
+                      'Param' : 'int    iFrame;',
+                      'Proc'  : 'params.iFrame = req.Time',
+                      'Create': '',
+                    },
+    'iDate'       : { 'Type'  : 'float4',
+                      'Code'  : 'float4 iDate       = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);',
+                      'Param' : 'float iDate[4];',
+                      'Proc'  : 'params.iDate[0] = 0\n'
+                                'params.iDate[1] = 0\n'
+                                'params.iDate[2] = 0\n'
+                                'params.iDate[3] = 0\n',
+                      'Create': '',
+                    },
+    'iSampleRate' : { 'Type'  : 'float',
+                      'Code'  : 'float  iSampleRate = _shaderParameters->iSampleRate;',
+                      'Param' : 'float  iSampleRate;',
+                      'Proc'  : 'params.iSampleRate = 44100',
+                      'Create': '',
+                     },
+    'width'       : { 'Type' : 'int',     'Code' : 'int    width       = _shaderParameters->width;',
+                      'Param' : '',
+                      'Proc'  : '',
+                      'Create': '',
+                     },
+    'height'      : { 'Type' : 'int',     'Code' : 'int    height      = _shaderParameters->height;',
+                      'Param' : '',
+                      'Proc'  : '',
+                      'Create': '',
+                     },
+    'compOrder'   : { 'Type'  : 'int',     'Code' : 'int    width       = _shaderParameters->compOrder;',
+                      'Param' : 'int    compOrder;',
+                      'Proc'  : 'params.compOrder = 15 -- no idea :-P',
+                      'Create': '',
+                     },
+    'x'           : { 'Type'  : 'int',
+                      'Code'  : 'int    x           = fusion_x;',
+                      'Proc'  : '',
+                      'Create': '',
+                    },
+    'y'           : { 'Type'  : 'int',
+                      'Code'  : 'int    y           = fusion_y;',
+                      'Proc'  : '',
+                      'Create': '',
+                    },
+  }
 
 
 
@@ -173,6 +276,10 @@ def patch_kernel(conversionCode,kernelName,part=""):
 
   for k,v in has_param.items():
     v['Present'] = False
+    for f in ['Code','Proc','Create','Param']:
+      if  v.get(f,'')!='':
+        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
+
 
 
   #print(str(has_param))
@@ -257,11 +364,21 @@ def patch_kernel(conversionCode,kernelName,part=""):
   if fragCoord_name != None:
     variable_declarations+="  float2 "+fragCoord_name+"   = to_float2(fusion_x,fusion_y);\n"
 
+  # TODO: Hier die `fuse_*` nur zum Ausprobieren. Eigentlich fuer alle Kernel Sammeln und abschliessend aufbauen!
+  fuse_param   = '\n\n\nShaderParameters=[[\n'
+  fuse_create  = '\n\n\n-- Create\n\n'
+  fuse_proc    = '\n\n\n-- Process\n\n'
 
 
   for n,p in has_param.items():
     if p['Present'] and p['Code']!='':
-      variable_declarations += p['Code'] + "\n"
+      variable_declarations += p['Code']
+      fuse_param +=  p['Param']
+      fuse_create +=  p['Create']
+      fuse_proc +=  p['Proc']
+
+  fuse_param  += ']]\n\n'
+
 
   m=r'__KERNEL__\s+void\s+'+conversionKernelName+r'\s*\([^\)]*\)\s*\{'
 
@@ -272,8 +389,9 @@ def patch_kernel(conversionCode,kernelName,part=""):
       "     return;\n\n"+variable_declarations+"\n\n  // --------\n\n"
 
   conversionCode  = re.sub( m,r,conversionCode)
+  fuse = fuse_param+fuse_create+fuse_proc
 
-  return conversionCode
+  return conversionCode, fuse
 
 
 
@@ -281,10 +399,11 @@ def patch_kernel(conversionCode,kernelName,part=""):
 
 def patch_kernels(conversionCode,kernelName):
 
+  fuse=''
   for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
-    conversionCode=patch_kernel(conversionCode,kernelName,part)
+    conversionCode, fuse=patch_kernel(conversionCode,kernelName,part)
 
-  return conversionCode
+  return conversionCode, fuse
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -295,6 +414,8 @@ def fuse_it(id,force=False):
   target_path='./Converted/'
 
   conversion_file = get_basefilename(source_path,id)
+
+  verbose(f"process '{conversion_file}'")
 
 
 
@@ -326,23 +447,27 @@ def fuse_it(id,force=False):
   with open(f"{source_path}{conversion_file}.{id}.c", "r") as f:
     conversionCode=f.read()
 
-  conversionCode=re.sub(r'\t','  ',conversionCode)
-  conversionCode=re.sub(r' +\n','\n',conversionCode)
+  conversionCode = re.sub(r'\t','  ',conversionCode)
+  conversionCode = re.sub(r' +\n','\n',conversionCode)
 
 
 
   # create compatibility code for this conversion
 
-  compatibilityCode=get_compatibility_code(conversionCode)
+  compatibilityCode = get_compatibility_code(conversionCode)
 
 
-  conversionCode=patch_kernels(conversionCode,kernelName=fuse_kernel)
+  conversionCode, fuseParameters = patch_kernels(conversionCode,kernelName=fuse_kernel)
+
+
 
   # nur zum mal gucken wo wir stehen:
-  with open(target_path+fuse_file+"_temp.c", 'w') as f:
+  with open(target_path+fuse_file+"_ccode_temp.c", 'w') as f:
     f.write(compatibilityCode)
-    f.write("\n\n\n// ##################################################################################\n\n\n")
+  with open(target_path+fuse_file+"_shader_temp.c", 'w') as f:
     f.write(conversionCode)
+  with open(target_path+fuse_file+"_fuse_temp.c", 'w') as f:
+    f.write(fuseParameters)
 
 
 
