@@ -3,7 +3,7 @@
 // - Common                                                                         -
 // ----------------------------------------------------------------------------------
 
-__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
+//__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
 
 
 //to turn on blob physics instead of hard collisions:

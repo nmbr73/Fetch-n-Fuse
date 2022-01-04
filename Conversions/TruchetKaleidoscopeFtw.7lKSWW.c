@@ -3,9 +3,6 @@
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
 
-__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
-__DEVICE__ float3 pow_f3(float3 a, float3 b) {float3 r; r.x = _powf(a.x,b.x); r.y = _powf(a.y,b.y); r.z = _powf(a.z,b.z); return r;}
-__DEVICE__ float sign_f(float value) { if (value == 0.0f) return 0.0f; return value > 0.0f ? 1.0f : -1.0f;}
 
 // CC0: Truchet + Kaleidoscope FTW
 //  Bit of experimenting with kaleidoscopes and truchet turned out nice
@@ -94,7 +91,7 @@ __DEVICE__ float smoothKaleidoscope(inout float2 *p, float sm, float rep) {
 
   float2 hpp = toPolar(hp);
   float rn = modMirror1(&hpp.y, TAU/rep);
-
+float zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
   float sa = PI/rep - pabs(PI/rep - _fabs(hpp.y), sm);
   hpp.y = sign_f(hpp.y)*(sa);
 

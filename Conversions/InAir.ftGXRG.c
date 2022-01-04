@@ -3,8 +3,8 @@
 // - Common                                                                         -
 // ----------------------------------------------------------------------------------
 
-__DEVICE__ float sign_f(float value) { if (value == 0.0f) return 0.0f; return value > 0.0f ? 1.0f : -1.0f;}
-__DEVICE__ float4 sin_f4(float4 i) {float4 r; r.x = _sinf(i.x); r.y = _sinf(i.y); r.z = _sinf(i.z); r.w = _sinf(i.w); return r;}
+//__DEVICE__ float sign_f(float value) { if (value == 0.0f) return 0.0f; return value > 0.0f ? 1.0f : -1.0f;}
+//__DEVICE__ float4 sin_f4(float4 i) {float4 r; r.x = _sinf(i.x); r.y = _sinf(i.y); r.z = _sinf(i.z); r.w = _sinf(i.w); return r;}
 
 #define R iResolution
 #define A(U) _tex2DVecN(iChannel0,(U.x)/R.x,(U.y)/R.y,15)
