@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: Incubator.NlyXDK
+  id: Incubator
+  name: Incubator
+shader:
+  author: N.N.
+  description: This is my first 3D shader
+  id: NlyXDK
+  name: Fork incubator JiPi 928
+  parent:
+    id: ldyGDG
+    name: incubator
+    url: https://www.shadertoy.com/view/ldyGDG
+  tags:
+  - 3dtest
+  url: https://www.shadertoy.com/view/NlyXDK
