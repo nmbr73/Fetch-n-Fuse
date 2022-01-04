@@ -1,0 +1,260 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stKXRd",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Everything JiPi 837",
+  "description": "As I gaze upon the splendor around me, I realize that I can only see the songs of electrons as they dance in imperfect harmony.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "physics",
+   "caustic"
+  ],
+  "hasliked": 0,
+  "parentid": "WdBGDm",
+  "parentname": "Everything's A Caustic"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 R;\nvec4 A (vec2 U) {return texture(iChannel0,U/R);}\nvec4 B (vec2 U) {return texture(iChannel1,U/R);}\nvec4 C (vec2 U) {return texture(iChannel2,U/R);}\nvoid mainImage( out vec4 Q, in vec2 U)\n{\n    R = iResolution.xy;\n    vec2 M = iMouse.z>0.?iMouse.xy:0.5*R;\n    vec2 r = 2.*(U-M)/R.y;\n    r = r/sqrt(length(r));\n    Q = vec4(0);\n    for (float i = 1.; i < 10.; i++) {\n        vec4 c = C(U-i*r);\n        Q += c*c*exp(-.2*i);\n    }\n    Q = mix(C(U),.8*Q*exp(-1.5*length(r)),.5);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Fluid\nvec2 R;\nfloat ln (vec2 p, vec2 a, vec2 b) { // returns distance to line segment for mouse input\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec4 A (vec2 U) {return texture(iChannel0,U/R);}\nvec4 B (vec2 U) {return texture(iChannel1,U/R);}\nvec4 T (vec2 U) {return A(B(U).xy);}\nvoid mainImage( out vec4 C, in vec2 U )\n{\n   R = iResolution.xy;\n   C = T(U);\n   vec4 \n        n = T(U+vec2(0,1)),\n        e = T(U+vec2(1,0)),\n        s = T(U-vec2(0,1)),\n        w = T(U-vec2(1,0));\n   C.x -= 0.25*(e.z-w.z+(n.w*C.w-s.w*C.w));\n   C.y -= 0.25*(n.z-s.z+(e.w*C.w-w.w*C.w));\n   C.z  = 0.25*((s.y-n.y+w.x-e.x)+(n.z+e.z+s.z+w.z));\n   C.w  = 0.25*((s.x-n.x+w.y-e.y)-(n.w+e.w+s.w+w.w));\n   \n    \n   C.xy += exp(-length(U.xy-0.5*R))*(0.9*vec2(sin(0.2*iTime),cos(0.2*iTime))-C.xy);\n   if (U.x < 1.||R.x-U.x<1.)C.xy*=0.;\n   if (U.y < 1.||R.y-U.y<1.)C.xy*=0.;\n   if (iFrame < 1) C = vec4(0);\n    vec4 mo = texture(iChannel3,vec2(0));\n   float l = ln(U,mo.xy,mo.zw);\n   if (mo.z > 0. && l < 2.) C += vec4(3.*(2.-l)*(mo.xy-mo.zw)/R.y,0,0);\n\n   \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 R;\nvec4 A (vec2 U) {return texture(iChannel0,U/R);}\nvec4 B (vec2 U) {return texture(iChannel1,U/R);}\nvoid mainImage( out vec4 C, in vec2 U)\n{\n    R = iResolution.xy;\n    float \n  \t\tn = A(U+vec2(0,1)).z,\n  \t\te = A(U+vec2(1,0)).z,\n  \t\ts = A(U-vec2(0,1)).z,\n  \t\tw = A(U-vec2(1,0)).z;\n    #define N 2.\n    for (float i = 0.; i < N; i++)\n        U -= A(U).xy/N;\n    C.xy = U;\n    C.zw = vec2(e-w,n-s);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 R;\n#define D 5\nfloat ln (vec3 p, vec3 a, vec3 b) {return length(p-a-(b-a)*dot(p-a,b-a)/dot(b-a,b-a));}\nvec4 A (vec2 U) {return texture(iChannel0,U/R);}\nvec4 B (vec2 U) {return texture(iChannel1,U/R);}\nvec4 C (vec2 U) {return texture(iChannel2,U/R);}\nfloat dI (vec2 U, vec3 me, vec3 light, float mu) {\n\tvec3 r = vec3(U,100);\n   \tvec3 n = normalize(vec3(B(r.xy).zw,mu));\n    vec3 li = reflect((r-light),n);\n    float len = ln(me,r,li);\n    return 2.5*exp(-1.7*len);\n}\nfloat I (vec2 U, vec3 me, vec3 light, float mu) {\n\tfloat intensity = 0.;\n    \n    for (int x = -D; x <= D; x++)\n    for (int y = -D; y <= D; y++)\n\tintensity += dI(U+vec2(x,y),me,light,0.1*mu);\n    return intensity;\n}\nvec3 S (vec2 U, vec3 me, vec3 light, float mu) {\n    return I (U,me,light,mu)*vec3(exp(-(mu-0.5)*(mu-0.5)),exp(-(mu-1.0)*(mu-1.0)),exp(-(mu-1.4)*(mu-1.4)));\n}\nvoid mainImage( out vec4 Q, in vec2 U)\n{\n   \tR = iResolution.xy;\n    vec3 light = vec3(0.5*R,1e5);\n    vec3 me    = vec3(U,0);\n\n    vec3 c = vec3(0);\n    for (float mu = .4; mu <= 1.6; mu+=.4) \n        c += S(U,me,light,mu);\n   \tQ = vec4(0.03*c,1);\n    if (R.x >= 800.) Q = mix(Q,C(U),.5);\n    \n\t\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Mouse\nvoid mainImage( out vec4 C, in vec2 U )\n{\n    vec4 p = texture(iChannel0,U/iResolution.xy);\n   \tif (iMouse.z>0.) {\n      if (p.z>0.) C =  vec4(iMouse.xy,p.xy);\n    else C =  vec4(iMouse.xy,iMouse.xy);\n   }\n    else C = vec4(-iResolution.xy,-iResolution.xy);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

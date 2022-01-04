@@ -1,7 +1,7 @@
 
-__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
-__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
-__DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
+//__DEVICE__ float2 sin_f2(float2 i) {float2 r; r.x = _sinf(i.x); r.y = _sinf(i.y); return r;}
+//__DEVICE__ float2 abs_f2(float2 a) {return (to_float2(_fabs(a.x), _fabs(a.y)));}
+//__DEVICE__ float3 abs_f3(float3 a) {return (to_float3(_fabs(a.x), _fabs(a.y),_fabs(a.z)));}
 
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
@@ -174,6 +174,7 @@ __KERNEL__ void NonEnergyFuse(float4 fragColor, float2 fragCoord, float2 iResolu
     // Output to screen
     fragColor = to_float4_aw(color,1.0f);
 
+//fragColor = to_float4(1.0f,0.0f,0.0f,1.0f);
 
   SetFragmentShaderComputedColor(fragColor);
 }

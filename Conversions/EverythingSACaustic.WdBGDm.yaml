@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  id: EverythingSACaustic
+  name: EverythingSACaustic
+shader:
+  author: wyatt
+  description: As I gaze upon the splendor around me, I realize that I can only see
+    the songs of electrons as they dance in imperfect harmony.
+  id: WdBGDm
+  name: Everything's A Caustic
+  tags:
+  - physics
+  - caustic
+  url: https://www.shadertoy.com/view/WdBGDm

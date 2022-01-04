@@ -1,0 +1,13 @@
+fuse:
+  author: JiPi
+  file: NightEscape.NtGXDG
+  id: NightEscape
+  name: NightEscape
+shader:
+  author: wyatt
+  description: Sometimes sophia lets me leave at night.
+  id: NtGXDG
+  name: Night Escape
+  tags:
+  - fbm
+  url: https://www.shadertoy.com/view/NtGXDG

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  id: Everything
+  name: Everything
+shader:
+  author: N.N.
+  description: As I gaze upon the splendor around me, I realize that I can only see
+    the songs of electrons as they dance in imperfect harmony.
+  id: stKXRd
+  name: Fork Everything JiPi 837
+  parent:
+    id: WdBGDm
+    name: Everything's A Caustic
+    url: https://www.shadertoy.com/view/WdBGDm
+  tags:
+  - physics
+  - caustic
+  url: https://www.shadertoy.com/view/stKXRd

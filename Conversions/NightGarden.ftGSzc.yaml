@@ -1,0 +1,12 @@
+fuse:
+  author: JiPi
+  id: NightGarden
+  name: NightGarden
+shader:
+  author: wyatt
+  description: '... Thanks Fabrice, now animated with faked dof'
+  id: ftGSzc
+  name: Night Garden*
+  tags:
+  - dof
+  url: https://www.shadertoy.com/view/ftGSzc
