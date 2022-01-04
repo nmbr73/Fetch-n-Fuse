@@ -10,6 +10,14 @@ import argparse
 from dotenv import load_dotenv
 
 
+VERBOSE=False
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def verbose(msg):
+  if VERBOSE:
+    print(msg)
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 def get_compatibility_code(conversionCode):
@@ -68,17 +76,14 @@ def get_compatibility_code(conversionCode):
 
   return abridgedCompatibilityCode
 
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 
-def fuse_it(id):
-
-  path='./Conversions/'
+def get_basefilename(path,id):
+  """
+  Get the name preceding the '.<ID>.c' suffix.
+  """
 
   files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{id}.c")]
-
 
   if len(files) < 1:
     raise Exception(f"no such file '{path}*.{id}.c'")
@@ -88,55 +93,256 @@ def fuse_it(id):
 
   name = re.sub(r'^(.+)\.'+id+'\.c$',r'\1',files[0].name)
 
-  print(f"fuse conversion '{path}{name}.{id}.c'")
+  # print(f"fuse conversion '{path}{name}.{id}.c'")
 
-  info=None
-  with open(f"{path}{name}.{id}.yaml", "r") as f:
-    info=yaml.safe_load(f)
+  return name
 
-  fuse_author   = info['fuse']['author']
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def write_markdown_file(info,target_file,force=False):
+
   fuse_name     = info['fuse']['name']
+  fuse_author   = info['fuse']['author']
   shader_author = info['shader']['author']
   shader_id     = info['shader']['id']
   shader_name   = info['shader']['name']
 
-  shader_description = info['shader'].get('description','')
 
-  if shader_id != id or fuse_name!=name:
+  if os.path.isfile(target_file) and not force:
+    print("file '"+target_file+"' already exists - use force option to overwrite")
+    return
+
+  with open(target_file, 'w') as f:
+    f.write(
+        f"# {fuse_name}\n\nBased on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n"
+        +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n"+info['shader'].get('description','')+"\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
+        )
+
+    verbose("wrote file '"+target_file+"'")
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def patch_kernel(conversionCode,kernelName,part=""):
+
+  NUM_INPUT_CHANNELS=16 # maximum number of input channels supported
+
+  conversionKernelName=kernelName+"Fuse"+part
+
+  m = re.search(r'__KERNEL__\s+void\s+'+conversionKernelName+r'\s*\(([^\)]*)\)\s*\{',conversionCode)
+
+  if not m:
+    if part=="":
+      raise Exception("no image kernel found!")
+    return conversionCode
+
+
+  kernel_parameters=m.group(1)
+
+
+
+  has_param = {
+    'iChannelTime'      : { 'Type' : 'float*',  },
+    'iChannelResolution': { 'Type' : 'float2*', },
+    'iResolution' : { 'Type' : 'float2',  'Code' : '  float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);' },
+    'iTime'       : { 'Type' : 'float',   'Code' : '  float  iTime       = _shaderParameters->iTime;' },
+    'iMouse'      : { 'Type' : 'float4',  'Code' : '  float4 iMouse      = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);' },
+    'iTimeDelta'  : { 'Type' : 'float',   'Code' : '  float  iTimeDelta  = _shaderParameters->iTimeDelta;' },
+    'iFrame'      : { 'Type' : 'int',     'Code' : '  int    iFrame      = _shaderParameters->iFrame;' },
+    'iDate'       : { 'Type' : 'float4',  'Code' : '  float4 iDate       = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);'},
+    'iSampleRate' : { 'Type' : 'float',   'Code' : '  float  iSampleRate = _shaderParameters->iSampleRate;' },
+    'width'       : { 'Type' : 'int',     'Code' : '  int    width       = _shaderParameters->width;' },
+    'height'      : { 'Type' : 'int',     'Code' : '  int    height      = _shaderParameters->height;' },
+    'compOrder'   : { 'Type' : 'int',     'Code' : '  int    width       = _shaderParameters->compOrder;' },
+    'x'           : { 'Type' : 'int',     'Code' : '  int    x           = fusion_x;' },
+    'y'           : { 'Type' : 'int',     'Code' : '  int    y           = fusion_y;' },
+  }
+
+
+
+
+
+
+
+  # iChannel<0..N>
+  for i in range(0,NUM_INPUT_CHANNELS-1):
+    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
+
+  fragColor_name = None # float4
+  fragCoord_name = None # float2
+
+  for k,v in has_param.items():
+    v['Present'] = False
+
+
+  #print(str(has_param))
+  #exit()
+
+
+
+  # ja, okay, jetzt wird's echt bescheuert ...
+
+  i=-1 # iteration to allow fragColor and Coord only as the first two parameters
+
+  kernel_parameters=kernel_parameters.strip()
+  verbose("kernel parameters='"+kernel_parameters+"'")
+
+  for p in kernel_parameters.split(','):
+
+    i+=1
+
+    t = None
+    n = None
+    m = re.search(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s+([A-Za-z_][A-Za-z_0-9]*)\s*$', p) #match "type name"
+    if m:
+        t = m.group(1)
+        n = m.group(2)
+    else:
+      m = re.search(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s*\*\s*([A-Za-z_][A-Za-z_0-9]*)\s*$', p) # match "type * name" (yes, type*name matches, so what)
+      if m:
+        t = m.group(1)+'*'
+        n = m.group(2)
+      else:
+        m= re.search(r'^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$', p) # match "type name [ ]"
+        if m:
+          t = m.group(1)+'*'
+          n = m.group(2)
+
+    if not m:
+      raise Exception("parameter='"+p+"' has bad format")
+
+    verbose("parameter"+str(i)+": type='"+t+"', name='"+n+"'")
+    if has_param.get(n,None)==None:
+      if i==0 and t=='float4' and fragColor_name==None:
+        fragColor_name=n # first and only the first parameter can be the color (yes, stupid idea to call that color iDate)
+      elif i<2 and t=='float2' and fragCoord_name==None:
+        fragCoord_name=n # first or second parameter can be the coord
+      else:
+        raise Exception("unknown parameter '"+t+" "+n+"'")
+    else:
+      if t != has_param[n]['Type']:
+        raise Exception("bad type '"+t+"' for '"+n+"' ('"+has_param[n]['Type']+"' expected)")
+
+      if has_param[n]['Present']:
+        print("multiple occurences of '"+t+" "+n+"'")
+      else:
+        has_param[n]['Present']=True
+
+  MAX_INPUT_CHANNELS=0
+  kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
+  for i in range(0,NUM_INPUT_CHANNELS-1):
+    if has_param["iChannel"+str(i)]['Present']:
+      kernel_parameters += " __TEXTURE2D__ iChannel"+str(i)+", " # sollte aber fuer mainImage vermutlich ohne "Luecken" sein!?!!
+      MAX_INPUT_CHANNELS+=1
+
+  kernel_parameters += "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
+
+
+  # iChannelResolution[]
+  has_param['iChannelResolution']['Code']='  float2 iChannelResolution['+ str(MAX_INPUT_CHANNELS) +'];\n'
+  for i in range(0, MAX_INPUT_CHANNELS-1):
+    has_param['iChannelResolution']['Code'] += "  iChannelResolution["+str(i)+"] = to_float2(_shaderParameters->iChannelResolution["+str(i)+"][0], _shaderParameters->iChannelResolution["+str(i)+"][1]);\n"
+
+  # iChannelTime[]
+  has_param['iChannelTime']['Code']='  float iChannelTime['+ str(MAX_INPUT_CHANNELS) +'];\n'
+  for i in range(0,MAX_INPUT_CHANNELS-1):
+    has_param['iChannelTime']['Code'] += "  iChannelTime["+str(i)+"] = _shaderParameters->iChannelTime["+str(i)+"];\n"
+
+
+  variable_declarations = ""
+
+  if fragColor_name != None:
+    variable_declarations+="  float4 "+fragColor_name+"   = to_float4_s(0.0f);\n"
+
+  if fragCoord_name != None:
+    variable_declarations+="  float2 "+fragCoord_name+"   = to_float2(fusion_x,fusion_y);\n"
+
+
+
+  for n,p in has_param.items():
+    if p['Present'] and p['Code']!='':
+      variable_declarations += p['Code'] + "\n"
+
+  m=r'__KERNEL__\s+void\s+'+conversionKernelName+r'\s*\([^\)]*\)\s*\{'
+
+  r=  "__KERNEL__ void "+conversionKernelName+"("+kernel_parameters+")\n" \
+      "{\n" \
+      "   DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);\n\n" \
+      "   if (fusion_x >= _shaderParameters->width || fusion_y >= _shaderParameters->height)\n" \
+      "     return;\n\n"+variable_declarations+"\n\n  // --------\n\n"
+
+  conversionCode  = re.sub( m,r,conversionCode)
+
+  return conversionCode
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def patch_kernels(conversionCode,kernelName):
+
+  for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
+    conversionCode=patch_kernel(conversionCode,kernelName,part)
+
+  return conversionCode
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def fuse_it(id,force=False):
+
+  source_path='./Conversions/'
+  target_path='./Converted/'
+
+  conversion_file = get_basefilename(source_path,id)
+
+
+
+  # read .yaml file
+
+  info=None
+  with open(f"{source_path}{conversion_file}.{id}.yaml", "r") as f:
+    info=yaml.safe_load(f)
+
+
+  fuse_name     = info['fuse']['name']  # FuReg name ... this is what's doplayed in the tool selection menu
+  fuse_kernel   = conversion_file       # name of the fragment shader kernel function
+  fuse_id       = info['fuse'].get('id',conversion_file) # FuReg ID (must follow identifier syntax)
+  fuse_file     = info['fuse'].get('file',fuse_id)  # filename to save the fuse as
+
+  if info['shader']['id'] != id:
     raise Exception("inconsistency in your source and yaml file")
 
-  target_path='./Converted/'
-  if not os.path.exists(target_path):
-      os.makedirs(target_path)
 
-  with open(target_path+fuse_name+".md", 'w') as f:
-     f.write(
-        f"# {fuse_name}.fuse\n\nBased on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n"
-        +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n"+shader_description+"\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
-        )
+
+  # write .md file
+
+  write_markdown_file(info, target_file = target_path+fuse_file+".md", force = force )
+
+
 
   # read conversion code
 
-  with open(f"{path}{name}.{id}.c", "r") as f:
+  with open(f"{source_path}{conversion_file}.{id}.c", "r") as f:
     conversionCode=f.read()
 
   conversionCode=re.sub(r'\t','  ',conversionCode)
   conversionCode=re.sub(r' +\n','\n',conversionCode)
+
+
 
   # create compatibility code for this conversion
 
   compatibilityCode=get_compatibility_code(conversionCode)
 
 
+  conversionCode=patch_kernels(conversionCode,kernelName=fuse_kernel)
 
-  print(compatibilityCode)
-
-  #print(str(info))
-  #print(f"file: '{fuse_name}'")
-
-  #print(str(x))
-  #for e in [entry for entry in os.scandir('Conversions') if entry.is_file() and entry.name.endswith(f".{id}.c")]:
-  #  print(str(e))
+  # nur zum mal gucken wo wir stehen:
+  with open(target_path+fuse_file+"_temp.c", 'w') as f:
+    f.write(compatibilityCode)
+    f.write("\n\n\n// ##################################################################################\n\n\n")
+    f.write(conversionCode)
 
 
 
@@ -144,10 +350,13 @@ def fuse_it(id):
 load_dotenv()
 
 parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
+parser.add_argument('-f','--force',action='store_true',help='overwrite fuse and/or markdown file even if it already exists')
+parser.add_argument('-v','--verbose',action='store_true',help="tell what's happening")
 parser.add_argument('-i','--id', help="shadertoy id as it can be found in the conversion's filename right before the'.c' suffix", required=True)
 args = parser.parse_args()
 
-fuse_it(args.id)
+VERBOSE=args.verbose
+fuse_it(args.id,force=args.force)
 
 # try:
 #   fuse_it(args.id)
