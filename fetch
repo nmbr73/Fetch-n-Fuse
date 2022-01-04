@@ -473,18 +473,18 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
 
   yaml_data={
         'shader':{
-          'id':id,
-          'name':shader_name,
-          'author': info['username'],
-          'url':'https://www.shadertoy.com/view/'+id,
-          'description':info['description'],
-          'tags':info['tags'],
+          'id'          : id,
+          'name'        : shader_name,
+          'author'      : info['username'],
+          'url'         : 'https://www.shadertoy.com/view/'+id,
+          'description' : info['description'],
+          'tags'        : info['tags'],
         },
         'fuse':{
-          'id':asFuseID(shader_name,id),
-          'name':asFusename(shader_name,id),
-          'author':fuse_author
-
+          'id'      : asFuseID(shader_name,id),
+          'name'    : asFusename(shader_name,id),
+          'file'    : asConversionBasefilename(shader_name,id),
+          'author'  : fuse_author,
         }
       }
 
