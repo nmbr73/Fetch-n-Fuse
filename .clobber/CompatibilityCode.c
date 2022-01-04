@@ -527,7 +527,7 @@
     /*| log_f3        |*/#define log_f3(a) to_float3(_logf((a).x), _logf((a).y),_logf((a).z))
     /*| log2_f3       |*/#define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))
 
-    /*| sign          |*/#define sign_f (value) (value == 0.0f ? 0.0f : value > 0.0f ? 1.0f : -1.0f)
+    /*| sign          |*/#define sign_f(value) (value == 0.0f ? 0.0f : value > 0.0f ? 1.0f : -1.0f)
     /*| sign_f2       |*/#define sign_f2(a) to_float2(sign_f((a).x), sign_f((a).y))
     /*| sign_f3       |*/#define sign_f3(a) to_float3(sign_f((a).x), sign_f((a).y),sign_f((a).z))
     /*| sign_f4       |*/#define sign_f4(a) to_float4(sign_f((a).x), sign_f((a).y),sign_f((a).z),sign_f((a).w))
