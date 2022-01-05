@@ -123,9 +123,8 @@ def write_markdown_file(info,target_file,force=False):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def patch_kernel(conversionCode,kernelName,part=""):
+def patch_kernel(conversionCode,kernelName,has_param,part=""):
 
-  NUM_INPUT_CHANNELS=16 # maximum number of input channels supported
 
   conversionKernelName=kernelName+"Fuse"+part
 
@@ -143,142 +142,10 @@ def patch_kernel(conversionCode,kernelName,part=""):
 
 
 
-  has_param = {
-    'iChannelTime'      : { 'Type' : 'float*',  },
-    'iChannelResolution': { 'Type' : 'float2*', },
-    'iResolution' : { 'Type'  : 'float2',
-                      'Code'  : 'float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);',
-                      'Param' : 'float  iResolution[2];',
-                      'Proc'  : 'params.iResolution[0] = dst.Width\n'
-                                  'params.iResolution[1] = dst.Height',
-                      'Create': '',
-                    },
-    'iTime'       : { 'Type'  : 'float',
-                      'Code'  : 'float  iTime       = _shaderParameters->iTime;',
-                      'Param' : 'float  iTime;',
-                      'Proc'  : 'params.iTime       = (req.Time / framerate) * InFrequency:GetValue(req).Value',
-                      'Create':  '''InFrequency = self:AddInput( "Speedup", "speed", {
-                                      LINKID_DataType    = "Number",
-                                      INPID_InputControl = "SliderControl",
-                                      INP_Default        = 1.0,
-                                      INP_MinScale 	     = 0.0,
-                                      INP_MaxScale 	     = 5.0,
-                                      SLCS_LowName       = "stop",
-                                      SLCS_HighName      = "5x",
-                                    })'''.replace('\n                                    ','\n'),
-                    },
-    'iMouse'      : { 'Type'  : 'float4',
-                      'Code'  : 'float4 iMouse      = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);',
-                      'Param' : 'float  iMouse[4];',
-                      'Proc'  :  """local mouse_xy  = InMouseXY:GetValue(req)
-                                    local mouse_zw  = InMouseZW:GetValue(req)
-
-                                    params.iMouse[0] = mouse_xy.X
-                                    params.iMouse[1] = mouse_xy.Y
-                                    params.iMouse[2] = mouse_zw.X
-                                    params.iMouse[3] = mouse_zw.Y
-
-                                    if InMouseDrag:GetValue(req).Value ~= 0 then
-                                      if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
-                                        params.iMouse[2]=params.iMouse[0]
-                                        params.iMouse[3]=params.iMouse[1]
-                                      end
-                                    else
-                                      params.iMouse[2] = -1
-                                      params.iMouse[3] = -1
-                                    end
-
-                                    if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
-                                      InMouseZW:SetAttrs({INP_Disabled=false})
-                                      InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
-                                      InMouseZW:SetAttrs({INP_Disabled=true})
-                                    end
-
-                                    params.iMouse[0] = params.iMouse[0] * Width
-                                    params.iMouse[1] = params.iMouse[1] * Height
-                                    if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
-                                      params.iMouse[2] = 0
-                                      params.iMouse[3] = 0
-                                    else
-                                      params.iMouse[2] = params.iMouse[2] * Width
-                                      params.iMouse[3] = params.iMouse[3] * Height
-                                    end""".replace('\n                                    ','\n'),
-                      'Create':   'InMouseXY   = self:AddInput("iMouse.xy",            "iMouseXY",    { LINKID_DataType = "Point", INPID_InputControl = "OffsetControl",   INP_DoNotifyChanged  = false, INP_Passive = true, INPID_PreviewControl = "CrosshairControl",                      })\n'
-                                  'InMouseZW   = self:AddInput("iMouse.zw",            "iMouseZW",    { LINKID_DataType = "Point", INPID_InputControl = "OffsetControl",   INP_DoNotifyChanged  = false, INP_Passive = true, INPID_PreviewControl = "CrosshairControl", INP_Disabled = true, })\n'
-                                  'InMouseDrag = self:AddInput("Mouse Button Pressed", "iMouseClick", { LINKID_DataType = "Number",INPID_InputControl = "CheckboxControl", INP_DoNotifyChanged  = false, INP_Passive = true, INP_MinScale = 0, INP_MaxScale = 1, INP_Default = 0,            })',
-                    },
-    'iTimeDelta'  : { 'Type'  : 'float',
-                      'Code'  : 'float  iTimeDelta  = _shaderParameters->iTimeDelta;',
-                      'Param' : 'float  iTimeDelta;',
-                      'Proc'  : 'params.iTimeDelta = 1/framerate',
-                      'Create': '',
-
-                    },
-    'iFrame'      : { 'Type'  : 'int',
-                      'Code'  : 'int    iFrame      = _shaderParameters->iFrame;',
-                      'Param' : 'int    iFrame;',
-                      'Proc'  : 'params.iFrame = req.Time',
-                      'Create': '',
-                    },
-    'iDate'       : { 'Type'  : 'float4',
-                      'Code'  : 'float4 iDate       = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);',
-                      'Param' : 'float iDate[4];',
-                      'Proc'  : 'params.iDate[0] = 0\n'
-                                'params.iDate[1] = 0\n'
-                                'params.iDate[2] = 0\n'
-                                'params.iDate[3] = 0\n',
-                      'Create': '',
-                    },
-    'iSampleRate' : { 'Type'  : 'float',
-                      'Code'  : 'float  iSampleRate = _shaderParameters->iSampleRate;',
-                      'Param' : 'float  iSampleRate;',
-                      'Proc'  : 'params.iSampleRate = 44100',
-                      'Create': '',
-                     },
-    'width'       : { 'Type' : 'int',     'Code' : 'int    width       = _shaderParameters->width;',
-                      'Param' : '',
-                      'Proc'  : '',
-                      'Create': '',
-                     },
-    'height'      : { 'Type' : 'int',     'Code' : 'int    height      = _shaderParameters->height;',
-                      'Param' : '',
-                      'Proc'  : '',
-                      'Create': '',
-                     },
-    'compOrder'   : { 'Type'  : 'int',     'Code' : 'int    width       = _shaderParameters->compOrder;',
-                      'Param' : 'int    compOrder;',
-                      'Proc'  : 'params.compOrder = 15 -- no idea :-P',
-                      'Create': '',
-                     },
-    'x'           : { 'Type'  : 'int',
-                      'Code'  : 'int    x           = fusion_x;',
-                      'Proc'  : '',
-                      'Create': '',
-                    },
-    'y'           : { 'Type'  : 'int',
-                      'Code'  : 'int    y           = fusion_y;',
-                      'Proc'  : '',
-                      'Create': '',
-                    },
-  }
-
-
-
-
-
-
-  # iChannel<0..N>
-  for i in range(0,NUM_INPUT_CHANNELS-1):
-    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
 
   fragColor_name = None # float4
   fragCoord_name = None # float2
 
-  for k,v in has_param.items():
-    v['Present'] = False
-    for f in ['Code','Proc','Create','Param']:
-      if  v.get(f,'')!='':
-        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
 
 
 
@@ -337,7 +204,7 @@ def patch_kernel(conversionCode,kernelName,part=""):
 
   MAX_INPUT_CHANNELS=0
   kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
-  for i in range(0,NUM_INPUT_CHANNELS-1):
+  for i in range(0,15):
     if has_param["iChannel"+str(i)]['Present']:
       kernel_parameters += " __TEXTURE2D__ iChannel"+str(i)+", " # sollte aber fuer mainImage vermutlich ohne "Luecken" sein!?!!
       MAX_INPUT_CHANNELS+=1
@@ -399,9 +266,38 @@ def patch_kernel(conversionCode,kernelName,part=""):
 
 def patch_kernels(conversionCode,kernelName):
 
+  # load the data from yaml file
+
+  with open(".clobber/fuse-parameters.yaml", "r") as f:
+    src=f.read()
+
+  has_param=yaml.load(src, Loader=yaml.FullLoader)
+
+
+  # iChannel<0..15> with 15 as the maximum number of input channels supported for the time being
+
+  for i in range(0,15):
+    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
+
+
+  # do some code indention
+
+  for k,v in has_param.items():
+    for f in ['Code','Proc','Create','Param']:
+      if v.get(f,None)==None:
+        v[f]=''
+      elif v[f]!='':
+        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
+
+
   fuse=''
+
   for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
-    conversionCode, fuse=patch_kernel(conversionCode,kernelName,part)
+
+    for k,v in has_param.items():
+      v['Present'] = False
+
+    conversionCode, fuse=patch_kernel(conversionCode,kernelName,has_param,part)
 
   return conversionCode, fuse
 

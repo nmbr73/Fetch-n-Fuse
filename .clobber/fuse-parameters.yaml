@@ -1,0 +1,158 @@
+iChannelTime:
+  Type: float*
+
+iChannelResolution:
+  Type': float2*
+
+iResolution:
+  Type:  float2
+  Param: float  iResolution[2];
+  Code: |-
+    float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);
+  Proc: |-
+    params.iResolution[0] = dst.Width
+    params.iResolution[1] = dst.Height
+
+
+iTime:
+  Type:   float
+  Param:  float  iTime;
+  Code:   float  iTime       = _shaderParameters->iTime;
+  Proc:   params.iTime       = (req.Time / framerate) * InFrequency:GetValue(req).Value
+  Create: |-
+
+    -- Speed Slider
+
+    InFrequency = self:AddInput("Speedup", "speed", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_Default        = 1.0,
+      INP_MinScale 	     = 0.0,
+      INP_MaxScale 	     = 5.0,
+      SLCS_LowName       = "stop",
+      SLCS_HighName      = "5x",
+    })
+
+
+iMouse:
+  Type:   float4
+  Code:   float4 iMouse      = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);
+  Param:  float  iMouse[4];
+  Proc:   |-
+
+    -- iMouse
+
+    local mouse_xy  = InMouseXY:GetValue(req)
+    local mouse_zw  = InMouseZW:GetValue(req)
+
+    params.iMouse[0] = mouse_xy.X
+    params.iMouse[1] = mouse_xy.Y
+    params.iMouse[2] = mouse_zw.X
+    params.iMouse[3] = mouse_zw.Y
+
+    if InMouseDrag:GetValue(req).Value ~= 0 then
+      if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
+        params.iMouse[2]=params.iMouse[0]
+        params.iMouse[3]=params.iMouse[1]
+      end
+    else
+      params.iMouse[2] = -1
+      params.iMouse[3] = -1
+    end
+
+    if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+      InMouseZW:SetAttrs({INP_Disabled=false})
+      InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
+      InMouseZW:SetAttrs({INP_Disabled=true})
+    end
+
+    params.iMouse[0] = params.iMouse[0] * Width
+    params.iMouse[1] = params.iMouse[1] * Height
+    if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+      params.iMouse[2] = 0
+      params.iMouse[3] = 0
+    else
+      params.iMouse[2] = params.iMouse[2] * Width
+      params.iMouse[3] = params.iMouse[3] * Height
+    end
+
+  Create: |-
+
+    -- iMouse Controls
+
+    InMouseXY = self:AddInput("iMouse.xy", "iMouseXY", {
+      LINKID_DataType = "Point",
+      INPID_InputControl = "OffsetControl",
+      INP_DoNotifyChanged  = false,
+      INP_Passive = true,
+      INPID_PreviewControl = "CrosshairControl",
+    })
+
+    InMouseZW = self:AddInput("iMouse.zw", "iMouseZW", {
+      LINKID_DataType = "Point",
+      INPID_InputControl = "OffsetControl",
+      INP_DoNotifyChanged  = false,
+      INP_Passive = true,
+      INPID_PreviewControl = "CrosshairControl",
+      INP_Disabled = true,
+    })
+
+    InMouseDrag = self:AddInput("Mouse Button Pressed", "iMouseClick", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "CheckboxControl",
+      INP_DoNotifyChanged  = false,
+      INP_Passive = true,
+      INP_MinScale = 0,
+      INP_MaxScale = 1,
+      INP_Default = 0,
+    })
+
+
+iTimeDelta:
+  Type:   float
+  Code:   float  iTimeDelta  = _shaderParameters->iTimeDelta;
+  Param:  float  iTimeDelta;
+  Proc:   params.iTimeDelta = 1/framerate
+
+iFrame:
+  Type:   int
+  Code:   int    iFrame      = _shaderParameters->iFrame;
+  Param:  int    iFrame;
+  Proc:   params.iFrame = req.Time
+
+iDate:
+  Type:   float4
+  Code:   float4 iDate       = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);
+  Param:  float iDate[4];
+  Proc: |-
+    params.iDate[0] = 0
+    params.iDate[1] = 0
+    params.iDate[2] = 0
+    params.iDate[3] = 0
+
+iSampleRate:
+  Type:   float
+  Code:   float  iSampleRate = _shaderParameters->iSampleRate;
+  Param:  float  iSampleRate;
+  Proc:   params.iSampleRate = 44100
+
+width:
+  Type:   int
+  Code:   int    width       = _shaderParameters->width;
+height:
+  Type:   int
+  Code:   int    height      = _shaderParameters->height;
+
+compOrder:
+  Type:   int
+  Code:   int    width       = _shaderParameters->compOrder;
+  Param:  int    compOrder;
+  Proc:   params.compOrder = 15 -- no idea :-P
+
+x:
+  Type:   int
+  Code:   int    x           = fusion_x;
+
+y:
+  Type:   int
+  Code:   int    y           = fusion_y;'
