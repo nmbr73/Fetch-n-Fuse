@@ -128,12 +128,14 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
 
   conversionKernelName=kernelName+"Fuse"+part
 
+  verbose("Patch Kernel '"+conversionKernelName+"'")
+
   m = re.search(r'__KERNEL__\s+void\s+'+conversionKernelName+r'\s*\(([^\)]*)\)\s*\{',conversionCode)
 
   if not m:
     if part=="":
       raise Exception("no image kernel found!")
-    return conversionCode, ''
+    return conversionCode
 
 
   kernel_parameters=m.group(1)
@@ -225,26 +227,15 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
 
   variable_declarations = ""
 
+  for n,p in has_param.items():
+    if p['Present'] and p['Code']!='':
+      variable_declarations += p['Code']
+
   if fragColor_name != None:
     variable_declarations+="  float4 "+fragColor_name+"   = to_float4_s(0.0f);\n"
 
   if fragCoord_name != None:
     variable_declarations+="  float2 "+fragCoord_name+"   = to_float2(fusion_x,fusion_y);\n"
-
-  # TODO: Hier die `fuse_*` nur zum Ausprobieren. Eigentlich fuer alle Kernel Sammeln und abschliessend aufbauen!
-  fuse_param   = '\n\n\nShaderParameters=[[\n'
-  fuse_create  = '\n\n\n-- Create\n\n'
-  fuse_proc    = '\n\n\n-- Process\n\n'
-
-
-  for n,p in has_param.items():
-    if p['Present'] and p['Code']!='':
-      variable_declarations += p['Code']
-      fuse_param +=  p['Param']
-      fuse_create +=  p['Create']
-      fuse_proc +=  p['Proc']
-
-  fuse_param  += ']]\n\n'
 
 
   m=r'__KERNEL__\s+void\s+'+conversionKernelName+r'\s*\([^\)]*\)\s*\{'
@@ -256,50 +247,17 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
       "     return;\n\n"+variable_declarations+"\n\n  // --------\n\n"
 
   conversionCode  = re.sub( m,r,conversionCode)
-  fuse = fuse_param+fuse_create+fuse_proc
 
-  return conversionCode, fuse
-
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-
-def patch_kernels(conversionCode,kernelName):
-
-  # load the data from yaml file
-
-  with open(".clobber/fuse-parameters.yaml", "r") as f:
-    src=f.read()
-
-  has_param=yaml.load(src, Loader=yaml.FullLoader)
+  conversionCode  = re.sub(
+      r'(\s+)SetFragmentShaderComputedColor\s*\(\s*',
+      r'\1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, ',
+      conversionCode)
 
 
-  # iChannel<0..15> with 15 as the maximum number of input channels supported for the time being
-
-  for i in range(0,15):
-    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
+  return conversionCode
 
 
-  # do some code indention
 
-  for k,v in has_param.items():
-    for f in ['Code','Proc','Create','Param']:
-      if v.get(f,None)==None:
-        v[f]=''
-      elif v[f]!='':
-        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
-
-
-  fuse=''
-
-  for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
-
-    for k,v in has_param.items():
-      v['Present'] = False
-
-    conversionCode, fuse=patch_kernel(conversionCode,kernelName,has_param,part)
-
-  return conversionCode, fuse
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -322,7 +280,7 @@ def fuse_it(id,force=False):
     info=yaml.safe_load(f)
 
 
-  fuse_name     = info['fuse']['name']  # FuReg name ... this is what's doplayed in the tool selection menu
+  fuse_name     = info['fuse']['name']  # FuReg name ... this is what's displayed in the tool selection menu
   fuse_kernel   = conversion_file       # name of the fragment shader kernel function
   fuse_id       = info['fuse'].get('id',conversion_file) # FuReg ID (must follow identifier syntax)
   fuse_file     = info['fuse'].get('file',fuse_id)  # filename to save the fuse as
@@ -353,17 +311,85 @@ def fuse_it(id,force=False):
   compatibilityCode = get_compatibility_code(conversionCode)
 
 
-  conversionCode, fuseParameters = patch_kernels(conversionCode,kernelName=fuse_kernel)
+
+
+  # load the data from yaml file
+
+  with open(".clobber/fuse-parameters.yaml", "r") as f:
+    src=f.read()
+
+  has_param=yaml.load(src, Loader=yaml.FullLoader)
+
+
+  # iChannel<0..15> with 15 as the maximum number of input channels supported for the time being
+
+  for i in range(0,15):
+    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
+
+
+  # do some code indention
+
+  for k,v in has_param.items():
+    for f in ['Code','Proc','Create','Param']:
+      if v.get(f,None)==None:
+        v[f]=''
+      elif v[f]!='':
+        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
+
+
+  # patch all kernel signatures
+
+  for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
+
+    for k,v in has_param.items():
+      v['Present'] = False
+
+    conversionCode = patch_kernel(conversionCode,fuse_kernel,has_param,part)
+
+
+
+  fuse_param   = ''
+  fuse_create  = ''
+  fuse_process  = ''
+
+
+  for n,p in has_param.items():
+    if p['Present'] and p['Code']!='':
+      fuse_param +=  p['Param']
+      fuse_create +=  p['Create']
+      fuse_process +=  p['Proc']
+
+
+  with open(".clobber/fuse-template.lua", "r") as f:
+    fuse=f.read()
+
+
+
+# <<<FUSE_CREATION_DATE>>>
+# <<<FUSE_AUTHOR_URL>>>
+# <<<FUSE_AUTHOR_LOGO>>>
+
+  fuse=re.sub(r'<<<SHADER_ID>>>',info['shader']['id'],fuse)
+  fuse=re.sub(r'<<<SHADER_AUTHOR>>>',info['shader']['author'],fuse)
+  fuse=re.sub(r'<<<SHADER_NAME>>>',info['shader']['name'],fuse)
+  fuse=re.sub(r'<<<FUSE_NAME>>>',info['fuse']['name'],fuse)
+  fuse=re.sub(r'<<<FUSE_AUTHOR>>>',info['fuse']['author'],fuse)
+
+  fuse=re.sub(r'<<<CODE_COMPATIBILITY>>>',compatibilityCode,fuse)
+  fuse=re.sub(r'<<<CODE_KERNEL>>>',conversionCode,fuse)
+  fuse=re.sub(r'<<<CODE_PARAMETERS>>>',fuse_param,fuse)
+  fuse=re.sub(r'<<<CODE_CREATE>>>',fuse_create,fuse)
+  fuse=re.sub(r'<<<CODE_PROCESS>>>',fuse_process,fuse)
 
 
 
   # nur zum mal gucken wo wir stehen:
-  with open(target_path+fuse_file+"_ccode_temp.c", 'w') as f:
-    f.write(compatibilityCode)
-  with open(target_path+fuse_file+"_shader_temp.c", 'w') as f:
-    f.write(conversionCode)
-  with open(target_path+fuse_file+"_fuse_temp.c", 'w') as f:
-    f.write(fuseParameters)
+  with open(target_path+fuse_file+".fuse", 'w') as f:
+    f.write(fuse)
+
+
+
+
 
 
 

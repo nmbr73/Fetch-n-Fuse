@@ -18,7 +18,8 @@ iTime:
   Type:   float
   Param:  float  iTime;
   Code:   float  iTime       = _shaderParameters->iTime;
-  Proc:   params.iTime       = (req.Time / framerate) * InFrequency:GetValue(req).Value
+  Proc:   params.iTime = (req.Time / framerate) * InFrequency:GetValue(req).Value
+
   Create: |-
 
     -- Speed Slider
