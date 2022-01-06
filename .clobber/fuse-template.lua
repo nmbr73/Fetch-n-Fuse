@@ -59,7 +59,7 @@ FuRegisterClass(
 -- // ------------------------------------------------------------------------
 
 -- */
-ShaderParamsCode =
+ShaderParameters =
 [[
 <<<CODE_PARAMETERS>>>
 ]]
@@ -166,7 +166,7 @@ function Process(req)
     <<<FUSE_NAME>>>,
     ShaderCompatibilityCode..ShaderKernelCode,
     "ShaderParameters",
-    ShaderParamsCode
+    ShaderParameters
     )
 
   -- Extern Texture or create a new one
