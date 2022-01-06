@@ -367,9 +367,23 @@ def fuse_it(id,force=False):
 
 
 
-# <<<FUSE_CREATION_DATE>>>
-# <<<FUSE_AUTHOR_URL>>>
-# <<<FUSE_AUTHOR_LOGO>>>
+  # load some author information from yaml file
+
+  fuse_author_url   = ''
+  fuse_author_logo  = ''
+
+  with open(".clobber/fuse-authors.yaml", "r") as f:
+    tmp=f.read()
+
+  tmp=yaml.load(tmp, Loader=yaml.FullLoader)
+
+  for author in tmp:
+    if author['Name']==info['fuse']['author']:
+      fuse_author_url   = author['URL']
+      fuse_author_logo  = author['Logo']
+
+
+
 
   fuse=re.sub(r'<<<SHADER_ID>>>',info['shader']['id'],fuse)
   fuse=re.sub(r'<<<SHADER_AUTHOR>>>',info['shader']['author'],fuse)
@@ -377,6 +391,8 @@ def fuse_it(id,force=False):
   fuse=re.sub(r'<<<FUSE_NAME>>>',info['fuse']['name'],fuse)
   fuse=re.sub(r'<<<FUSE_AUTHOR>>>',info['fuse']['author'],fuse)
   fuse=re.sub(r'<<<FUSE_CREATION_DATE>>>',date.today().strftime("%B %d, %Y"),fuse)
+  fuse=re.sub(r'<<<FUSE_AUTHOR_URL>>>',fuse_author_url,fuse)
+  fuse=re.sub(r'<<<FUSE_AUTHOR_LOGO>>>',fuse_author_logo,fuse)
 
   fuse=re.sub(r'<<<CODE_COMPATIBILITY>>>',compatibilityCode,fuse)
   fuse=re.sub(r'<<<CODE_KERNEL>>>',conversionCode,fuse)

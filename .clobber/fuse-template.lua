@@ -1,11 +1,10 @@
 --[[--/*
 
-  <<<FUSE_NAME>>>
+  <<<FUSE_NAME>>>.fuse
 
-  Based on https://www.shadertoy.com/view/<<<SHADER_ID>>> a WebGL
-  shader created by <<<SHADER_AUTHOR>>> and converted to DCTL and embeddet
-  into a Lua Fuse by <<<FUSE_AUTHOR>>> (<<<FUSE_AUTHOR_URL>>>)
-  for use in DaFusion.
+  Based on https://www.shadertoy.com/view/<<<SHADER_ID>>> a WebGL shader created by <<<SHADER_AUTHOR>>>.
+  Converted to DCTL and embeddet into a Lua Fuse by <<<FUSE_AUTHOR>>> (<<<FUSE_AUTHOR_URL>>>).
+  Place this file in your Fusion's and/or DaVinci Resolve's 'Fuses/' folder to use it.
 
 */--]]--
 
@@ -23,9 +22,9 @@ local dctlfuse_name        = "<<<FUSE_NAME>>>"
 local dctlfuse_author      = "<<<FUSE_AUTHOR>>>"
 -- OPTIONAL ------------------------------------------------------------------
 local dctlfuse_versionNo   = 1
--- local dctlfuse_versionDate = "<<<FUSE_CREATION_DATE>>>"
--- local dctlfuse_authorurl   = "<<<FUSE_AUTHOR_URL>>>"
--- local dctlfuse_authorlogo  = '<<<FUSE_AUTHOR_LOGO>>>'
+local dctlfuse_versionDate = "<<<FUSE_CREATION_DATE>>>"
+local dctlfuse_authorurl   = "<<<FUSE_AUTHOR_URL>>>"
+local dctlfuse_authorlogo  = '<<<FUSE_AUTHOR_LOGO>>>'
 
 
 
