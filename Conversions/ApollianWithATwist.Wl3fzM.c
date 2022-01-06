@@ -1,4 +1,3 @@
-
 // ACHTUNG - DEN HIER BENUTZE ICH, UM DIE FUSE-GENERIERUNG ZU TESTEN
 // BITTE NICHT AN DIESER DATEI HIER ARBEITEN - UND AUCH NICHT DAS
 // FRAGMENT IN DEM ANDEREN REPO IN EINE FUSE VERPFLANZEN ... DAS SOLL
@@ -10,23 +9,20 @@
 // ----------------------------------------------------------------------------------
 
 
-
 // License CC0: Apollian with a twist
 // Playing around with apollian fractal
 
-#define PI              3.141592654
-#define TAU             (2.0f*PI)
 #define L2(x)           dot(x, x)
-#define ROT(a)          mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a))
+#define ROT(a)          to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a))
 #define PSIN(x)         (0.5f+0.5f*_sinf(x))
 
 __DEVICE__ float3 hsv2rgb(float3 c) {
   const float4 K = to_float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
-  float3 p = fabs(fract((swi3(c,x,x,x) + swi3(K,x,y,z)) * 6.0f - swi3(K,w,w,w)));
+  float3 p = _fabs(fract(swi3(c,x,x,x) + swi3(K,x,y,z)) * 6.0f - swi3(K,w,w,w));
   return c.z * _mix(swi3(K,x,x,x), clamp(p - swi3(K,x,x,x), 0.0f, 1.0f), c.y);
 }
 
-__DEVICE__ float apollian(float4 p, float s,float scale) {
+__DEVICE__ float apollian(float4 p, float s, float scale) {
   //float scale = 1.0f;
 
   for(int i=0; i<7; ++i) {
@@ -42,7 +38,7 @@ __DEVICE__ float apollian(float4 p, float s,float scale) {
   return _fabs(p.y)/scale;
 }
 
-__DEVICE__ float weird(float2 p,float iTime,float scale) {
+__DEVICE__ float weird(float2 p, float iTime, float scale) {
   float z = 4.0f;
   p *= ROT(iTime*0.1f);
   float tm = 0.2f*iTime;
@@ -50,34 +46,25 @@ __DEVICE__ float weird(float2 p,float iTime,float scale) {
   float4 off = to_float4(r*PSIN(tm*_sqrtf(3.0f)), r*PSIN(tm*_sqrtf(1.5f)), r*PSIN(tm*_sqrtf(2.0f)), 0.0f);
   float4 pp = to_float4(p.x, p.y, 0.0f, 0.0f)+off;
   pp.w = 0.125f*(1.0f-_tanhf(length(swi3(pp,x,y,z))));
-  // swiyz(pp) *= ROT(tm);
-  mat2 tmp_mat2;
-  tmp_mat2=ROT(tm);
-  float2 tmp_float2;
-  tmp_float2=to_float2(pp.y,pp.z);
-  tmp_float2=tmp_float2*tmp_mat2;
-  pp.y=tmp_float2.x;
-  pp.z=tmp_float2.y;
-  // swixz(pp) *= ROT(tm*_sqrtf(0.5f));
-  tmp_mat2=ROT(tm*_sqrtf(0.5f));
-  tmp_float2=to_float2(pp.x,pp.z);
-  tmp_float2=tmp_float2*tmp_mat2;
-  pp.x=tmp_float2.x;
-  pp.z*=tmp_float2.y;
+
+  float2 tmp;
+  tmp = mul_f2_mat2(swi2(pp,y,z), ROT(tm));               pp.y=tmp.x; pp.z=tmp.y; // swi2(pp,y,z) *= ROT(tm);
+  tmp = mul_f2_mat2(swi2(pp,x,z), ROT(tm*_sqrtf(0.5f)));  pp.x=tmp.x; pp.z=tmp.y; // swi2(pp,x,z) *= ROT(tm*_sqrtf(0.5f));
+
   pp /= z;
-  float d = apollian(pp, 1.2f,scale);
+  float d = apollian(pp, 1.2f, scale);
   return d*z;
 }
 
-__DEVICE__ float df(float2 p,float iTime, float scale) {
+__DEVICE__ float df(float2 p, float iTime, float scale) {
   const float zoom = 0.5f;
   p /= zoom;
   float d0 = weird(p,iTime,scale);
   return d0*zoom;
 }
 
-__DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) {
-  float aa   = 2.0/iResolution_y;
+__DEVICE__ float3 color(float2 p, float iTime, float iResolution_y, float scale) {
+  float aa   = 2.0f/iResolution_y;
   const float lw = 0.0235f;
   const float lh = 1.25f;
 
@@ -94,8 +81,8 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
 
   float3 rd = normalize(pp - ro);
 
-  // float3 ld1 = normalize(lp1 - pp);
-  // float3 ld2 = normalize(lp2 - pp);
+//float3 ld1 = normalize(lp1 - pp);
+//float3 ld2 = normalize(lp2 - pp);
 
   float bt = -(t-b)/rd.y;
 
@@ -106,11 +93,11 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
   float bl22= L2(lp2-bp);
 
   float st1= (0.0f-b)/srd1.y;
-  // float st2= (0.0f-b)/srd2.y;
+//float st2= (0.0f-b)/srd2.y;
   float3 sp1 = bp + srd1*st1;
   float3 sp2 = bp + srd2*st1;
 
-  // float bd = df(swixz(bp),iTime);
+//float bd = df(swi2(bp,x,z),iTime,scale);
   float sd1= df(swi2(sp1,x,z),iTime,scale);
   float sd2= df(swi2(sp2,x,z),iTime,scale);
 
@@ -132,44 +119,34 @@ __DEVICE__ float3 color(float2 p,float iTime, float iResolution_y, float scale) 
 }
 
 
-
-__KERNEL__ void ApollianWithATwistFuse(
-  float4 fragColor,
-  float2 fragCoord,
-  float2 iResolution,
-  float  iTime,
-  float4 iMouse
-  )
+__KERNEL__ void ApollianWithATwistFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution)
 {
-
   CONNECT_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
   CONNECT_SMALLSLIDER0(Scale,0.0f,10.0f,1.0f);
   CONNECT_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
   CONNECT_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
   CONNECT_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
 
-  float2 q = fragCoord/iResolution;
+  float2 q = fragCoord/swi2(iResolution,x,y);
   float2 p = -1.0f + 2.0f * q;
   p.x *= iResolution.x/iResolution.y;
 
-//float3 col = color(p,iTime,iResolution.y,1.0f);
-  float3 col = color(p,iTime,iResolution.y,Scale*10.0f);
+  float3 col = color(p,iTime,iResolution.y,Scale);
 
-// --- Post Process:
+  #if 0
+    col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+    col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
+    col=_mix(col, to_float3_s( dot(col, to_float3_s(0.33f)) ), -0.4f);  // saturation
+    col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
+    fragColor = to_float4_aw(col, 1.0f);
+  #else
+    col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
+    col=col*Contrast+0.4f*col*col*(3.0f-2.0f*col);  // contrast
+    col=_mix(col, to_float3_s( dot(col, to_float3_s(Saturation)) ), -0.4f);  // saturation
+    col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),Vigneting);  // vigneting
+    fragColor = to_float4_aw(col, Alpha);
+  #endif
 
-#if 1
-  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
-  col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
-  col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
-  col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
-  fragColor = to_float4_aw(col, 1.0f);
-#else
-  col=_powf(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
-  col=col*Contrast+0.4f*col*col*(3.0f-2.0f*col);  // contrast
-  col=_mix(col, to_float3_s(dot(col, to_float3_s(Saturation))), -0.4f);  // saturation
-  col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),Vigneting);  // vigneting
-  fragColor = to_float4_aw(col, Alpha);
-#endif
 
 
   SetFragmentShaderComputedColor(fragColor);
