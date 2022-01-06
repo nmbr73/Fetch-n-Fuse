@@ -211,12 +211,12 @@
 /*| mat4          |*/
 /*| to_mat4       |*/  __DEVICE__ inline mat4 to_mat4( float a, float b, float c, float d, float e, float f, float g, float h, float i, float j, float k, float l, float m, float n, float o, float p)
 /*| to_mat4       |*/  {
-/*| to_mat4       |*/    return mat3(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p);
+/*| to_mat4       |*/    return mat4(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p);
 /*| to_mat4       |*/  }
 /*|               |*/
-/*| to_mat4_f     |*/  __DEVICE__ inline mat4 to_mat4_f( float a ) { return mat3(a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a); }
+/*| to_mat4_f     |*/  __DEVICE__ inline mat4 to_mat4_f( float a ) { return mat4(a,a,a,a,a,a,a,a,a,a,a,a,a,a,a,a); }
 /*| to_mat4_f4    |*/  __DEVICE__ inline mat4 to_mat4_f4( float4 a, float4 b, float4 c, float4 d ) { return mat4(a,b,c,d); }
-/*| mul_mat4_f4   |*/  __DEVICE__ inline float4 mul_mat4_f4( mat3 B, float4 A) { return (B*A); }
+/*| mul_mat4_f4   |*/  __DEVICE__ inline float4 mul_mat4_f4( mat4 B, float4 A) { return (B*A); }
 /*| mul_f4_mat4   |*/  __DEVICE__ inline float4 mul_f4_mat4( float4 A, mat4 B) { return (A*B); }
 /*| mul_mat4_mat4 |*/  __DEVICE__ inline mat4 mul_mat4_mat4( mat4 A, mat4 B) { return (A*B); }
 /*|               |*/
@@ -241,65 +241,65 @@
 /*| to_mat3_f     |*/    return t;
 /*| to_mat3_f     |*/  }
 /*|               |*/
-/*| to_mat4_f4    |*/__DEVICE__ inline mat4 to_mat4_f4( float4 A, float4 B, float4 C, float4 D) 
-/*| to_mat4_f4    |*/  {  
-/*| to_mat4_f4    |*/    mat4 _ret;  
-/*| to_mat4_f4    |*/    _ret.r0 = A;  
-/*| to_mat4_f4    |*/    _ret.r1 = B;  
-/*| to_mat4_f4    |*/    _ret.r2 = C;  
-/*| to_mat4_f4    |*/    _ret.r3 = D;  
-/*| to_mat4_f4    |*/    return _ret;  
-/*| to_mat4_f4    |*/  } 
+/*| to_mat4_f4    |*/__DEVICE__ inline mat4 to_mat4_f4( float4 A, float4 B, float4 C, float4 D)
+/*| to_mat4_f4    |*/  {
+/*| to_mat4_f4    |*/    mat4 _ret;
+/*| to_mat4_f4    |*/    _ret.r0 = A;
+/*| to_mat4_f4    |*/    _ret.r1 = B;
+/*| to_mat4_f4    |*/    _ret.r2 = C;
+/*| to_mat4_f4    |*/    _ret.r3 = D;
+/*| to_mat4_f4    |*/    return _ret;
+/*| to_mat4_f4    |*/  }
 /*|               |*/
-/*| mul_mat4_f4   |*/__DEVICE__ inline float4 mul_mat4_f4( mat4 B, float4 A)	 
-/*| mul_mat4_f4   |*/  {  
-/*| mul_mat4_f4   |*/    float4 C;  
-/*| mul_mat4_f4   |*/    C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x + A.w * B.r3.x;  
-/*| mul_mat4_f4   |*/    C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y + A.w * B.r3.y;  
-/*| mul_mat4_f4   |*/    C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z + A.w * B.r3.z;  
-/*| mul_mat4_f4   |*/    C.w = A.x * B.r0.w + A.y * B.r1.w + A.z * B.r2.w + A.w * B.r3.w;  
-/*| mul_mat4_f4   |*/    return C;  
-/*| mul_mat4_f4   |*/} 
+/*| mul_mat4_f4   |*/__DEVICE__ inline float4 mul_mat4_f4( mat4 B, float4 A)
+/*| mul_mat4_f4   |*/  {
+/*| mul_mat4_f4   |*/    float4 C;
+/*| mul_mat4_f4   |*/    C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x + A.w * B.r3.x;
+/*| mul_mat4_f4   |*/    C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y + A.w * B.r3.y;
+/*| mul_mat4_f4   |*/    C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z + A.w * B.r3.z;
+/*| mul_mat4_f4   |*/    C.w = A.x * B.r0.w + A.y * B.r1.w + A.z * B.r2.w + A.w * B.r3.w;
+/*| mul_mat4_f4   |*/    return C;
+/*| mul_mat4_f4   |*/}
 /*|               |*/
-/*| mul_f4_mat4   |*/__DEVICE__ float4 mul_f4_mat4( float4 A, mat4 B)  
-/*| mul_f4_mat4   |*/  {  
-/*| mul_f4_mat4   |*/    float4 C;  
+/*| mul_f4_mat4   |*/__DEVICE__ float4 mul_f4_mat4( float4 A, mat4 B)
+/*| mul_f4_mat4   |*/  {
+/*| mul_f4_mat4   |*/    float4 C;
 /*| mul_f4_mat4   |*/    C.x = A.x * B.r0.x + A.y * B.r0.y + A.z * B.r0.z + A.w * B.r0.w;
 /*| mul_f4_mat4   |*/    C.y = A.x * B.r1.x + A.y * B.r1.y + A.z * B.r1.z + A.w * B.r1.w;
 /*| mul_f4_mat4   |*/    C.z = A.x * B.r2.x + A.y * B.r2.y + A.z * B.r2.z + A.w * B.r2.w;
 /*| mul_f4_mat4   |*/    C.w = A.x * B.r3.x + A.y * B.r3.y + A.z * B.r3.z + A.w * B.r3.w;
-/*| mul_f4_mat4   |*/    return C;  
-/*| mul_f4_mat4   |*/  }   
+/*| mul_f4_mat4   |*/    return C;
+/*| mul_f4_mat4   |*/  }
 /*|               |*/
-/*| mul_mat4_mat4 |*/__DEVICE__ inline __host__ __device__ mat4 mat4_multi_mat4( mat4 B, mat4 A)   //  
+/*| mul_mat4_mat4 |*/__DEVICE__ inline __host__ __device__ mat4 mat4_multi_mat4( mat4 B, mat4 A)   //
 /*| mul_mat4_mat3 |*/{
 /*| mul_mat4_mat3 |*/
-/*| mul_mat4_mat4 |*/  float r[4][4];  
-/*| mul_mat4_mat4 |*/  float a[4][4] = {{A.r0.x, A.r0.y, A.r0.z, A.r0.w},  
-/*| mul_mat4_mat4 |*/                   {A.r1.x, A.r1.y, A.r1.z, A.r1.w},  
+/*| mul_mat4_mat4 |*/  float r[4][4];
+/*| mul_mat4_mat4 |*/  float a[4][4] = {{A.r0.x, A.r0.y, A.r0.z, A.r0.w},
+/*| mul_mat4_mat4 |*/                   {A.r1.x, A.r1.y, A.r1.z, A.r1.w},
 /*| mul_mat4_mat4 |*/                   {A.r2.x, A.r2.y, A.r2.z, A.r2.w},
-/*| mul_mat4_mat4 |*/                   {A.r3.x, A.r3.y, A.r3.z, A.r3.w}};  
-/*| mul_mat4_mat4 |*/  float b[4][4] = {{B.r0.x, B.r0.y, B.r0.z, B.r0.w},  
-/*| mul_mat4_mat4 |*/                   {B.r1.x, B.r1.y, B.r1.z, B.r1.w},  
+/*| mul_mat4_mat4 |*/                   {A.r3.x, A.r3.y, A.r3.z, A.r3.w}};
+/*| mul_mat4_mat4 |*/  float b[4][4] = {{B.r0.x, B.r0.y, B.r0.z, B.r0.w},
+/*| mul_mat4_mat4 |*/                   {B.r1.x, B.r1.y, B.r1.z, B.r1.w},
 /*| mul_mat4_mat4 |*/                   {B.r2.x, B.r2.y, B.r2.z, B.r2.w},
-/*| mul_mat4_mat4 |*/                   {B.r3.x, B.r3.y, B.r3.z, B.r3.w}};  
-/*| mul_mat4_mat4 |*/     
-/*| mul_mat4_mat4 |*/  for( int i = 0; i < 4; ++i)  
-/*| mul_mat4_mat4 |*/  {  
-/*| mul_mat4_mat4 |*/	  for( int j = 0; j < 4; ++j)  
-/*| mul_mat4_mat4 |*/	  {  
-/*| mul_mat4_mat4 |*/		  r[i][j] = 0.0f;  
-/*| mul_mat4_mat4 |*/		  for( int k = 0; k < 4; ++k)  
-/*| mul_mat4_mat4 |*/		  {  
-/*| mul_mat4_mat4 |*/			r[i][j] = r[i][j] + a[i][k] * b[k][j];  
-/*| mul_mat4_mat4 |*/		  }  
-/*| mul_mat4_mat4 |*/	  }  
-/*| mul_mat4_mat4 |*/  }  
-/*| mul_mat4_mat4 |*/  mat4 R = to_mat4(r[0][0], r[0][1], r[0][2], r[0][3],   
-/*| mul_mat4_mat4 |*/                   r[1][0], r[1][1], r[1][2], r[1][3], 
+/*| mul_mat4_mat4 |*/                   {B.r3.x, B.r3.y, B.r3.z, B.r3.w}};
+/*| mul_mat4_mat4 |*/
+/*| mul_mat4_mat4 |*/  for( int i = 0; i < 4; ++i)
+/*| mul_mat4_mat4 |*/  {
+/*| mul_mat4_mat4 |*/	  for( int j = 0; j < 4; ++j)
+/*| mul_mat4_mat4 |*/	  {
+/*| mul_mat4_mat4 |*/		  r[i][j] = 0.0f;
+/*| mul_mat4_mat4 |*/		  for( int k = 0; k < 4; ++k)
+/*| mul_mat4_mat4 |*/		  {
+/*| mul_mat4_mat4 |*/			r[i][j] = r[i][j] + a[i][k] * b[k][j];
+/*| mul_mat4_mat4 |*/		  }
+/*| mul_mat4_mat4 |*/	  }
+/*| mul_mat4_mat4 |*/  }
+/*| mul_mat4_mat4 |*/  mat4 R = to_mat4(r[0][0], r[0][1], r[0][2], r[0][3],
+/*| mul_mat4_mat4 |*/                   r[1][0], r[1][1], r[1][2], r[1][3],
 /*| mul_mat4_mat4 |*/  	                r[2][0], r[2][1], r[2][2], r[2][3],
-/*| mul_mat4_mat4 |*/	                  r[3][0], r[3][1], r[3][2], r[3][3]);  
-/*| mul_mat4_mat4 |*/  return R;  
+/*| mul_mat4_mat4 |*/	                  r[3][0], r[3][1], r[3][2], r[3][3]);
+/*| mul_mat4_mat4 |*/  return R;
 /*| mul_mat4_mat4 |*/}
 /*| mat4          |*/#endif // end of mat3 implementation
 
@@ -481,7 +481,7 @@
     /*| length_f      |*/  #define length_f(value) fabs(value);
     /*| length_f      |*/#endif
 
-    /*| fract         |*/#define fract(a) ((a)-_floor(a)) 
+    /*| fract         |*/#define fract(a) ((a)-_floor(a))
 
     /*| fract_f       |*/#define fract_f(A)  fract(A)
     /*| fract_f2      |*/#define fract_f2(A) to_float2(fract((A).x),fract((A).y))
