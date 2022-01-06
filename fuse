@@ -115,10 +115,11 @@ def write_markdown_file(info,target_file,force=False):
     print("file '"+target_file+"' already exists - use force option to overwrite")
     return
 
+  dlbtn = f"[![Download Installer](https://img.shields.io/static/v1?label=Download&message={fuse_name}-Installer.lua&color=blue)]({fuse_name}-Installer.lua \"Installer\")"
   with open(target_file, 'w') as f:
     f.write(
-        f"# {fuse_name}\n\nBased on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n"
-        +":construction: *ADD SOME REASONABLE DESCRIPTION HERE* :construction:\n\n"+info['shader'].get('description','')+"\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
+        f"# {fuse_name}\n{dlbtn}\n\nBased on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n"
+        +":construction: ***ADD SOME REASONABLE DESCRIPTION HERE!*** "+info['shader'].get('description','')+" :construction:\n\n## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n"
         )
 
     verbose("wrote file '"+target_file+"'")
