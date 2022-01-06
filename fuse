@@ -8,6 +8,8 @@ import json
 import yaml
 import argparse
 from dotenv import load_dotenv
+from datetime import date
+
 
 
 VERBOSE=False
@@ -374,12 +376,14 @@ def fuse_it(id,force=False):
   fuse=re.sub(r'<<<SHADER_NAME>>>',info['shader']['name'],fuse)
   fuse=re.sub(r'<<<FUSE_NAME>>>',info['fuse']['name'],fuse)
   fuse=re.sub(r'<<<FUSE_AUTHOR>>>',info['fuse']['author'],fuse)
+  fuse=re.sub(r'<<<FUSE_CREATION_DATE>>>',date.today().strftime("%B %d, %Y"),fuse)
 
   fuse=re.sub(r'<<<CODE_COMPATIBILITY>>>',compatibilityCode,fuse)
   fuse=re.sub(r'<<<CODE_KERNEL>>>',conversionCode,fuse)
   fuse=re.sub(r'<<<CODE_PARAMETERS>>>',fuse_param,fuse)
   fuse=re.sub(r'<<<CODE_CREATE>>>',fuse_create,fuse)
   fuse=re.sub(r'<<<CODE_PROCESS>>>',fuse_process,fuse)
+
 
 
 
