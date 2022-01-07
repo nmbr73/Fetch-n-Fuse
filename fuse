@@ -527,6 +527,11 @@ def fuse_it(id,force=False):
 
   create, process, kernel, params = check_controls(conversionCode)
 
+  # remove all controls from source
+
+  conversionCode = re.sub(r'\s+CONNECT_[A-Z]+\d+\s*\(\s*[A-Za-z_][\w]*\s*,\s*[^\)]+\)\s*;\s*', '', conversionCode)
+
+
   fuse_param   += params
   fuse_create  += create
   fuse_process += process
