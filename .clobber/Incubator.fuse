@@ -898,7 +898,8 @@ function RebuildParameters()
     for i=0,NUM_SLIDER_CONTROLS-1 do
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SLIDER"..i.."%s*%(([%a_][%w_])%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SLIDER"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
+      --print("#SLIDER#",name, smin, smax, sdef)
 
       if (name ~= nil) then
 
@@ -923,7 +924,7 @@ function RebuildParameters()
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_INTSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
       local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_INTSLIDER"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+)%s*,%s*(%-?%d+)%s*,%s*(%-?%d+)%s*%)%s*;")
-      --print("#TinyINTSlider#",name, smin, smax, sdef) --
+      --print("#INTSLIDER#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  int "..name.."; // ".."INTSLIDER"..i.."\n"
