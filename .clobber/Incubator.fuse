@@ -844,16 +844,17 @@ function RebuildParameters()
     --CONNECT_COLOR0(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A)
     for i=0,NUM_COLOR_CONTROLS-1 do
 
-      local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
+      -- local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
+      local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+CONNECT_COLOR"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;") -- geht
       --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--
       if (name ~= nil) then
         InColorName[i]:SetAttrs({ IC_Visible = true, LINKS_Name = name })
 
-        InColor[i][0]:SetAttrs({ IC_Visible = true })
+        InColor[i][0]:SetAttrs({ IC_Visible = true  })
         InColor[i][0]:SetAttrs({INP_Default = tonumber(defRed)})
         InColor[i][0]:SetSource(Number(tonumber(defRed)),0,0)
 
-        InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen)})
+        InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen) })
         InColor[i][1]:SetSource(Number(tonumber(defGreen)),0,0)
 
         InColor[i][2]:SetAttrs({INP_Default = tonumber(defBlue)})
@@ -871,7 +872,8 @@ function RebuildParameters()
     --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
     for i=0,NUM_SLIDER_CONTROLS-1 do
 
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SLIDER"..i.."%s*%(([%a_][%w_])%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
 
       if (name ~= nil) then
         InSlider[i]:SetAttrs({
@@ -890,7 +892,8 @@ function RebuildParameters()
     --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
     for i=0,NUM_INTSLIDER_CONTROLS-1 do
 
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_INTSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_INTSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_INTSLIDER"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+)%s*,%s*(%-?%d+)%s*,%s*(%-?%d+)%s*%)%s*;")
       --print("#TinyINTSlider#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
@@ -910,8 +913,20 @@ function RebuildParameters()
     --CONNECT_CHECKBOX0(NAME,SDEFAULT)
     for i=0,NUM_CHECKBOX_CONTROLS-1 do
 
-      local name, sdef = ConversionSourcecode:match("%s+ CONNECT_CHECKBOX"..i.."%(([%a*_*%d*]*)%s*,%s*(%d*)%s*.*$") -- ev. [0|1] da bool ???
+      --local name, sdef = ConversionSourcecode:match("%s+ CONNECT_CHECKBOX"..i.."%(([%a*_*%d*]*)%s*,%s*(%d*)%s*.*$") -- ev. [0|1] da bool ???
+      local name, sdef = ConversionSourcecode:match("%s+CONNECT_CHECKBOX"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%w+)%s*.*$")
       --print("#CHECKBOX#", name, sdef) --
+
+      if sdef~=nil then
+        if sdef=='true' or sdef=='1' then
+          sdef=1
+        elseif sdef=='false' or sdef=='0' then
+          sdef=0
+        else
+          print("invalid default value '".. sdef .."' for checkbox '".. name .."'")
+          name=nil
+        end
+      end
 
       if (name ~= nil) then
         InCheckbox[i]:SetAttrs({
@@ -928,7 +943,8 @@ function RebuildParameters()
     --CONNECT_POINT0(NAME,SDEFAULT)
     for i=0,NUM_POINT_CONTROLS-1 do
 
-      local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      -- local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
+      local name, sdefx, sdefy = ConversionSourcecode:match("%s+CONNECT_POINT"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
       print("#POINT#", name, sdefx, sdefy) --
 
       if (name ~= nil) then
