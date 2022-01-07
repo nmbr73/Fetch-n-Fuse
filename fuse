@@ -288,9 +288,10 @@ def check_controls(conversionCode):
 
       min, max, default = m.group(1), m.group(2), m.group(3)
 
-      codeParams = f"float {ctrlVar};"
-      codeKernel = f"float  {ctrlVar} = params->{ctrlVar};"
-      codeCreate=  f"""
+      codeParams  = f"float {ctrlVar};"
+      codeKernel  = f"float  {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Slider:GetValue(req).Value"
+      codeCreate  = f"""
           In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
               LINKID_DataType    = "Number",
               INPID_InputControl = "SliderControl",
@@ -298,6 +299,7 @@ def check_controls(conversionCode):
               INP_MaxScale       = {max},
               INP_Default        = {default},
           }})"""
+
 
     elif ctrlType == 'INTSLIDER':
 
@@ -308,10 +310,10 @@ def check_controls(conversionCode):
 
       min, max, default = m.group(1), m.group(2), m.group(3)
 
-      codeParams = f"int   {ctrlVar};"
-      codeKernel = f"int    {ctrlVar} = params->{ctrlVar};"
-
-      codeCreate=  f"""
+      codeParams  = f"int   {ctrlVar};"
+      codeKernel  = f"int    {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Slider:GetValue(req).Value"
+      codeCreate  = f"""
           In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
               LINKID_DataType    = "Number",
               INPID_InputControl = "SliderControl",
@@ -330,10 +332,10 @@ def check_controls(conversionCode):
 
       x, y = m.group(1), m.group(2)
 
-      codeParams = f"float {ctrlVar}[2];"
-      codeKernel = f"float2 {ctrlVar} = to_float2(params->{ctrlVar}[0], params->{ctrlVar}[1]);"
-
-      codeCreate=  f"""
+      codeParams  = f"float {ctrlVar}[2];"
+      codeKernel  = f"float2 {ctrlVar} = to_float2(params->{ctrlVar}[0], params->{ctrlVar}[1]);"
+      codeProcess = f"params.{ctrlVar} = {{In{ctrlVar}Point:GetValue(req).X,In{ctrlVar}Point:GetValue(req).Y}}"
+      codeCreate  = f"""
           In{ctrlVar}Point = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
               LINKID_DataType    = "Point",
               INPID_InputControl = "OffsetControl",
@@ -355,10 +357,10 @@ def check_controls(conversionCode):
       else:
         default=0
 
-      codeParams = f"bool  {ctrlVar};"
-      codeKernel = f"bool   {ctrlVar} = params->{ctrlVar};"
-
-      codeCreate=  f"""
+      codeParams  = f"bool  {ctrlVar};"
+      codeKernel  = f"bool   {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Checkbox:GetValue(req).Value"
+      codeCreate  = f"""
           In{ctrlVar}Checkbox = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
             LINKID_DataType     = "Number",
             INPID_InputControl  = "CheckboxControl",
@@ -375,10 +377,10 @@ def check_controls(conversionCode):
 
       r, g, b, a = m.group(1), m.group(2), m.group(3), m.group(4)
 
-      codeParams = f"float {ctrlVar}[4];"
-      codeKernel = f"float4 {ctrlVar} = to_float4(params->{ctrlVar}[0], params->{ctrlVar}[1], params->{ctrlVar}[2], params->{ctrlVar}[3]);"
-
-      codeCreate=  f"""
+      codeParams  = f"float {ctrlVar}[4];"
+      codeKernel  = f"float4 {ctrlVar} = to_float4(params->{ctrlVar}[0], params->{ctrlVar}[1], params->{ctrlVar}[2], params->{ctrlVar}[3]);"
+      codeProcess = f"params.{ctrlVar} = {{\n    In{ctrlVar}ColorR:GetValue(req).Value,\n    In{ctrlVar}ColorG:GetValue(req).Value,\n    In{ctrlVar}ColorB:GetValue(req).Value,In{ctrlVar}ColorA:GetValue(req).Value\n  }}"
+      codeCreate  = f"""
           self:BeginControlNest("{ctrlVar}", "{ctrlVar}", true, {{}})
 
             ctrl_grp_cnt = (ctrl_grp_cnt==nil) and 1 or (ctrl_grp_cnt+1)
@@ -402,14 +404,16 @@ def check_controls(conversionCode):
     else:
       raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
 
-    codeCreate=re.sub(r'\n        ',  '\n', codeCreate)
-    codeCreate=re.sub(r'^\s+',        '  ',   codeCreate)
-    codeParams="  "+codeParams
-    codeKernel="  "+codeKernel
+    codeCreate  = re.sub(r'\n        ',  '\n', codeCreate)
+    codeCreate  = re.sub(r'^\s+',        '  ', codeCreate)
+    codeParams  = "  "+codeParams
+    codeKernel  = "  "+codeKernel
+    codeProcess = "  "+codeProcess
 
-    fullCodeCreate = fullCodeCreate + codeCreate + "\n\n"
-    fullCodeParams = fullCodeParams + codeParams + "\n"
-    fullCodeKernel = fullCodeKernel + codeKernel + "\n"
+    fullCodeCreate  = fullCodeCreate  + codeCreate  + "\n\n"
+    fullCodeParams  = fullCodeParams  + codeParams  + "\n"
+    fullCodeKernel  = fullCodeKernel  + codeKernel  + "\n"
+    fullCodeProcess = fullCodeProcess + codeProcess + "\n"
 
   return fullCodeCreate, fullCodeProcess, fullCodeKernel,  fullCodeParams
 
@@ -525,7 +529,8 @@ def fuse_it(id,force=False):
 
   #print(create)
   #print(params)
-  print(kernel)
+  #print(kernel)
+  print(process)
 
 
 
