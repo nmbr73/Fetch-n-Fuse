@@ -185,7 +185,8 @@ function Process(req)
   -- end
 
 
-  -------------- Parameter für DCTL-Code ---------------------
+  -- DCTL parameters
+
   local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
 
   local params = {}
@@ -193,41 +194,6 @@ function Process(req)
   params = node:GetParamBlock(ShaderParameters)
 
 <<<CODE_PROCESS>>>
-
-
-
-  -- -- Colors
-
-  -- for i=0,NUM_COLOR_CONTROLS-1 do
-  --   for j=0,3 do
-  --     params.color[i][j] = InColor[i][j]:GetValue(req).Value
-  --   end
-  -- end
-
-  -- -- Sliders
-
-  -- for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-  --   params.tinySlider[i] = InTinySlider[i]:GetValue(req).Value
-  -- end
-
-  -- for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-  --   params.smallSlider[i] = InSmallSlider[i]:GetValue(req).Value
-  -- end
-
-  -- for i=0,NUM_TINYINT_CONTROLS-1 do
-  --   params.tinyInt[i] = InTinyInt[i]:GetValue(req).Value
-  -- end
-
-  -- -- Checkboxes
-  -- for i=0,NUM_CHECKBOX_CONTROLS-1 do
-  --   params.checkbox[i] = InCheckbox[i]:GetValue(req).Value
-  -- end
-
-  -- -- PointControls
-  -- for i=0,NUM_POINT_CONTROLS-1 do
-  --   params.point[i] = {InPoint[i]:GetValue(req).X,InPoint[i]:GetValue(req).Y}
-  -- end
-
 
   -- Resolution
 

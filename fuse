@@ -415,7 +415,7 @@ def check_controls(conversionCode):
     fullCodeKernel  += codeKernel  + "\n"
     fullCodeProcess += codeProcess + "\n"
 
-  return fullCodeCreate, fullCodeProcess, fullCodeKernel+"\n",  fullCodeParams
+  return fullCodeCreate, "\n"+fullCodeProcess, fullCodeKernel+"\n",  fullCodeParams
 
 
 
@@ -507,15 +507,15 @@ def fuse_it(id,force=False):
 
 
 
-  fuse_param   = ''
-  fuse_create  = ''
+  fuse_param    = ''
+  fuse_create   = ''
   fuse_process  = ''
 
 
   for n,p in has_param.items():
     if p['Present'] and p['Code']!='':
-      fuse_param +=  p['Param']
-      fuse_create +=  p['Create']
+      fuse_param   +=  p['Param']
+      fuse_create  +=  p['Create']
       fuse_process +=  p['Proc']
 
 
