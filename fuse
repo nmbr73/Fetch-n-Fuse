@@ -182,7 +182,7 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
         t = m.group(1)+'*'
         n = m.group(2)
       else:
-        m= re.search(r'^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$', p) # match "type name [ ]"
+        m= re.search(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s+([A-Za-z_][A-Za-z_0-9]*)\s*\[\s*\]\s*$', p) # match "type name [ ]"
         if m:
           t = m.group(1)+'*'
           n = m.group(2)
@@ -417,6 +417,28 @@ def fuse_it(id,force=False):
               INP_MaxScale       = {max},
               INP_Default        = {default},
               INP_Integer        = true,
+          }})"""
+
+      print(f"'{codeCreate}'")
+
+    elif ctrlType == 'CHECKBOX':
+
+      m = re.match(r'^\s*(1|true|0|false)\s*$',ctrlParams)
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      default = m.group(1)
+      if default=="1" or default=="true":
+        default=1
+      else:
+        default=0
+
+      codeCreate=  f"""
+          In{ctrlVar}Checkbox = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+            LINKID_DataType     = "Number",
+            INPID_InputControl  = "CheckboxControl",
+            INP_Integer         = true,
+            INP_Default         = {default},
           }})"""
 
       print(f"'{codeCreate}'")
