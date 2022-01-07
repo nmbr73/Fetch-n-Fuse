@@ -259,115 +259,9 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
 
   return conversionCode
 
-
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 
-def fuse_it(id,force=False):
-
-  source_path='./Conversions/'
-  target_path='./Converted/'
-
-  conversion_file = get_basefilename(source_path,id)
-
-  verbose(f"process '{conversion_file}'")
-
-
-
-  # read .yaml file
-
-  info=None
-  with open(f"{source_path}{conversion_file}.{id}.yaml", "r") as f:
-    info=yaml.safe_load(f)
-
-
-  fuse_name     = info['fuse']['name']  # FuReg name ... this is what's displayed in the tool selection menu
-  fuse_kernel   = conversion_file       # name of the fragment shader kernel function
-  fuse_id       = info['fuse'].get('id',conversion_file) # FuReg ID (must follow identifier syntax)
-  fuse_file     = info['fuse'].get('file',fuse_id)  # filename to save the fuse as
-
-  if info['shader']['id'] != id:
-    raise Exception("inconsistency in your source and yaml file")
-
-
-
-  # write .md file
-
-  write_markdown_file(info, target_file = target_path+fuse_file+".md", force = force )
-
-
-
-  # read conversion code
-
-  with open(f"{source_path}{conversion_file}.{id}.c", "r") as f:
-    conversionCode=f.read()
-
-  conversionCode = re.sub(r'\t','  ',conversionCode)
-  conversionCode = re.sub(r' +\n','\n',conversionCode)
-
-
-
-  # create compatibility code for this conversion
-
-  compatibilityCode = get_compatibility_code(conversionCode)
-
-
-
-
-  # load the data from yaml file
-
-  with open(".clobber/fuse-parameters.yaml", "r") as f:
-    src=f.read()
-
-  has_param=yaml.load(src, Loader=yaml.FullLoader)
-
-
-  # iChannel<0..15> with 15 as the maximum number of input channels supported for the time being
-
-  for i in range(0,15):
-    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
-
-
-  # do some code indention
-
-  for k,v in has_param.items():
-    for f in ['Code','Proc','Create','Param']:
-      if v.get(f,None)==None:
-        v[f]=''
-      elif v[f]!='':
-        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
-
-
-  # patch all kernel signatures
-
-  for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
-
-    for k,v in has_param.items():
-      v['Present'] = False
-
-    conversionCode = patch_kernel(conversionCode,fuse_kernel,has_param,part)
-
-
-
-  fuse_param   = ''
-  fuse_create  = ''
-  fuse_process  = ''
-
-
-  for n,p in has_param.items():
-    if p['Present'] and p['Code']!='':
-      fuse_param +=  p['Param']
-      fuse_create +=  p['Create']
-      fuse_process +=  p['Proc']
-
-
-  with open(".clobber/fuse-template.lua", "r") as f:
-    fuse=f.read()
-
-
-  # now we need to equip the fuse with all the controls
+def check_controls(conversionCode):
 
   controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
 
@@ -495,7 +389,121 @@ def fuse_it(id,force=False):
 
     fullCodeCreate = fullCodeCreate + codeCreate + "\n\n"
 
-  print(f"'{fullCodeCreate}'")
+  return fullCodeCreate, '', ''
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def fuse_it(id,force=False):
+
+  source_path='./Conversions/'
+  target_path='./Converted/'
+
+  conversion_file = get_basefilename(source_path,id)
+
+  verbose(f"process '{conversion_file}'")
+
+
+
+  # read .yaml file
+
+  info=None
+  with open(f"{source_path}{conversion_file}.{id}.yaml", "r") as f:
+    info=yaml.safe_load(f)
+
+
+  fuse_name     = info['fuse']['name']  # FuReg name ... this is what's displayed in the tool selection menu
+  fuse_kernel   = conversion_file       # name of the fragment shader kernel function
+  fuse_id       = info['fuse'].get('id',conversion_file) # FuReg ID (must follow identifier syntax)
+  fuse_file     = info['fuse'].get('file',fuse_id)  # filename to save the fuse as
+
+  if info['shader']['id'] != id:
+    raise Exception("inconsistency in your source and yaml file")
+
+
+
+  # write .md file
+
+  write_markdown_file(info, target_file = target_path+fuse_file+".md", force = force )
+
+
+
+  # read conversion code
+
+  with open(f"{source_path}{conversion_file}.{id}.c", "r") as f:
+    conversionCode=f.read()
+
+  conversionCode = re.sub(r'\t','  ',conversionCode)
+  conversionCode = re.sub(r' +\n','\n',conversionCode)
+
+
+
+  # create compatibility code for this conversion
+
+  compatibilityCode = get_compatibility_code(conversionCode)
+
+
+
+
+  # load the data from yaml file
+
+  with open(".clobber/fuse-parameters.yaml", "r") as f:
+    src=f.read()
+
+  has_param=yaml.load(src, Loader=yaml.FullLoader)
+
+
+  # iChannel<0..15> with 15 as the maximum number of input channels supported for the time being
+
+  for i in range(0,15):
+    has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
+
+
+  # do some code indention
+
+  for k,v in has_param.items():
+    for f in ['Code','Proc','Create','Param']:
+      if v.get(f,None)==None:
+        v[f]=''
+      elif v[f]!='':
+        v[f]='  '+v[f].replace('\n','\n  ')+'\n'
+
+
+  # patch all kernel signatures
+
+  for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
+
+    for k,v in has_param.items():
+      v['Present'] = False
+
+    conversionCode = patch_kernel(conversionCode,fuse_kernel,has_param,part)
+
+
+
+  fuse_param   = ''
+  fuse_create  = ''
+  fuse_process  = ''
+
+
+  for n,p in has_param.items():
+    if p['Present'] and p['Code']!='':
+      fuse_param +=  p['Param']
+      fuse_create +=  p['Create']
+      fuse_process +=  p['Proc']
+
+
+  with open(".clobber/fuse-template.lua", "r") as f:
+    fuse=f.read()
+
+
+  # now we need to equip the fuse with all the controls
+
+  create, process, kernel = check_controls(conversionCode)
+
+  print(create)
+
+
 
   # load some author information from yaml file
 
