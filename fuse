@@ -372,7 +372,37 @@ def fuse_it(id,force=False):
   controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
 
   for ctrl in controls:
-    print("create "+ctrl[0]+" for "+ctrl[2])
+    ctrlType    = ctrl[0]
+    ctrlIdx     = ctrl[1]
+    ctrlVar     = ctrl[2]
+    ctrlParams  = ctrl[3] # ctrl[3].split(",")
+
+    print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
+
+    if ctrlType == 'SLIDER':
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+      if m != None:
+        min, max, default = m.group(1), m.group(2), m.group(3)
+        print(f"min={min}, max={max}, default={default}")
+
+        codeCreate=  f"""
+  InSlider_{ctrlVar} = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = {min},
+      INP_MaxScale       = {max},
+      INP_Default        = {default},
+  }})"""
+
+        print(f"'{codeCreate}'")
+      else:
+        print("failed to match parameters")
+
+    elif ctrlType == 'INTSLIDER':
+      pass
+    else:
+      raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
+
 
 
 
