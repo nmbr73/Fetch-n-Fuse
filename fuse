@@ -379,27 +379,48 @@ def fuse_it(id,force=False):
 
     print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
 
+
     if ctrlType == 'SLIDER':
+
       m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
-      if m != None:
-        min, max, default = m.group(1), m.group(2), m.group(3)
-        print(f"min={min}, max={max}, default={default}")
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
-        codeCreate=  f"""
-  InSlider_{ctrlVar} = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
-      LINKID_DataType    = "Number",
-      INPID_InputControl = "SliderControl",
-      INP_MinScale       = {min},
-      INP_MaxScale       = {max},
-      INP_Default        = {default},
-  }})"""
+      min, max, default = m.group(1), m.group(2), m.group(3)
+      print(f"min={min}, max={max}, default={default}")
 
-        print(f"'{codeCreate}'")
-      else:
-        print("failed to match parameters")
+      codeCreate=  f"""
+          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "SliderControl",
+              INP_MinScale       = {min},
+              INP_MaxScale       = {max},
+              INP_Default        = {default},
+          }})"""
+
+      print(f"'{codeCreate}'")
 
     elif ctrlType == 'INTSLIDER':
-      pass
+
+      m = re.match(r'^\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*$',ctrlParams)
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      min, max, default = m.group(1), m.group(2), m.group(3)
+      print(f"min={min}, max={max}, default={default}")
+
+      codeCreate=  f"""
+          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "SliderControl",
+              INP_MinScale       = {min},
+              INP_MaxScale       = {max},
+              INP_Default        = {default},
+              INP_Integer        = true,
+          }})"""
+
+      print(f"'{codeCreate}'")
+
     else:
       raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
 
