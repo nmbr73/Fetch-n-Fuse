@@ -367,6 +367,65 @@ def fuse_it(id,force=False):
     fuse=f.read()
 
 
+  # now we need to equip the fuse with all the controls
+
+  controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
+
+  for ctrl in controls:
+    ctrlType    = ctrl[0]
+    ctrlIdx     = ctrl[1]
+    ctrlVar     = ctrl[2]
+    ctrlParams  = ctrl[3] # ctrl[3].split(",")
+
+    print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
+
+
+    if ctrlType == 'SLIDER':
+
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      min, max, default = m.group(1), m.group(2), m.group(3)
+      print(f"min={min}, max={max}, default={default}")
+
+      codeCreate=  f"""
+          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "SliderControl",
+              INP_MinScale       = {min},
+              INP_MaxScale       = {max},
+              INP_Default        = {default},
+          }})"""
+
+      print(f"'{codeCreate}'")
+
+    elif ctrlType == 'INTSLIDER':
+
+      m = re.match(r'^\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*$',ctrlParams)
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      min, max, default = m.group(1), m.group(2), m.group(3)
+      print(f"min={min}, max={max}, default={default}")
+
+      codeCreate=  f"""
+          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "SliderControl",
+              INP_MinScale       = {min},
+              INP_MaxScale       = {max},
+              INP_Default        = {default},
+              INP_Integer        = true,
+          }})"""
+
+      print(f"'{codeCreate}'")
+
+    else:
+      raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
+
+
+
 
   # load some author information from yaml file
 

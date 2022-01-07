@@ -6,8 +6,8 @@
 
 
 #if defined(USE_NATIVE_METAL_IMPL)
-  #define abs_f3(A) abs(A)   
-  #define sqrt_f3(A) sqrt(A) 
+  #define abs_f3(A) abs(A)
+  #define sqrt_f3(A) sqrt(A)
   #define pow_f3(A) pow(A)
 
 #else
@@ -30,7 +30,7 @@
 #define PSIN(x)         (0.5f+0.5f*_sinf(x))
 
 __DEVICE__ float3 hsv2rgb(float3 c) {
-  
+
   const float4 K = to_float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
   //float3 p = abs_f3(fract_f3(to_float3_s(c.x) + swi3(K,x,y,z)) * 6.0f - to_float3_s(K.w));
   float3   p = abs_f3(fract_f3(swi3(c,x,x,x)    + swi3(K,x,y,z)) * 6.0f - swi3(K,w,w,w));
@@ -53,12 +53,12 @@ __DEVICE__ float apollian(float4 p, float s) {
     p = -1.0f + 2.0f*fract_f4(0.5f*p+0.5f);
 
     float r2 = dot(p,p);
-    
+
     float k  = s/r2;
     p       *= k;
     scale   *= k;
   }
-  
+
   return _fabs(p.y)/scale;
 }
 
@@ -70,11 +70,11 @@ __DEVICE__ float weird(float2 p, float itime) {
   float4 off = to_float4(r*PSIN(tm*_sqrtf(3.0f)), r*PSIN(tm*_sqrtf(1.5f)), r*PSIN(tm*_sqrtf(2.0f)), 0.0f);
   float4 pp = to_float4(p.x, p.y, 0.0f, 0.0f)+off;
   pp.w = 0.125f*(1.0f-_tanhf(length(swi3(pp,x,y,z))));
-  
+
   //float2 ppyz = mul_mat2_f2(ROT(tm), swi2(pp,y,z));
   float2 ppyz = mul_f2_mat2(to_float2(pp.y,pp.z),ROT(tm));
   pp.y=ppyz.x;pp.z=ppyz.y;
-  
+
   float2 ppxz = mul_f2_mat2(swi2(pp,x,z),ROT(tm*_sqrtf(0.5f)));
   pp.x=ppxz.x;pp.z=ppxz.y;
 
@@ -112,7 +112,7 @@ __DEVICE__ float3 color(float2 p, float2 iR, float itime) {
   //float3 ld2 = normalize(lp2 - pp);
 
   float bt = -(t-b)/rd.y;
-  
+
   float3 bp   = ro + bt*rd;
   float3 srd1 = normalize(lp1-bp);
   float3 srd2 = normalize(lp2-bp);
@@ -139,14 +139,14 @@ __DEVICE__ float3 color(float2 p, float2 iR, float itime) {
   float3 hsv  = to_float3(hue, sat, 1.0f);
   float3 bcol = hsv2rgb(hsv);
   col       *= (1.0f-_tanhf(0.75f*l))*0.5f;
-  col       = _mix(col, bcol, smoothstep(-aa, aa, -d));  
+  col       = _mix(col, bcol, smoothstep(-aa, aa, -d));
   col       += 0.5f*sqrt_f3(swi3(bcol,z,x,y))*(_expf(-(10.0f+100.0f*_tanhf(l))*_fmaxf(d, 0.0f)));
 
   return col;
 }
 
 __DEVICE__ float3 postProcess(float3 col, float2 q)  {
-  col=pow_f3(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f)); 
+  col=pow_f3(clamp(col,0.0f,1.0f),to_float3_s(1.0f/2.2f));
   col=col*0.6f+0.4f*col*col*(3.0f-2.0f*col);  // contrast
   col=_mix(col, to_float3_s(dot(col, to_float3_s(0.33f))), -0.4f);  // saturation
   col*=0.5f+0.5f*_powf(19.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y),0.7f);  // vigneting
@@ -176,7 +176,7 @@ __KERNEL__ void ApollianWithATwist_CudaFuse(
 
     float3 col = color(p, iResolution, iTime);
     //col = postProcess(col, q);
-  
+
     fragColor = to_float4_aw(col, 1.0f);
 
   SetFragmentShaderComputedColor(fragColor);
