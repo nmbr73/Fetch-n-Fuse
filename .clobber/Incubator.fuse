@@ -74,6 +74,8 @@ end
 
 
 ShaderParameters        = nil
+ShaderParameters_struct = ""
+ShaderParameters_init   = ""
 CompatibilityCode       = ""
 KernelInputCtrlDefines  = nil
 ConversionShaderID      = ""
@@ -841,6 +843,21 @@ end
 ---------------------------------------------RebuildParameters--------------------------------------------
 function RebuildParameters()
 
+  ShaderParameters_struct = "typedef struct {\n".. ShaderParameters .."\n  // instead you may want to use the following\n  // but only if you really need to\n\n"
+
+  ShaderParameters_init   = [[
+  Params _hiddenParams;
+
+  _hiddenParams.iResolution[0] = _shaderParameters->iResolution[0];
+  _hiddenParams.iResolution[1] = _shaderParameters->iResolution[1];
+  _hiddenParams.iTime = _shaderParameters->iTime;
+
+  // ... init here all the other stuff (TODO!!!)
+
+]]
+
+
+
     --CONNECT_COLOR0(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A)
     for i=0,NUM_COLOR_CONTROLS-1 do
 
@@ -848,6 +865,14 @@ function RebuildParameters()
       local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+CONNECT_COLOR"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;") -- geht
       --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--
       if (name ~= nil) then
+
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."[4]; // ".."COLOR"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init
+          .."  _hiddenParams."..name.."[0] = _shaderParameters->ctrlColor["..i.."][0];\n"
+          .."  _hiddenParams."..name.."[1] = _shaderParameters->ctrlColor["..i.."][1];\n"
+          .."  _hiddenParams."..name.."[2] = _shaderParameters->ctrlColor["..i.."][2];\n"
+          .."  _hiddenParams."..name.."[3] = _shaderParameters->ctrlColor["..i.."][3];\n"
+
         InColorName[i]:SetAttrs({ IC_Visible = true, LINKS_Name = name })
 
         InColor[i][0]:SetAttrs({ IC_Visible = true  })
@@ -876,6 +901,10 @@ function RebuildParameters()
       local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SLIDER"..i.."%s*%(([%a_][%w_])%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
 
       if (name ~= nil) then
+
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."SLIDER"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlSlider["..i.."];\n"
+
         InSlider[i]:SetAttrs({
           IC_Visible    = true,
           LINKS_Name    = name,
@@ -897,6 +926,9 @@ function RebuildParameters()
       --print("#TinyINTSlider#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
+        ShaderParameters_struct = ShaderParameters_struct .. "  int "..name.."; // ".."INTSLIDER"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlIntSlider["..i.."];\n"
+
         InIntSlider[i]:SetAttrs({
           IC_Visible    = true,
           LINKS_Name    = name,
@@ -929,6 +961,10 @@ function RebuildParameters()
       end
 
       if (name ~= nil) then
+
+        ShaderParameters_struct = ShaderParameters_struct .. "  bool "..name.."; // ".."CHECKBOX"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlCheckbox["..i.."];\n"
+
         InCheckbox[i]:SetAttrs({
           IC_Visible = true,
           LINKS_Name = name,
@@ -948,6 +984,11 @@ function RebuildParameters()
       print("#POINT#", name, sdefx, sdefy) --
 
       if (name ~= nil) then
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."[2]; // ".."POINT"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init
+          .."  _hiddenParams."..name.."[0] = _shaderParameters->ctrlPoint["..i.."][0];\n"
+          .."  _hiddenParams."..name.."[1] = _shaderParameters->ctrlPoint["..i.."][1];\n"
+
         InPoint[i]:SetAttrs({
           IC_Visible = true,
           LINKS_Name = name,
@@ -960,7 +1001,12 @@ function RebuildParameters()
       end
     end
 
+    ShaderParameters_struct = ShaderParameters_struct .. "\n} Params;\n"
+    ShaderParameters_init   = ShaderParameters_init .. "  Params* params = &_hiddenParams;\n"
 
+    print("typedef to simulate the parameters struct would be:\n\n"..ShaderParameters_struct.."\n\n")
+    print("and then something like this would have to be inserted into the kernel:\n\n"..ShaderParameters_init.."\n\n")
+    print("so we'd need the struct declaration right after the Compatibility and straight before the Conversion code (an easy one) and the initialization code should then be placed and the top of the kernel function - then we schould end up with 'params' as we know it ... but no idea if this works - in particular when handing over the pointer to other functions (what is what the whole thing would be needed for)\n\n")
 end
 
 
