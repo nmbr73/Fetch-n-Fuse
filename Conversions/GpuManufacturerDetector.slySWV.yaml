@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: GpuManufacturerDetector.slySWV
+  id: GpuManufacturerDetector
+  name: GpuManufacturerDetector
+shader:
+  author: archee
+  description: This will display your GPU manufacturer's name, or a 16bit hash, if
+    it's unknown. Texture filters and math functions are implemented differently by
+    each manufacturer. Please comment your hash, if unknown.
+  id: slySWV
+  name: GPU manufacturer detector
+  tags:
+  - text
+  - gpu
+  url: https://www.shadertoy.com/view/slySWV
