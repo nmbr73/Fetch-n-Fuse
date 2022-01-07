@@ -388,8 +388,6 @@ function Create()
     INP_External = false,
   })
 
-
---JiPi
   InReloadParameterNames= self:AddInput("Reload Parameter Names", "ReloadParameterNames", {
     IC_ControlPage      = control_page ,
     LINKID_DataType     = "Text",
@@ -587,7 +585,6 @@ function Create()
   })
 
 
---JiPi
   InRebuildParameterNames = self:AddInput("RebuildParameterNames", "InRebuildParameterNames", {
     LINKID_DataType = "Number",
     INPID_InputControl = "CheckboxControl",
@@ -850,16 +847,18 @@ function RebuildParameters()
       local name, defRed, defGreen, defBlue, defAlpha = ConversionSourcecode:match("%s+ CONNECT_COLOR"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f.*$") -- geht
       --print("#Color0#",name, defRed, defGreen, defBlue, defAlpha)--
       if (name ~= nil) then
-        InColorName[i]:SetAttrs({ IC_Visible = true })
-        InColor[i][0]:SetAttrs({ IC_Visible = true })
+        InColorName[i]:SetAttrs({ IC_Visible = true, LINKS_Name = name })
 
-        InColorName[i]:SetAttrs({LINKS_Name = name})
+        InColor[i][0]:SetAttrs({ IC_Visible = true })
         InColor[i][0]:SetAttrs({INP_Default = tonumber(defRed)})
         InColor[i][0]:SetSource(Number(tonumber(defRed)),0,0)
+
         InColor[i][1]:SetAttrs({INP_Default = tonumber(defGreen)})
         InColor[i][1]:SetSource(Number(tonumber(defGreen)),0,0)
+
         InColor[i][2]:SetAttrs({INP_Default = tonumber(defBlue)})
         InColor[i][2]:SetSource(Number(tonumber(defBlue)),0,0)
+
         InColor[i][3]:SetAttrs({INP_Default = tonumber(defAlpha)})
         InColor[i][3]:SetSource(Number(tonumber(defAlpha)),0,0)
       else
@@ -875,12 +874,13 @@ function RebuildParameters()
       local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
 
       if (name ~= nil) then
-        InSlider[i]:SetAttrs({ IC_Visible = true })
-
-        InSlider[i]:SetAttrs({LINKS_Name = name})
-        InSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InSlider[i]:SetAttrs({
+          IC_Visible    = true,
+          LINKS_Name    = name,
+          INP_MinScale  = tonumber(smin),
+          INP_MaxScale  = tonumber(smax),
+          INP_Default   = tonumber(sdef),
+        })
         InSlider[i]:SetSource(Number(tonumber(sdef)),0,0)
       else
         InSlider[i]:SetAttrs({ IC_Visible = false })
@@ -894,12 +894,13 @@ function RebuildParameters()
       --print("#TinyINTSlider#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
-        InIntSlider[i]:SetAttrs({ IC_Visible = true })
-
-        InIntSlider[i]:SetAttrs({LINKS_Name = name})
-        InIntSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InIntSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InIntSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InIntSlider[i]:SetAttrs({
+          IC_Visible    = true,
+          LINKS_Name    = name,
+          INP_MinScale  = tonumber(smin),
+          INP_MaxScale  = tonumber(smax),
+          INP_Default   = tonumber(sdef),
+        })
         InIntSlider[i]:SetSource(Number(tonumber(sdef)),0,0)
       else
         InIntSlider[i]:SetAttrs({ IC_Visible = false })
@@ -913,10 +914,11 @@ function RebuildParameters()
       --print("#CHECKBOX#", name, sdef) --
 
       if (name ~= nil) then
-        InCheckbox[i]:SetAttrs({ IC_Visible = true })
-
-        InCheckbox[i]:SetAttrs({LINKS_Name = name})
-        InCheckbox[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InCheckbox[i]:SetAttrs({
+          IC_Visible = true,
+          LINKS_Name = name,
+          INP_Default = tonumber(sdef),
+        })
         InCheckbox[i]:SetSource(Number(tonumber(sdef)),0,0)
       else
         InCheckbox[i]:SetAttrs({ IC_Visible = false })
@@ -930,11 +932,12 @@ function RebuildParameters()
       print("#POINT#", name, sdefx, sdefy) --
 
       if (name ~= nil) then
-        InPoint[i]:SetAttrs({ IC_Visible = true })
-
-        InPoint[i]:SetAttrs({LINKS_Name = name})
-        InPoint[i]:SetAttrs({INP_DefaultX = tonumber(sdefx)})
-        InPoint[i]:SetAttrs({INP_DefaultY = tonumber(sdefy)})
+        InPoint[i]:SetAttrs({
+          IC_Visible = true,
+          LINKS_Name = name,
+          INP_DefaultX = tonumber(sdefx),
+          INP_DefaultY = tonumber(sdefy),
+        })
         InPoint[i]:SetSource(Number(tonumber(sdef)),0,0)
       else
         InPoint[i]:SetAttrs({ IC_Visible = false })
