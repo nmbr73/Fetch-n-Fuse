@@ -164,7 +164,7 @@ function Process(req)
   local node = DVIPComputeNode(req,
     <<<FUSE_NAME>>>,
     ShaderCompatibilityCode..ShaderKernelCode,
-    "ShaderParameters",
+    "Params",
     ShaderParameters
     )
 
