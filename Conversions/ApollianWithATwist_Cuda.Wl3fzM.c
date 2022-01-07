@@ -163,11 +163,11 @@ __KERNEL__ void ApollianWithATwist_CudaFuse(
   )
 {
 
-  CONNECT_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
-  CONNECT_SMALLSLIDER0(Scale,1.0f,10.0f,1.0f);
-  CONNECT_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
-  CONNECT_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
-  CONNECT_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
+  CONNECT_SLIDER3(Alpha,0.0f,1.0f,1.0f);
+  CONNECT_SLIDER1(Scale,1.0f,10.0f,1.0f);
+  CONNECT_SLIDER0(Contrast,0.0f,1.0f,0.6f);
+  CONNECT_SLIDER4(Saturation,0.0f,1.0f,0.33f);
+  CONNECT_SLIDER5(Vigneting,0.0f,1.0f,0.7f);
 
 
     float2 q = fragCoord/iResolution;

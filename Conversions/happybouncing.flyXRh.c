@@ -22,7 +22,6 @@ __DEVICE__ float sdArc( in float2 p, in float ta, in float tb, in float ra, floa
 __DEVICE__ mat2 rot(float a) { float c=_cosf(a),s=_sinf(a); return to_mat2(c,-s,s,c); }
 __DEVICE__ float circle (float2 p, float size)
 {
-  float zzzzzzzzzzzzzzzzzzzzzzzzz;
     return length(p)-size;
 }
 
@@ -178,7 +177,7 @@ __KERNEL__ void happybouncingFuse(
   float iTime
 
  ){
-    CONNECT_TINYSLIDER0(variante,0.0f,2.0f,0.0f); // Name der 'float' Variable, Min, Max, und Default-Wert (Default wird hier nicht, aber spaeter in der Fuse verwendet)
+    CONNECT_SLIDER0(variante,0.0f,2.0f,0.0f); // Name der 'float' Variable, Min, Max, und Default-Wert (Default wird hier nicht, aber spaeter in der Fuse verwendet)
 
     int modus = 0;    // Varianten 0:Original
 

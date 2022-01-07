@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: BubbleBat.NtGXDd
+  id: BubbleBat
+  name: BubbleBat
+shader:
+  author: N.N.
+  description: bubbles
+  id: NtGXDd
+  name: Fork Bubble Bat JiPi 503
+  parent:
+    id: slySD3
+    name: Bubble Bath
+    url: https://www.shadertoy.com/view/slySD3
+  tags:
+  - voronoi
+  - bubbles
+  url: https://www.shadertoy.com/view/NtGXDd

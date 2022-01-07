@@ -260,7 +260,7 @@ function Create()
 
 --NUM_POINT_CONTROLS
   for i=0,NUM_POINT_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = to_float2(_shaderParameters->ctrlPoint["..i.."][0],_shaderParameters->ctrlPoint["..i.."][1])) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = to_float2(_shaderParameters->ctrlPoint["..i.."][0],_shaderParameters->ctrlPoint["..i.."][1]) \n"
   end
 
 

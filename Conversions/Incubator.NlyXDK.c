@@ -272,9 +272,9 @@ __DEVICE__ float3 render( in float3 ro, in float3 rd, float iTime, float ratio, 
             float f = mod_f( _floor(5.0f*pos.z) + _floor(5.0f*pos.x), 2.0f);
             col = 0.4f + 0.1f*f*to_float3_s(1.0f);
 
-            if (_sP->checkbox[0])
+            if (_sP->ctrlCheckbox[0])
             {              
-              float2 tuv = _sP->tinySlider[0]*to_float2(pos.x/ratio,pos.z); 
+              float2 tuv = _sP->ctrlSlider[0]*to_float2(pos.x/ratio,pos.z); 
               col = swi3(_tex2DVecN(iChannel0, tuv.x,tuv.y,15),x,y,z);
             }
         }
@@ -320,7 +320,7 @@ __DEVICE__ mat3 setCamera( in float3 ro, in float3 ta, float cr )
 __KERNEL__ void IncubatorFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, sampler2D iChannel0)
 {
 
-  CONNECT_TINYSLIDER0(JiPiSlider, 0.0f, 3.0f, 1.0f);
+  CONNECT_SLIDER0(JiPiSlider, 0.0f, 3.0f, 1.0f);
   CONNECT_CHECKBOX0(Textur,0);
 
   float ratio = iResolution.x/iResolution.y;

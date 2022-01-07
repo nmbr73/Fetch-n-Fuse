@@ -58,9 +58,9 @@ __DEVICE__ float4 pw (float4 p, float a) {
 __KERNEL__ void NightEscapeFuse(float4 Q, float2 U, float2 iResolution, float iTime, int iFrame)
  {
    
-  CONNECT_TINYSLIDER0(alpha,0.0f,1.0f,1.0f); 
-  CONNECT_TINYSLIDER1(Verzerrung1,-5.0f,5.0f,1.9f); 
-  CONNECT_TINYSLIDER2(Wolken,-5.0f,5.0f,3.0f); 
+  CONNECT_SLIDER0(alpha,0.0f,1.0f,1.0f); 
+  CONNECT_SLIDER1(Verzerrung1,-5.0f,5.0f,1.9f); 
+  CONNECT_SLIDER2(Wolken,-5.0f,5.0f,3.0f); 
    
   float2 R=iResolution; float T=iTime; int I=iFrame; 
 

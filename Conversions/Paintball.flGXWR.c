@@ -51,7 +51,7 @@ __KERNEL__ void PaintballFuse(
 
     
     // const int nLights = 4;
-    CONNECT_TINYINT0(nLights,0,10,4);
+    CONNECT_INTSLIDER0(nLights,0,10,4);
     
     #if defined(DEVICE_IS_OPENCL)
       //const int nBalls = 40;
@@ -64,7 +64,7 @@ __KERNEL__ void PaintballFuse(
     #endif
     
     //const int numColors = 3; //max 4
-    CONNECT_TINYINT1(numColors,0,4,3);
+    CONNECT_INTSLIDER1(numColors,0,4,3);
     const float lightZ = -0.2f;
 
     float3 colors[] = {
