@@ -266,8 +266,12 @@ def check_controls(conversionCode):
   controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
 
   fullCodeCreate=''
+  fullCodeProcess=''
+  fullCodeKernel=''
+  fullCodeParams=''
 
   for ctrl in controls:
+
     ctrlType    = ctrl[0]
     ctrlIdx     = ctrl[1]
     ctrlVar     = ctrl[2]
@@ -284,6 +288,8 @@ def check_controls(conversionCode):
 
       min, max, default = m.group(1), m.group(2), m.group(3)
 
+      codeParams = f"float {ctrlVar};"
+      codeKernel = f"float  {ctrlVar} = params->{ctrlVar};"
       codeCreate=  f"""
           In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
               LINKID_DataType    = "Number",
@@ -301,6 +307,9 @@ def check_controls(conversionCode):
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
       min, max, default = m.group(1), m.group(2), m.group(3)
+
+      codeParams = f"int   {ctrlVar};"
+      codeKernel = f"int    {ctrlVar} = params->{ctrlVar};"
 
       codeCreate=  f"""
           In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
@@ -320,6 +329,9 @@ def check_controls(conversionCode):
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
       x, y = m.group(1), m.group(2)
+
+      codeParams = f"float {ctrlVar}[2];"
+      codeKernel = f"float2 {ctrlVar} = to_float2(params->{ctrlVar}[0], params->{ctrlVar}[1]);"
 
       codeCreate=  f"""
           In{ctrlVar}Point = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
@@ -343,6 +355,9 @@ def check_controls(conversionCode):
       else:
         default=0
 
+      codeParams = f"bool  {ctrlVar};"
+      codeKernel = f"bool   {ctrlVar} = params->{ctrlVar};"
+
       codeCreate=  f"""
           In{ctrlVar}Checkbox = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
             LINKID_DataType     = "Number",
@@ -359,6 +374,9 @@ def check_controls(conversionCode):
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
       r, g, b, a = m.group(1), m.group(2), m.group(3), m.group(4)
+
+      codeParams = f"float {ctrlVar}[4];"
+      codeKernel = f"float4 {ctrlVar} = to_float4(params->{ctrlVar}[0], params->{ctrlVar}[1], params->{ctrlVar}[2], params->{ctrlVar}[3]);"
 
       codeCreate=  f"""
           self:BeginControlNest("{ctrlVar}", "{ctrlVar}", true, {{}})
@@ -386,10 +404,14 @@ def check_controls(conversionCode):
 
     codeCreate=re.sub(r'\n        ',  '\n', codeCreate)
     codeCreate=re.sub(r'^\s+',        '  ',   codeCreate)
+    codeParams="  "+codeParams
+    codeKernel="  "+codeKernel
 
     fullCodeCreate = fullCodeCreate + codeCreate + "\n\n"
+    fullCodeParams = fullCodeParams + codeParams + "\n"
+    fullCodeKernel = fullCodeKernel + codeKernel + "\n"
 
-  return fullCodeCreate, '', ''
+  return fullCodeCreate, fullCodeProcess, fullCodeKernel,  fullCodeParams
 
 
 
@@ -499,9 +521,11 @@ def fuse_it(id,force=False):
 
   # now we need to equip the fuse with all the controls
 
-  create, process, kernel = check_controls(conversionCode)
+  create, process, kernel, params = check_controls(conversionCode)
 
-  print(create)
+  #print(create)
+  #print(params)
+  print(kernel)
 
 
 
