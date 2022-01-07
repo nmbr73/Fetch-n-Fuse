@@ -371,23 +371,24 @@ def fuse_it(id,force=False):
 
   controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
 
+  fullCodeCreate=''
+
   for ctrl in controls:
     ctrlType    = ctrl[0]
     ctrlIdx     = ctrl[1]
     ctrlVar     = ctrl[2]
     ctrlParams  = ctrl[3] # ctrl[3].split(",")
 
-    print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
-
+    # print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
 
     if ctrlType == 'SLIDER':
 
       m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+
       if m == None:
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
       min, max, default = m.group(1), m.group(2), m.group(3)
-      print(f"min={min}, max={max}, default={default}")
 
       codeCreate=  f"""
           In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
@@ -398,16 +399,14 @@ def fuse_it(id,force=False):
               INP_Default        = {default},
           }})"""
 
-      print(f"'{codeCreate}'")
-
     elif ctrlType == 'INTSLIDER':
 
       m = re.match(r'^\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*$',ctrlParams)
+
       if m == None:
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
       min, max, default = m.group(1), m.group(2), m.group(3)
-      print(f"min={min}, max={max}, default={default}")
 
       codeCreate=  f"""
           In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
@@ -419,11 +418,28 @@ def fuse_it(id,force=False):
               INP_Integer        = true,
           }})"""
 
-      print(f"'{codeCreate}'")
+    elif ctrlType == 'POINT':
+
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      x, y = m.group(1), m.group(2)
+
+      codeCreate=  f"""
+          In{ctrlVar}Point = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Point",
+              INPID_InputControl = "OffsetControl",
+              INPID_PreviewControl  = "CrosshairControl",
+              INP_DefaultX          = {x},
+              INP_DefaultY          = {y},
+          }})"""
 
     elif ctrlType == 'CHECKBOX':
 
       m = re.match(r'^\s*(1|true|0|false)\s*$',ctrlParams)
+
       if m == None:
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
 
@@ -441,13 +457,45 @@ def fuse_it(id,force=False):
             INP_Default         = {default},
           }})"""
 
-      print(f"'{codeCreate}'")
+    elif ctrlType == 'COLOR':
+
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      r, g, b, a = m.group(1), m.group(2), m.group(3), m.group(4)
+
+      codeCreate=  f"""
+          self:BeginControlNest("{ctrlVar}", "{ctrlVar}", true, {{}})
+
+            ctrl_grp_cnt = (ctrl_grp_cnt==nil) and 1 or (ctrl_grp_cnt+1)
+
+            attrs = {{
+              ICS_Name = "{ctrlVar}",
+              LINKID_DataType = "Number",
+              INPID_InputControl = "ColorControl",
+              INP_MinScale = 0.0,
+              INP_MaxScale = 1.0,
+              IC_ControlGroup = ctrl_grp_cnt,
+            }}
+
+            In{ctrlVar}ColorR = self:AddInput("Red",   "{ctrlVar}Red",   {{ INP_Default  = {r}, IC_ControlID = 0, attrs}})
+            In{ctrlVar}ColorG = self:AddInput("Green", "{ctrlVar}Green", {{ INP_Default  = {g}, IC_ControlID = 1, attrs}})
+            In{ctrlVar}ColorB = self:AddInput("Blue",  "{ctrlVar}Blue",  {{ INP_Default  = {b}, IC_ControlID = 2, attrs}})
+            In{ctrlVar}ColorA = self:AddInput("Alpha", "{ctrlVar}Alpha", {{ INP_Default  = {a}, IC_ControlID = 3, attrs}})
+
+          self:EndControlNest()"""
 
     else:
       raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
 
+    codeCreate=re.sub(r'\n        ',  '\n', codeCreate)
+    codeCreate=re.sub(r'^\s+',        '  ',   codeCreate)
 
+    fullCodeCreate = fullCodeCreate + codeCreate + "\n\n"
 
+  print(f"'{fullCodeCreate}'")
 
   # load some author information from yaml file
 
