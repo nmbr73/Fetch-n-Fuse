@@ -121,11 +121,11 @@ __DEVICE__ float3 color(float2 p, float iTime, float iResolution_y, float scale)
 
 __KERNEL__ void ApollianWithATwistFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution)
 {
-  CONNECT_TINYSLIDER3(Alpha,0.0f,1.0f,1.0f);
-  CONNECT_SMALLSLIDER0(Scale,0.0f,10.0f,1.0f);
-  CONNECT_TINYSLIDER0(Contrast,0.0f,1.0f,0.6f);
-  CONNECT_TINYSLIDER1(Saturation,0.0f,1.0f,0.33f);
-  CONNECT_TINYSLIDER2(Vigneting,0.0f,1.0f,0.7f);
+  CONNECT_SLIDER0(Alpha,0.0f,1.0f,1.0f);
+  CONNECT_SLIDER1(Scale,0.0f,10.0f,1.0f);
+  CONNECT_SLIDER2(Contrast,0.0f,1.0f,0.6f);
+  CONNECT_SLIDER3(Saturation,0.0f,1.0f,0.33f);
+  CONNECT_SLIDER4(Vigneting,0.0f,1.0f,0.7f);
 
   float2 q = fragCoord/swi2(iResolution,x,y);
   float2 p = -1.0f + 2.0f * q;
