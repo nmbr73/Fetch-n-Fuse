@@ -182,7 +182,7 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
         t = m.group(1)+'*'
         n = m.group(2)
       else:
-        m= re.search(r'^%s*([A-Za-z_][A-Za-z0-9_]*)%s+([A-Za-z_][A-Za-z_0-9]*)%s*%[%s*%]%s*$', p) # match "type name [ ]"
+        m= re.search(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s+([A-Za-z_][A-Za-z_0-9]*)\s*\[\s*\]\s*$', p) # match "type name [ ]"
         if m:
           t = m.group(1)+'*'
           n = m.group(2)
@@ -208,24 +208,24 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
         has_param[n]['Present']=True
 
   MAX_INPUT_CHANNELS=0
-  kernel_parameters = "__CONSTANTREF__ ShaderParameters*  _shaderParameters, "
+  kernel_parameters = "__CONSTANTREF__ Params*  params, "
   for i in range(0,15):
     if has_param["iChannel"+str(i)]['Present']:
       kernel_parameters += " __TEXTURE2D__ iChannel"+str(i)+", " # sollte aber fuer mainImage vermutlich ohne "Luecken" sein!?!!
       MAX_INPUT_CHANNELS+=1
 
-  kernel_parameters += "__TEXTURE2D_WRITE__ _shaderDestinationTexture"
+  kernel_parameters += "__TEXTURE2D_WRITE__ destinationTexture"
 
 
   # iChannelResolution[]
   has_param['iChannelResolution']['Code']='  float2 iChannelResolution['+ str(MAX_INPUT_CHANNELS) +'];\n'
   for i in range(0, MAX_INPUT_CHANNELS-1):
-    has_param['iChannelResolution']['Code'] += "  iChannelResolution["+str(i)+"] = to_float2(_shaderParameters->iChannelResolution["+str(i)+"][0], _shaderParameters->iChannelResolution["+str(i)+"][1]);\n"
+    has_param['iChannelResolution']['Code'] += "  iChannelResolution["+str(i)+"] = to_float2(params->iChannelResolution["+str(i)+"][0], params->iChannelResolution["+str(i)+"][1]);\n"
 
   # iChannelTime[]
   has_param['iChannelTime']['Code']='  float iChannelTime['+ str(MAX_INPUT_CHANNELS) +'];\n'
   for i in range(0,MAX_INPUT_CHANNELS-1):
-    has_param['iChannelTime']['Code'] += "  iChannelTime["+str(i)+"] = _shaderParameters->iChannelTime["+str(i)+"];\n"
+    has_param['iChannelTime']['Code'] += "  iChannelTime["+str(i)+"] = params->iChannelTime["+str(i)+"];\n"
 
 
   variable_declarations = ""
@@ -246,20 +246,176 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
   r=  "__KERNEL__ void "+conversionKernelName+"("+kernel_parameters+")\n" \
       "{\n" \
       "   DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);\n\n" \
-      "   if (fusion_x >= _shaderParameters->width || fusion_y >= _shaderParameters->height)\n" \
-      "     return;\n\n"+variable_declarations+"\n\n  // --------\n\n"
+      "   if (fusion_x >= params->width || fusion_y >= params->height)\n" \
+      "     return;\n\n"+variable_declarations+"\n\n<<CODEFROMCONTROLS>>  // --------\n\n"
 
   conversionCode  = re.sub( m,r,conversionCode)
 
   conversionCode  = re.sub(
       r'(\s+)SetFragmentShaderComputedColor\s*\(\s*',
-      r'\1_tex2DVec4Write(_shaderDestinationTexture, fusion_x, fusion_y, ',
+      r'\1_tex2DVec4Write(destinationTexture, fusion_x, fusion_y, ',
       conversionCode)
 
 
   return conversionCode
 
+# ---------------------------------------------------------------------------------------------------------------------
 
+def check_controls(conversionCode):
+
+  controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
+
+  fullCodeCreate=''
+  fullCodeProcess=''
+  fullCodeKernel=''
+  fullCodeParams=''
+
+  for ctrl in controls:
+
+    ctrlType    = ctrl[0]
+    ctrlIdx     = ctrl[1]
+    ctrlVar     = ctrl[2]
+    ctrlParams  = ctrl[3] # ctrl[3].split(",")
+
+    # print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
+
+    if ctrlType == 'SLIDER':
+
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      min, max, default = m.group(1), m.group(2), m.group(3)
+
+      codeParams  = f"float  {ctrlVar};"
+      codeKernel  = f"float  {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Slider:GetValue(req).Value"
+      codeCreate  = f"""
+          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "SliderControl",
+              INP_MinScale       = {min},
+              INP_MaxScale       = {max},
+              INP_Default        = {default},
+          }})"""
+
+
+    elif ctrlType == 'INTSLIDER':
+
+      m = re.match(r'^\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      min, max, default = m.group(1), m.group(2), m.group(3)
+
+      codeParams  = f"int    {ctrlVar};"
+      codeKernel  = f"int    {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Slider:GetValue(req).Value"
+      codeCreate  = f"""
+          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "SliderControl",
+              INP_MinScale       = {min},
+              INP_MaxScale       = {max},
+              INP_Default        = {default},
+              INP_Integer        = true,
+          }})"""
+
+    elif ctrlType == 'POINT':
+
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      x, y = m.group(1), m.group(2)
+
+      codeParams  = f"float  {ctrlVar}[2];"
+      codeKernel  = f"float2 {ctrlVar} = to_float2(params->{ctrlVar}[0], params->{ctrlVar}[1]);"
+      codeProcess = f"params.{ctrlVar} = {{In{ctrlVar}Point:GetValue(req).X,In{ctrlVar}Point:GetValue(req).Y}}"
+      codeCreate  = f"""
+          In{ctrlVar}Point = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Point",
+              INPID_InputControl = "OffsetControl",
+              INPID_PreviewControl  = "CrosshairControl",
+              INP_DefaultX          = {x},
+              INP_DefaultY          = {y},
+          }})"""
+
+    elif ctrlType == 'CHECKBOX':
+
+      m = re.match(r'^\s*(1|true|0|false)\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      default = m.group(1)
+      if default=="1" or default=="true":
+        default=1
+      else:
+        default=0
+
+      codeParams  = f"bool   {ctrlVar};"
+      codeKernel  = f"bool   {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Checkbox:GetValue(req).Value"
+      codeCreate  = f"""
+          In{ctrlVar}Checkbox = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+            LINKID_DataType     = "Number",
+            INPID_InputControl  = "CheckboxControl",
+            INP_Integer         = true,
+            INP_Default         = {default},
+          }})"""
+
+    elif ctrlType == 'COLOR':
+
+      m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
+
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+
+      r, g, b, a = m.group(1), m.group(2), m.group(3), m.group(4)
+
+      codeParams  = f"float  {ctrlVar}[4];"
+      codeKernel  = f"float4 {ctrlVar} = to_float4(params->{ctrlVar}[0], params->{ctrlVar}[1], params->{ctrlVar}[2], params->{ctrlVar}[3]);"
+      codeProcess = f"params.{ctrlVar} = {{\n    In{ctrlVar}ColorR:GetValue(req).Value,\n    In{ctrlVar}ColorG:GetValue(req).Value,\n    In{ctrlVar}ColorB:GetValue(req).Value,In{ctrlVar}ColorA:GetValue(req).Value\n  }}"
+      codeCreate  = f"""
+          self:BeginControlNest("{ctrlVar}", "{ctrlVar}", true, {{}})
+
+            ctrl_grp_cnt = (ctrl_grp_cnt==nil) and 1 or (ctrl_grp_cnt+1)
+
+            attrs = {{
+              ICS_Name = "{ctrlVar}",
+              LINKID_DataType = "Number",
+              INPID_InputControl = "ColorControl",
+              INP_MinScale = 0.0,
+              INP_MaxScale = 1.0,
+              IC_ControlGroup = ctrl_grp_cnt,
+            }}
+
+            In{ctrlVar}ColorR = self:AddInput("Red",   "{ctrlVar}Red",   {{ INP_Default  = {r}, IC_ControlID = 0, attrs}})
+            In{ctrlVar}ColorG = self:AddInput("Green", "{ctrlVar}Green", {{ INP_Default  = {g}, IC_ControlID = 1, attrs}})
+            In{ctrlVar}ColorB = self:AddInput("Blue",  "{ctrlVar}Blue",  {{ INP_Default  = {b}, IC_ControlID = 2, attrs}})
+            In{ctrlVar}ColorA = self:AddInput("Alpha", "{ctrlVar}Alpha", {{ INP_Default  = {a}, IC_ControlID = 3, attrs}})
+
+          self:EndControlNest()"""
+
+    else:
+      raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
+
+    codeCreate  = re.sub(r'\n        ',  '\n', codeCreate)
+    codeCreate  = re.sub(r'^\s+',        '  ', codeCreate)
+    codeParams  = "  "+codeParams
+    codeKernel  = "  "+codeKernel
+    codeProcess = "  "+codeProcess
+
+    fullCodeCreate  += codeCreate  + "\n\n"
+    fullCodeParams  += codeParams  + "\n"
+    fullCodeKernel  += codeKernel  + "\n"
+    fullCodeProcess += codeProcess + "\n"
+
+  return fullCodeCreate, fullCodeProcess, fullCodeKernel+"\n",  fullCodeParams
 
 
 
@@ -367,6 +523,26 @@ def fuse_it(id,force=False):
     fuse=f.read()
 
 
+  # now we need to equip the fuse with all the controls
+
+  create, process, kernel, params = check_controls(conversionCode)
+
+  # remove all controls from source
+
+  conversionCode = re.sub(r'\s+CONNECT_[A-Z]+\d+\s*\(\s*[A-Za-z_][\w]*\s*,\s*[^\)]+\)\s*;\s*', '', conversionCode)
+
+
+  fuse_param   += params
+  fuse_create  += create
+  fuse_process += process
+
+  #print(create)
+  #print(params)
+  #print(kernel)
+  #print(process)
+
+  conversionCode = re.sub(r'<<CODEFROMCONTROLS>>',kernel,conversionCode)
+
 
   # load some author information from yaml file
 
@@ -397,7 +573,7 @@ def fuse_it(id,force=False):
 
   fuse=re.sub(r'<<<CODE_COMPATIBILITY>>>',compatibilityCode,fuse)
   fuse=re.sub(r'<<<CODE_KERNEL>>>',conversionCode,fuse)
-  fuse=re.sub(r'<<<CODE_PARAMETERS>>>',fuse_param,fuse)
+  fuse=re.sub(r'<<<CODE_PARAMETERS>>>',"\n"+fuse_param,fuse)
   fuse=re.sub(r'<<<CODE_CREATE>>>',fuse_create,fuse)
   fuse=re.sub(r'<<<CODE_PROCESS>>>',fuse_process,fuse)
 

@@ -2,7 +2,7 @@ iChannelTime:
   Type: float*
 
 iChannelResolution:
-  Type': float2*
+  Type: float2*
 
 iResolution:
   Type:  float2
