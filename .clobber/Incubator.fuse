@@ -87,6 +87,7 @@ NUM_INPUT_CHANNELS      = 5
 NUM_COLOR_CONTROLS      = 10
 NUM_SLIDER_CONTROLS     = 10
 NUM_INTSLIDER_CONTROLS  = 10
+NUM_SCREW_CONTROLS      = 5
 NUM_CHECKBOX_CONTROLS   = 10
 NUM_POINT_CONTROLS      = 10
 
@@ -249,7 +250,11 @@ function Create()
     "const int NAME = ( "..
     "_shaderParameters->ctrlIntSlider["..i.."] < SMIN ? SMIN : ("..
     "_shaderParameters->ctrlIntSlider["..i.."] > SMAX ? SMAX : _shaderParameters->ctrlIntSlider["..i.."]) )\n"
+  end
 
+
+  for i=0,NUM_SCREW_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SCREW"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = _shaderParameters->ctrlScrew["..i.."]; if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
 
@@ -266,7 +271,7 @@ function Create()
 
 
 
-  -- verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
+   verbose("use the folling defines to connect your controls:\n"..KernelInputCtrlDefines)
 
   -- create fallback kernel code
 
@@ -307,6 +312,7 @@ function Create()
   float ctrlPoint[]]..     NUM_POINT_CONTROLS    ..[[][2];
   float ctrlSlider[]]..    NUM_SLIDER_CONTROLS   ..[[];
   int   ctrlIntSlider[]].. NUM_INTSLIDER_CONTROLS..[[];
+  float ctrlScrew[]]..     NUM_SCREW_CONTROLS    ..[[];
   bool  ctrlCheckbox[]]..  NUM_CHECKBOX_CONTROLS ..[[];
 
   ]]
@@ -548,6 +554,19 @@ function Create()
   end
 
 
+  InScrew={}
+
+  for i=0,NUM_SCREW_CONTROLS-1 do
+    InScrew[i] = self:AddInput("Screw "..i, "CONNECT_SCREW"..i, {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "ScrewControl",
+      INP_MinScale 	     = -10,
+      INP_MaxScale 	     = 10,
+      INP_Default        = 0,
+    })
+  end
+
+
   InCheckbox={}
 
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
@@ -644,6 +663,7 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
   if kernel_parameters==nil then
     if Part=="Image" then
       print("kernel for 'Image' not found!")
+      
       return "", nil
     end
     return ConversionSourcecode, nil
@@ -942,6 +962,33 @@ function RebuildParameters()
         InIntSlider[i]:SetAttrs({ IC_Visible = false })
       end
     end
+
+
+    --CONNECT_SCREW0(NAME,SMIN,SMAX,SDEFAULT)
+    for i=0,NUM_SCREW_CONTROLS-1 do
+
+      -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SCREW"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SCREW"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
+      print("#SCREW#",name, smin, smax, sdef) --
+
+      if (name ~= nil) then
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."SCREW"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlScrew["..i.."];\n"
+
+        InScrew[i]:SetAttrs({
+          IC_Visible    = true,
+          LINKS_Name    = name,
+          INP_MinScale  = tonumber(smin),
+          INP_MaxScale  = tonumber(smax),
+          INP_Default   = tonumber(sdef),
+        })
+        InScrew[i]:SetSource(Number(tonumber(sdef)),0,0)
+      else
+        InScrew[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
+
 
     --CONNECT_CHECKBOX0(NAME,SDEFAULT)
     for i=0,NUM_CHECKBOX_CONTROLS-1 do
@@ -1270,6 +1317,10 @@ function Process(req)
 
   for i=0,NUM_INTSLIDER_CONTROLS-1 do
     params.ctrlIntSlider[i] = InIntSlider[i]:GetValue(req).Value
+  end
+
+  for i=0,NUM_SCREW_CONTROLS-1 do
+    params.ctrlScrew[i] = InScrew[i]:GetValue(req).Value
   end
 
   -- Checkboxes
