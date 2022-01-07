@@ -367,6 +367,14 @@ def fuse_it(id,force=False):
     fuse=f.read()
 
 
+  # now we need to equip the fuse with all the controls
+
+  controls = re.findall(r'\s+CONNECT_([A-Z]+)(\d+)\s*\(\s*([A-Za-z_][\w]*)\s*,\s*([^\)]+)\)\s*;',conversionCode)
+
+  for ctrl in controls:
+    print("create "+ctrl[0]+" for "+ctrl[2])
+
+
 
   # load some author information from yaml file
 
