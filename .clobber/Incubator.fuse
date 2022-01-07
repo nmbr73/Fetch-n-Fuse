@@ -73,21 +73,20 @@ function ShaderKernels_getLabelText()
 end
 
 
-ShaderParameters       = nil
-CompatibilityCode      = ""
-KernelInputCtrlDefines = nil
-ConversionShaderID     = ""
-ConversionFusename     = ""
-ConversionSourcecode   = ""
+ShaderParameters        = nil
+CompatibilityCode       = ""
+KernelInputCtrlDefines  = nil
+ConversionShaderID      = ""
+ConversionFusename      = ""
+ConversionSourcecode    = ""
 
-NUM_INPUT_CHANNELS        = 5
+NUM_INPUT_CHANNELS      = 5
 
-NUM_COLOR_CONTROLS        = 5
-NUM_TINYSLIDER_CONTROLS   = 4
-NUM_SMALLSLIDER_CONTROLS  = 4
-NUM_TINYINT_CONTROLS      = 4
-NUM_CHECKBOX_CONTROLS     = 5
-NUM_POINT_CONTROLS        = 3
+NUM_COLOR_CONTROLS      = 10
+NUM_SLIDER_CONTROLS     = 10
+NUM_INTSLIDER_CONTROLS  = 10
+NUM_CHECKBOX_CONTROLS   = 10
+NUM_POINT_CONTROLS      = 10
 
 
 
@@ -231,41 +230,37 @@ function Create()
   for i=0,NUM_COLOR_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A) "..
       "float4 NAME = to_float4( "..
-      "(_shaderParameters->useDefaultValues?DEFAULT_R:_shaderParameters->color["..i.."][0]),"..
-      "(_shaderParameters->useDefaultValues?DEFAULT_G:_shaderParameters->color["..i.."][1]),"..
-      "(_shaderParameters->useDefaultValues?DEFAULT_B:_shaderParameters->color["..i.."][2]),"..
-      "(_shaderParameters->useDefaultValues?DEFAULT_A:_shaderParameters->color["..i.."][3])"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_R:_shaderParameters->ctrlColor["..i.."][0]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_G:_shaderParameters->ctrlColor["..i.."][1]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_B:_shaderParameters->ctrlColor["..i.."][2]),"..
+      "(_shaderParameters->useDefaultValues?DEFAULT_A:_shaderParameters->ctrlColor["..i.."][3])"..
       ")\n"
   end
 
-  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->tinySlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
-  end
-
-  for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SMALLSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->smallSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
+  for i=0,NUM_SLIDER_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_SLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->ctrlSlider["..i.."]); if (NAME<SMIN) NAME=(SMIN); if (NAME>SMAX) NAME=(SMAX) \n"
   end
 
 
-  for i=0,NUM_TINYINT_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_TINYINT"..i.."(NAME,SMIN,SMAX,SDEFAULT) "..
+  for i=0,NUM_INTSLIDER_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_INTSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) "..
     "const int NAME = ( "..
     "_shaderParameters->useDefaultValues ? SDEFAULT : ("..
-    "_shaderParameters->tinyInt["..i.."] < SMIN ? SMIN : ("..
-    "_shaderParameters->tinyInt["..i.."] > SMAX ? SMAX : _shaderParameters->tinyInt["..i.."])))\n"
+    "_shaderParameters->ctrlIntSlider["..i.."] < SMIN ? SMIN : ("..
+    "_shaderParameters->ctrlIntSlider["..i.."] > SMAX ? SMAX : _shaderParameters->ctrlIntSlider["..i.."])))\n"
 
   end
 
 
 --NUM_CHECKBOX_CONTROLS
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_CHECKBOX"..i.."(NAME,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->checkbox["..i.."]) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_CHECKBOX"..i.."(NAME,SDEFAULT) float NAME = ( _shaderParameters->useDefaultValues ? (SDEFAULT) : _shaderParameters->ctrlCheckbox["..i.."]) \n"
   end
 
 
 --NUM_POINT_CONTROLS
   for i=0,NUM_POINT_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = ( _shaderParameters->useDefaultValues ? to_float2((SDEFAULTX),(SDEFAULTY)) : to_float2_v(_shaderParameters->point["..i.."])) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = ( _shaderParameters->useDefaultValues ? to_float2((SDEFAULTX),(SDEFAULTY)) : to_float2_v(_shaderParameters->ctrlPoint["..i.."])) \n"
   end
 
 
@@ -304,15 +299,17 @@ function Create()
   int width, height; // you should prefer to use iResolution instead
   int compOrder;
 
-  float color[]]..NUM_COLOR_CONTROLS..[[][4];
-  float tinySlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
-  float smallSlider[]]..NUM_TINYSLIDER_CONTROLS..[[];
 
-  int tinyInt[]]..NUM_TINYINT_CONTROLS..[[];
-  bool checkbox[]]..NUM_CHECKBOX_CONTROLS..[[];
-  float point[]]..NUM_POINT_CONTROLS..[[][2];
+  // do not use the following elements directly
+  // they will definitely not exists in the final fuse!
 
-  int useDefaultValues; // do not use - will not exists in the final fuse!
+  float ctrlColor[]]..     NUM_COLOR_CONTROLS    ..[[][4];
+  float ctrlPoint[]]..     NUM_POINT_CONTROLS    ..[[][2];
+  float ctrlSlider[]]..    NUM_SLIDER_CONTROLS   ..[[];
+  int   ctrlIntSlider[]].. NUM_INTSLIDER_CONTROLS..[[];
+  bool  ctrlCheckbox[]]..  NUM_CHECKBOX_CONTROLS ..[[];
+
+  int useDefaultValues;
 
   ]]
 
@@ -518,21 +515,19 @@ function Create()
   self:EndControlNest()
 
 
-  self:BeginControlNest("Color Controls", "Colors", false, {})
+  self:BeginControlNest("Fuse specific Controls", "Controls", true, {})
   -- some color controls to play with colors in the kernel
 
 
-    InColor={}
-    --JiPi
-    InColorName={}
+    InColor = {}
+    InColorName = {}
 
     local rgba = {'Red','Green','Blue','Alpha'}
 
     for i=0,NUM_COLOR_CONTROLS-1 do
-      InColor[i]={}
-      --JiPi
       InColorName[i] = self:AddInput("color_"..i, "ColorName"..i , {LINKID_DataType    = "Text", INPID_InputControl = "LabelControl", INP_External = false, INP_Passive = true, IC_Visible = true, IC_NoLabel = true, })
 
+      InColor[i] = {}
       for j=0,3 do
         InColor[i][j]=self:AddInput(rgba[j+1], string.lower(string.sub(rgba[j+1],1,1))..i , { ICS_Name = "Color "..i, IC_ControlGroup = next_ctrl_group+i+1, IC_ControlID = j, INP_Default  = 0.5, LINKID_DataType = "Number", INPID_InputControl = "ColorControl", INP_MinScale = 0.0, INP_MaxScale = 1.0, })
       end
@@ -540,17 +535,11 @@ function Create()
 
     next_ctrl_group = next_ctrl_group + NUM_COLOR_CONTROLS + 1
 
-  self:EndControlNest()
 
+  InSlider={}
 
-  -- some sliders controls to play with
-
-  self:BeginControlNest("Slider Controls", "Sliders", false, {})
-
-  InTinySlider={}
-
-  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-    InTinySlider[i] = self:AddInput("Tiny Slider "..i, "tinyslider"..i, {
+  for i=0,NUM_SLIDER_CONTROLS-1 do
+    InSlider[i] = self:AddInput("Slider "..i, "CONNECT_SLIDER"..i, {
       LINKID_DataType    = "Number",
       INPID_InputControl = "SliderControl",
       INP_MinScale 	     = -1.0,
@@ -559,29 +548,11 @@ function Create()
     })
   end
 
-  InSmallSlider={}
 
-  for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-    InSmallSlider[i] = self:AddInput("Small Slider "..i, "smallslider"..i, {
-      LINKID_DataType    = "Number",
-      INPID_InputControl = "SliderControl",
-      INP_MinScale 	     = -10.0,
-      INP_MaxScale 	     = 10.0,
-      INP_Default        = 0.0,
-    })
-  end
+  InIntSlider={}
 
-  self:EndControlNest()
-
-  -- some int sliders
-
-  self:BeginControlNest("Integer Slider", "SlidersInt", false, {})
-
-
-  InTinyInt={}
-
-  for i=0,NUM_TINYINT_CONTROLS-1 do
-    InTinyInt[i] = self:AddInput("Tiny Int Slider "..i, "tinyint"..i, {
+  for i=0,NUM_INTSLIDER_CONTROLS-1 do
+    InIntSlider[i] = self:AddInput("Int Slider "..i, "CONNECT_INTSLIDER"..i, {
       LINKID_DataType    = "Number",
       INPID_InputControl = "SliderControl",
       INP_MinScale 	     = -10,
@@ -591,34 +562,28 @@ function Create()
     })
   end
 
-  self:EndControlNest()
-
-  self:BeginControlNest("Checkboxes", "Checkbox", false, {})
 
   InCheckbox={}
 
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
-  InCheckbox[i] = self:AddInput("Checkbox "..i, "Checkbox"..i, {
-    LINKID_DataType    = "Number",
-    INPID_InputControl = "CheckboxControl",
-	  INP_Integer        = true,
-    INP_Default        = 0,
+    InCheckbox[i] = self:AddInput("Checkbox "..i, "Checkbox"..i, {
+      LINKID_DataType     = "Number",
+      INPID_InputControl  = "CheckboxControl",
+      INP_Integer         = true,
+      INP_Default         = 0,
     })
   end
 
-  self:EndControlNest()
-
- self:BeginControlNest("Point Controls", "PointControls", false, {})
 
   InPoint={}
 
   for i=0,NUM_POINT_CONTROLS-1 do
-  InPoint[i] = self:AddInput("Point "..i,"Point"..i, {
-    LINKID_DataType = "Point",
-    INPID_InputControl = "OffsetControl",
-	  INPID_PreviewControl = "CrosshairControl",
-    INP_DefaultX = 0.5,
-    INP_DefaultY = 0.5,
+    InPoint[i] = self:AddInput("Point "..i,"CONNECT_POINT"..i, {
+      LINKID_DataType       = "Point",
+      INPID_InputControl    = "OffsetControl",
+      INPID_PreviewControl  = "CrosshairControl",
+      INP_DefaultX          = 0.5,
+      INP_DefaultY          = 0.5,
     })
   end
 
@@ -920,58 +885,39 @@ function RebuildParameters()
 
 
     --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
-    for i=0,NUM_TINYSLIDER_CONTROLS-1 do
+    for i=0,NUM_SLIDER_CONTROLS-1 do
 
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
-
-      if (name ~= nil) then
-        InTinySlider[i]:SetAttrs({ IC_Visible = true })
-
-        InTinySlider[i]:SetAttrs({LINKS_Name = name})
-        InTinySlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InTinySlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InTinySlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
-        InTinySlider[i]:SetSource(Number(tonumber(sdef)),0,0)
-      else
-        InTinySlider[i]:SetAttrs({ IC_Visible = false })
-      end
-    end
-
-    --CONNECT_SMALLSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
-    for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SMALLSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
-      --print("#SmallSlider#",name, smin, smax, sdef) --
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
 
       if (name ~= nil) then
-        InSmallSlider[i]:SetAttrs({ IC_Visible = true })
+        InSlider[i]:SetAttrs({ IC_Visible = true })
 
-        InSmallSlider[i]:SetAttrs({LINKS_Name = name})
-        InSmallSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InSmallSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InSmallSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
-        InSmallSlider[i]:SetSource(Number(tonumber(sdef)),0,0)
+        InSlider[i]:SetAttrs({LINKS_Name = name})
+        InSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InSlider[i]:SetSource(Number(tonumber(sdef)),0,0)
       else
-        InSmallSlider[i]:SetAttrs({ IC_Visible = false })
+        InSlider[i]:SetAttrs({ IC_Visible = false })
       end
     end
 
     --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
-    for i=0,NUM_TINYINT_CONTROLS-1 do
+    for i=0,NUM_INTSLIDER_CONTROLS-1 do
 
-      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_TINYINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
+      local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_INTSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
       --print("#TinyINTSlider#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
-        InTinyInt[i]:SetAttrs({ IC_Visible = true })
+        InIntSlider[i]:SetAttrs({ IC_Visible = true })
 
-        InTinyInt[i]:SetAttrs({LINKS_Name = name})
-        InTinyInt[i]:SetAttrs({INP_MinScale = tonumber(smin)})
-        InTinyInt[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
-        InTinyInt[i]:SetAttrs({INP_Default = tonumber(sdef)})
-        InTinyInt[i]:SetSource(Number(tonumber(sdef)),0,0)
+        InIntSlider[i]:SetAttrs({LINKS_Name = name})
+        InIntSlider[i]:SetAttrs({INP_MinScale = tonumber(smin)})
+        InIntSlider[i]:SetAttrs({INP_MaxScale = tonumber(smax)})
+        InIntSlider[i]:SetAttrs({INP_Default = tonumber(sdef)})
+        InIntSlider[i]:SetSource(Number(tonumber(sdef)),0,0)
       else
-        InTinyInt[i]:SetAttrs({ IC_Visible = false })
+        InIntSlider[i]:SetAttrs({ IC_Visible = false })
       end
     end
 
@@ -1262,32 +1208,29 @@ function Process(req)
 
   for i=0,NUM_COLOR_CONTROLS-1 do
     for j=0,3 do
-      params.color[i][j] = InColor[i][j]:GetValue(req).Value
+      params.ctrlColor[i][j] = InColor[i][j]:GetValue(req).Value
     end
   end
 
   -- Sliders
 
-  for i=0,NUM_TINYSLIDER_CONTROLS-1 do
-    params.tinySlider[i] = InTinySlider[i]:GetValue(req).Value
+  for i=0,NUM_SLIDER_CONTROLS-1 do
+    params.ctrlSlider[i] = InSlider[i]:GetValue(req).Value
   end
 
-  for i=0,NUM_SMALLSLIDER_CONTROLS-1 do
-    params.smallSlider[i] = InSmallSlider[i]:GetValue(req).Value
-  end
 
-  for i=0,NUM_TINYINT_CONTROLS-1 do
-    params.tinyInt[i] = InTinyInt[i]:GetValue(req).Value
+  for i=0,NUM_INTSLIDER_CONTROLS-1 do
+    params.ctrlIntSlider[i] = InIntSlider[i]:GetValue(req).Value
   end
 
   -- Checkboxes
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
-    params.checkbox[i] = InCheckbox[i]:GetValue(req).Value
+    params.ctrlCheckbox[i] = InCheckbox[i]:GetValue(req).Value
   end
 
   -- PointControls
   for i=0,NUM_POINT_CONTROLS-1 do
-    params.point[i] = {InPoint[i]:GetValue(req).X,InPoint[i]:GetValue(req).Y}
+    params.ctrlPoint[i] = {InPoint[i]:GetValue(req).X,InPoint[i]:GetValue(req).Y}
   end
 
 
