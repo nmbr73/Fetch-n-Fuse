@@ -2,10 +2,12 @@
 DaFuses/
 
 Conversions/*.*.assets/
-Assets/Textures/*.jpg
-Assets/Textures/*.png
-Assets/Misc/*.png
-Assets/Misc/*.jpg
+Assets/Textures/*
+!Assets/Textures/README.md
+Assets/Misc/*
+!Assets/Misc/README.md
+Assets/UNKNOWN/*
+!Assets/UNKNOWN/README.md
 
 # -------- MACOS
 
