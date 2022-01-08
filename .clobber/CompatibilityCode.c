@@ -481,7 +481,7 @@
     /*| length_f      |*/  #define length_f(value) fabs(value);
     /*| length_f      |*/#endif
 
-    /*| fract         |*/#define fract(a) ((a)-_floor(a))
+    #define fract(a) ((a)-_floor(a))
 
     /*| fract_f       |*/#define fract_f(A)  fract(A)
     /*| fract_f2      |*/#define fract_f2(A) to_float2(fract((A).x),fract((A).y))
