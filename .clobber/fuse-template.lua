@@ -102,16 +102,10 @@ function Create()
 
   ----- In/Out
 
-  InImage1 = self:AddInput("Image", "Image", {
-    LINKID_DataType = "Image",
-    LINK_Main = 1,
-	LINK_Visible = false,
-    INP_Required = false
-  })
-
+<<<ICHANNELS_CREATE>>>
   OutImage = self:AddOutput("Output", "Output", {
     LINKID_DataType = "Image",
-    LINK_Main = 1,
+    LINK_Main       = 1,
   })
 
   ----- Inspector Panel Controls
@@ -136,11 +130,11 @@ function Process(req)
     { IMG_Channel = "Green", },
     { IMG_Channel = "Blue", },
     { IMG_Channel = "Alpha", },
-    IMG_Width = Width,
+    IMG_Width  = Width,
     IMG_Height = Height,
     IMG_XScale = XAspect,
     IMG_YScale = YAspect,
-    IMAT_OriginalWidth = realwidth, -- nil !?!
+    IMAT_OriginalWidth  = realwidth, -- nil !?!
     IMAT_OriginalHeight = realheight, -- nil !?!
     IMG_Quality = not req:IsQuick(),
     IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
@@ -149,10 +143,9 @@ function Process(req)
     IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
   }
 
-  local dst=Image(imgattrs)
-  local p = Pixel({R=0,G=0,B=0,A=0})
-  dst:Fill(p)
-
+  local dst   = Image(imgattrs)
+  local black = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(black)
 
   if req:IsPreCalc() then
     local out = Image({IMG_Like = dst, IMG_NoData = true})
@@ -160,31 +153,14 @@ function Process(req)
     return
   end
 
-
   local node = DVIPComputeNode(req,
-    <<<FUSE_NAME>>>,
-    ShaderCompatibilityCode..ShaderKernelCode,
-    "Params",
-    ShaderParameters
-    )
+    "<<<FUSE_NAME>>>", ShaderCompatibilityCode..ShaderKernelCode,
+    "Params", ShaderParameters
+  )
 
-  -- Extern Texture or create a new one
+  -- Extern texture or create a new one
 
-  -- TODO!!!!!!
-
-  -- local iChannel={}
-
-  -- for i=0,NUM_INPUT_CHANNELS-1 do
-  --   iChannel[i] = InChannel[i]:GetValue(req)
-
-  --   if (iChannel[i] == nil) then
-  --     iChannel[i] = Image(imgattrs)
-  --     local p = Pixel({R=0,G=0,B=0,A=0})
-  --     iChannel[i]:Fill(p)
-  --   end
-  -- end
-
-
+<<<ICHANNELS_PROCESS1>>>
   -- DCTL parameters
 
   local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
@@ -194,33 +170,20 @@ function Process(req)
   params = node:GetParamBlock(ShaderParameters)
 
 <<<CODE_PROCESS>>>
-
   -- Resolution
 
   params.width  = dst.Width
   params.height = dst.Height
 
+  -- Per channel time and resolution
 
+<<<ICHANNELS_PROCESS2>>>
 
-
-
-  -- for i=0,NUM_INPUT_CHANNELS-1 do
-  --   params.iChannelTime[i] = 0
-  --   params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()    -- or maybe: iChannel[0].Width
-  --   params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()   -- or maybe: iChannel[0].Height
-  -- end
-
-
-
+  -- Set parameters and add I/O
 
   node:SetParamBlock(params)
-
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
-
-  -- for i=0,NUM_INPUT_CHANNELS-1 do
-  --   node:AddInput("iChannel"..i,iChannel[i])
-  -- end
-
+<<<ICHANNELS_PROCESS3>>>
   node:AddOutput("dst", dst)
 
   local ok = node:RunSession(req)

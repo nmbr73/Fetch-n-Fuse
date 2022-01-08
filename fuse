@@ -144,19 +144,8 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
   kernel_parameters=m.group(1)
 
 
-
-
-
-
   fragColor_name = None # float4
   fragCoord_name = None # float2
-
-
-
-
-  #print(str(has_param))
-  #exit()
-
 
 
   # ja, okay, jetzt wird's echt bescheuert ...
@@ -207,25 +196,35 @@ def patch_kernel(conversionCode,kernelName,has_param,part=""):
       else:
         has_param[n]['Present']=True
 
-  MAX_INPUT_CHANNELS=0
+  # even 'gaps' in the channels (unused channels) must be counted
+  # so if we have iChannel3 and only iChannel3, then the number
+  # of channels is 4 (iChannel0 to iChannel3).
+
+  NUM_INPUT_CHANNELS=0
   kernel_parameters = "__CONSTANTREF__ Params*  params, "
-  for i in range(0,15):
+  for i in range(16):
     if has_param["iChannel"+str(i)]['Present']:
-      kernel_parameters += " __TEXTURE2D__ iChannel"+str(i)+", " # sollte aber fuer mainImage vermutlich ohne "Luecken" sein!?!!
-      MAX_INPUT_CHANNELS+=1
+      kernel_parameters += " __TEXTURE2D__ iChannel"+str(i)+", "
+      NUM_INPUT_CHANNELS=i+1
 
   kernel_parameters += "__TEXTURE2D_WRITE__ destinationTexture"
 
+  if NUM_INPUT_CHANNELS==0:
+    has_param['iChannelResolution']['Code'] = '/* no iChannels!?! */\n'
+    has_param['iChannelTime']['Code']       = '/* no iChannels!?! */\n'
+  else:
 
-  # iChannelResolution[]
-  has_param['iChannelResolution']['Code']='  float2 iChannelResolution['+ str(MAX_INPUT_CHANNELS) +'];\n'
-  for i in range(0, MAX_INPUT_CHANNELS-1):
-    has_param['iChannelResolution']['Code'] += "  iChannelResolution["+str(i)+"] = to_float2(params->iChannelResolution["+str(i)+"][0], params->iChannelResolution["+str(i)+"][1]);\n"
-
-  # iChannelTime[]
-  has_param['iChannelTime']['Code']='  float iChannelTime['+ str(MAX_INPUT_CHANNELS) +'];\n'
-  for i in range(0,MAX_INPUT_CHANNELS-1):
-    has_param['iChannelTime']['Code'] += "  iChannelTime["+str(i)+"] = params->iChannelTime["+str(i)+"];\n"
+    # iChannelResolution[]
+    # iChannelTime[]
+    has_param['iChannelResolution']['Code']='  float2 iChannelResolution['+ str(NUM_INPUT_CHANNELS) +'];\n'
+    has_param['iChannelTime']['Code']='  float iChannelTime['+ str(NUM_INPUT_CHANNELS) +'];\n'
+    for i in range(NUM_INPUT_CHANNELS):
+      if has_param["iChannel"+str(i)]['Present']:
+        has_param['iChannelResolution']['Code'] += "  iChannelResolution["+str(i)+"] = to_float2(params->iChannelResolution["+str(i)+"][0], params->iChannelResolution["+str(i)+"][1]);\n"
+        has_param['iChannelTime']['Code']       += "  iChannelTime["+str(i)+"] = params->iChannelTime["+str(i)+"];\n"
+      else:
+        has_param['iChannelResolution']['Code'] += "  iChannelResolution["+str(i)+"] = to_float2(0.0f,0.0f);\n"
+        has_param['iChannelTime']['Code']       += "  iChannelTime["+str(i)+"] = 0.0f;\n"
 
 
   variable_declarations = ""
@@ -482,7 +481,7 @@ def fuse_it(id,force=False):
 
   # iChannel<0..15> with 15 as the maximum number of input channels supported for the time being
 
-  for i in range(0,15):
+  for i in range(16):
     has_param['iChannel'+str(i)]={ 'Type':'sampler2D', 'Code': '' }
 
 
@@ -496,7 +495,15 @@ def fuse_it(id,force=False):
         v[f]='  '+v[f].replace('\n','\n  ')+'\n'
 
 
+
   # patch all kernel signatures
+
+  channelsSeen    = {}
+  channelsSeenNum = 0
+
+  for i in range(16):
+    channelsSeen['iChannel'+str(i)]=False
+
 
   for part in ['__Buffer_A','__Buffer_B','__Buffer_C','__Buffer_D','']:
 
@@ -505,11 +512,46 @@ def fuse_it(id,force=False):
 
     conversionCode = patch_kernel(conversionCode,fuse_kernel,has_param,part)
 
+    for i in range(16):
+      channel='iChannel'+str(i)
+      if has_param[channel]['Present']:
+        channelsSeen[channel]=True
+        if i+1>channelsSeenNum:
+          channelsSeenNum=i+1
+
+
+  ichan_create    = ''
+  ichan_process1  = ''
+  ichan_process2  = ''
+  ichan_process2_time  = ''
+  ichan_process2_res   = ''
+  ichan_process3  = ''
+  j=0 # how to handle gaps when it comes to LINK_Main?!?
+  for i in range(channelsSeenNum):
+    channel='iChannel'+str(i)
+    if channelsSeen[channel]:
+      j+=1
+      ichan_create   += f'  InChannel{i} = self:AddInput( "iChannel{i}",  "iChannel{i}",  {{ LINKID_DataType = "Image", LINK_Main = {j}, INP_Required = false  }})\n'
+      ichan_process1 += f'  iChannel{i} = InChannel{i}:GetValue(req)\n\n  if iChannel{i}==nil then\n    iChannel{i} = Image(imgattrs)\n    iChannel{i}:Fill(black)\n  end\n\n'
+      ichan_process2_time += f'  params.iChannelTime[{i}] = 0\n'
+      ichan_process2_res  += f'  params.iChannelResolution[{i}][0] = iChannel{i}.DataWindow:Width()    -- or maybe: iChannel{i}.Width\n  params.iChannelResolution[{i}][1] = iChannel{i}.DataWindow:Height()   -- or maybe: iChannel{i}.Height\n'
+      ichan_process3 += f'  node:AddInput("iChannel{i}",iChannel{i}) -- TODO: add a better channel name\n'
+    else:
+      ichan_process2_time += f'  params.iChannelTime[{i}] = 0\n'
+      ichan_process2_res  += f'  params.iChannelResolution[{i}][0] = 0\n  params.iChannelResolution[{i}][1] = 0\n'
+
+  if channelsSeenNum==0:
+    ichan_process2 = f'  params.iChannelTime[0] = 0\n  params.iChannelResolution[0][0] = 0\n  params.iChannelResolution[0][1] = 0\n'
+  else:
+    ichan_process2 = ichan_process2_time + "\n" + ichan_process2_res
+
 
 
   fuse_param    = ''
   fuse_create   = ''
   fuse_process  = ''
+
+
 
 
   for n,p in has_param.items():
@@ -575,8 +617,12 @@ def fuse_it(id,force=False):
   fuse=re.sub(r'<<<CODE_KERNEL>>>',conversionCode,fuse)
   fuse=re.sub(r'<<<CODE_PARAMETERS>>>',"\n"+fuse_param,fuse)
   fuse=re.sub(r'<<<CODE_CREATE>>>',fuse_create,fuse)
-  fuse=re.sub(r'<<<CODE_PROCESS>>>',fuse_process,fuse)
+  fuse=re.sub(r'<<<CODE_PROCESS>>> *\n',fuse_process,fuse)
 
+  fuse=re.sub(r'<<<ICHANNELS_CREATE>>>',ichan_create,fuse)
+  fuse=re.sub(r'<<<ICHANNELS_PROCESS1>>> *\n',ichan_process1,fuse)
+  fuse=re.sub(r'<<<ICHANNELS_PROCESS2>>> *\n',ichan_process2,fuse)
+  fuse=re.sub(r'<<<ICHANNELS_PROCESS3>>> *\n',ichan_process3,fuse)
 
 
 
