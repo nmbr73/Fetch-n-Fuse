@@ -9,7 +9,8 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 
-
+CONVERSIONS_PATH = './Conversions/'
+VERBOSE = False
 
 MEDIAMAP = {
   "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg" : { "type": "Texture", "folder":"Textures", "name":"Abstract 1"       },
@@ -49,6 +50,11 @@ MEDIAMAP = {
 for k,v in MEDIAMAP.items():
   v["suffix"]=k[-3:]
 
+# ---------------------------------------------------------------------------------------------------------------------
+
+def verbose(msg):
+  if VERBOSE:
+    print(msg)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -257,27 +263,6 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def copyTextFile(src,dst):
-  """
-  Copy file src to dst.
-
-  There seems to be no such function in `os`or in `io`, but I don't
-  want to include another big package just for that simple functionality.
-  """
-  txt=""
-  with open(src, "r") as f:
-    txt=f.read()
-  with open(dst, "w") as f:
-    f.write(txt)
-
-
-
-
-
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-
 def asFuseID(shader_name,shader_id):
   """
   Derive an identifier from shader_name.
@@ -344,39 +329,28 @@ def asFilename(shader_name,shader_id):
 
   return asFuseID(shader_name,shader_id)
 
-# ---------------------------------------------------------------------------------------------------------------------
-
-
-# def asConversionBasefilename(shader_name,shader_id):
-#   """
-#   Derive a filename for fetch's itermediate files (without suffix).
-#   """
-
-#   return asFilename(shader_name,shader_id)+"."+shader_id
-
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def create_json(shader_id, path='./Conversions/'):
+def create_json(shader_id):
   """
   See if there is a JSON file with the given `shader_id`.
 
-  This checks `path` and the environments `DOWNLOADS` folder for a JSON file containing the shader `shader_id`.
+  This checks `CONVERSIONS_PATH` and the environments `DOWNLOADS`
+  folder for a JSON file containing the shader `shader_id`.
 
   @return (string) filename (without '.<ID>.json').
   """
 
-
-  files=[entry for entry in os.scandir(path) if entry.is_file() and entry.name.endswith(f".{shader_id}.json")]
+  files=[entry for entry in os.scandir(CONVERSIONS_PATH) if entry.is_file() and entry.name.endswith(f".{shader_id}.json")]
 
   if len(files) > 1:
-    raise Exception(f"multiple files matching '{path}*.{shader_id}.json'")
+    raise Exception(f"multiple files matching '{CONVERSIONS_PATH}*.{shader_id}.json'")
 
   if len(files) == 1:
-    fname = files[0].name
-    fname = fname[0:len(fname)-len(f".{shader_id}.json")]
-    return fname
-
+    conv_name = files[0].name
+    conv_name = conv_name[0:len(conv_name)-len(f".{shader_id}.json")]
+    return conv_name
 
 
   # then we have to read and parse the json to get a filename
@@ -391,14 +365,14 @@ def create_json(shader_id, path='./Conversions/'):
 
     fname = f"shader_{shader_id}.json"
 
-    if os.path.isfile(path + fname):
+    if os.path.isfile(CONVERSIONS_PATH + fname):
 
       print("read {fname} file")
 
-      with open(path+fname, "r") as f:
+      with open(CONVERSIONS_PATH+fname, "r") as f:
         json_text=f.read()
 
-      remove_file = path+fname
+      remove_file = CONVERSIONS_PATH+fname
 
 
   # try to read shader_ID.json from downloads
@@ -450,12 +424,12 @@ def create_json(shader_id, path='./Conversions/'):
 
   shader_name = json_data['info']['name']
 
-  fname = asFilename(shader_name,shader_id)
+  conv_name = asFilename(shader_name,shader_id)
 
 
   # write file
 
-  outfilepath = f"{path}{fname}.{shader_id}.json"
+  outfilepath = f"{CONVERSIONS_PATH}{conv_name}.{shader_id}.json"
   print(f"write to {outfilepath}")
 
   with io.open(outfilepath, 'w') as f:
@@ -468,30 +442,25 @@ def create_json(shader_id, path='./Conversions/'):
     print("delete {remove_file}")
     os.remove(remove_file)
 
-  return fname
-
-
-
+  return conv_name
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def read_json(fname, shader_id, path='./Conversions/'):
+def read_json(conv_name, shader_id):
   """
   Get all the Shadertoy information as a JSON structure.
   """
 
-
   json_text = None
-
 
   # --- read file
 
-  infilepath = f"{path}{fname}.{shader_id}.json"
+  infilepath = f"{CONVERSIONS_PATH}{conv_name}.{shader_id}.json"
 
   if not os.path.isfile(infilepath):
     raise Exception(f"{infilepath} does not exists")
 
-  print(f"read from {infilepath}")
+  verbose(f"read from {infilepath}")
 
   with open(infilepath, "r") as f:
     json_text=f.read()
@@ -532,36 +501,22 @@ def read_json(fname, shader_id, path='./Conversions/'):
 
   return json_data
 
-
-
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 
-def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
+def create_yaml(conv_name, shader_id, json_data):
 
-  path  = './Conversions/'
+  yaml_filename = f"{conv_name}.{shader_id}.yaml"
 
-  fname     = create_json(id)
-  json_data = read_json(fname,id,path)
+  if os.path.isfile(CONVERSIONS_PATH+yaml_filename):
+    return yaml_filename
 
   info = json_data['info']
 
-
   shader_name = json_data['info']['name']
-  fuse_author = os.getenv('AUTHOR')
-  fuse_basefname  = path+fname+"."+id
-
-  if not ('username' in json_data['info']):
-    json_data['info']['username']="N.N."
-
-  if os.path.isfile(fuse_basefname+".c") and not force:
-    raise Exception("conversion already exists (use -f to overwrite)")
 
   yaml_data={
         'shader':{
-          'id'          : id,
+          'id'          : shader_id,
           'name'        : shader_name,
           'author'      : info['username'],
           'url'         : 'https://www.shadertoy.com/view/'+id,
@@ -569,32 +524,76 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
           'tags'        : info['tags'],
         },
         'fuse':{
-          'id'      : asFuseID(shader_name,id),
-          'name'    : asFusename(shader_name,id),
-          'file'    : asFilename(shader_name,id),
-          'author'  : fuse_author,
+          'id'      : asFuseID(shader_name,shader_id),
+          'name'    : asFusename(shader_name,shader_id),
+          'file'    : asFilename(shader_name,shader_id),
+          'kernel'  : asKernelname(shader_name,shader_id),
+          'author'  : os.getenv('AUTHOR'),
         }
       }
 
   if "parentid" in info and "parentname" in info:
     yaml_data['shader']['parent']={
-      'id':info['parentid'],
-      'name':info['parentname'],
-      'url':'https://www.shadertoy.com/view/'+info['parentid'],
+      'id'    : info['parentid'],
+      'name'  : info['parentname'],
+      'url'   : 'https://www.shadertoy.com/view/'+info['parentid'],
       }
 
 
-  with io.open(fuse_basefname+".yaml", 'w', encoding='utf8') as outfile:
-      yaml.dump(yaml_data
-      ,outfile, default_flow_style=False, allow_unicode=True)
+  with io.open(CONVERSIONS_PATH+yaml_filename, 'w', encoding='utf8') as outfile:
+      yaml.dump(yaml_data,outfile, default_flow_style=False, allow_unicode=True)
+
+  return yaml_filename
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def read_yaml(conv_name, shader_id):
+  """
+  Get infortmation stored in the YAML file.
+  """
+
+  yaml_text = None
+
+  # --- read file
+
+  infilepath = f"{CONVERSIONS_PATH}{conv_name}.{shader_id}.yaml"
+
+  if not os.path.isfile(infilepath):
+    raise Exception(f"{infilepath} does not exists")
+
+  verbose(f"read from {infilepath}")
+
+  with open(infilepath, "r") as f:
+    yaml_text=f.read()
+
+  yaml_data = yaml.load(yaml_text, Loader=yaml.FullLoader)
+
+  if yaml_data['shader']['id'] != shader_id:
+    raise Exception(f"shader id missmatch in yaml file")
+
+  # for old yaml files - can be removed later:
+  if not 'kernel' in yaml_data['fuse']:
+    shader_name=yaml_data['shader']['name']
+    yaml_data['fuse']['kernel'] = asKernelname(shader_name,shader_id)
+
+  return yaml_data
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
+
+  path  = './Conversions/'
+
+  conv_name   = create_json(shader_id)
+  json_data   = read_json(conv_name, shader_id)
+  yaml_fname  = create_yaml(conv_name, shader_id, json_data)
+  yaml_data   = read_yaml(conv_name, shader_id)
+# glsl_parts  = create_glsl(conv_name, shader_id, json_data)
 
 
 
+  kernel_name = yaml_data['fuse']['kernel']
 
-
-
-
-  fuse_name=asFusename(shader_name,id)
 
   known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image']
 
@@ -636,7 +635,7 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
     if nopatch:
       code_parts[entry['name']]['code'] = header + "\n\n" + entry['code']
     else:
-      code_parts[entry['name']]['code'] = header + "\n\n" + patchForDCTL(entry['code'],fuse_name,entry['name'])
+      code_parts[entry['name']]['code'] = header + "\n\n" + patchForDCTL(entry['code'],kernel_name,entry['name'])
 
 
   code=""
@@ -645,8 +644,9 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
     code=code + code_parts[part]['code']
 
 
+  dctl_filename = f"{conv_name}.{shader_id}.c"
 
-  with open(fuse_basefname+".c", 'w') as f:
+  with open(dctl_filename, 'w') as f:
      f.write(code)
 
 
