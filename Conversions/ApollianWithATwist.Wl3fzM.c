@@ -16,6 +16,8 @@
 #define ROT(a)          to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a))
 #define PSIN(x)         (0.5f+0.5f*_sinf(x))
 
+// mat2 ... hack, otherwise it's not seen
+
 __DEVICE__ float3 hsv2rgb(float3 c) {
   const float4 K = to_float4(1.0f, 2.0f / 3.0f, 1.0f / 3.0f, 3.0f);
   float3 p = _fabs(fract(swi3(c,x,x,x) + swi3(K,x,y,z)) * 6.0f - swi3(K,w,w,w));

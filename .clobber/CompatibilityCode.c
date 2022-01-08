@@ -234,12 +234,12 @@
 /*| to_mat4       |*/    return t;
 /*| to_mat4       |*/  }
 /*|               |*/
-/*| to_mat3_f     |*/  __DEVICE__ inline mat4 to_mat4_f( float  a )
-/*| to_mat3_f     |*/  {
-/*| to_mat3_f     |*/    mat4 t;
-/*| to_mat3_f     |*/    t.r0.x = t.r0.y = t.r0.z = t.r0.w = t.r1.x = t.r1.y = t.r1.z = t.r1.w = t.r2.x = t.r2.y = t.r2.z = t.r2.w = t.r3.x = t.r3.y = t.r3.z = t.r3.w = a;
-/*| to_mat3_f     |*/    return t;
-/*| to_mat3_f     |*/  }
+/*| to_mat4_f     |*/  __DEVICE__ inline mat4 to_mat4_f( float  a )
+/*| to_mat4_f     |*/  {
+/*| to_mat4_f     |*/    mat4 t;
+/*| to_mat4_f     |*/    t.r0.x = t.r0.y = t.r0.z = t.r0.w = t.r1.x = t.r1.y = t.r1.z = t.r1.w = t.r2.x = t.r2.y = t.r2.z = t.r2.w = t.r3.x = t.r3.y = t.r3.z = t.r3.w = a;
+/*| to_mat4_f     |*/    return t;
+/*| to_mat4_f     |*/  }
 /*|               |*/
 /*| to_mat4_f4    |*/__DEVICE__ inline mat4 to_mat4_f4( float4 A, float4 B, float4 C, float4 D)
 /*| to_mat4_f4    |*/  {
