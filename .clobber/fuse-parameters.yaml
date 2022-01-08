@@ -2,13 +2,13 @@ iChannelTime:
   Type: float*
 
 iChannelResolution:
-  Type': float2*
+  Type: float2*
 
 iResolution:
   Type:  float2
   Param: float  iResolution[2];
   Code: |-
-    float2 iResolution = to_float2(_shaderParameters->iResolution[0], _shaderParameters->iResolution[1]);
+    float2 iResolution = to_float2(params->iResolution[0], params->iResolution[1]);
   Proc: |-
     params.iResolution[0] = dst.Width
     params.iResolution[1] = dst.Height
@@ -17,7 +17,7 @@ iResolution:
 iTime:
   Type:   float
   Param:  float  iTime;
-  Code:   float  iTime       = _shaderParameters->iTime;
+  Code:   float  iTime       = params->iTime;
   Proc:   params.iTime = (req.Time / framerate) * InFrequency:GetValue(req).Value
 
   Create: |-
@@ -37,7 +37,7 @@ iTime:
 
 iMouse:
   Type:   float4
-  Code:   float4 iMouse      = to_float4(_shaderParameters->iMouse[0],_shaderParameters->iMouse[1],_shaderParameters->iMouse[2],_shaderParameters->iMouse[3]);
+  Code:   float4 iMouse      = to_float4(params->iMouse[0],params->iMouse[1],params->iMouse[2],params->iMouse[3]);
   Param:  float  iMouse[4];
   Proc:   |-
 
@@ -111,19 +111,19 @@ iMouse:
 
 iTimeDelta:
   Type:   float
-  Code:   float  iTimeDelta  = _shaderParameters->iTimeDelta;
+  Code:   float  iTimeDelta  = params->iTimeDelta;
   Param:  float  iTimeDelta;
   Proc:   params.iTimeDelta = 1/framerate
 
 iFrame:
   Type:   int
-  Code:   int    iFrame      = _shaderParameters->iFrame;
+  Code:   int    iFrame      = params->iFrame;
   Param:  int    iFrame;
   Proc:   params.iFrame = req.Time
 
 iDate:
   Type:   float4
-  Code:   float4 iDate       = to_float4(_shaderParameters->iDate[0],_shaderParameters->iDate[1],_shaderParameters->iDate[2],_shaderParameters->iDate[3]);
+  Code:   float4 iDate       = to_float4(params->iDate[0],params->iDate[1],params->iDate[2],params->iDate[3]);
   Param:  float iDate[4];
   Proc: |-
     params.iDate[0] = 0
@@ -133,20 +133,20 @@ iDate:
 
 iSampleRate:
   Type:   float
-  Code:   float  iSampleRate = _shaderParameters->iSampleRate;
+  Code:   float  iSampleRate = params->iSampleRate;
   Param:  float  iSampleRate;
   Proc:   params.iSampleRate = 44100
 
 width:
   Type:   int
-  Code:   int    width       = _shaderParameters->width;
+  Code:   int    width       = params->width;
 height:
   Type:   int
-  Code:   int    height      = _shaderParameters->height;
+  Code:   int    height      = params->height;
 
 compOrder:
   Type:   int
-  Code:   int    width       = _shaderParameters->compOrder;
+  Code:   int    width       = params->compOrder;
   Param:  int    compOrder;
   Proc:   params.compOrder = 15 -- no idea :-P
 
