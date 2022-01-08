@@ -61,6 +61,9 @@ FuRegisterClass(
 ShaderParameters =
 [[
 <<<CODE_PARAMETERS>>>
+  int    width,height;
+  int    compOrder;
+
 ]]
 -- /*
 
@@ -154,7 +157,7 @@ function Process(req)
   end
 
   local node = DVIPComputeNode(req,
-    "<<<FUSE_NAME>>>", ShaderCompatibilityCode..ShaderKernelCode,
+    "<<<FUSE_NAME>>>Fuse", ShaderCompatibilityCode..ShaderKernelCode,
     "Params", ShaderParameters
   )
 
