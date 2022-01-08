@@ -10,8 +10,6 @@ import argparse
 from dotenv import load_dotenv
 
 
-# TODO: https://www.shadertoy.com/view/XtlSD7 ... bringt 'fetch' aus dem Tritt wegen der Sound-Section.
-# TODO: to_float2(-1.0f) ... nicht erkannt
 
 MEDIAMAP = {
   "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg" : { "type": "Texture", "folder":"Textures", "name":"Abstract 1"       },
@@ -55,6 +53,10 @@ for k,v in MEDIAMAP.items():
 # ---------------------------------------------------------------------------------------------------------------------
 
 def assetPathToName(filepathpath, default=None):
+  """
+  Look up the filepathname (some `/media/a/HASH`) and try to map it to something readable.
+  """
+
   media=MEDIAMAP.get(filepathpath,None)
   if media==None:
     return default
@@ -64,32 +66,36 @@ def assetPathToName(filepathpath, default=None):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def downloadAsset(src,ctype,fuse_basefname,buffer_name,channel):
+def downloadAsset(src):
 
-  if src!=None and ctype!=None:
+  if src==None:
+    return
 
-    media=MEDIAMAP.get(src,None)
+  media=MEDIAMAP.get(src,None)
 
-    if media != None:
-      # known asset
+  if media != None:
 
-      filename="./Assets/"+media['folder']+"/"+media['name']+"."+media['suffix']
+    # known asset
+    filename="./Assets/"+media['folder']+"/"+media['name']+"."+media['suffix']
 
-    else:
-      # unknown media
+  else:
 
-      if not os.path.exists(fuse_basefname+'.assets'):
-        os.makedirs(fuse_basefname+'.assets')
+    # unknown media
+    filename="./Assets/UNKNOWN/"+re.sub(r'/','_',src)
 
-      filename, suffix = os.path.splitext(src)
-      filename=f"{fuse_basefname}.assets/{buffer_name}-Channel{channel}-{ctype}{suffix}"
 
-    # http get and write file
-    if not os.path.exists(filename):
-      data = requests.get("https://www.shadertoy.com"+src)
+  # do nothing if already downloaded
 
-      with open(filename, 'wb') as f:
-          f.write(data.content)
+  if os.path.exists(filename):
+    return
+
+
+  # http get and write file
+
+  data = requests.get("https://www.shadertoy.com"+src)
+
+  with open(filename, 'wb') as f:
+      f.write(data.content)
 
 
 
@@ -542,7 +548,7 @@ def doFetch(id,force=False,nocache=False,noassets=False,nopatch=False):
           header=header + "// Connect '"+input_name+"' to iChannel"+str(input['channel'])+"\n"
 
           if not noassets:
-            downloadAsset(src,ctype,fuse_basefname,buffer_name,input['channel'])
+            downloadAsset(src)
 
 
     if nopatch:
