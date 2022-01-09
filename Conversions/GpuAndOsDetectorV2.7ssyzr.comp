@@ -2,7 +2,7 @@ Composition {
 	CurrentTime = 0,
 	RenderRange = { 0, 1000 },
 	GlobalRange = { 0, 1000 },
-	CurrentID = 8,
+	CurrentID = 15,
 	HiQ = true,
 	PlaybackUpdateMode = 0,
 	Version = "Fusion Studio 17.0 build 43",
@@ -20,7 +20,7 @@ Composition {
 			Clips = {
 				Clip {
 					ID = "Clip1",
-					Filename = "../Assets/Textures/Font 1.png",
+					Filename = "ShadertoyAssets/Textures/Font 1.png",
 					FormatID = "PNGFormat",
 					StartFrame = 1,
 					LengthSetManually = true,
@@ -36,14 +36,14 @@ Composition {
 					GlobalEnd = 0
 				}
 			},
-			CtrlWZoom = false,
 			Inputs = {
 				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
 				["Clip1.PNGFormat.PostMultiply"] = Input { Value = 1, },
 			},
-			ViewInfo = OperatorInfo { Pos = { 337.333, -1.12121 } },
+			ViewInfo = OperatorInfo { Pos = { 220, 16.5 } },
 		},
 		ShadersInc1 = Fuse.ShadertoysIncubator {
+			CtrlWZoom = false,
 			Inputs = {
 				Width = Input { Value = 1920, },
 				Height = Input { Value = 1080, },
@@ -71,8 +71,30 @@ Composition {
 					Source = "Output",
 				},
 			},
-			ViewInfo = OperatorInfo { Pos = { 487.333, -0.515152 } },
+			ViewInfo = OperatorInfo { Pos = { 344.667, 16.5 } },
 			Version = 1
+		},
+		Background1 = Background {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+			},
+			ViewInfo = OperatorInfo { Pos = { 220, 49.5 } },
+		},
+		Merge1 = Merge {
+			Inputs = {
+				Background = Input {
+					SourceOp = "Background1",
+					Source = "Output",
+				},
+				Foreground = Input {
+					SourceOp = "ShadersInc1",
+					Source = "Output",
+				},
+				PerformDepthMerge = Input { Value = 0, },
+			},
+			ViewInfo = OperatorInfo { Pos = { 385, 49.5 } },
 		}
 	},
 	Frames = {
@@ -100,7 +122,7 @@ Composition {
 				LayoutStrip = { Show = true, RatioX = 100, },
 				Inspector = { Show = true, RatioX = 100, RatioY = 1, },
 				Effects = { Show = false, },
-				Viewer2 = { Show = true, RatioX = 1.59235668789809, RatioY = 0.01, },
+				Viewer2 = { Show = true, RatioX = 1.29777070063694, RatioY = 0.01, },
 				Comments = { Show = false },
 				Clips = { Show = false, },
 				ActionStrip = { Show = true, RatioX = 100, },
@@ -108,7 +130,7 @@ Composition {
 				MediaPool = { Show = false, },
 				Nodes = { Show = true, RatioX = 1, RatioY = 100, },
 				Metadata = { Show = false, },
-				Viewer1 = { Show = true, RatioX = 0.407643312101911, RatioY = 0.01, },
+				Viewer1 = { Show = true, RatioX = 0.702229299363057, RatioY = 0.01, },
 				Spline = { Show = false, },
 				OuterColumns = {
 					RatioX = 100,
@@ -159,6 +181,8 @@ Composition {
 					FlowView = FlowView {
 						Flags = {
 							AutoHideNavigator = true,
+							GridSnap = true,
+							ConnectedSnap = true,
 							AutoSnap = true,
 							RemoveRouters = true
 						},
@@ -166,7 +190,7 @@ Composition {
 						Direction = "Horizontal",
 						PipeStyle = "Direct",
 						RootScale = 1,
-						RootOffset = { 26, 29 }
+						RootOffset = { 158.667, 10.8182 }
 					}
 				},
 				Keyframes = MultiView {
@@ -195,7 +219,7 @@ Composition {
 							AutoSnapTo = "frame",
 							AutoSnapToGuidelines = false,
 							GuidelinesGrabEnabled = true,
-							GuidelinesSnapTo = "frame"
+							GuidelinesSnapTo = "none"
 						},
 						Spreadsheet = { LeftPos = 232, Visible = false }
 					}
@@ -277,8 +301,8 @@ Composition {
 								Columns = 2,
 								RatioX = 100,
 								RatioY = 1,
-								{ ID = "Viewer1", RatioX = 0.407643312101911, RatioY = 0.01 },
-								{ ID = "Viewer2", RatioX = 1.59235668789809 }
+								{ ID = "Viewer1", RatioX = 0.702229299363057, RatioY = 0.01 },
+								{ ID = "Viewer2", RatioX = 1.29777070063694 }
 							},
 							{ ID = "Time", FixedY = 83, Flat = true }
 						},
