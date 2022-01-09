@@ -580,6 +580,82 @@ def read_yaml(conv_name, shader_id):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+def create_glsl(conv_name, shader_id, json_data):
+
+  glsl_filename = f"{conv_name}.{shader_id}.glsl"
+
+  if os.path.isfile(CONVERSIONS_PATH+glsl_filename):
+    return glsl_filename
+
+  glsl_text='''
+
+          //    Any text before the first marker ist ignored.       //
+          //    Do not delete or change these markers!              //
+          //    You may want to do some minimal changes in the      //
+          //    following code sections to better support the       //
+          //    pattern matching that does the preliminaty GLSL     //
+          //    to DCTL conversion.                                 //
+
+'''
+
+  for entry in json_data['renderpass']:
+
+    name = entry['name']
+    code = entry['code']
+
+    glsl_text += '\n// >>> ___ GLSL:['+name+']' + ' '+('_'*(73-len(name))) + ' <<<\n'
+    glsl_text += code
+
+
+  with io.open(CONVERSIONS_PATH+glsl_filename, 'w') as f:
+    f.write(glsl_text)
+
+  return glsl_filename
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def read_glsl(conv_name, shader_id):
+  """
+  Get GLSL code from file.
+  """
+
+  glsl_text = None
+
+  # --- read file
+
+  infilepath = f"{CONVERSIONS_PATH}{conv_name}.{shader_id}.glsl"
+
+  if not os.path.isfile(infilepath):
+    raise Exception(f"{infilepath} does not exists")
+
+  verbose(f"read from {infilepath}")
+
+  with open(infilepath, "r") as f:
+    glsl_text=f.read()
+
+  glsl_data={}
+
+  parts =  glsl_text.split("\n// >>> ___ GLSL:[")[1:]
+
+  for p in parts:
+    m = re.match(r'([^\]]+)\] _{30,} <<< *\n',p)
+
+    if not m:
+      raise Exception("broken marker 'GLSL: ["+p[0:10]+"...'")
+
+    name = m.group(1)
+
+    if name in glsl_data:
+      raise Exception("mulltiple occurences of 'GLSL: ["+name+"]' marker")
+
+    code = p[p.find('\n')+1:]
+
+    glsl_data[name]=code
+
+  return glsl_data
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
 
   path  = './Conversions/'
@@ -588,8 +664,8 @@ def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
   json_data   = read_json(conv_name, shader_id)
   yaml_fname  = create_yaml(conv_name, shader_id, json_data)
   yaml_data   = read_yaml(conv_name, shader_id)
-# glsl_parts  = create_glsl(conv_name, shader_id, json_data)
-
+  glsl_fname  = create_glsl(conv_name, shader_id, json_data)
+  glsl_data   = read_glsl(conv_name, shader_id)
 
 
   kernel_name = yaml_data['fuse']['kernel']
@@ -606,6 +682,12 @@ def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
 
     if not entry['name'] in known_code_parts:
       raise Exception("unknown code section '"+entry['name']+"'")
+
+    if not entry['name'] in glsl_data:
+      raise Exception(f"missing part '{entry['name']}' in GLSL")
+
+    # if glsl_data[entry['name']] != entry['code']:
+    #   print(f"code changed for '{entry['name']}'")
 
     header="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
@@ -646,7 +728,7 @@ def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
 
   dctl_filename = f"{conv_name}.{shader_id}.c"
 
-  with open(dctl_filename, 'w') as f:
+  with open(CONVERSIONS_PATH+dctl_filename, 'w') as f:
      f.write(code)
 
 
