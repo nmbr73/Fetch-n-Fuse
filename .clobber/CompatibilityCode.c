@@ -271,7 +271,7 @@
 /*| mul_f4_mat4   |*/    return C;
 /*| mul_f4_mat4   |*/  }
 /*|               |*/
-/*| mul_mat4_mat4 |*/__DEVICE__ inline __host__ __device__ mat4 mat4_multi_mat4( mat4 B, mat4 A)   //
+/*| mul_mat4_mat4 |*/__DEVICE__ inline mat4 mat4_multi_mat4( mat4 B, mat4 A)
 /*| mul_mat4_mat3 |*/{
 /*| mul_mat4_mat3 |*/
 /*| mul_mat4_mat4 |*/  float r[4][4];
