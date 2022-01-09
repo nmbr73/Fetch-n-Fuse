@@ -466,7 +466,7 @@ def create_yaml(conv_name, shader_id, json_data):
   yaml_filename = f"{conv_name}.{shader_id}.yaml"
 
   if os.path.isfile(CONVERSIONS_PATH+yaml_filename):
-    return yaml_filename
+    return
 
   info = json_data['info']
 
@@ -500,8 +500,6 @@ def create_yaml(conv_name, shader_id, json_data):
 
   with io.open(CONVERSIONS_PATH+yaml_filename, 'w', encoding='utf8') as outfile:
       yaml.dump(yaml_data,outfile, default_flow_style=False, allow_unicode=True)
-
-  return yaml_filename
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -543,7 +541,7 @@ def create_glsl(conv_name, shader_id, json_data):
   glsl_filename = f"{conv_name}.{shader_id}.glsl"
 
   if os.path.isfile(CONVERSIONS_PATH+glsl_filename):
-    return glsl_filename
+    return
 
   glsl_text='''
 
@@ -567,8 +565,6 @@ def create_glsl(conv_name, shader_id, json_data):
 
   with io.open(CONVERSIONS_PATH+glsl_filename, 'w') as f:
     f.write(glsl_text)
-
-  return glsl_filename
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -674,9 +670,9 @@ def doFetch(shader_id,force=False,nocache=False,nopatch=False):
 
   conv_name   = create_json(shader_id)
   json_data   = read_json(conv_name, shader_id)
-  yaml_fname  = create_yaml(conv_name, shader_id, json_data)
+  create_yaml(conv_name, shader_id, json_data)
   yaml_data   = read_yaml(conv_name, shader_id)
-  glsl_fname  = create_glsl(conv_name, shader_id, json_data)
+  create_glsl(conv_name, shader_id, json_data)
   glsl_data   = read_glsl(conv_name, shader_id)
   create_assets(json_data)
 
@@ -692,36 +688,34 @@ def doFetch(shader_id,force=False,nocache=False,nopatch=False):
 
   for entry in json_data['renderpass']:
 
-    if not entry['name'] in known_code_parts:
-      raise Exception("unknown code section '"+entry['name']+"'")
+    name = entry['name']
 
-    if not entry['name'] in glsl_data:
-      raise Exception(f"missing part '{entry['name']}' in GLSL")
+    if not name in known_code_parts:
+      raise Exception("unknown code section '"+name+"'")
 
-    if glsl_data[entry['name']] != entry['code']:
-      verbose(f"glsl code changed for '{entry['name']}'")
-      # with io.open(entry['name']+'.glsl.txt', 'w') as f:
-      #   f.write(glsl_data[entry['name']])
-      # with io.open(entry['name']+'.json.txt', 'w') as f:
-      #   f.write(entry['code'])
+    if not name in glsl_data:
+      raise Exception(f"missing part '{name}' in GLSL")
+
+    code = entry['code']
+
+    if code != glsl_data[name]:
+      verbose(f"glsl code changed for '{name}'")
+      # with io.open(name+'.glsl.txt', 'w') as f:
+      #   f.write(glsl_data[name])
+      # with io.open(name+'.json.txt', 'w') as f:
+      #   f.write(code)
+      code = glsl_data[name]
 
 
     header="\n// ----------------------------------------------------------------------------------\n"+ \
-      "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
+      "// - "+name+(" "*(79-len(name)))+"-\n" \
       "// ----------------------------------------------------------------------------------\n"
 
     inputs=entry.get('inputs',None)
 
     if inputs!=None and len(inputs)>0:
-      buffer_name=re.sub(r'[^A-Za-z0-9_]+','', re.sub(r' ','_', entry['name']))
-
 
       for input in inputs:
-
-          src=input['src']
-
-
-          ctype=input['ctype']
 
           input_name = input['name']
 
@@ -729,9 +723,9 @@ def doFetch(shader_id,force=False,nocache=False,nopatch=False):
 
 
     if nopatch:
-      code_parts[entry['name']]['code'] = header + "\n\n" + entry['code']
+      code_parts[name]['code'] = header + "\n\n" + code
     else:
-      code_parts[entry['name']]['code'] = header + "\n\n" + patchForDCTL(entry['code'],kernel_name,entry['name'])
+      code_parts[name]['code'] = header + "\n\n" + patchForDCTL(code,kernel_name,name)
 
 
   code=""
