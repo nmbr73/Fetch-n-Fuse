@@ -660,21 +660,14 @@ def create_assets(json_data):
       with open(filename, 'wb') as f:
           f.write(data.content)
 
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 
-def doFetch(shader_id,force=False,nocache=False,nopatch=False):
+def create_dctl(conv_name, shader_id, json_data, yaml_data, glsl_data):
 
-  path  = './Conversions/'
+  dctl_filename = f"{conv_name}.{shader_id}.c"
 
-  conv_name   = create_json(shader_id)
-  json_data   = read_json(conv_name, shader_id)
-  create_yaml(conv_name, shader_id, json_data)
-  yaml_data   = read_yaml(conv_name, shader_id)
-  create_glsl(conv_name, shader_id, json_data)
-  glsl_data   = read_glsl(conv_name, shader_id)
-  create_assets(json_data)
+  if os.path.isfile(CONVERSIONS_PATH+dctl_filename):
+    return
 
   kernel_name = yaml_data['fuse']['kernel']
 
@@ -707,25 +700,18 @@ def doFetch(shader_id,force=False,nocache=False,nopatch=False):
       code = glsl_data[name]
 
 
-    header="\n// ----------------------------------------------------------------------------------\n"+ \
-      "// - "+name+(" "*(79-len(name)))+"-\n" \
-      "// ----------------------------------------------------------------------------------\n"
+    header= "\n" \
+            "// ----------------------------------------------------------------------------------\n" \
+            "// - "+name+(" "*(79-len(name)))+"-\n" \
+            "// ----------------------------------------------------------------------------------\n"
 
     inputs=entry.get('inputs',None)
 
     if inputs!=None and len(inputs)>0:
-
       for input in inputs:
+          header=header + "// Connect '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
 
-          input_name = input['name']
-
-          header=header + "// Connect '"+input_name+"' to iChannel"+str(input['channel'])+"\n"
-
-
-    if nopatch:
-      code_parts[name]['code'] = header + "\n\n" + code
-    else:
-      code_parts[name]['code'] = header + "\n\n" + patchForDCTL(code,kernel_name,name)
+    code_parts[name]['code'] = header + "\n\n" + patchForDCTL(code,kernel_name,name)
 
 
   code=""
@@ -733,14 +719,22 @@ def doFetch(shader_id,force=False,nocache=False,nopatch=False):
   for part in known_code_parts:
     code=code + code_parts[part]['code']
 
-
-  dctl_filename = f"{conv_name}.{shader_id}.c"
-
   with open(CONVERSIONS_PATH+dctl_filename, 'w') as f:
      f.write(code)
 
 
+# ---------------------------------------------------------------------------------------------------------------------
 
+def doFetch(shader_id):
+
+  conv_name   = create_json(shader_id)
+  json_data   = read_json(conv_name, shader_id)
+  create_yaml(conv_name, shader_id, json_data)
+  yaml_data   = read_yaml(conv_name, shader_id)
+  create_glsl(conv_name, shader_id, json_data)
+  glsl_data   = read_glsl(conv_name, shader_id)
+  create_assets(json_data)
+  create_dctl(conv_name, shader_id, json_data, yaml_data, glsl_data)
 
 # =====================================================================================================================
 
@@ -757,12 +751,12 @@ if not(os.path.isfile(".env")):
 load_dotenv()
 
 parser = argparse.ArgumentParser(description='Fetch fuse source code.')
-parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
+#parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
 #parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
 parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
-parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
+#parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
-parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
+#parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
 parser.add_argument('-v','--verbose',action='store_true',help='verbose output')
 args = parser.parse_args()
 
@@ -773,4 +767,4 @@ VERBOSE   = args.verbose
 #  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
 #except Exception as e:
 #  print("ERROR: "+str(e))
-doFetch(args.id,force=args.force,nocache=args.no_cache,nopatch=args.no_patch)
+doFetch(args.id)
