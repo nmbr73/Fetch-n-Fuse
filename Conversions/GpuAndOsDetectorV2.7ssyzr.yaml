@@ -1,0 +1,18 @@
+fuse:
+  author: nmbr73
+  file: GpuAndOsDetectorV2
+  id: GpuAndOsDetectorV2
+  kernel: GpuAndOsDetectorV2
+  name: GpuAndOsDetectorV2
+shader:
+  author: archee
+  description: This will guess your GPU manufacturer and OS based on the inaccuracy
+    of math functions. Displaying resulting hashes at top-right corner. Please comment
+    your hardware and hashes, if shown unknown.
+  id: 7ssyzr
+  name: GPU and OS detector v2
+  tags:
+  - hash
+  - gpudetector
+  - determinism
+  url: https://www.shadertoy.com/view/7ssyzr
