@@ -477,7 +477,7 @@ def create_yaml(conv_name, shader_id, json_data):
           'id'          : shader_id,
           'name'        : shader_name,
           'author'      : info['username'],
-          'url'         : 'https://www.shadertoy.com/view/'+id,
+          'url'         : 'https://www.shadertoy.com/view/'+shader_id,
           'description' : info['description'],
           'tags'        : info['tags'],
         },
