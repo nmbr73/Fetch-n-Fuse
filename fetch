@@ -501,38 +501,38 @@ def create_yaml(conv_name, shader_id, json_data):
   with io.open(CONVERSIONS_PATH+yaml_filename, 'w', encoding='utf8') as outfile:
       yaml.dump(yaml_data,outfile, default_flow_style=False, allow_unicode=True)
 
-# ---------------------------------------------------------------------------------------------------------------------
+# # ---------------------------------------------------------------------------------------------------------------------
 
-def read_yaml(conv_name, shader_id):
-  """
-  Get infortmation stored in the YAML file.
-  """
+# def read_yaml(conv_name, shader_id):
+#   """
+#   Get infortmation stored in the YAML file.
+#   """
 
-  yaml_text = None
+#   yaml_text = None
 
-  # --- read file
+#   # --- read file
 
-  infilepath = f"{CONVERSIONS_PATH}{conv_name}.{shader_id}.yaml"
+#   infilepath = f"{CONVERSIONS_PATH}{conv_name}.{shader_id}.yaml"
 
-  if not os.path.isfile(infilepath):
-    raise Exception(f"{infilepath} does not exists")
+#   if not os.path.isfile(infilepath):
+#     raise Exception(f"{infilepath} does not exists")
 
-  verbose(f"read from {infilepath}")
+#   verbose(f"read from {infilepath}")
 
-  with open(infilepath, "r") as f:
-    yaml_text=f.read()
+#   with open(infilepath, "r") as f:
+#     yaml_text=f.read()
 
-  yaml_data = yaml.load(yaml_text, Loader=yaml.FullLoader)
+#   yaml_data = yaml.load(yaml_text, Loader=yaml.FullLoader)
 
-  if yaml_data['shader']['id'] != shader_id:
-    raise Exception(f"shader id missmatch in yaml file")
+#   if yaml_data['shader']['id'] != shader_id:
+#     raise Exception(f"shader id missmatch in yaml file")
 
-  # for old yaml files - can be removed later:
-  if not 'kernel' in yaml_data['fuse']:
-    shader_name=yaml_data['shader']['name']
-    yaml_data['fuse']['kernel'] = asKernelname(shader_name,shader_id)
+#   # for old yaml files - can be removed later:
+#   if not 'kernel' in yaml_data['fuse']:
+#     shader_name=yaml_data['shader']['name']
+#     yaml_data['fuse']['kernel'] = asKernelname(shader_name,shader_id)
 
-  return yaml_data
+#   return yaml_data
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -662,15 +662,15 @@ def create_assets(json_data):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def create_dctl(conv_name, shader_id, json_data, yaml_data, glsl_data):
+def create_dctl(conv_name, shader_id, json_data, glsl_data):
 
   dctl_filename = f"{conv_name}.{shader_id}.c"
 
   if os.path.isfile(CONVERSIONS_PATH+dctl_filename):
     return
 
-  kernel_name = yaml_data['fuse']['kernel']
-
+  shader_name = json_data['info']['name']
+  kernel_name = asKernelname(shader_name,shader_id)
 
   known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image']
 
@@ -729,12 +729,12 @@ def doFetch(shader_id):
 
   conv_name   = create_json(shader_id)
   json_data   = read_json(conv_name, shader_id)
-  create_yaml(conv_name, shader_id, json_data)
-  yaml_data   = read_yaml(conv_name, shader_id)
   create_glsl(conv_name, shader_id, json_data)
   glsl_data   = read_glsl(conv_name, shader_id)
+  create_dctl(conv_name, shader_id, json_data, glsl_data)
   create_assets(json_data)
-  create_dctl(conv_name, shader_id, json_data, yaml_data, glsl_data)
+  create_yaml(conv_name, shader_id, json_data)
+  #yaml_data   = read_yaml(conv_name, shader_id)
 
 # =====================================================================================================================
 
