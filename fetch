@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 
 CONVERSIONS_PATH = './Conversions/'
 VERBOSE = False
+NOASSETS = False
+
 
 MEDIAMAP = {
   "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg" : { "type": "Texture", "folder":"Textures", "name":"Abstract 1"       },
@@ -55,55 +57,6 @@ for k,v in MEDIAMAP.items():
 def verbose(msg):
   if VERBOSE:
     print(msg)
-
-# ---------------------------------------------------------------------------------------------------------------------
-
-def assetPathToName(filepathpath, default=None):
-  """
-  Look up the filepathname (some `/media/a/HASH`) and try to map it to something readable.
-  """
-
-  media=MEDIAMAP.get(filepathpath,None)
-  if media==None:
-    return default
-
-  return media['type']+': '+media['name']
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-
-def downloadAsset(src):
-
-  if src==None:
-    return
-
-  media=MEDIAMAP.get(src,None)
-
-  if media != None:
-
-    # known asset
-    filename="./Assets/"+media['folder']+"/"+media['name']+"."+media['suffix']
-
-  else:
-
-    # unknown media
-    filename="./Assets/UNKNOWN/"+re.sub(r'/','_',src)
-
-
-  # do nothing if already downloaded
-
-  if os.path.exists(filename):
-    return
-
-
-  # http get and write file
-
-  data = requests.get("https://www.shadertoy.com"+src)
-
-  with open(filename, 'wb') as f:
-      f.write(data.content)
-
-
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -488,16 +441,21 @@ def read_json(conv_name, shader_id):
 
     for input in entry.get('inputs',{}):
 
-        if not 'ctype' in input:
-          input['ctype']=input['type']
+      if not 'ctype' in input:
+        input['ctype']=input['type']
 
-        if not 'src' in input:
-          input['src']=input['filepath']
+      if not 'src' in input:
+        input['src']=input['filepath']
 
-        if 'name' in input:
-          raise Exception("input already has a name?!?")
+      if 'name' in input:
+        raise Exception("input already has a name?!?")
 
-        input['name']=assetPathToName(input['src'],input['src'])
+      media=MEDIAMAP.get(input['src'],None)
+
+      if media==None:
+        input['name']=input['src']
+      else:
+        input['name']=media['type']+': '+media['name']
 
   return json_data
 
@@ -656,7 +614,61 @@ def read_glsl(conv_name, shader_id):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
+def create_assets(json_data):
+
+  # do nothing assets should not be downloaded
+
+  if NOASSETS:
+    return
+
+  for entry in json_data['renderpass']:
+
+    inputs=entry.get('inputs',None)
+
+    if inputs==None:
+      continue
+
+    for input in inputs:
+
+      src=input['src']
+
+      if src==None:
+        continue
+
+      media=MEDIAMAP.get(src,None)
+
+      if media != None:
+
+        # known asset
+        filename="./Assets/"+media['folder']+"/"+media['name']+"."+media['suffix']
+
+      else:
+
+        # unknown media
+        filename="./Assets/UNKNOWN/"+re.sub(r'/','_',src)
+
+
+      # do nothing if already downloaded
+
+      if os.path.exists(filename):
+        verbose(f"asset '{filename}' already downloaded")
+        continue
+
+
+      # http get and write file
+
+      verbose(f"download asset '{filename}'")
+
+      data = requests.get("https://www.shadertoy.com"+src)
+
+      with open(filename, 'wb') as f:
+          f.write(data.content)
+
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def doFetch(shader_id,force=False,nocache=False,nopatch=False):
 
   path  = './Conversions/'
 
@@ -666,7 +678,7 @@ def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
   yaml_data   = read_yaml(conv_name, shader_id)
   glsl_fname  = create_glsl(conv_name, shader_id, json_data)
   glsl_data   = read_glsl(conv_name, shader_id)
-
+  create_assets(json_data)
 
   kernel_name = yaml_data['fuse']['kernel']
 
@@ -686,8 +698,13 @@ def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
     if not entry['name'] in glsl_data:
       raise Exception(f"missing part '{entry['name']}' in GLSL")
 
-    # if glsl_data[entry['name']] != entry['code']:
-    #   print(f"code changed for '{entry['name']}'")
+    if glsl_data[entry['name']] != entry['code']:
+      verbose(f"glsl code changed for '{entry['name']}'")
+      # with io.open(entry['name']+'.glsl.txt', 'w') as f:
+      #   f.write(glsl_data[entry['name']])
+      # with io.open(entry['name']+'.json.txt', 'w') as f:
+      #   f.write(entry['code'])
+
 
     header="\n// ----------------------------------------------------------------------------------\n"+ \
       "// - "+entry['name']+(" "*(79-len(entry['name'])))+"-\n" \
@@ -709,9 +726,6 @@ def doFetch(shader_id,force=False,nocache=False,noassets=False,nopatch=False):
           input_name = input['name']
 
           header=header + "// Connect '"+input_name+"' to iChannel"+str(input['channel'])+"\n"
-
-          if not noassets:
-            downloadAsset(src)
 
 
     if nopatch:
@@ -755,10 +769,14 @@ parser.add_argument('-i','--id', help='shadertoy id as used in the URL', require
 parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
 parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
 parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
+parser.add_argument('-v','--verbose',action='store_true',help='verbose output')
 args = parser.parse_args()
+
+NOASSETS  = args.no_assets
+VERBOSE   = args.verbose
 
 #try:
 #  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
 #except Exception as e:
 #  print("ERROR: "+str(e))
-doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
+doFetch(args.id,force=args.force,nocache=args.no_cache,nopatch=args.no_patch)
