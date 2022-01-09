@@ -22,6 +22,7 @@
 
 #define GL 1
 #define ANGLE 2
+#define FUSION 3
 
 #define _space 32
 
@@ -186,6 +187,9 @@ __KERNEL__ void GpuAndOsDetectorV2Fuse(float4 O, float2 uv, float iTime, float2 
     if (hash_runtime==0x40DC) { gpu=AMD; } // AMD GCN5  (Vega 64)
     if (hash_runtime==0x553A) { gpu=AMD; os=OSXIOS; gldx=GL; } // CT:00E2
 
+    if (hash_runtime==0x8A3F) { os=OSXIOS; gpu=AMD; gldx=FUSION;}
+    if (hash_runtime==0x63BA) { os=WINDOWS; gpu=NVIDIA; gldx=FUSION;}
+
 
     // intel
     if (hash_runtime==0x859D) { gpu=INTEL; } // Intel 7.gen // Windows?
@@ -217,6 +221,8 @@ __KERNEL__ void GpuAndOsDetectorV2Fuse(float4 O, float2 uv, float iTime, float2 
     if (hash_comptime==0x239C) { gldx = ANGLE; os = WINDOWS; };
     if (hash_comptime==0x00E2) { gpu=AMD; os=OSXIOS; gldx=GL; }; // Maxbook AMD Radeon Pro 5500M
 
+    if (hash_comptime==0x8A3F) { gpu=AMD; os=OSXIOS; gldx=FUSION; }; // Maxbook AMD Radeon Pro 5500M
+    if (hash_comptime==0x5C1D) { gpu=NVIDIA; os=WINDOWS; gldx=FUSION; }; // Maxbook AMD Radeon Pro 5500M
 
     uv *= 10.0f;
     int line = 9-int(uv.y);
@@ -250,6 +256,7 @@ __KERNEL__ void GpuAndOsDetectorV2Fuse(float4 O, float2 uv, float iTime, float2 
         if (line==UNKNOWN) { C(_u);C(_n);C(_k);C(_n);C(_o);C(_w);C(_n); }
         if (line==GL) {C(_G);C(_L);}
         if (line==ANGLE) { C(_A);C(_N);C(_G);C(_L);C(_E);}
+        if (line==FUSION) { C(_F);C(_u);C(_s);C(_i);C(_o);C(_n); };
     }
     if (column==3)
     {
