@@ -131,11 +131,11 @@ __DEVICE__ int hardwareHash(float start)
 
 #define C(c)                                                                                  \
   printCursor.x-=0.5f;                                                                        \
-  if (!(printCursor.x<.0|| printCursor.x>1.0f || printCursor.y<0.|| printCursor.y>1.0f)) {    \
+  if (!(printCursor.x<0.0|| printCursor.x>1.0f || printCursor.y<0.|| printCursor.y>1.0f)) {   \
     printColor= _fmaxf(                                                                       \
       printColor, texture(                                                                    \
         iChannel0,                                                                            \
-        printCursor/16.0f + fract( to_float2( (c), 15.0f-(c)/16.0f ) / 16.0f )                \
+        printCursor/16.0f + fract( to_float2( c, 15-c/16 ) / 16.0f )                          \
       ).x+backGroundColor                                                                     \
     );                                                                                        \
   };                                                                                          \
@@ -258,14 +258,20 @@ __KERNEL__ void GpuAndOsDetectorV2Fuse(float4 O, float2 uv, float iTime, float2 
             float div = 16.0f*16.0f*16.0f;
             for(int j=3;j>=0;j--)
             {
-                float digit = fract(float(i)/div/16.0f)*16.0f; // hiert knallt das Macro unter OpenCL!?!
-                //float f=float(i)/div/16.0f;
-                //float digit=(f-_floor(f)) *16.0f;
+                #if 1
+                  float digit = fract(float(i)/div/16.0f)*16.0f; // hiert knallt das Macro unter OpenCL!?!
+                  div/=16.0f;
+                  C(int((digit<10.0f?48.0f:65.0f-10.0f)+digit));
+                #else
+                  float f=float(i)/div/16.0f;
+                  float digit=(f-_floor(f)) *16.0f;
+                  div/=16.0f;
+                  f=int((digit<10.0f?48.0f:65.0f-10.0f)+digit);
+                  C(f);
+                #endif
 
-                div/=16.0f;
-                C(int((digit<10.0f?48.0f:65.0f-10.0f)+digit));
-                //f=int((digit<10.0f?48.0f:65.0f-10.0f)+digit);
-                //C(f);
+
+
             }
         }
 
