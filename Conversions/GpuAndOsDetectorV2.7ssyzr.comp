@@ -2,7 +2,7 @@ Composition {
 	CurrentTime = 0,
 	RenderRange = { 0, 1000 },
 	GlobalRange = { 0, 1000 },
-	CurrentID = 15,
+	CurrentID = 20,
 	HiQ = true,
 	PlaybackUpdateMode = 0,
 	Version = "Fusion Studio 17.0 build 43",
@@ -16,34 +16,26 @@ Composition {
 	OutputClips = {
 	},
 	Tools = {
-		Loader1 = Loader {
-			Clips = {
-				Clip {
-					ID = "Clip1",
-					Filename = "Fetch-n-Fuse:/Assets/Textures/Font 1.png",
-					FormatID = "PNGFormat",
-					StartFrame = 1,
-					LengthSetManually = true,
-					TrimIn = 0,
-					TrimOut = 0,
-					ExtendFirst = 0,
-					ExtendLast = 0,
-					Loop = 0,
-					AspectMode = 0,
-					Depth = 0,
-					TimeCode = 0,
-					GlobalStart = 0,
-					GlobalEnd = 0
-				}
-			},
+		Background1 = Background {
 			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
 				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-				["Clip1.PNGFormat.PostMultiply"] = Input { Value = 1, },
 			},
-			ViewInfo = OperatorInfo { Pos = { 220, 16.5 } },
+			ViewInfo = OperatorInfo { Pos = { 220, 49.5 } },
+		},
+		ToyTexture1 = Fuse.ST_Texture_nmbr73 {
+			CtrlWZoom = false,
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				texture = Input { Value = 6, },
+			},
+			ViewInfo = OperatorInfo { Pos = { 165, 16.5 } },
+			Version = 1
 		},
 		ShadersInc1 = Fuse.ShadertoysIncubator {
-			CtrlWZoom = false,
 			Inputs = {
 				Width = Input { Value = 1920, },
 				Height = Input { Value = 1080, },
@@ -67,20 +59,12 @@ Composition {
 					Disabled = true,
 				},
 				iChannel0 = Input {
-					SourceOp = "Loader1",
+					SourceOp = "ToyTexture1",
 					Source = "Output",
 				},
 			},
-			ViewInfo = OperatorInfo { Pos = { 344.667, 16.5 } },
+			ViewInfo = OperatorInfo { Pos = { 330, 16.5 } },
 			Version = 1
-		},
-		Background1 = Background {
-			Inputs = {
-				Width = Input { Value = 1920, },
-				Height = Input { Value = 1080, },
-				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-			},
-			ViewInfo = OperatorInfo { Pos = { 220, 49.5 } },
 		},
 		Merge1 = Merge {
 			Inputs = {
@@ -108,60 +92,60 @@ Composition {
 			Width = 1680,
 			Height = 886,
 			ZoneInfo = {
-				AuxRight = { Expanded = true },
-				Right = { Expanded = true, },
-				Left = { Expanded = false, },
-				AuxLeft = { Expanded = true },
+				["!Right"] = {
+				},
 				["!Left"] = {
 				},
-				["!Right"] = {
-				}
+				AuxLeft = { Expanded = true },
+				Right = { Expanded = true, },
+				Left = { Expanded = false, },
+				AuxRight = { Expanded = true }
 			},
 			ViewInfo = {
+				Viewer1 = { Show = true, RatioY = 0.01, RatioX = 0.737864077669902, },
+				InnerLeft = {
+				},
+				MainSplit = {
+					RatioX = 100,
+					RatioY = 1.00377358490566,
+				},
+				CenterSplit = {
+					RatioX = 1.02784407319014,
+					RatioY = 100,
+				},
+				Viewer2 = { Show = true, RatioY = 0.01, RatioX = 1.26213592233009, },
+				Comments = { Show = false },
+				Time = { Show = true, PixelY = 83, RatioX = 100, },
+				InnerColumns = {
+					RatioX = 100,
+					RatioY = 1.99622641509434,
+				},
 				Keyframes = { Show = false, },
 				LayoutStrip = { Show = true, RatioX = 100, },
-				Inspector = { Show = true, RatioX = 100, RatioY = 1, },
-				Effects = { Show = false, },
-				Viewer2 = { Show = true, RatioX = 1.29777070063694, RatioY = 0.01, },
-				Comments = { Show = false },
-				Clips = { Show = false, },
-				ActionStrip = { Show = true, RatioX = 100, },
-				Time = { Show = true, RatioX = 100, PixelY = 83, },
-				MediaPool = { Show = false, },
-				Nodes = { Show = true, RatioX = 1, RatioY = 100, },
-				Metadata = { Show = false, },
-				Viewer1 = { Show = true, RatioX = 0.702229299363057, RatioY = 0.01, },
-				Spline = { Show = false, },
+				Inspector = { Show = true, RatioY = 1, RatioX = 99.9761478831246, Adjust = false, MRU = 1 },
+				InnerRight = {
+				},
+				OuterLeft = {
+				},
 				OuterColumns = {
 					RatioX = 100,
 					RatioY = 1,
 				},
-				CenterSplit = {
-					RatioX = 1,
-					RatioY = 100,
-				},
-				InnerColumns = {
-					RatioX = 100,
-					RatioY = 1.9974293059126,
-				},
+				Effects = { Show = false, },
+				Clips = { Show = false, },
+				Metadata = { Show = false, },
+				ActionStrip = { Show = true, RatioX = 100, },
 				ViewerSplit = {
 					RatioX = 100,
 					RatioY = 1,
 				},
-				MainSplit = {
-					RatioX = 100,
-					RatioY = 1.0025706940874,
-				},
+				Nodes = { Show = true, RatioY = 99.874213836478, RatioX = 1, },
 				OuterRight = {
-					PixelX = 420,
 					RatioY = 100,
+					PixelX = 385,
 				},
-				OuterLeft = {
-				},
-				InnerLeft = {
-				},
-				InnerRight = {
-				}
+				MediaPool = { Show = false, },
+				Spline = { Show = false, }
 			},
 			Views = ordered() {
 				Effects = MultiView {
@@ -190,7 +174,7 @@ Composition {
 						Direction = "Horizontal",
 						PipeStyle = "Direct",
 						RootScale = 1,
-						RootOffset = { 158.667, 10.8182 }
+						RootOffset = { 264.001, 16.2727 }
 					}
 				},
 				Keyframes = MultiView {
@@ -213,7 +197,7 @@ Composition {
 						KeyFrameView = {
 							Position = { Left = 232, Bottom = 320 },
 							ScaleX = 2.14424951267057,
-							OffsetX = -49.317738791423,
+							OffsetX = -51.4619883040936,
 							OffsetY = 0,
 							AutoScaling = "scroll",
 							AutoSnapTo = "frame",
@@ -291,7 +275,7 @@ Composition {
 					RatioY = 1,
 					{
 						Rows = 3,
-						RatioX = 1,
+						RatioX = 1.02784407319014,
 						RatioY = 100,
 						{
 							Rows = 2,
@@ -301,18 +285,36 @@ Composition {
 								Columns = 2,
 								RatioX = 100,
 								RatioY = 1,
-								{ ID = "Viewer1", RatioX = 0.702229299363057, RatioY = 0.01 },
-								{ ID = "Viewer2", RatioX = 1.29777070063694 }
+								{ ID = "Viewer1", RatioX = 0.737864077669902, RatioY = 0.01 },
+								{ ID = "Viewer2", RatioX = 1.26213592233009 }
 							},
 							{ ID = "Time", FixedY = 83, Flat = true }
 						},
 						{ ID = "ActionStrip", FixedY = 50, Flat = true },
-						{ ID = "Nodes", RatioX = 1, RatioY = 100 }
+						{ ID = "Nodes", RatioX = 1, RatioY = 99.874213836478 }
 					},
-					{ ID = "Inspector", RatioX = 100, RatioY = 1 }
+					{ ID = "Inspector", RatioX = 99.9761478831246, RatioY = 1 }
 				}
 			}
 		}
 	},
-
+	Prefs = {
+		Comp = {
+			Views = {
+				RightView = {
+					Viewer = {
+					},
+				},
+				LeftView = {
+				},
+				View1 = {
+				},
+			},
+			Paths = {
+			},
+			QuickTime = {
+			},
+		}
+	},
 }
+
