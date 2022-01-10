@@ -9,6 +9,11 @@ Assets/Misc/*
 Assets/UNKNOWN/*
 !Assets/UNKNOWN/README.md
 
+Assets/media/a/*
+!Assets/media/a/README.md
+Assets/media/ap/*
+!Assets/media/ap/README.md
+
 # -------- MACOS
 
 .DS_Store

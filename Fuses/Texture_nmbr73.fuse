@@ -1,0 +1,149 @@
+--- Serves as an input for shader toys that need a shadertoy texture
+--
+
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+FuRegisterClass("ST_Texture_nmbr73", CT_SourceTool, {
+    REGS_Name = "Texture",
+	  REGS_Category = "Fuses",
+    REGS_OpDescription = "A texture input for Shadertoy fuses",
+	  REGS_OpIconString = "st-txr",
+    REG_Source_GlobalCtrls = true, -- false
+    REG_Source_SizeCtrls = true,
+    REG_Source_AspectCtrls = true,
+	  REG_TimeVariant = true,
+	  REGS_Company = "nmbr73",
+	  REGS_URL = "https://nmbr73.github.io/",
+	  REG_Version	= 000001,
+    REG_Fuse_NoEdit = false,    -- true
+    REG_Fuse_NoReload = false, -- true,
+    })
+
+
+TEXTURES = {}
+SELECTED = 0
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to initialize the tool.
+--
+function Create()
+
+  TEXTURES = {
+    { hash    = "52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5", suffix = "jpg", name = "Abstract 1",        channels = 3, width = 1024, height = 1024,  },
+    { hash    = "bd6464771e47eed832c5eb2cd85cdc0bfc697786b903bfd30f890f9d4fc36657", suffix = "jpg", name = "Abstract 2",        channels = 3, width = 512,  height = 512,   },
+    { hash    = "8979352a182bde7c3c651ba2b2f4e0615de819585cc37b7175bcefbca15a6683", suffix = "jpg", name = "Abstract 3",        channels = 3, width = 1024, height = 1024,  },
+    { hash    = "85a6d68622b36995ccb98a89bbb119edf167c914660e4450d313de049320005c", suffix = "png", name = "Bayer",             channels = 1, width = 8,    height = 8,     },
+    { hash    = "cb49c003b454385aa9975733aff4571c62182ccdda480aaba9a8d250014f00ec", suffix = "png", name = "Blue Noise",        channels = 4, width = 1024, height = 1024,  },
+    { hash    = "08b42b43ae9d3c0605da11d0eac86618ea888e62cdd9518ee8b9097488b31560", suffix = "png", name = "Font 1",            channels = 4, width = 1024, height = 1024,  },
+    { hash    = "0c7bf5fe9462d5bffbd11126e82908e39be3ce56220d900f633d58fb432e56f5", suffix = "png", name = "Gray Noise Medium", channels = 1, width = 256,  height = 256,   },
+    { hash    = "0a40562379b63dfb89227e6d172f39fdce9022cba76623f1054a2c83d6c0ba5d", suffix = "png", name = "Gray Noise Small",  channels = 1, width = 64,   height = 64,    },
+    { hash    = "fb918796edc3d2221218db0811e240e72e340350008338b0c07a52bd353666a6", suffix = "jpg", name = "Lichen",            channels = 3, width = 1024, height = 1024,  },
+    { hash    = "8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9", suffix = "jpg", name = "London",            channels = 3, width = 512,  height = 512,   },
+    { hash    = "cbcbb5a6cfb55c36f8f021fbb0e3f69ac96339a39fa85cd96f2017a2192821b5", suffix = "png", name = "Nyancat",           channels = 4, width = 256,  height = 32,    },
+    { hash    = "cd4c518bc6ef165c39d4405b347b51ba40f8d7a065ab0e8d2e4f422cbc1e8a43", suffix = "jpg", name = "Organic 1",         channels = 3, width = 1024, height = 1024,  },
+    { hash    = "92d7758c402f0927011ca8d0a7e40251439fba3a1dac26f5b8b62026323501aa", suffix = "jpg", name = "Organic 2",         channels = 3, width = 1024, height = 1024,  },
+    { hash    = "79520a3d3a0f4d3caa440802ef4362e99d54e12b1392973e4ea321840970a88a", suffix = "jpg", name = "Organic 3",         channels = 3, width = 1024, height = 1024,  },
+    { hash    = "3871e838723dd6b166e490664eead8ec60aedd6b8d95bc8e2fe3f882f0fd90f0", suffix = "jpg", name = "Organic 4",         channels = 3, width = 1024, height = 1024,  },
+    { hash    = "ad56fba948dfba9ae698198c109e71f118a54d209c0ea50d77ea546abad89c57", suffix = "png", name = "Pebbles",           channels = 1, width = 512,  height = 512,   },
+    { hash    = "f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb", suffix = "png", name = "RGBA Noise Medium", channels = 4, width = 256,  height = 256,   },
+    { hash    = "3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0", suffix = "png", name = "RGBA Noise Small",  channels = 4, width = 64,   height = 64,    },
+    { hash    = "10eb4fe0ac8a7dc348a2cc282ca5df1759ab8bf680117e4047728100969e7b43", suffix = "jpg", name = "Rock Tiles",        channels = 3, width = 512,  height = 512,   },
+    { hash    = "95b90082f799f48677b4f206d856ad572f1d178c676269eac6347631d4447258", suffix = "jpg", name = "Rusty Metal",       channels = 3, width = 512,  height = 512,   },
+    { hash    = "e6e5631ce1237ae4c05b3563eda686400a401df4548d0f9fad40ecac1659c46c", suffix = "jpg", name = "Stars",             channels = 3, width = 512,  height = 512,   },
+    { hash    = "1f7dca9c22f324751f2a5a59c9b181dfe3b5564a04b724c657732d0bf09c99db", suffix = "jpg", name = "Wood",              channels = 3, width = 1024, height = 1024,  },
+  }
+
+  local options = {}
+
+  for i,item in pairs(TEXTURES) do
+    print("insert no "..i.." = "..item['name'])
+    table.insert(options,{ CCS_AddString = item['name'] })
+  end
+
+
+  InTextureCombo = self:AddInput("Texture", "texture", {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ComboControl",
+      INP_DoNotifyChanged = true,
+      INP_Default = 0,
+      INP_Integer = true,
+      options
+      })
+
+
+  OutImage   = self:AddOutput("Output", "Output", {
+    LINKID_DataType = "Image",
+    LINK_Main = 1
+  })
+
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to render the node.
+--
+function Process(req)
+
+  local width  = 73
+  local height = 73
+  local depth  = nil
+
+
+
+  local dst = Image({
+    IMG_Document = self.Comp,
+    { IMG_Channel = "Red",    },
+    { IMG_Channel = "Green",  },
+    { IMG_Channel = "Blue",   },
+    { IMG_Channel = "Alpha",  },
+    IMG_Width   = width,
+    IMG_Height  = height,
+    IMG_XScale  = 1.0,
+    IMG_YScale  = 1.0,
+    -- IMAT_OriginalWidth =  width,
+    -- IMAT_OriginalHeight = height,
+    -- IMG_Quality = not req:IsQuick(),
+    -- IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
+    -- IMG_DeferAlloc = true,
+    -- IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    -- IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+  })
+
+
+  local inactive  = Pixel({R=0,G=0,B=0,A=0})
+  local active    = Pixel({R=1,G=0,B=0,A=0})
+
+  dst:Fill(inactive)
+
+
+  if req:IsPreCalc() then
+    print("precalc")
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    return
+  end
+
+
+  local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
+
+
+  -- Output our result
+  OutImage:Set(req,dst)
+
+end
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Callback to handle UI control events.
+--
+
+function NotifyChanged(inp, param, time)
+	if inp ~= nil and param ~= nil then
+		if (inp == InTextureCombo) then
+      print("selected: "..param.Value)
+    end
+	end
+end
