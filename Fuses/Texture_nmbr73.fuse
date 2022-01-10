@@ -5,19 +5,19 @@
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 FuRegisterClass("ST_Texture_nmbr73", CT_SourceTool, {
-    REGS_Name = "Texture",
+    REGS_Name = "Toy Texture",
 	  REGS_Category = "Fuses",
     REGS_OpDescription = "A texture input for Shadertoy fuses",
-	  REGS_OpIconString = "st-txr",
-    REG_Source_GlobalCtrls = true, -- false
+	  REGS_OpIconString = "toytex",
+    REG_Source_GlobalCtrls = false,
     REG_Source_SizeCtrls = true,
     REG_Source_AspectCtrls = true,
 	  REG_TimeVariant = true,
 	  REGS_Company = "nmbr73",
 	  REGS_URL = "https://nmbr73.github.io/",
 	  REG_Version	= 000001,
-    REG_Fuse_NoEdit = false,    -- true
-    REG_Fuse_NoReload = false, -- true,
+    REG_Fuse_NoEdit = true,
+    REG_Fuse_NoReload = true,
     })
 
 
