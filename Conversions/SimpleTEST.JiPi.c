@@ -47,7 +47,14 @@ __KERNEL__ void SimpleJiPiFuse(float4 fragColor, float2 fragCoord, float2 iResol
 
   CONNECT_POINT0(Look, 0.8f, 0.35f);
   CONNECT_SCREW0(JiPiScrewer,0.1f ,0.5f , 0.25f );
+  
+  #define typ  0
+  
+  CONNECT_BUTTON0(JiPiBtn, 0, Left, Right, Mid );
 
+
+  if (typ == 0)  JiPiBtn = (int)JiPiBtn-1;
+  if (typ == 1)  JiPiBtn = (int)JiPiBtn>>1;  //Korrektur, weil Basicbutton nicht ausblendbar -> Fertige Fuse hat kein Basicbutton, daher hier die Anpassung, kann ins Define !toDo! - ev auch Defines für die Namen anlegen . also #define Left = 0
 
   float red          = JiPi_Color.x*AnotherFunnyColor.x;
   float green        = JiPi_Color.y*AnotherFunnyColor.y;
@@ -61,7 +68,7 @@ __KERNEL__ void SimpleJiPiFuse(float4 fragColor, float2 fragCoord, float2 iResol
 
   fragColor=to_float4(red,green,blue,alpha);
   
-  float4 var = to_float4(JiPiScrewer,JiPiSlider,IntegerEinfach,(float)CheckThis);
+  float4 var = to_float4(JiPiScrewer,JiPiSlider,IntegerEinfach,JiPiBtn);
   
     //************************* Print Values *******************************
     float printsize = _fmaxf(iResolution.x/960,1.0f);
@@ -69,10 +76,26 @@ __KERNEL__ void SimpleJiPiFuse(float4 fragColor, float2 fragCoord, float2 iResol
     float3 vColour = to_float3(fragColor.x,fragColor.y,fragColor.z);//to_float3_s(0.0f);// to_float3(0.2f, 0.05f, 0.1f);
     float fDecimalPlaces = 4.0f;
     float fDigits = 6.0f;
-    vColour = _mix( vColour, to_float3(01.0f, 00.0f, 0.0f), PrintValue(fragCoord, grid(0,22,fontSize), fontSize, var.x, fDigits, fDecimalPlaces+4.0f));
-    vColour = _mix( vColour, to_float3(00.0f, 01.0f, 0.0f), PrintValue(fragCoord, grid(0,20,fontSize), fontSize, var.y, fDigits, fDecimalPlaces));
-    vColour = _mix( vColour, to_float3(00.0f, 00.0f, 01.0f), PrintValue(fragCoord, grid(0,18,fontSize), fontSize, var.z, fDigits, fDecimalPlaces));
-    vColour = _mix( vColour, to_float3(01.0f, 01.0f, 01.0f), PrintValue(fragCoord, grid(0,16,fontSize), fontSize, var.w, fDigits, fDecimalPlaces));
+    
+    int column = 0;
+    int row   = 16;
+    
+    if (JiPiBtn == 1)
+    {  
+      column = 30;
+      row    =  8;
+    }
+    
+    if (JiPiBtn == 2)
+    {  
+      column = 15;
+      row    = 10;
+    }
+    
+    vColour = _mix( vColour, to_float3(01.0f, 00.0f, 0.0f), PrintValue(fragCoord, grid(column,row+6,fontSize), fontSize, var.x, fDigits, fDecimalPlaces+4.0f));
+    vColour = _mix( vColour, to_float3(00.0f, 01.0f, 0.0f), PrintValue(fragCoord, grid(column,row+4,fontSize), fontSize, var.y, fDigits, fDecimalPlaces));
+    vColour = _mix( vColour, to_float3(00.0f, 00.0f, 01.0f), PrintValue(fragCoord, grid(column,row+2,fontSize), fontSize, var.z, fDigits, fDecimalPlaces));
+    vColour = _mix( vColour, to_float3(01.0f, 01.0f, 01.0f), PrintValue(fragCoord, grid(column,row,fontSize), fontSize, var.w, fDigits, fDecimalPlaces));
     //************************* End Print Values ***************************
   
   

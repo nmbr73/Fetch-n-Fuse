@@ -88,6 +88,7 @@ NUM_COLOR_CONTROLS      = 10
 NUM_SLIDER_CONTROLS     = 10
 NUM_INTSLIDER_CONTROLS  = 10
 NUM_SCREW_CONTROLS      = 5
+NUM_BUTTON_CONTROLS     = 5
 NUM_CHECKBOX_CONTROLS   = 10
 NUM_POINT_CONTROLS      = 10
 
@@ -258,6 +259,12 @@ function Create()
   end
 
 
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+    --KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_BUTTON"..i.."(NAME,TYP,BTN1,BTN2,BTN3,BTN4,BTN5) float NAME = _shaderParameters->ctrlButton["..i.."]; \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_BUTTON"..i.."(NAME,TYP, ...) float NAME = _shaderParameters->ctrlButton["..i.."]; \n"
+  end
+
+
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_CHECKBOX"..i.."(NAME,SDEFAULT) float NAME = _shaderParameters->ctrlCheckbox["..i.."] \n"
   end
@@ -313,6 +320,7 @@ function Create()
   float ctrlSlider[]]..    NUM_SLIDER_CONTROLS   ..[[];
   int   ctrlIntSlider[]].. NUM_INTSLIDER_CONTROLS..[[];
   float ctrlScrew[]]..     NUM_SCREW_CONTROLS    ..[[];
+  float ctrlButton[]]..    NUM_BUTTON_CONTROLS   ..[[];
   bool  ctrlCheckbox[]]..  NUM_CHECKBOX_CONTROLS ..[[];
 
   ]]
@@ -567,6 +575,24 @@ function Create()
   end
 
 
+  InButton={}
+
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+	InButton[i] = self:AddInput("Button "..i, "CONNECT_BUTTON"..i, {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "MultiButtonControl",
+		MBTNC_ForceButtons = true,
+    --MBTNC_Type         = "Toggle", -- oder weglassen :-)
+		MBTNC_ShowName     = false,
+		{ MBTNC_AddButton  = "Nothing" },
+		MBTNC_StretchToFit = true,
+    IC_NoLabel         = true,
+		INP_Default        = 0,
+    IC_Visible         = true,
+	})
+  end
+
+
   InCheckbox={}
 
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
@@ -662,7 +688,7 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
 
   if kernel_parameters==nil then
     if Part=="Image" then
-      print("kernel for 'Image' not found!")
+      print("kernel for 'Image': ",ConversionFusename," not found!"  )
       
       return "", nil
     end
@@ -969,7 +995,7 @@ function RebuildParameters()
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SCREW"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
       local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SCREW"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
-      print("#SCREW#",name, smin, smax, sdef) --
+      --print("#SCREW#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."SCREW"..i.."\n"
@@ -987,6 +1013,39 @@ function RebuildParameters()
         InScrew[i]:SetAttrs({ IC_Visible = false })
       end
     end
+
+
+    --CONNECT_BUTTON0(NAME,TYP,BTN1,BTN2,BTN3,BTN4,BTN5)
+    for i=0,NUM_BUTTON_CONTROLS-1 do
+
+      local name, typ, btn1, btn2, btn3, btn4, btn5 = ConversionSourcecode:match("%s+CONNECT_BUTTON"..i.."%s*%(%s*([%a_][%w_]*)%s*,%s*(%d+)%s*,%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*%)*%s*.*;")
+      print("#Button"..i,name, typ, btn1, btn2, btn3, btn4, btn5 ) --
+
+      if (name ~= nil) then
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."Button"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlButton["..i.."];\n"
+        
+        InButton[i]:SetAttrs({
+          IC_Visible    = true,
+          LINKS_Name    = name,
+        })
+
+        if (btn1 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn1, }) end
+        if (btn2 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn2, }) end
+        if (btn3 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn3, }) end
+        if (btn4 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn4, }) end
+        if (btn5 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn5, }) end
+        
+        if (tonumber(typ) == 1) then 
+          InButton[i]:SetAttrs({ MBTNC_Type = "Toggle", }) 
+        end        
+          
+        
+      else
+        InButton[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
 
 
 
@@ -1029,7 +1088,7 @@ function RebuildParameters()
 
       -- local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
       local name, sdefx, sdefy = ConversionSourcecode:match("%s+CONNECT_POINT"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
-      print("#POINT#", name, sdefx, sdefy) --
+      --print("#POINT#", name, sdefx, sdefy) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."[2]; // ".."POINT"..i.."\n"
@@ -1321,6 +1380,11 @@ function Process(req)
 
   for i=0,NUM_SCREW_CONTROLS-1 do
     params.ctrlScrew[i] = InScrew[i]:GetValue(req).Value
+  end
+
+  -- Buttons
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+    params.ctrlButton[i] = InButton[i]:GetValue(req).Value
   end
 
   -- Checkboxes
