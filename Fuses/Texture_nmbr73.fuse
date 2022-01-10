@@ -9,7 +9,7 @@ FuRegisterClass("ST_Texture_nmbr73", CT_SourceTool, {
 	  REGS_Category = "Fuses",
     REGS_OpDescription = "A texture input for Shadertoy fuses",
 	  REGS_OpIconString = "toytex",
-    REG_Source_GlobalCtrls = false,
+    REG_Source_GlobalCtrls = true,
     REG_Source_SizeCtrls = true,
     REG_Source_AspectCtrls = true,
 	  REG_TimeVariant = true,
