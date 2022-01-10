@@ -22,14 +22,75 @@ FuRegisterClass("ST_Texture_nmbr73", CT_SourceTool, {
 
 
 TEXTURES = {}
-SELECTED = 0
+CURRENT = 0
+MEDIAFOLDER = [[/Users/nmbr73/Projects/Fetch-n-Fuse/Assets/media/]]
+DUMMYTHUMB  = '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'
+
+
+
+
+
+function getInfo(index)
+
+  local f  = ''
+  local w  = ''
+  local h  = ''
+  local c  = 0
+  local n  = ''
+  local a  = ''
+
+  if index==0 then
+    f = 'empty'
+    w = 73
+    h = 73
+    c = 4
+    n = 'NIL:'
+    a = 'nmbr73'
+  else
+    f = TEXTURES[index]['suffix']
+    w = TEXTURES[index]['width']
+    h = TEXTURES[index]['height']
+    c = TEXTURES[index]['channels']
+    n = TEXTURES[index]['name']
+    a = 'shadertoy'
+  end
+
+  f = f=='jpg' and 'jpeg' or f
+
+  return  -- '<p>'..n..'<br />by <font color="#ffffff">'..a..'</font></p>' ..
+          '<p align="right">'..w..' x '..h..' ('..f..')<br />'..c..' channels, uint8</p>'
+
+end
+
+function getPreview(index)
+
+  local dat = ''
+  local fmt = ''
+
+  if index==0 then
+    dat = DUMMYTHUMB
+    fmt = 'png'
+  else
+    fmt = TEXTURES[index]['suffix']
+    local fname = MEDIAFOLDER..'ap/'..TEXTURES[index]['hash']..'.base64'
+    local file = io.open(fname, "rb")
+    if not file then return "<p>file error</p>" end
+    dat = file:read "*a"
+    file:close()
+  end
+
+  return '<p align="right"><img width="96" height="96" src="data:image/png;base64,'..dat..'" /></p>'
+
+end
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to initialize the tool.
 --
 function Create()
 
-  TEXTURES = {
+  TEXTURES = {  [0] =
+    { hash    = "7373737373737373737373737373737373737373737373737373737373737373", suffix = "",    name = "",                  channels = 4, width = 73,   height = 73, },
     { hash    = "52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5", suffix = "jpg", name = "Abstract 1",        channels = 3, width = 1024, height = 1024,  },
     { hash    = "bd6464771e47eed832c5eb2cd85cdc0bfc697786b903bfd30f890f9d4fc36657", suffix = "jpg", name = "Abstract 2",        channels = 3, width = 512,  height = 512,   },
     { hash    = "8979352a182bde7c3c651ba2b2f4e0615de819585cc37b7175bcefbca15a6683", suffix = "jpg", name = "Abstract 3",        channels = 3, width = 1024, height = 1024,  },
@@ -62,7 +123,7 @@ function Create()
   end
 
 
-  InTextureCombo = self:AddInput("Texture", "texture", {
+  InTextureCombo = self:AddInput( "Texture", "texture", {
       LINKID_DataType = "Number",
       INPID_InputControl = "ComboControl",
       INP_DoNotifyChanged = true,
@@ -71,8 +132,30 @@ function Create()
       options
       })
 
+  InTextureInfo = self:AddInput( getInfo(0),"info", {
+      LINKID_DataType = "Text",
+      INPID_InputControl = "LabelControl",
+      LBLC_MultiLine = true,
+      IC_NoLabel = true,
+      IC_NoReset = true,
+      INP_External = false,
+      INP_Passive = true,
+      ICD_Width =0.5,
 
-  OutImage   = self:AddOutput("Output", "Output", {
+  })
+
+  InTexturePreview = self:AddInput( getPreview(0), "preview", {
+      LINKID_DataType = "Text",
+      INPID_InputControl = "LabelControl",
+      LBLC_MultiLine = true,
+      IC_NoLabel = true,
+      IC_NoReset = true,
+      INP_External = false,
+      INP_Passive = true,
+      ICD_Width =0.5,
+  })
+
+  OutImage   = self:AddOutput( "Output", "Output", {
     LINKID_DataType = "Image",
     LINK_Main = 1
   })
@@ -85,6 +168,22 @@ end
 -- Callback to render the node.
 --
 function Process(req)
+
+  local selected  = InTextureCombo:GetValue(req).Value
+
+
+  if CURRENT~=selected then
+
+    CURRENT=selected
+
+    print("current="..CURRENT..", selected="..selected)
+
+    InTextureInfo:SetAttrs({LINKS_Name = getInfo(CURRENT)})
+    InTexturePreview:SetAttrs({LINKS_Name = getPreview(CURRENT)})
+
+
+  end
+
 
   local width  = 73
   local height = 73
@@ -143,7 +242,7 @@ end
 function NotifyChanged(inp, param, time)
 	if inp ~= nil and param ~= nil then
 		if (inp == InTextureCombo) then
-      print("selected: "..param.Value)
+      -- print("selected: "..param.Value)
     end
 	end
 end
