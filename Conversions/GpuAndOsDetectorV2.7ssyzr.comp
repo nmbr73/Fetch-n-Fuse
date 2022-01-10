@@ -20,7 +20,7 @@ Composition {
 			Clips = {
 				Clip {
 					ID = "Clip1",
-					Filename = "ShadertoyAssets:/Textures/Font 1.png",
+					Filename = "Fetch-n-Fuse:/Assets/Textures/Font 1.png",
 					FormatID = "PNGFormat",
 					StartFrame = 1,
 					LengthSetManually = true,
