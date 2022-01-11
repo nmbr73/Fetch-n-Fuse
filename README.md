@@ -1,3 +1,5 @@
+*If you have no idea what all the following is about, then you should start with the [Shadertoys](https://github.com/nmbr73/Shadertoys) repository, to which this one  is only a companion project.*
+
 # Fetch'n'Fuse
 
 The idea is to **Fetch a Shader** ABC via ...
@@ -8,11 +10,12 @@ The idea is to **Fetch a Shader** ABC via ...
 ```
 ./fuse -id ABC
 ```
-... to finally **Make it a Fuse**.
+... to finally **Make it a Fuse** that - after some **Prostprocessing** - we would love to see your **Pull Request on [Shadertoys](https://github.com/nmbr73/Shadertoys)** for.
+
 
 ## Project Status
 
-The `fetch` does fetch some code and the Incubator.fuse is able to show the shader. The `fuse` command is work in progress and its results are not usable yet.
+The `fetch` does fetch some code and the Incubator.fuse is able to show the shader. The `fuse` command does also produce some usable output already. But all the (itermediate) results always need a lot of care and manual rework!
 
 > **You see:** The whole thing is obviously in a very early stage and will probably not work all too well well! So be kind, have some patience and most importantly use at your very own risk!
 
@@ -37,9 +40,9 @@ python3 -m pip install -r requirements.txt
 chmod a+x fetch fuse
 ./fetch
 ```
-... or something that does the equivalent on your system.
+... or something that does the equivalent on your OS.
 
-Now edit the `.env` file to add you credentials. You need to log in to shadertoys.com and create an APP on https://www.shadertoy.com/myapps to retrieve your own API-Key.
+Now edit the `.env` file to add you credentials (you need to log in to shadertoys.com and create an APP on https://www.shadertoy.com/myapps to retrieve your own API-Key).
 
 It should look something like this afterwards:
 ```
@@ -59,30 +62,33 @@ As already mentioned ...
 
 ## Fetch a Shader
 
-In your working copy (on some sytsmes as a parameters to `python3` maybe) do a ...
+In your working copy (on some systems as a parameters to `python3` maybe) do a ...
 ```
 ./fetch --id <TOYID>
 ```
-... with *&lt;TOYID&gt;* the shadertoy ID as it is used in the URLs. If the shader could be fetched (and regretably it often cannot be fetched), then a corresponding source file should have been created under `Conversions/`.
+... with *&lt;TOYID&gt;* the shadertoy ID as it is used in the URLs. If the shader could be fetched (and regretably it often cannot be retrieved), then a corresponding source file should have been created under `Conversions/`.
 
 ## Convert the Code
 
-* Add a 'ShadersInc' Fuse to you composition
+* Add a 'ShadersInc' Fuse to you composition (type 'SHIFT+Space' and then 'inc')
 * This should allow you to load all 'Conversions/*&lt;FUSENAME&gt;*.*&lt;TOYID&gt;*.c' files.
 
-And then the fun begins of porting WebGL to DCTL and eliminating all the errors raised whe DaFusion tries to render the node.
+And then the fun begins of porting WebGL to DCTL and eliminating all the errors raised when DaFusion tries to render the node.
 
 ## Make it a Fuse
 
 As soon as your conversion works without errors, is equipped with some nice controls and leads to the expected output, you are ready to do a ...
 ```
-./fetch --id <TOYID>
+./fuse --id <TOYID>
 ```
 ... which should create a fuse and a markdown file in the `Converted/` folder.
 
-:construction: WORK IN PROGRESS :construction:<br />*does not much yet ...* :construction_worker:
+## Postprocessing
 
-## Post Processing and Publication
+:construction:
+...
+
+## Pull Request on [Shadertoys](https://github.com/nmbr73/Shadertoys)
 
 :construction:
 ...
