@@ -16,7 +16,7 @@ __KERNEL__ void Rosace3CFuse(float4 O, float2 U, float iTime, float2 iResolution
     // iDate.w
 
     float h = iResolution.y;  U = 4.0f*(U+swi2(iMouse,x,y))/h;                    // normalized coordinates
-    float2 K = _ceil(U); U = 2.0f*fract(U)-1.0f;  // or K = 1.0f+2.0f*_floor(U) to avoid non-fractionals
+    float2 K = ceil_f2(U); U = 2.0f*fract_f2(U)-1.0f;  // or K = 1.0f+2.0f*_floor(U) to avoid non-fractionals
     float a = _atan2f(U.y,U.x), r=length(U), v=0.0f, A;                       // polar coordinates
 
     for(int i=0; i<7; i++)
@@ -28,7 +28,7 @@ __KERNEL__ void Rosace3CFuse(float4 O, float2 U, float iTime, float2 iResolution
     if (!Random)
     {  O = v*to_float4(0.8f,1,0.3f,1); O.y= _sqrtf(O.y);                              // greenify
     } else {
-      O = v*(0.5f+0.5f*_sinf(K.x+17.0f*K.y+Seed+to_float4(0,2.1f,-2.1f,0)));           // random colors
+      O = v*(0.5f+0.5f*sin_f4(K.x+17.0f*K.y+Seed+to_float4(0,2.1f,-2.1f,0)));           // random colors
     }
     SetFragmentShaderComputedColor(O);
 
