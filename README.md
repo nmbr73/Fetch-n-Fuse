@@ -51,6 +51,7 @@ REPOPATH="/Users/nmbr73/Projects/Fetch-n-Fuse/"
 ```
 ... `DOWNLOADS` is optional, but it's recommended to set it to your browsers download folder (do not forget the trailing slash!). If set, then the downloads folder is used to search for shaders - otherwise you have to copy such downloads into the `Conversions/` folder before calling `fetch`.
 
+You should consider to add a new *'Fusion Studio' → 'Preferences...' → 'Global and Default Settings' → 'Path Map'* named '`Fetch-n-Fuse:`' pointing to your working copy of the repository (in the above example that would be '`/Users/nmbr73/Projects/Fetch-n-Fuse/`'). This should help in particular to make sharing compositions easier.
 
 # Make a Fuse
 
