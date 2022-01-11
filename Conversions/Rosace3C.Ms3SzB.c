@@ -11,7 +11,7 @@
 __KERNEL__ void Rosace3CFuse(float4 O, float2 U, float iTime, float2 iResolution, float4 iMouse)
 {
     CONNECT_CHECKBOX0(Random,false);
-    CONNECT_SLIDER0(Seed,0.0,1.0,0.0);
+    CONNECT_SLIDER0(Seed,0.0f,10.0f,0.0f);
 
     // iDate.w
 
