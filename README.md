@@ -10,7 +10,7 @@ The idea is to **Fetch a Shader** ABC via ...
 ```
 ./fuse -id ABC
 ```
-... to finally **Make it a Fuse** that - after some **Prostprocessing** - we would love to see your **Pull Request on [Shadertoys](https://github.com/nmbr73/Shadertoys)** for.
+... to finally **Make it a Fuse** that - after some **Postprocessing** - we would love to see your **Pull Request on Shadertoys** for.
 
 
 ## Project Status
