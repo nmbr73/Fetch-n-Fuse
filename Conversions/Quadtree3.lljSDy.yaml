@@ -1,0 +1,19 @@
+fuse:
+  author: nmbr73
+  file: Quadtree3
+  id: Quadtree3
+  kernel: Quadtree3
+  name: Quadtree3
+shader:
+  author: FabriceNeyret2
+  description: 'See also the tri-tree version [url]https://www.shadertoy.com/view/Mt2XDc[/url],
+
+    binary-tree version [ MtlyRH ]
+
+    and video versions: [url]https://www.shadertoy.com/view/MtBSDV[/url] , [url]https://www.shadertoy.com/view/ltBSDV[/url]'
+  id: lljSDy
+  name: quadtree 3
+  tags:
+  - short
+  - quadtree
+  url: https://www.shadertoy.com/view/lljSDy
