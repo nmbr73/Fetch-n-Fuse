@@ -20,11 +20,11 @@ __KERNEL__ void Quadtree3Fuse(float4 o, float2 U, float iTime, float2 iResolutio
     o.w= Alpha; //o.w = 1.0f;
 
     for (int i=0; i<7; i++) {             // to the infinity, and beyond ! :-)
-        fU = _fminf(U,1.0f-U); if (_fminf(fU.x,fU.y) < 3.0f*r/H) { o--; break; } // cell border
+        fU = _fminf(U,1.0f-U); if (_fminf(fU.x,fU.y) < 3.0f*r/H) { o-=1.0f; break; } // cell border
         if (length(P-0.5f) - r > 0.7f) break; // cell is out of the shape
 
         // --- iterate to child cell
-        fU = step(0.5f,U);                  // select child
+        fU = step(to_float2_s(0.5f),U);                  // select child
         U = 2.0f*U - fU;                    // go to new local frame
         P = 2.0f*P - fU;  r *= 2.0f;
 
