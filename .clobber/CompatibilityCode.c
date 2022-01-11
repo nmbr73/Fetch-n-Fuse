@@ -345,7 +345,7 @@
   /*| exp2_f2       |*/#define exp2_f2(a) _exp2f((a).x)
   /*| exp2_f3       |*/#define exp2_f3(a) _exp2f((a).x)
   /*| exp2_f4       |*/#define exp2_f4(a) _exp2f((a).x)
-  /*| ceil_f2       |*/#define ceil_f2(a) ceil((a).x)
+  /*| ceil_f2       |*/#define ceil_f2(a) ceil((a))
   /*| mix_f2        |*/#define mix_f2(v,i,m) mix(v,i,m)
   /*| mix_f3        |*/#define mix_f3(v,i,m) mix(v,i,m)
   /*| mix_f4        |*/#define mix_f4_f(v,i,m) mix(v,i,m)
@@ -421,7 +421,7 @@
     /*| exp2_f2       |*/#define exp2_f2(a) _exp2f((a).x)
     /*| exp2_f3       |*/#define exp2_f3(a) _exp2f((a).x)
     /*| exp2_f4       |*/#define exp2_f4(a) _exp2f((a).x)
-    /*| ceil_f2       |*/#define ceil_f2(a) ceil((a).x)
+    /*| ceil_f2       |*/#define ceil_f2(a) ceil((a).x)     // correct?!?
     /*| mix_f2        |*/#define mix_f2(v,i,m) mix(v,i,m)
     /*| mix_f3        |*/#define mix_f3(v,i,m) mix(v,i,m)
     /*| mix_f4        |*/#define mix_f4_f(v,i,m) mix(v,i,m)
