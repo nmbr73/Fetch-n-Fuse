@@ -88,6 +88,7 @@ NUM_COLOR_CONTROLS      = 10
 NUM_SLIDER_CONTROLS     = 10
 NUM_INTSLIDER_CONTROLS  = 10
 NUM_SCREW_CONTROLS      = 5
+NUM_BUTTON_CONTROLS     = 5
 NUM_CHECKBOX_CONTROLS   = 10
 NUM_POINT_CONTROLS      = 10
 
@@ -258,6 +259,12 @@ function Create()
   end
 
 
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+    --KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_BUTTON"..i.."(NAME,TYP,BTN1,BTN2,BTN3,BTN4,BTN5) float NAME = _shaderParameters->ctrlButton["..i.."]; \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_BUTTON"..i.."(NAME,TYP, ...) float NAME = _shaderParameters->ctrlButton["..i.."]; \n"
+  end
+
+
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_CHECKBOX"..i.."(NAME,SDEFAULT) float NAME = _shaderParameters->ctrlCheckbox["..i.."] \n"
   end
@@ -313,6 +320,7 @@ function Create()
   float ctrlSlider[]]..    NUM_SLIDER_CONTROLS   ..[[];
   int   ctrlIntSlider[]].. NUM_INTSLIDER_CONTROLS..[[];
   float ctrlScrew[]]..     NUM_SCREW_CONTROLS    ..[[];
+  float ctrlButton[]]..    NUM_BUTTON_CONTROLS   ..[[];
   bool  ctrlCheckbox[]]..  NUM_CHECKBOX_CONTROLS ..[[];
 
   ]]
@@ -567,6 +575,24 @@ function Create()
   end
 
 
+  InButton={}
+
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+	InButton[i] = self:AddInput("Button "..i, "CONNECT_BUTTON"..i, {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "MultiButtonControl",
+		MBTNC_ForceButtons = true,
+    --MBTNC_Type         = "Toggle", -- oder weglassen :-)
+		MBTNC_ShowName     = false,
+		{ MBTNC_AddButton  = "Nothing" },
+		MBTNC_StretchToFit = true,
+    IC_NoLabel         = true,
+		INP_Default        = 0,
+    IC_Visible         = true,
+	})
+  end
+
+
   InCheckbox={}
 
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
@@ -625,6 +651,88 @@ function Create()
   -- })
 
 
+-- Fetch-n-Fuse
+ self:AddControlPage("F-n-F")
+
+		InShaderID = self:AddInput("ShaderID", "ShaderID", {
+			LINKID_DataType      = "Text",
+			INPID_InputControl   = "TextEditControl",
+			INP_DoNotifyChanged  = true,
+			INP_External         = false,
+			--IC_NoLabel         = true,
+			ICD_Width            = 1.0,
+			--INPS_DefaultText     = devshader,
+      TEC_Lines            = 1,            -- height of text entry (default is 8)
+			TEC_Wrap             = false,        -- automatic word-wrapping (default is false)
+			TEC_ReadOnly         = false,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit        = 6,	           -- maximum number of allowed characters (default is 0, no limit)
+			TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
+			})	
+
+  doFetch = [[
+            success = os.execute('D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/spawn 7dlczN D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/')
+                
+            if (not success) then print("Spawn Error") end
+            ]]
+
+  doFetch_tpl = [[
+            success = os.execute('PFAD/spawn SHADERID PFAD')
+                
+            if (not success) then print("Spawn Error") end
+            ]]
+
+  doFuse = [[ ]]
+
+
+
+	InFetch = self:AddInput('Fetch a Shadertoy', 'InFetch', {
+		LINKID_DataType        = 'Number',
+		INPID_InputControl     = 'ButtonControl',
+		INP_DoNotifyChanged    = false,
+		INP_External           = false,
+		INP_Default            = 0.0,
+		ICD_Width              = 1,
+		BTNCS_Execute          = doFetch,
+		IC_Visible             = true,
+		}) 
+      
+	InManualID = self:AddInput("Manual ID", "ManualID", {
+			LINKID_DataType    = "Number",
+			INPID_InputControl = "CheckboxControl",
+			INP_Default        = 0,
+			INP_MinScale       = 0,
+			INP_MaxScale       = 1,
+      IC_Visible         = false,
+		})	
+
+	InShaderIDFuse = self:AddInput("ShaderID", "ShaderIDFuse", {
+			LINKID_DataType      = "Text",
+			INPID_InputControl   = "TextEditControl",
+			INP_DoNotifyChanged  = true,
+			INP_External         = false,
+			--IC_NoLabel         = true,
+			ICD_Width            = 1.0,
+			--INPS_DefaultText     = devshader,
+      TEC_Lines            = 1,            -- height of text entry (default is 8)
+			TEC_Wrap             = false,        -- automatic word-wrapping (default is false)
+			TEC_ReadOnly         = false,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit        = 6,	           -- maximum number of allowed characters (default is 0, no limit)
+			TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
+      IC_Visible           = false,
+			})	
+
+	InFuse = self:AddInput('Fuse a Shadertoy', 'InFuse', {
+		LINKID_DataType        = 'Number',
+		INPID_InputControl     = 'ButtonControl',
+		INP_DoNotifyChanged    = false,
+		INP_External           = false,
+		INP_Default            = 0.0,
+		ICD_Width              = 1,
+		BTNCS_Execute          = doFuse,
+		IC_Visible             = false,
+		}) 
+
+
 
 
   -- node's inputs and its output
@@ -662,7 +770,7 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
 
   if kernel_parameters==nil then
     if Part=="Image" then
-      print("kernel for 'Image' not found!")
+      print("kernel for 'Image': ",ConversionFusename," not found!"  )
       
       return "", nil
     end
@@ -969,7 +1077,7 @@ function RebuildParameters()
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SCREW"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
       local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SCREW"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
-      print("#SCREW#",name, smin, smax, sdef) --
+      --print("#SCREW#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."SCREW"..i.."\n"
@@ -987,6 +1095,39 @@ function RebuildParameters()
         InScrew[i]:SetAttrs({ IC_Visible = false })
       end
     end
+
+
+    --CONNECT_BUTTON0(NAME,TYP,BTN1,BTN2,BTN3,BTN4,BTN5)
+    for i=0,NUM_BUTTON_CONTROLS-1 do
+
+      local name, typ, btn1, btn2, btn3, btn4, btn5 = ConversionSourcecode:match("%s+CONNECT_BUTTON"..i.."%s*%(%s*([%a_][%w_]*)%s*,%s*(%d+)%s*,%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*%)*%s*.*;")
+      print("#Button"..i,name, typ, btn1, btn2, btn3, btn4, btn5 ) --
+
+      if (name ~= nil) then
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."Button"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlButton["..i.."];\n"
+        
+        InButton[i]:SetAttrs({
+          IC_Visible    = true,
+          LINKS_Name    = name,
+        })
+
+        if (btn1 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn1, }) end
+        if (btn2 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn2, }) end
+        if (btn3 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn3, }) end
+        if (btn4 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn4, }) end
+        if (btn5 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn5, }) end
+        
+        if (tonumber(typ) == 1) then 
+          InButton[i]:SetAttrs({ MBTNC_Type = "Toggle", }) 
+        end        
+          
+        
+      else
+        InButton[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
 
 
 
@@ -1029,7 +1170,7 @@ function RebuildParameters()
 
       -- local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
       local name, sdefx, sdefy = ConversionSourcecode:match("%s+CONNECT_POINT"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
-      print("#POINT#", name, sdefx, sdefy) --
+      --print("#POINT#", name, sdefx, sdefy) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."[2]; // ".."POINT"..i.."\n"
@@ -1323,6 +1464,11 @@ function Process(req)
     params.ctrlScrew[i] = InScrew[i]:GetValue(req).Value
   end
 
+  -- Buttons
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+    params.ctrlButton[i] = InButton[i]:GetValue(req).Value
+  end
+
   -- Checkboxes
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
     params.ctrlCheckbox[i] = InCheckbox[i]:GetValue(req).Value
@@ -1440,6 +1586,17 @@ function NotifyChanged(inp, param, time)
         return
       end
     end
+
+		if (inp == InShaderID) then
+			--doFetch bauen
+      shaderID = InShaderID:GetSource(time).Value
+     
+      doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository)
+      doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
+            
+      --print("doFetch-String: ",doFetch)
+      
+		end
 
 
 	end
