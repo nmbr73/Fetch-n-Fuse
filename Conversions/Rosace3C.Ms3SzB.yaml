@@ -1,0 +1,19 @@
+fuse:
+  author: nmbr73
+  file: Rosace3C
+  id: Rosace3C
+  kernel: Rosace3C
+  name: Rosace3C
+shader:
+  author: FabriceNeyret2
+  description: 'variant of https://www.shadertoy.com/view/ls3XWM
+
+
+    (scroll with mouse)'
+  id: Ms3SzB
+  name: rosace 3c
+  tags:
+  - pseudo3d
+  - short
+  - rosace
+  url: https://www.shadertoy.com/view/Ms3SzB

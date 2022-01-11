@@ -9,7 +9,7 @@ Vermutlich arg drüber, für jede kleine Auffälligkeit ein "Issue" zu erzeugen.
 - [ ] https://www.shadertoy.com/view/XtlSD7 ... bringt 'fetch' aus dem Tritt wegen der Sound-Section.
 - [ ] to_float2(-1.0f) ... nicht erkannt
 - [ ] Floats in defines werden nicht ersetzt; siehe [#6](https://github.com/nmbr73/Fetch-n-Fuse/issues/6)
-
+- [ ] .g wird durch .yg oder so ersetzt
 
 # fuse
 
