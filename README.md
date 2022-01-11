@@ -92,3 +92,11 @@ As soon as your conversion works without errors, is equipped with some nice cont
 
 :construction:
 ...
+
+# Impressions
+
+What this looks like ...
+
+![Fusion Screenshot](Fusion-Screenshot.png)
+
+*Worth to mention that the [rosace 3c](https://www.shadertoy.com/view/Ms3SzB) in the screenshot was created by [Fabrice Neyret](https://www.shadertoy.com/user/FabriceNeyret2) who not only developed some gorgeous fragment shaders, but also is the creator of [SHADERTOY – UNOFFICIAL](https://shadertoyunofficial.wordpress.com), a very helpful source of information!*
