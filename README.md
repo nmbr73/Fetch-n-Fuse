@@ -17,14 +17,14 @@ The idea is to **Fetch a Shader** ABC via ...
 
 The `fetch` does fetch some code and the Incubator.fuse is able to show the shader. The `fuse` command does also produce some usable output already. But all the (itermediate) results always need a lot of care and manual rework!
 
-> **You see:** The whole thing is obviously in a very early stage and will probably not work all too well well! So be kind, have some patience and most importantly use at your very own risk!
+> **You see:** The whole thing is obviously in a very early stage and will probably not work all too well! So be kind, have some patience and most importantly: use at your very own risk!
 
 
 ## Known Limitations
 
 The pre-conversion is very basic (not a C parser, but just some simple regex string substitutions) and does some wrong text replacements - but still it's better then doing it all by hand.
 
-The `fetch` command does work only for shaders that had been marked by their aurhors for API publication - and it seems that quite a lot of shaders are restricted in this regard :worried:
+The `fetch` command does work only for shaders that had been marked by their authors for API publication - and it seems that quite a lot of shaders are restricted in this regard :worried:
 
 
 ## Setup
