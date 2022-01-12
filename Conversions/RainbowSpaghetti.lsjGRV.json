@@ -1,0 +1,54 @@
+{
+  "Shader": {
+    "ver": "0.1",
+    "info": {
+      "id": "lsjGRV",
+      "date": "1391666144",
+      "viewed": 5795,
+      "name": "rainbow spaghetti",
+      "username": "mattz",
+      "description": "Space-filling Truchet tiling using a combination of octahedra and tetrahedra. Press 'g' to toggle drawing the cell grid.",
+      "likes": 69,
+      "published": 3,
+      "flags": 16,
+      "usePreview": 1,
+      "tags": [
+        "truchet",
+        "tetrahedron",
+        "tiling",
+        "octahedron"
+      ],
+      "hasliked": 0
+    },
+    "renderpass": [
+      {
+        "inputs": [
+          {
+            "id": 33,
+            "src": "\/presets\/tex00.jpg",
+            "ctype": "keyboard",
+            "channel": 0,
+            "sampler": {
+              "filter": "nearest",
+              "wrap": "clamp",
+              "vflip": "false",
+              "srgb": "false",
+              "internal": "byte"
+            },
+            "published": 1
+          }
+        ],
+        "outputs": [
+          {
+            "id": 37,
+            "channel": 0
+          }
+        ],
+        "code": "\/\/ rainbow spaghetti by mattz\n\/\/\n\/\/ License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\/\/ Some code from iq's raymarching primer: https:\/\/www.shadertoy.com\/view\/Xds3zN\n\nconst float i3 = 0.5773502691896258;\nconst float r = 0.40824829046386302;\n\nconst float i = 0.3333333333333333;\nconst float j = 0.6666666666666666;\n\nconst float lrad = 0.015;\nconst float trad = 0.06;\nconst float fogv = 0.025;\n\nconst float dmax = 20.0;\nconst int rayiter = 60;\n\nconst float wrap = 64.0;\n\nvec3 L = normalize(vec3(0.1, 1.0, 0.5));\n\nconst vec3 axis = vec3(1.0, 1.0, 0.0);\/\/vec3(1.0, 1.0, 1.0);\nconst vec3 tgt = vec3(1.0, 1.7, 1.1);\/\/vec3(-0.0, 0.3, -0.15);\nconst vec3 cpos = tgt + axis;\n\nconst vec3 vel = 0.2*axis;\n\nconst float KEY_G = 71.5\/256.0;\n\nfloat hash(in vec3 x) {\n\treturn fract(87.3*dot(x, vec3(0.1, 0.9, 0.7)));\n}\n\nfloat line(in vec3 p0, in vec3 p1, in vec3 p) {\n\t\n\tvec3 dp0 = p-p0;\n\tvec3 d10 = p1-p0;\n\t\n\tfloat u = clamp(dot(dp0, d10)\/dot(d10, d10), -5.0, 5.0);\n\treturn distance(mix(p0, p1, u), p)-0.5*lrad;\n\n}\n\nvec2 opU(vec2 a, vec2 b) {\n\treturn a.x < b.x ? a : b;\n}\n\nfloat hueOf(vec3 pos) {\n\treturn cos( 2.0*dot(2.0*pos, vec3(0.3, 0.7, 0.4)) ) * 0.49 + 0.5;\n}\n\nvec3 round2(in vec3 x, in vec3 a) {\n\treturn 2.0 * floor( 0.5 * (x + 1.0 - a) ) + a;\n}\n\nvec4 pdist(vec3 p, vec3 q) {\n\tvec3 pq = p-q;\n\treturn vec4(q, dot(pq,pq));\n}\n\nvec4 pselect(vec4 a, vec4 b) {\n\treturn a.w < b.w ? a : b;\n}\n\nfloat torus(in vec3 a, in vec3 b, in vec3 pos) {\n\tpos -= 0.5*(a+b);\n\tvec3 n = normalize(b-a);\n\treturn distance(pos, r*normalize(pos - n*dot(n, pos))) - trad;\n}\n\nmat4 permute(vec3 e, vec3 f, vec3 g, vec3 h, float p) {\n\treturn (p < i ? mat4(vec4(e,1.0), vec4(f,1.0), vec4(g, 1.0), vec4(h, 1.0)) :\n\t\t\t(p < j ? mat4(vec4(e,1.0), vec4(g,1.0), vec4(f, 1.0), vec4(h, 1.0)) :\n\t\t\t mat4(vec4(e,1.0), vec4(h,1.0), vec4(f, 1.0), vec4(g, 1.0))));\n}\n\nvec3 randomBasis(float p) {\n\treturn (p < i ? vec3(1.0, 0.0, 0.0) :\n\t\t\tp < j ? vec3(0.0, 1.0, 0.0) :\n\t\t\tvec3(0.0, 0.0, 1.0));\n}\n\nvec3 randomPerp(vec3 v, float p) {\n\treturn (v.x>0.0 ? (p < 0.5 ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, 1.0)) :\n\t\t\tv.y>0.0 ? (p < 0.5 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 0.0, 1.0)) :\n\t\t\t(p < 0.5 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0)));\n}\n\n\nvec2 map(in vec3 pos) {\n\t\t\n\tvec3 orig = pos;\n\t\n\tpos = mod(pos + mod(iTime*vel, wrap), wrap);\n\t\t\n\t\/\/ a, b, c, d are octahedron centers\n\t\/\/ d, e, f, g are tetrahedron vertices\n\tvec3 a = round2(pos, vec3(1.0));\n\tvec3 h = round2(pos, vec3(0.0));\n\t\n\tvec3 b = vec3(a.x, h.y, h.z);\n\tvec3 c = vec3(h.x, a.y, h.z);\n\tvec3 d = vec3(h.x, h.y, a.z);\n\t\n\tvec3 e = vec3(h.x, a.y, a.z);\n\tvec3 f = vec3(a.x, h.y, a.z);\n\tvec3 g = vec3(a.x, a.y, h.z);\n\n\t\/\/ o is the closest octahedron center\n\tvec3 o = pselect(pselect(pdist(pos, a), pdist(pos, b)),\n\t\t\t\t\t pselect(pdist(pos, c), pdist(pos, d))).xyz;\n\t\n\t\/\/ t is the closest tetrahedron center\n\tvec3 t = floor(pos) + 0.5;\n\n\t\/\/ normal points towards o\n\t\/\/ so bd is positive inside octahedron, negative inside tetrahedron\n\tfloat bd = dot(pos - o.xyz, (o.xyz-t.xyz)*2.0*i3) + i3;\t\n\n\tmat4 m = permute(e,f,g,h,hash(mod(t, wrap)));\n\t\n\tfloat t1 = torus(m[0].xyz, m[1].xyz, pos);\n\tfloat t2 = torus(m[2].xyz, m[3].xyz, pos);\n\t\n\tfloat p = hash(mod(o, wrap));\n\tvec3 b1 = randomBasis(fract(85.17*p));\n\tvec3 b2 = randomPerp(b1, fract(63.61*p+4.2));\n\tvec3 b3 = randomPerp(b1, fract(43.79*p+8.3));\n\n\tvec3 po = pos-o;\n\t\n\tfloat o1 = torus( b1,  b2, po);\n\tfloat o2 = torus( b1, -b2, po);\n\tfloat o3 = torus(-b1,  b3, po);\n\tfloat o4 = torus(-b1, -b3, po);\n\t\t\t\t\t\t \n\tvec2 noodle = vec2(min(max(bd, min(t1,t2)),\n\t\t\t\t\t\t   max(-bd, min(min(o1, o2), min(o3, o4)))),\n\t\t\t\t\t   hueOf(orig+0.5*vel*iTime));\n\t\t\t\t\t\t   \t\n\tif (texture(iChannel0, vec2(KEY_G, 0.75)).x > 0.0) {\n\t\t\t\t\n\t\tfloat dline = line(e, f, pos);\n\t\tdline = min(dline, line(e, g, pos));\n\t\tdline = min(dline, line(e, h, pos));\n\t\tdline = min(dline, line(f, g, pos));\n\t\tdline = min(dline, line(f, h, pos));\n\t\tdline = min(dline, line(g, h, pos));\n\t\t\n\t\tvec2 grid = vec2(dline, 2.0);\n\t\t\n\t\tnoodle.x += 0.1*trad;\n\t\tnoodle.y = hash(mod(bd < 0.0 ? t : o, wrap));\n\t\treturn opU(grid, noodle);\n\t\t\n\t} else {\n\t\t\n\t\treturn noodle;\n\t\t\n\t}\n\t\n}\n\nvec3 hue(float h) {\n\t\n\tvec3 c = mod(h*6.0 + vec3(2, 0, 4), 6.0);\n\treturn h > 1.0 ? vec3(0.5) : clamp(min(c, -c+4.0), 0.0, 1.0);\n}\n\nvec2 castRay( in vec3 ro, in vec3 rd, in float maxd )\n{\n\tfloat precis = 0.0001;\n    float h=precis*2.0;\n    float t = 0.0;\n    float m = -1.0;\n    for( int i=0; i<rayiter; i++ )\n    {\n        if( abs(h)<precis||t>maxd ) continue;\/\/break;\n        t += h;\n\t    vec2 res = map( ro+rd*t );\n        h = res.x;\n\t    m = res.y;\n    }\n\n    return vec2( t, m );\n}\n\nvec3 calcNormal( in vec3 pos )\n{\n\tvec3 eps = vec3( 0.0001, 0.0, 0.0 );\n\tvec3 nor = vec3(\n\t    map(pos+eps.xyy).x - map(pos-eps.xyy).x,\n\t    map(pos+eps.yxy).x - map(pos-eps.yxy).x,\n\t    map(pos+eps.yyx).x - map(pos-eps.yyx).x );\n\treturn normalize(nor);\n}\n\nvec3 shade( in vec3 ro, in vec3 rd ) {\n\tvec2 tm = castRay(ro, rd, dmax);\n\tif (tm.y >= 0.0) {\n\t\tvec3 n = calcNormal(ro + tm.x * rd);\n\t\tfloat fog = exp(-tm.x*tm.x*fogv);\n\t\tvec3 color = hue(tm.y) * 0.55 + 0.45;\n\t\tvec3 diffamb = (0.5*dot(n,L)+0.5) * color;\n\t\tvec3 R = 2.0*n*dot(n,L)-L;\n\t\tfloat spec = 0.2*pow(clamp(-dot(R, rd), 0.0, 1.0), 6.0);\n\t\treturn fog * (diffamb + spec);\n\t} else {\n\t\treturn vec3(1.0);\n\t}\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n\t\n\tconst float yscl = 720.0;\n\tconst float f = 900.0;\n\t\n\tvec2 uv = (fragCoord.xy - 0.5*iResolution.xy) * yscl \/ iResolution.y;\n\t\n\tvec3 up = vec3(0.0, 1.0, 0.0);\n\t\n\tvec3 rz = normalize(tgt - cpos);\n\tvec3 rx = normalize(cross(rz,up));\n\tvec3 ry = cross(rx,rz);\n\t\n\tfloat thetax = 0.0;\n\tfloat thetay = 0.0;\n\t\n\tif (max(iMouse.x, iMouse.y) > 20.0) { \n\t\tthetax = (iMouse.y - 0.5*iResolution.y) * 3.14\/iResolution.y; \n\t\tthetay = (iMouse.x - 0.5*iResolution.x) * -6.28\/iResolution.x; \n\t}\n\n\tfloat cx = cos(thetax);\n\tfloat sx = sin(thetax);\n\tfloat cy = cos(thetay);\n\tfloat sy = sin(thetay);\n\t\n\tmat3 Rx = mat3(1.0, 0.0, 0.0, \n\t\t\t\t   0.0, cx, sx,\n\t\t\t\t   0.0, -sx, cx);\n\t\n\tmat3 Ry = mat3(cy, 0.0, -sy,\n\t\t\t\t   0.0, 1.0, 0.0,\n\t\t\t\t   sy, 0.0, cy);\n\n\tmat3 R = mat3(rx,ry,rz);\n\tmat3 Rt = mat3(rx.x, ry.x, rz.x,\n\t\t\t\t   rx.y, ry.y, rz.y,\n\t\t\t\t   rx.z, ry.z, rz.z);\n\n\tvec3 rd = R*Rx*Ry*normalize(vec3(uv, f));\n\t\n\tvec3 ro = tgt + R*Rx*Ry*Rt*(cpos-tgt);\n\n\tfragColor = vec4(shade(ro, rd), 1.0);\n\t\n}",
+        "name": "Image",
+        "description": "",
+        "type": "image"
+      }
+    ]
+  }
+}

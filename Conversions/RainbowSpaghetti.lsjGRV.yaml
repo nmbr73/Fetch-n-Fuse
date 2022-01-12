@@ -1,0 +1,18 @@
+fuse:
+  author: nmbr73
+  file: RainbowSpaghetti
+  id: RainbowSpaghetti
+  kernel: RainbowSpaghetti
+  name: RainbowSpaghetti
+shader:
+  author: mattz
+  description: Space-filling Truchet tiling using a combination of octahedra and tetrahedra.
+    Press 'g' to toggle drawing the cell grid.
+  id: lsjGRV
+  name: rainbow spaghetti
+  tags:
+  - truchet
+  - tetrahedron
+  - tiling
+  - octahedron
+  url: https://www.shadertoy.com/view/lsjGRV
