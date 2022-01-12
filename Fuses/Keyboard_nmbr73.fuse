@@ -15,11 +15,11 @@
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
-FuRegisterClass("ST_Keyboard_nmbr73, CT_SourceTool, {
-    REGS_Name = "Keyboard",
+FuRegisterClass("ST_Keyboard_nmbr73", CT_SourceTool, {
+    REGS_Name = "Toy Keyboard",
 	  REGS_Category = "Fuses",
     REGS_OpDescription = "A (not yet working) keyboard input for Shadertoy fuses",
-	  REGS_OpIconString = "st-kbd",
+	  REGS_OpIconString = "toykbd",
     REG_Source_GlobalCtrls = true,
     REG_Source_SizeCtrls = true,
     REG_Source_AspectCtrls = true,
