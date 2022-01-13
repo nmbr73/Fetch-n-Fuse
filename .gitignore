@@ -4,6 +4,8 @@
 Conversions/*.*.assets/
 Assets/Textures/*
 !Assets/Textures/README.md
+Assets/Cubemaps/*
+!Assets/Cubemaps/README.md
 Assets/Misc/*
 !Assets/Misc/README.md
 Assets/UNKNOWN/*
