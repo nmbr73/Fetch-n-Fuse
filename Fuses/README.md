@@ -2,15 +2,15 @@
 
 Some Fuses to support the creation of compositions with Fuses derived from a shadertoy fragment shader. If your working copy resides for example in '`/Users/nmbr73/Projects/Fetch-n-Fuse/`' then you can link them into Fusion (on a Mac) by ...
 ```
-cd '/Users/nmbr73/Library/Application Support/Blackmagic Design/Fusion/'
+cd '/Users/nmbr73/Library/Application Support/Blackmagic Design/Fusion/Fuses/'
 ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Keyboard_nmbr73.fuse Keyboard_nmbr73.fuse
 ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Texture_nmbr73.fuse Texture_nmbr73.fuse
+ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Cubemap_nmbr73.fuse Cubemap_nmbr73.fuse
 ```
-resp. for Resolve
+
+resp. for Resolve you go to
 ```
 cd '/Users/nmbr73/Library/Application Support/Blackmagic Design/DaVinci Resolve/Fusion/Fuses'
-ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Keyboard_nmbr73.fuse Keyboard_nmbr73.fuse
-ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Texture_nmbr73.fuse Texture_nmbr73.fuse
 ```
 ... or whatever that is on your system.
 
