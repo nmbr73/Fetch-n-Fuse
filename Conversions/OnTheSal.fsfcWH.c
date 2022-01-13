@@ -20,7 +20,7 @@
 
 #define WITH_AO
 
-#define ZERO (_fminf(0, iframe))
+#define ZERO 0 //(_fminf(0, iframe))
 
 
 #define GROUND 0.0f
@@ -38,15 +38,20 @@
 
 
 //float gTime;
-__DEVICE__ int iframe;
+//__DEVICE__ int iframe;
 
 
-__DEVICE__ float3 shoulder1, elbow1, wrist1, head,
-       shoulder2, elbow2, wrist2;
-__DEVICE__ float3 foot1, ankle1, knee1, hip1,
-       foot2, ankle2, knee2, hip2;
+//__DEVICE__ float3 shoulder1, elbow1, wrist1, head,
+//       shoulder2, elbow2, wrist2;
+//__DEVICE__ float3 foot1, ankle1, knee1, hip1,
+//       foot2, ankle2, knee2, hip2;
+//,
+//float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+//float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2
 
-__DEVICE__ mat2 rot, rot1, rot2;
+//,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2
+
+//__DEVICE__ mat2 rot, rot1, rot2;
 
 
 #define U(a,b) ((a).x*(b).y-(b).x*(a).y)
@@ -64,7 +69,7 @@ __DEVICE__ float2 min2(float2 a, float2 b) {
 
 #ifdef BONE
 // Adated from gaz [Bones] https://www.shadertoy.com/view/ldG3zc
-__DEVICE__ float2 sdBone(in float3 p) {
+__DEVICE__ float2 sdBone(in float3 p, mat2 rot) {
     p.x -= 80.0f;
     const float m = 200.0f;
     float scale = 0.5f + _floor(_fabs(p.x)/m);
@@ -208,12 +213,14 @@ __DEVICE__ float sdEar(in float3 p) {
 }
 
 
-__DEVICE__ mat3 baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2;
+//__DEVICE__ mat3 baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2;
 
-__DEVICE__ float2 sdMan(in float3 pos, float gTime){
+__DEVICE__ float2 sdMan(in float3 pos, float gTime,mat3 baseArm1,mat3 baseArm2,mat3 baseBag,mat3 baseFoot1,mat3 baseFoot2, mat2 rot, mat2 rot1, mat2 rot2,
+float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2){
     float3 p0 = pos;
     float2 res = to_float2(999,0);
-    
+
     // Legs
     float dSkin = _fminf(
         _fminf(sdCap(pos, ankle1, knee1), 
@@ -362,6 +369,8 @@ __DEVICE__ float2 sdMan(in float3 pos, float gTime){
 
 #ifdef PANEL
 
+#define mod_f(a,b) ((a)-(b)*_floor((a)/(b)))
+
 __DEVICE__ float sdFont(in float2 p, in int c, __TEXTURE__ iChannel1) {
     float2 uv = (p + to_float2((float)(c%16), (float)(15-c/16)) + 0.5f)/16.0f;
     return _fmaxf(max(_fabs(p.x) - 0.25f, _fmaxf(p.y - 0.35f, -0.38f - p.y)), texture(iChannel1, uv).w - 127.0f/255.0f);
@@ -389,12 +398,14 @@ __DEVICE__ float2 sdPanel(float3 p) {
 
 #endif
 
-__DEVICE__ float2 map(in float3 p0, float gTime){
+__DEVICE__ float2 map(in float3 p0, float gTime,mat3 baseArm1,mat3 baseArm2,mat3 baseBag,mat3 baseFoot1,mat3 baseFoot2, mat2 rot, mat2 rot1, mat2 rot2,
+float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2){
     // Little stones    
     float2 size = to_float2(35.0f,20.0f),
          id = _floor((swi2(p0,x,z) + size*0.5f)/size);
     float3 pos = p0;
-    swi2S(pos,x,z, mod_f(swi2(p0,x,z) + size*0.5f,size) - size*0.5f)
+    swi2S(pos,x,z, (mod_f2f2(swi2(p0,x,z) + size*0.5f,size) - size*0.5f))
     float2 h = 1.0f-2.0f*hash22(id);
     float r = 0.15f+0.25f*_fabs(h.x),
           d = length(pos - to_float3(h.x*5.0f,-r*0.4f,7.0f*h.y))-r;
@@ -403,11 +414,11 @@ __DEVICE__ float2 map(in float3 p0, float gTime){
     res = min2(res, sdPanel(p0)); 
 #endif
 #ifdef BONE
-    res = min2(res, sdBone(p0));
+    res = min2(res, sdBone(p0,rot));
 #endif    
     d = length(p0-hip1)-2.0f;
     if (d<0.0f) {
-        return min2(sdMan(p0,gTime), res);
+        return min2(sdMan(p0,gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2), res);
     } else {    
         return min2(to_float2(d+0.1f,999.0f), res);
     }
@@ -417,11 +428,13 @@ __DEVICE__ float2 map(in float3 p0, float gTime){
 //   Ray marching scene if ray intersect bbox
 //---------------------------------------------------------------------
 
-__DEVICE__ float2 Trace( in float3 ro, in float3 rd, float gTime) {
+__DEVICE__ float2 Trace( in float3 ro, in float3 rd, float gTime,mat3 baseArm1,mat3 baseArm2,mat3 baseBag,mat3 baseFoot1,mat3 baseFoot2, mat2 rot, mat2 rot1, mat2 rot2,
+float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2) {
     float2 res = to_float2(999,0);
     float t = 0.5f;
     for( int i=ZERO; i<128 && t<100.0f; i++ ) {
-        float2 h = map( ro+rd*t,gTime);
+        float2 h = map( ro+rd*t,gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2);
         if( _fabs(h.x)<0.0005f*t ) { 
             res = to_float2(t,h.y); 
             break;
@@ -459,13 +472,15 @@ __DEVICE__ float3 doBumpMap( __TEXTURE2D__ tex, in float3 p, in float3 n, float 
 //---------------------------------------------------------------------
 
 #ifdef WITH_AO
-__DEVICE__ float calcAO( in float3 pos, in float3 nor, float gTime ){
+__DEVICE__ float calcAO( in float3 pos, in float3 nor, float gTime,mat3 baseArm1,mat3 baseArm2,mat3 baseBag,mat3 baseFoot1,mat3 baseFoot2, mat2 rot, mat2 rot1, mat2 rot2,
+float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2 ){
   float dd, hr, sca = 1.0f, totao = 0.0f;
     float3 aopos; 
     for( int aoi=ZERO; aoi<5; aoi++ ) {
         hr = 0.01f + 0.05f*float(aoi);
         aopos = nor * hr + pos;
-        totao += -(map(aopos,gTime).x-hr)*sca;
+        totao += -(map(aopos,gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2, rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2).x-hr)*sca;
         sca *= 0.75f;
     }
     return clamp(1.0f - 4.0f*totao, 0.0f, 1.0f);
@@ -481,7 +496,9 @@ __DEVICE__ float textureInvader(float2 uv) {
   return _floor(mod_f(v/_powf(2.0f,x), 2.0f)) == 0.0f ? 0.: 1.0f;
 }
 
-__DEVICE__ float3 doColor(in float3 p, in float3 rd, in float3 n, in float2 res, float gTime, __TEXTURE__ iChannel0, __TEXTURE__ iChannel1){
+__DEVICE__ float3 doColor(in float3 p, in float3 rd, in float3 n, in float2 res, float gTime, __TEXTURE__ iChannel0, __TEXTURE__ iChannel1,mat3 baseArm1,mat3 baseArm2,mat3 baseBag,mat3 baseFoot1,mat3 baseFoot2, mat2 rot, mat2 rot1, mat2 rot2,
+float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2){
     // sky dome
     float3 skyColor =  0.5f*to_float3(0.5f, 0.6f, 0.9f),
          col = skyColor - _fmaxf(rd.y,0.0f)*0.5f;
@@ -577,7 +594,7 @@ __DEVICE__ float3 doColor(in float3 p, in float3 rd, in float3 n, in float2 res,
          amb = dot(n,ld)*0.45f+0.55f,
          spec = _powf(_fmaxf(0.0f,dot(r,ld)),40.0f),
          fres = _powf(_fabs(0.7f+dot(rd,n)),3.0f),   
-         ao = calcAO(p, n,gTime);
+         ao = calcAO(p, n,gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2);
     // ligthing     
     col = col*_mix(1.2f*to_float3(0.25f,0.08f,0.13f),to_float3(0.984f,0.996f,0.804f), _mix(amb,diff,0.75f)) + 
           spec*sp+fres*_mix(col,to_float3_s(1),0.7f)*0.4f;
@@ -596,11 +613,13 @@ __DEVICE__ float3 doColor(in float3 p, in float3 rd, in float3 n, in float2 res,
 //   Calculate normal
 // inspired by tdhooper and klems - a way to prevent the compiler from inlining map() 4 times
 //---------------------------------------------------------------------
-__DEVICE__ float3 normal(in float3 pos, float3 rd, float t, float gTime ) {
+__DEVICE__ float3 normal(in float3 pos, float3 rd, float t, float gTime,mat3 baseArm1,mat3 baseArm2,mat3 baseBag,mat3 baseFoot1,mat3 baseFoot2, mat2 rot, mat2 rot1, mat2 rot2,
+float3 shoulder1, float3 elbow1, float3 wrist1, float3 head, float3 shoulder2, float3 elbow2, float3 wrist2, 
+float3 foot1, float3 ankle1, float3 knee1, float3 hip1, float3 foot2, float3 ankle2, float3 knee2, float3 hip2 ) {
     float3 n = to_float3_s(0);
     for( int i=ZERO; i<4; i++) {
         float3 e = 0.5773f*(2.0f*to_float3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0f);
-        n += e*map(pos+0.002f*e,gTime).x;
+        n += e*map(pos+0.002f*e,gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2).x;
     }
   return normalize(n - _fmaxf(0.0f, dot(n,rd ))*rd);
 }
@@ -624,7 +643,15 @@ __DEVICE__ mat3 setCamera( in float3 ro, in float3 ta, in float r) {
 __KERNEL__ void OnTheSalFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
 
-iframe = iFrame-0;
+CONNECT_SLIDER0(Freq, 0.0f, 10.0f, 1.0f);
+//iframe = iFrame-0;
+
+mat3 baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2;
+
+float3 shoulder1, elbow1, wrist1, head,
+       shoulder2, elbow2, wrist2;
+float3 foot1, ankle1, knee1, hip1,
+       foot2, ankle2, knee2, hip2;
 
 //---------------------------------------------------------------------
 //    Animation
@@ -656,12 +683,14 @@ float3 ANKLE[9] = { to_float3(5,134,5),   to_float3(22,132,6),   to_float3(71,12
 float3 FOOT[9] = { to_float3(14,150,10), to_float3(16,150,10),  to_float3(63,139,10),  to_float3(119,143,10), 
                    to_float3(178,139,10),to_float3(182,150,10), to_float3(182,150,10), to_float3(182,150,10), to_float3(182,150,10)};
     
-    //iTime += 130.0f;
-    float gTime = (iTime+130.0f)*6.0f;
+    iTime *= 1.0f;
+    float gTime = (iTime+130.0f)*6.0f*Freq;
+
+//gTime = iTime*6.0f;
   
     // Animation
-    int it = int(_floor(gTime));
-    float kt = fract(gTime), dz = 1.0f;
+    int it = (int)(_floor(gTime));
+    float kt = fract_f(gTime), dz = 1.0f;
    
     head = getPos(HEAD, it, kt, dz, gTime);
 
@@ -692,7 +721,7 @@ float3 FOOT[9] = { to_float3(14,150,10), to_float3(16,150,10),  to_float3(63,139
     shoulder2.x += dx;
     elbow2.x += dx;
     wrist2.x += dx;
-    
+
     float3 v1 = normalize(wrist1-elbow1),
     v0 = normalize(wrist1-shoulder1),
     v3 = normalize(cross(v1,v0)),
@@ -722,14 +751,14 @@ float3 FOOT[9] = { to_float3(14,150,10), to_float3(16,150,10),  to_float3(63,139
     baseFoot2 = to_mat3_f3(v1,v3,-1.0f*cross(v1,v3));
     
     float a = -1.5708f*0.4f;
-    rot = to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a));
+    mat2 rot = to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a));
      
     a = 0.2f*_cosf(0.4f*iTime) + 0.3f*_cosf(0.05f*iTime);
-    rot1 = to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a));
+    mat2 rot1 = to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a));
      
     a = 0.5f*_cosf(0.5f*3.141592f*gTime);
     a = a*a;
-    rot2 = to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a));
+    mat2 rot2 = to_mat2(_cosf(a), _sinf(a), -_sinf(a), _cosf(a));
     
 // ------------------------------------
  
@@ -750,18 +779,18 @@ float3 FOOT[9] = { to_float3(14,150,10), to_float3(16,150,10),  to_float3(63,139
     float3 rd = mul_mat3_f3(ca , normalize(to_float3_aw(swi2(p,x,y),4.5f) ));
   
     // Ray intersection with scene
-    float2 res = Trace(ro, rd,gTime);
+    float2 res = Trace(ro, rd,gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2);
     if (rd.y >= 0.0f) {
        res = min2(res, to_float2(999.0f,100.0f));
     } else {        
-       res = min2(res, to_float2(-ro.y / rd.y,GROUND));
+       res = min2(res, to_float2(-ro.y/ rd.y,GROUND));
     }
 
     
     // Rendering
     float3 pos = ro + rd*res.x;
-    float3 n = pos.y<0.02f ? to_float3(0,1,0) : normal(pos, rd, res.x, gTime);
-    float3 col = doColor(pos, rd, n, res, gTime, iChannel0, iChannel1);
+    float3 n = pos.y<0.02f ? to_float3(0,1,0) : normal(pos, rd, res.x, gTime, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2);
+    float3 col = doColor(pos, rd, n, res, gTime, iChannel0, iChannel1, baseArm1, baseArm2, baseBag, baseFoot1, baseFoot2,rot,rot1,rot2,shoulder1,elbow1,wrist1,head,shoulder2, elbow2,wrist2,foot1,ankle1,knee1,hip1,foot2,ankle2,knee2,hip2);
     col = pow_f3( col, to_float3_s(0.4545f) );                 // Gamma    
     col *= _powf(16.0f*q.x*q.y*(1.0f-q.x)*(1.0f-q.y), 0.1f); // Vigneting
      

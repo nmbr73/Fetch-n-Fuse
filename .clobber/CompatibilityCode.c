@@ -492,9 +492,9 @@
     /*| mod_f2        |*/#define mod_f2(value,divisor) to_float2(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)))
     /*| mod_f3        |*/#define mod_f3(value,divisor) to_float3(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)))
     /*| mod_f4        |*/#define mod_f4(value,divisor) to_float4(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)),mod_f((value).w, (divisor)))
-    /*| mod_f2f2      |*/#define mod_f2f2(value,divisor) to_float2(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y));}
-    /*| mod_f3f3      |*/#define mod_f3f3(value,divisor) to_float3(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z));}
-    /*| mod_f4f4      |*/#define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w));}
+    /*| mod_f2f2      |*/#define mod_f2f2(value,divisor) to_float2(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y))
+    /*| mod_f3f3      |*/#define mod_f3f3(value,divisor) to_float3(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z))
+    /*| mod_f4f4      |*/#define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w))
 
     /*| sin_f2        |*/#define sin_f2(i) to_float2( _sinf((i).x), _sinf((i).y))
     /*| sin_f3        |*/#define sin_f3(i) to_float3( _sinf((i).x), _sinf((i).y), _sinf((i).z))
