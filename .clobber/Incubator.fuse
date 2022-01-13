@@ -670,10 +670,19 @@ function Create()
 			})	
 
   doFetch = [[
-            success = os.execute('D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/spawn 7dlczN D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/')
+            success = os.execute('D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/spawn xxxx7dlczN D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/')
                 
             if (not success) then print("Spawn Error") end
             ]]
+            
+  doFetch2 = [[
+            success = os.execute('D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/spawn fsfcWH D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/')
+                
+            if (not success) then print("Spawn Error") end
+            ]]            
+
+--BTNCS_Execute = "	args = { tool = comp.ActiveTool, copyTree = true }\n	comp:RunScript([[S:\\net_exe\\BlackMagic\\_customization\\fusion\\scripts\\support\\Loader_MakeLocal.lua]], args)\n					",            
+--doFetch = [[ args = { --id = 7dlczN}\n    comp:RunScript("D:\\Zumsel\\Dokumente\\Github\\Fetch-n-Fuse\\fetch", args) \n  ]]            
 
   doFetch_tpl = [[
             success = os.execute('PFAD/spawn SHADERID PFAD')
@@ -695,6 +704,15 @@ function Create()
 		BTNCS_Execute          = doFetch,
 		IC_Visible             = true,
 		}) 
+
+    InSemaphore = self:AddInput( "Semaphore","Semaphore", {
+      LINKID_DataType     = "Number",
+      INPID_InputControl  = "CheckboxControl",
+      INP_Integer         = true,
+      INP_Default         = 0,
+      IC_Visible          = false,
+    })
+
       
 	InManualID = self:AddInput("Manual ID", "ManualID", {
 			LINKID_DataType    = "Number",
@@ -1205,6 +1223,24 @@ end
 --
 function Process(req)
 
+
+  if (InSemaphore:GetValue(req).Value == 1) then
+    shaderID = InShaderID:GetValue(req).Value
+    
+    --Warum auch immer - verstehe wer will    
+    PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
+    --print("PFadKorrektur: ", PathToRepository_cor)
+     
+    doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository_cor)
+    doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
+        
+    InFetch:SetAttrs({ BTNCS_Execute          = doFetch, })
+    
+    InSemaphore:SetSource(Number(0),0,0)
+  end
+
+--print("DoFetch-String-Process",doFetch)
+
   local rebuild = false
 
   ShaderKernels.RenderErrors = false
@@ -1216,7 +1252,6 @@ function Process(req)
     InRebuildCheckBox:SetSource(Number(0),0)
     rebuild=true
   end
-
 
 
   if rebuild then
@@ -1314,6 +1349,7 @@ function Process(req)
       dst:Fill(Pixel({R=0,G=0,B=0,A=0}))
     else
       print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
+      print("NAME: ",ConversionKernelname, "\nCODE\n", ConversionSourcecode)
       dst:Fill(Pixel({R=0.5,G=0,B=0,A=0}))
     end
     OutImage:Set(req,dst)
@@ -1589,12 +1625,27 @@ function NotifyChanged(inp, param, time)
 
 		if (inp == InShaderID) then
 			--doFetch bauen
+      --success = os.execute('D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/spawn 7dlczN D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/')
+      
       shaderID = InShaderID:GetSource(time).Value
      
       doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository)
       doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
             
       --print("doFetch-String: ",doFetch)
+      
+      --doFetch = [[ args = { --id = 7dlczN}\n comp:RunScript(D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/fetch, args) \n  ]] 
+       
+      --do_FetchX = [[ args = { --id = 7dlczN}\n  comp:RunScript(D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/fetch, args) \n ]]
+      
+      --BTNCS_Execute = "						args = { tool = comp.ActiveTool, copyTree = true }\n						comp:RunScript([[S:\\net_exe\\BlackMagic\\_customization\\fusion\\scripts\\support\\Loader_MakeLocal.lua]], args)\n					",
+      
+      --print("doFetch-String: ",doFetch)
+      
+      --Variablen im Notify zu ändern funktioniert nicht :-( -> Semaphore nutzen
+      InSemaphore:SetSource(Number(1),0,0)
+      
+      --ToDo: Länge der Eingabe prüfen und Button enablen !!
       
 		end
 
