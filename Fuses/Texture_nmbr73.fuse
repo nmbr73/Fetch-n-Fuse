@@ -74,29 +74,29 @@ end
 function Create()
 
   TEXTURES = {  [0] =
-    { suffix = "",    name = "",                  channels = 4, width = 73,   height = 73, },
-    { suffix = "jpg", name = "Abstract 1",        channels = 3, width = 1024, height = 1024,  },
-    { suffix = "jpg", name = "Abstract 2",        channels = 3, width = 512,  height = 512,   },
-    { suffix = "jpg", name = "Abstract 3",        channels = 3, width = 1024, height = 1024,  },
-    { suffix = "png", name = "Bayer",             channels = 1, width = 8,    height = 8,     },
-    { suffix = "png", name = "Blue Noise",        channels = 4, width = 1024, height = 1024,  },
-    { suffix = "png", name = "Font 1",            channels = 4, width = 1024, height = 1024,  },
-    { suffix = "png", name = "Gray Noise Medium", channels = 1, width = 256,  height = 256,   },
-    { suffix = "png", name = "Gray Noise Small",  channels = 1, width = 64,   height = 64,    },
-    { suffix = "jpg", name = "Lichen",            channels = 3, width = 1024, height = 1024,  },
-    { suffix = "jpg", name = "London",            channels = 3, width = 512,  height = 512,   },
-    { suffix = "png", name = "Nyancat",           channels = 4, width = 256,  height = 32,    },
-    { suffix = "jpg", name = "Organic 1",         channels = 3, width = 1024, height = 1024,  },
-    { suffix = "jpg", name = "Organic 2",         channels = 3, width = 1024, height = 1024,  },
-    { suffix = "jpg", name = "Organic 3",         channels = 3, width = 1024, height = 1024,  },
-    { suffix = "jpg", name = "Organic 4",         channels = 3, width = 1024, height = 1024,  },
-    { suffix = "png", name = "Pebbles",           channels = 1, width = 512,  height = 512,   },
-    { suffix = "png", name = "RGBA Noise Medium", channels = 4, width = 256,  height = 256,   },
-    { suffix = "png", name = "RGBA Noise Small",  channels = 4, width = 64,   height = 64,    },
-    { suffix = "jpg", name = "Rock Tiles",        channels = 3, width = 512,  height = 512,   },
-    { suffix = "jpg", name = "Rusty Metal",       channels = 3, width = 512,  height = 512,   },
-    { suffix = "jpg", name = "Stars",             channels = 3, width = 512,  height = 512,   },
-    { suffix = "jpg", name = "Wood",              channels = 3, width = 1024, height = 1024,  },
+    { suffix = "",    name = "",                  channels = 4, width = 73,   height = 73,    frame = 0 },
+    { suffix = "jpg", name = "Abstract 1",        channels = 3, width = 1024, height = 1024,  frame = 0 },
+    { suffix = "jpg", name = "Abstract 2",        channels = 3, width = 512,  height = 512,   frame = 1 },
+    { suffix = "jpg", name = "Abstract 3",        channels = 3, width = 1024, height = 1024,  frame = 2 },
+    { suffix = "png", name = "Bayer",             channels = 1, width = 8,    height = 8,     frame = 0 },
+    { suffix = "png", name = "Blue Noise",        channels = 4, width = 1024, height = 1024,  frame = 0 },
+    { suffix = "png", name = "Font 1",            channels = 4, width = 1024, height = 1024,  frame = 0 },
+    { suffix = "png", name = "Gray Noise Medium", channels = 1, width = 256,  height = 256,   frame = 0 },
+    { suffix = "png", name = "Gray Noise Small",  channels = 1, width = 64,   height = 64,    frame = 0 },
+    { suffix = "jpg", name = "Lichen",            channels = 3, width = 1024, height = 1024,  frame = 0 },
+    { suffix = "jpg", name = "London",            channels = 3, width = 512,  height = 512,   frame = 0 },
+    { suffix = "png", name = "Nyancat",           channels = 4, width = 256,  height = 32,    frame = 0 },
+    { suffix = "jpg", name = "Organic 1",         channels = 3, width = 1024, height = 1024,  frame = 0 },
+    { suffix = "jpg", name = "Organic 2",         channels = 3, width = 1024, height = 1024,  frame = 1 },
+    { suffix = "jpg", name = "Organic 3",         channels = 3, width = 1024, height = 1024,  frame = 2 },
+    { suffix = "jpg", name = "Organic 4",         channels = 3, width = 1024, height = 1024,  frame = 3 },
+    { suffix = "png", name = "Pebbles",           channels = 1, width = 512,  height = 512,   frame = 0 },
+    { suffix = "png", name = "RGBA Noise Medium", channels = 4, width = 256,  height = 256,   frame = 0 },
+    { suffix = "png", name = "RGBA Noise Small",  channels = 4, width = 64,   height = 64,    frame = 0 },
+    { suffix = "jpg", name = "Rock Tiles",        channels = 3, width = 512,  height = 512,   frame = 0 },
+    { suffix = "jpg", name = "Rusty Metal",       channels = 3, width = 512,  height = 512,   frame = 0 },
+    { suffix = "jpg", name = "Stars",             channels = 3, width = 512,  height = 512,   frame = 0 },
+    { suffix = "jpg", name = "Wood",              channels = 3, width = 1024, height = 1024,  frame = 0 },
   }
 
   local options = {}
@@ -110,7 +110,7 @@ function Create()
   InTextureCombo = self:AddInput( "Texture", "texture", {
       LINKID_DataType = "Number",
       INPID_InputControl = "ComboControl",
-      INP_DoNotifyChanged = false,
+      INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
       options
@@ -155,7 +155,7 @@ function Process(req)
 
   if MEDIAFOLDER==nil then
     MEDIAFOLDER = self.Comp:MapPath("Fetch-n-Fuse:/Assets/Textures/")
-    -- print("MEDIAFOLDER has been set to "..MEDIAFOLDER.."'")
+    -- print("MEDIAFOLDER has been set to "..MEDIAFOLDER.."' in Process()")
   end
 
   local selected  = InTextureCombo:GetValue(req).Value
@@ -168,7 +168,7 @@ function Process(req)
     -- print("current="..CURRENT..", selected="..selected)
 
     InTextureInfo:SetAttrs({LINKS_Name = getInfo(CURRENT)})
-    InTexturePreview:SetAttrs({LINKS_Name = getPreview(CURRENT)})
+    -- InTexturePreview:SetAttrs({LINKS_Name = getPreview(CURRENT)})
 
     TEXTUREIMG = nil
 
@@ -180,8 +180,11 @@ function Process(req)
       if not bmd.fileexists(fname) then
         print("no such file '"..fname.."'")
       else
+        -- storing the frame for each texture is pretty dumb
+        -- but no idea how to tell fusion to not load a sequence here
+        -- print("load '"..fname.."'")
         local clip = Clip(fname,false)
-        TEXTUREIMG = clip:GetFrame(0)
+        TEXTUREIMG = clip:GetFrame(TEXTURES[CURRENT]['frame'])
       end
 
     end
@@ -241,10 +244,18 @@ end
 -- Callback to handle UI control events.
 --
 
--- function NotifyChanged(inp, param, time)
--- 	if inp ~= nil and param ~= nil then
--- 		if (inp == InTextureCombo) then
---       -- print("selected: "..param.Value)
---     end
--- 	end
--- end
+function NotifyChanged(inp, param, time)
+	if inp ~= nil and param ~= nil then
+		if (inp == InTextureCombo) then
+      -- print("selected: "..param.Value)
+
+      if MEDIAFOLDER==nil then
+        MEDIAFOLDER = self.Comp:MapPath("Fetch-n-Fuse:/Assets/Textures/")
+        -- print("MEDIAFOLDER has been set to "..MEDIAFOLDER.."' in NotifyChanged()")
+      end
+
+
+      InTexturePreview:SetAttrs({LINKS_Name = getPreview(param.Value)})
+    end
+	end
+end
