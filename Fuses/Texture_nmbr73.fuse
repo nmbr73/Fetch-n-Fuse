@@ -37,7 +37,7 @@ TEXTUREIMG  = nil
 function getInfo(index)
 
   if index==0 then
-    return '<p align="right">Make sure to have downloaded and transformed all the files needed (good luck) and set the path in this Fuse\'s source code accordingly. Then you should be able to use the different textures by just coosing one them from the select box above.</p>'
+    return '<p align="right">Make sure to have downloaded and transformed all the files needed (good luck) and set the path in this Fuse\'s source code accordingly. Then you should be able to use the different textures by just choosing one them from the select box above.</p>'
   end
 
   local info = TEXTURES[index]
