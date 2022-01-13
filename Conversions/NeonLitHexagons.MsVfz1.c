@@ -156,7 +156,7 @@ __DEVICE__ float3 tex3D(__TEXTURE2D__ t, in float3 p, in float3 n){
 __DEVICE__ float noise3D(in float3 p){
 
     // Just some random figures, analogous to stride. You can change this, if you want.
-  const float3 s = to_float3(113, 157, 1);
+  const float3 s = to_float3(113.0f, 157.0f, 1.0f);
 
   float3 ip = _floor(p); // Unique unit cell ID.
 
@@ -210,10 +210,6 @@ __DEVICE__ float2 path(in float z){
 
 //////
 //float objID, svObjID;
-
-// Helper vector. If you're doing anything that involves regular triangles or hexagons, the
-// 30-60-90 triangle will be involved in some way, which has sides of 1, _sqrtf(3) and 2.
-const float2 s = to_float2(0.866025f, 1);//const float2 s = to_float2(1, 1.7320508f); //
 
 
 // The 2D hexagonal isosuface function: If you were to render a horizontal line and one that
@@ -411,16 +407,25 @@ __DEVICE__ float hexHeight(float2 p){
 // overlapping fields from neighboring cells, so the fewer operations the better.
 __DEVICE__ float4 getHex(float2 p, float pH){
 
+float4 litID=to_float4_s(0.0f); // ??!?!?!?
+
+
+    // Helper vector. If you're doing anything that involves regular triangles or hexagons, the
+    // 30-60-90 triangle will be involved in some way, which has sides of 1, _sqrtf(3) and 2.
+    const float2 s = to_float2(0.866025f, 1.0f);//const float2 s = to_float2(1, 1.7320508f); //
+
+
+
     // The hexagon centers: Two sets of repeat hexagons are required to fill in the space, and
     // the two sets are stored in a "vec4" in order to group some calculations together. The hexagon
     // center we'll eventually use will depend upon which is closest to the current point. Since
     // the central hexagon point is unique, it doubles as the unique hexagon ID.
-    float4 hC = _floor(to_float4(p, p - to_float2(0, 0.5f))/swi4(s,x,y,x,y)) + to_float4(0, 0, 0, 0.5f);
-    float4 hC2 = _floor(to_float4_aw(p - to_float2(0.5f, 0.25f), p - to_float2(0.5f, 0.75f))/swi4(s,x,y,x,y)) + to_float4(0.5f, 0.25f, 0.5f, 0.75f);
+    float4 hC = _floor(to_float4_f2f2(p, p - to_float2(0, 0.5f))/swi4(s,x,y,x,y)) + to_float4(0, 0, 0, 0.5f);
+    float4 hC2 = _floor(to_float4_f2f2(p - to_float2(0.5f, 0.25f), p - to_float2(0.5f, 0.75f))/swi4(s,x,y,x,y)) + to_float4(0.5f, 0.25f, 0.5f, 0.75f);
 
     // Centering the coordinates with the hexagon centers above.
-    float4 h = to_float4(p - (swi2(hC,x,y) + 0.5f)*s, p - (swi2(hC,z,w) + 0.5f)*s);
-    float4 h2 = to_float4(p - (swi2(hC2,x,y) + 0.5f)*s, p - (swi2(hC2,z,w) + 0.5f)*s);
+    float4 h = to_float4_f2f2(p - (swi2(hC,x,y) + 0.5f)*s, p - (swi2(hC,z,w) + 0.5f)*s);
+    float4 h2 = to_float4_f2f2(p - (swi2(hC2,x,y) + 0.5f)*s, p - (swi2(hC2,z,w) + 0.5f)*s);
 
     // Hexagon height.
     float4 ht = to_float4(hexHeight(swi2(hC,x,y)), hexHeight(swi2(hC,z,w)), hexHeight(swi2(hC2,x,y)), hexHeight(swi2(hC2,z,w)));
@@ -441,14 +446,14 @@ __DEVICE__ float4 getHex(float2 p, float pH){
     // "h.xy" is zero, we're at the center. We're also returning the corresponding hexagon ID -
     // in the form of the hexagonal central point.
     //
-    h = obj.x<obj.y ? to_float4(swi2(h,x,y), swi2(hC,x,y)) : to_float4(swi2(h,z,w), swi2(hC,z,w));
-    h2 = obj.z<obj.w ? to_float4(swi2(h2,x,y), swi2(hC2,x,y)) : to_float4(swi2(h2,z,w), swi2(hC2,z,w));
+    h = obj.x<obj.y ? to_float4_f2f2(swi2(h,x,y), swi2(hC,x,y)) : to_float4_f2f2(swi2(h,z,w), swi2(hC,z,w));
+    h2 = obj.z<obj.w ? to_float4_f2f2(swi2(h2,x,y), swi2(hC2,x,y)) : to_float4_f2f2(swi2(h2,z,w), swi2(hC2,z,w));
 
     float2 oH = obj.x<obj.y ? to_float2(obj.x, litID.x) : to_float2(obj.y, litID.y);
     float2 oH2 = obj.z<obj.w ? to_float2(obj.z, litID.z) : to_float2(obj.w, litID.w);
 
     //return oH<oH2 ? to_float4(swi2(h,x,y), swi2(hC,x,y)) : to_float4(swi2(h2,x,y), swi2(hC2,x,y));
-    return oH.x<oH2.x ? to_float4(oH,  swi2(h,z,w)) : to_float4(oH2, swi2(h2,z,w));
+    return oH.x<oH2.x ? to_float4_f2f2(oH,  swi2(h,z,w)) : to_float4_f2f2(oH2, swi2(h2,z,w));
 
 }
 
@@ -912,7 +917,6 @@ __DEVICE__ float3 doColor(in float3 sp, in float3 rd, in float3 sn, in float3 lp
 __KERNEL__ void NeonLitHexagonsFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, sampler2D iChannel0)
 {
 
-float4 litID;
 float svLitID;
 
     // Screen coordinates.
