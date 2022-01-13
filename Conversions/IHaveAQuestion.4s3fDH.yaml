@@ -1,0 +1,18 @@
+fuse:
+  author: nmbr73
+  file: IHaveAQuestion
+  id: IHaveAQuestion
+  kernel: IHaveAQuestion
+  name: IHaveAQuestion
+shader:
+  author: wyatt
+  description: "Here is my question: \nHow is it that in between the vertex and fragment\
+    \ shader of a graphics program, the hardware is able to rasterize millions of\
+    \ triangles in parallel? \nThis just seems like an impossible task and always\
+    \ feels like magic."
+  id: 4s3fDH
+  name: I Have a Question!
+  tags:
+  - triangles
+  - reflections
+  url: https://www.shadertoy.com/view/4s3fDH
