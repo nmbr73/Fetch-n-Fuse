@@ -146,6 +146,15 @@ function Create()
     LINK_Main = 1
   })
 
+
+  self:AddControlPage("Image")
+  InGlobalIn = self:AddInput("Global In", "GlobalIn", {
+    LINKID_DataType     = "Number",
+  })
+  InGlobalOut = self:AddInput("Global Out", "GlobalOut", {
+    LINKID_DataType     = "Number",
+  })
+
 end
 
 
