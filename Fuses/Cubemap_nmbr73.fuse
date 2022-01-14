@@ -18,7 +18,7 @@ FuRegisterClass("ST_Cubemap_nmbr73", CT_SourceTool, {
 	  REGS_URL = "https://nmbr73.github.io/",
 	  REG_Version	= 000001,
     REG_Fuse_NoEdit = true,
-    REG_Fuse_NoReload = true,
+    REG_Fuse_NoReload = false,
     -- REG_NoBlendCtrls = true,
 	  -- REG_NoObjMatCtrls = true,
 	  -- REG_NoMotionBlurCtrls = true,
@@ -79,7 +79,7 @@ function getFrameInfo(index)
     return "-"
   end
 
-  return FRAMEINFO[index]
+  return '<font color="#f93931">'..FRAMEINFO[index].."</font>"
 end
 
 
@@ -89,13 +89,14 @@ end
 function Create()
 
 
-  FRAMEINFO = {
-    [0] = "Face 0 / +X / right",
-    [1] = "Face 1 / -X / left",
-    [2] = "Face 2 / +Y / top",
-    [3] = "Face 3 / -Y / bottom",
-    [4] = "Face 4 / +Z / front",
-    [5] = "Face 5 / -Z / back",
+  FRAMEINFO = { [0] =
+    "Horizontal Cross",
+    "Face 0 / +X / right",
+    "Face 1 / -X / left",
+    "Face 2 / +Y / top",
+    "Face 3 / -Y / bottom",
+    "Face 4 / +Z / front",
+    "Face 5 / -Z / back",
   }
 
   TEXTURES = {  [0] =
@@ -157,8 +158,21 @@ function Create()
 
   InFrame = {}
 
+  InFrame[0] = self:AddInput("FrameX", "frameX", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "MultiButtonControl",
+    INP_DoNotifyChanged = true,
+    INP_Default = 0,
+    IC_ControlGroup = 1,
+    IC_ControlID = 6,
+    MBTNC_Type = 'Toggle',
+    MBTNC_ShowName = false,
+    { MBTNC_AddButton = '+', MBTNCD_ButtonWidth = 0.14, },
+  })
+
+
   for i = 0,5 do
-    InFrame[i] = self:AddInput("Frame"..i, "frame"..i, {
+    InFrame[i+1] = self:AddInput("Frame"..i, "frame"..i, {
       LINKID_DataType = "Number",
       INPID_InputControl = "MultiButtonControl",
       INP_DoNotifyChanged = true,
@@ -167,11 +181,10 @@ function Create()
       IC_ControlID = i,
       MBTNC_Type = 'Toggle',
       MBTNC_ShowName = false,
-      { MBTNC_AddButton = ''..i, MBTNCD_ButtonWidth = 0.166, },
+      { MBTNC_AddButton = ''..i, MBTNCD_ButtonWidth = 0.14, },
     })
   end
 
-  InFrame[0]:SetSource(Number(1),0)
 
 
   InFrameInfo = self:AddInput( getFrameInfo(0),"faceInfo", {
@@ -191,12 +204,13 @@ function Create()
     INP_DoNotifyChanged = false,
     INP_Default = 0,
     INP_Integer = true,
-    { CCS_AddString = "Frame 0", },
-    { CCS_AddString = "Frame 1", },
-    { CCS_AddString = "Frame 2", },
-    { CCS_AddString = "Frame 3", },
-    { CCS_AddString = "Frame 4", },
-    { CCS_AddString = "Frame 5", },
+    { CCS_AddString = "Horizontal Cross", },
+    { CCS_AddString = "Face 0", },
+    { CCS_AddString = "Face 1", },
+    { CCS_AddString = "Face 2", },
+    { CCS_AddString = "Face 3", },
+    { CCS_AddString = "Face 4", },
+    { CCS_AddString = "Face 5", },
     IC_Visible      = false,
   })
 
@@ -254,7 +268,34 @@ function Process(req)
         print("no such file '"..fname.."'")
       else
         local clip = Clip(fname,false)
-        TEXTUREIMG = clip:GetFrame(FRAME)
+        if FRAME==0 then
+
+          local size = clip:GetFrame(0).Width
+
+          TEXTUREIMG = Image({
+            IMG_Document = self.Comp,
+            { IMG_Channel = "Red",    },
+            { IMG_Channel = "Green",  },
+            { IMG_Channel = "Blue",   },
+            { IMG_Channel = "Alpha",  },
+            IMG_Width   = size  * 4,
+            IMG_Height  = size * 3,
+            IMG_XScale  = 1.0,
+            IMG_YScale  = 1.0,
+          })
+
+          TEXTUREIMG:Fill(Pixel({R=0,G=0,B=0,A=0}))
+
+          TEXTUREIMG:OMerge(clip:GetFrame(1), 0, size)
+          TEXTUREIMG:OMerge(clip:GetFrame(4), 1*size, size)
+          TEXTUREIMG:OMerge(clip:GetFrame(0), 2*size, size)
+          TEXTUREIMG:OMerge(clip:GetFrame(5), 3*size, size)
+          TEXTUREIMG:OMerge(clip:GetFrame(3), size, 0)
+          TEXTUREIMG:OMerge(clip:GetFrame(2), size, 2*size)
+
+        else
+          TEXTUREIMG = clip:GetFrame(FRAME-1)
+        end
       end
 
     end
@@ -310,7 +351,7 @@ function NotifyChanged(inp, param, time)
   end
 
 
-  for i = 0,5 do
+  for i = 0,6 do
     if inp == InFrame[i] then
       status = InFrame[i]:GetSource(0).Value
       current = InFrameCombo:GetSource(0).Value
