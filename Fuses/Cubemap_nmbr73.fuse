@@ -81,7 +81,7 @@ function Create()
   TEXTURES = {  [0] =
     { suffix = "",    fname = "",                           name = "",                              channels = 4, width = 73,   height = 73   },
     { suffix = "png", fname = "Forest",                     name = "Forest",                        channels = 3, width = 256,  height = 256  },
-    { suffix = "png", fname = "Forest Blured",              name = "Forest Blured",                 channels = 3, width = 64,   height = 64   },
+    { suffix = "png", fname = "Forest Blurred",             name = "Forest Blurred",                channels = 3, width = 64,   height = 64   },
     { suffix = "jpg", fname = "St Peters Basilica",         name = "St. Peter's Basilica",          channels = 3, width = 256,  height = 256  },
     { suffix = "png", fname = "St Peters Basilica Blurred", name = "St. Peter's Basilica Blurred",  channels = 3, width = 64,   height = 64   },
     { suffix = "jpg", fname = "Uffizi Gallery",             name = "Uffizi Gallery",                channels = 3, width = 512,  height = 512  },
