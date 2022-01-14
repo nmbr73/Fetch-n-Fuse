@@ -70,29 +70,20 @@ function getPreview(index)
 
 end
 
-
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to initialize the tool.
 --
 function Create()
 
-
-
   TEXTURES = {  [0] =
     { suffix = "",    fname = "",                           name = "",                              channels = 4, width = 73,   height = 73   },
     { suffix = "png", fname = "Forest",                     name = "Forest",                        channels = 3, width = 256,  height = 256  },
-    { suffix = "png", fname = "Forest Blurred",             name = "Forest Blurred",                channels = 3, width = 64,   height = 64   },
     { suffix = "jpg", fname = "St Peters Basilica",         name = "St. Peter's Basilica",          channels = 3, width = 256,  height = 256  },
-    { suffix = "png", fname = "St Peters Basilica Blurred", name = "St. Peter's Basilica Blurred",  channels = 3, width = 64,   height = 64   },
     { suffix = "jpg", fname = "Uffizi Gallery",             name = "Uffizi Gallery",                channels = 3, width = 512,  height = 512  },
+    { suffix = "png", fname = "Forest Blurred",             name = "Forest Blurred",                channels = 3, width = 64,   height = 64   },
+    { suffix = "png", fname = "St Peters Basilica Blurred", name = "St. Peter's Basilica Blurred",  channels = 3, width = 64,   height = 64   },
     { suffix = "png", fname = "Uffizi Gallery Blurred",     name = "Uffizi Gallery Blurred",        channels = 3, width = 64,   height = 64   },
   }
-
-  local options = {}
-
-  for i,item in pairs(TEXTURES) do
-    table.insert(options,{ CCS_AddString = item['name'] })
-  end
 
 
   InTextureCombo = self:AddInput( "Texture", "texture", {
@@ -101,8 +92,21 @@ function Create()
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      options
+      { CCS_AddString = TEXTURES[0]['name'], },
+      { CCS_AddString = TEXTURES[1]['name'], },
+      { CCS_AddString = TEXTURES[2]['name'], },
+      { CCS_AddString = TEXTURES[3]['name'], },
       })
+
+  InBlurredCheckBox = self:AddInput("Blurred", "blurred", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_DoNotifyChanged = true,
+    INP_Default = 0,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+  })
+
 
   InTextureInfo = self:AddInput( getInfo(0),"info", {
       LINKID_DataType = "Text",
@@ -145,6 +149,7 @@ end
 
 
 
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to render the node.
 --
@@ -154,7 +159,14 @@ function Process(req)
     MEDIAFOLDER = self.Comp:MapPath("Fetch-n-Fuse:/Assets/Cubemaps/")
   end
 
+
+
   local selected  = InTextureCombo:GetValue(req).Value
+
+  if selected ~= 0 and InBlurredCheckBox:GetValue(req).Value ~= 0 then
+      selected = selected + 3
+  end
+
 
 
   if CURRENT~=selected then
@@ -167,7 +179,7 @@ function Process(req)
 
     if CURRENT > 0 then
 
-      local fname = MEDIAFOLDER..TEXTURES[CURRENT]['fname']..'.'..TEXTURES[CURRENT]['suffix']
+      local fname = MEDIAFOLDER..TEXTURES[CURRENT]['fname']..'_0.'..TEXTURES[CURRENT]['suffix']
 
       if not bmd.fileexists(fname) then
         print("no such file '"..fname.."'")
@@ -225,14 +237,37 @@ end
 --
 
 function NotifyChanged(inp, param, time)
-	if inp ~= nil and param ~= nil then
-		if (inp == InTextureCombo) then
 
-      if MEDIAFOLDER==nil then
-        MEDIAFOLDER = self.Comp:MapPath("Fetch-n-Fuse:/Assets/Cubemaps/")
-      end
+  if inp == nil or param == nil then
+    return
+  end
 
-      InTexturePreview:SetAttrs({LINKS_Name = getPreview(param.Value)})
-    end
-	end
+  local selected  = 0
+  local blurred   = 0
+
+  if inp == InTextureCombo then
+
+    selected  = param.Value
+    blurred   = InBlurredCheckBox:GetSource(0).Value
+
+  elseif inp == InBlurredCheckBox then
+
+    selected  = InTextureCombo:GetSource(0).Value
+    blurred   = param.Value
+
+  else
+
+    return
+
+  end
+
+  if selected ~= 0 and blurred~=0 then
+    selected = selected + 3
+  end
+
+  if MEDIAFOLDER==nil then
+    MEDIAFOLDER = self.Comp:MapPath("Fetch-n-Fuse:/Assets/Cubemaps/")
+  end
+
+  InTexturePreview:SetAttrs({LINKS_Name = getPreview(selected)})
 end
