@@ -17,8 +17,8 @@ FuRegisterClass("ST_Cubemap_nmbr73", CT_SourceTool, {
 	  REGS_Company = "nmbr73",
 	  REGS_URL = "https://nmbr73.github.io/",
 	  REG_Version	= 000001,
-    REG_Fuse_NoEdit = false,
-    REG_Fuse_NoReload = false,
+    REG_Fuse_NoEdit = true,
+    REG_Fuse_NoReload = true,
     -- REG_NoBlendCtrls = true,
 	  -- REG_NoObjMatCtrls = true,
 	  -- REG_NoMotionBlurCtrls = true,
@@ -99,6 +99,7 @@ function Create()
       { CCS_AddString = TEXTURES[3]['name'], },
       })
 
+
   InBlurredCheckBox = self:AddInput("Blurred", "blurred", {
     LINKID_DataType = "Number",
     INPID_InputControl = "CheckboxControl",
@@ -132,6 +133,23 @@ function Create()
       ICD_Width =0.4,
   })
 
+  InFrame = {}
+
+  for i = 0,5 do
+    InFrame[i] = self:AddInput("Frame"..i, "frame"..i, {
+      LINKID_DataType = "Number",
+      INPID_InputControl = "MultiButtonControl",
+      INP_DoNotifyChanged = true,
+      INP_Default = 0.0,
+      IC_ControlGroup = 1,
+      IC_ControlID = i,
+      MBTNC_Type = 'Toggle',
+      MBTNC_ShowName = false,
+      { MBTNC_AddButton = ''..(i+1), MBTNCD_ButtonWidth = 0.166, },
+    })
+  end
+
+  InFrame[0]:SetSource(Number(1),0)
 
   InFrameCombo = self:AddInput( "Frame", "frame", {
     LINKID_DataType = "Number",
@@ -145,6 +163,7 @@ function Create()
     { CCS_AddString = "Frame 3", },
     { CCS_AddString = "Frame 4", },
     { CCS_AddString = "Frame 5", },
+    IC_Visible      = false,
   })
 
 
@@ -201,9 +220,6 @@ function Process(req)
       if not bmd.fileexists(fname) then
         print("no such file '"..fname.."'")
       else
-        -- storing the frame for each texture is pretty dumb
-        -- but no idea how to tell fusion to not load a sequence
-        -- in case the filename contains a digit :-(
         local clip = Clip(fname,false)
         TEXTUREIMG = clip:GetFrame(FRAME)
       end
@@ -259,6 +275,25 @@ function NotifyChanged(inp, param, time)
   if inp == nil or param == nil then
     return
   end
+
+
+  for i = 0,5 do
+    if inp == InFrame[i] then
+      status = InFrame[i]:GetSource(0).Value
+      current = InFrameCombo:GetSource(0).Value
+
+      if status == 1 and current ~= i then
+        InFrameCombo:SetSource(Number(i),0)
+        InFrame[current]:SetSource(Number(0),0)
+      elseif current == i and status == 0 then
+        InFrame[i]:SetSource(Number(1),0)
+      end
+
+      return
+    end
+  end
+
+
 
   local selected  = 0
   local blurred   = 0
