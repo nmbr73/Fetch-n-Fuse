@@ -175,8 +175,6 @@ function Process(req)
 
     CURRENT=selected
 
-    InTextureInfo:SetAttrs({LINKS_Name = getInfo(CURRENT)})
-
     TEXTUREIMG = nil
 
     if CURRENT > 0 then
@@ -247,6 +245,8 @@ function NotifyChanged(inp, param, time)
       end
 
       InTexturePreview:SetAttrs({LINKS_Name = getPreview(param.Value)})
+      InTextureInfo:SetAttrs({LINKS_Name = getInfo(param.Value)})
+
     end
 	end
 end
