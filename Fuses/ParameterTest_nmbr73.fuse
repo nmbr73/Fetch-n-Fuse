@@ -1,0 +1,44 @@
+--[[--
+Parameter-Test.Fuse
+--]]--
+
+FuRegisterClass("ParameterTest", CT_Tool, {
+	REGS_Category = "Fuses",
+	REGS_OpIconString = "ptst",
+	REGS_OpDescription = "Parameter Test Fuse",
+	REG_OpNoMask = true,
+	REG_NoBlendCtrls = true,
+	REG_NoObjMatCtrls = true,
+	REG_NoMotionBlurCtrls = true,
+	})
+
+
+function Create()
+
+
+  InLabel = self:AddInput("Click", "btn", {
+		LINKID_DataType = "Text",
+		INPID_InputControl = "ButtonControl",
+		INP_DoNotifyChanged = true,
+		INP_External = false,
+    --BTNCS_Execute = 'os.execute("python /Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py x y")'
+    BTNCS_Execute = 'comp:RunScript("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py",{"--id","ABCD"})'
+	})
+
+
+	InImage = self:AddInput("Input", "Input", {
+		LINKID_DataType = "Image",
+		LINK_Main = 1,
+		})
+
+	OutImage = self:AddOutput("Output", "Output", {
+		LINKID_DataType = "Image",
+		LINK_Main = 1,
+		})
+end
+
+function Process(req)
+	local img = InImage:GetValue(req)
+	img:Use()
+	OutImage:Set(req, img)
+end
