@@ -16,23 +16,31 @@ FuRegisterClass("ParameterTest", CT_Tool, {
 function Create()
 
 
-  self:AddInput("Click 1", "btn1", {
+  self:AddInput("Click 1 (py)", "btn1", {
 		LINKID_DataType = "Text",
 		INPID_InputControl = "ButtonControl",
 		INP_DoNotifyChanged = true,
 		INP_External = false,
-    BTNCS_Execute = 'comp:RunScript("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py",{"--id","ABCD"})'
+    BTNCS_Execute = 'comp:RunScript("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py",{foo="bar"})'
 	})
 
-  self:AddInput("Click 2", "btn2", {
+  self:AddInput("Click 2 (py)", "btn2", {
 		LINKID_DataType = "Text",
 		INPID_InputControl = "ButtonControl",
 		INP_DoNotifyChanged = true,
 		INP_External = false,
-    BTNCS_Execute = 'os.execute("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py")'
+    BTNCS_Execute = 'os.execute("python /Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py foo bar")'
 	})
 
-	InImage = self:AddInput("Input", "Input", {
+  self:AddInput("Click 3 (lua)", "btn3", {
+		LINKID_DataType = "Text",
+		INPID_InputControl = "ButtonControl",
+		INP_DoNotifyChanged = true,
+		INP_External = false,
+    BTNCS_Execute = 'comp:RunScript("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.lua",{foo="bar"})'
+	})
+
+  InImage = self:AddInput("Input", "Input", {
 		LINKID_DataType = "Image",
 		LINK_Main = 1,
 		})
