@@ -1,0 +1,18 @@
+fuse:
+  author: nmbr73
+  file: VideoFilters
+  id: VideoFilters
+  kernel: VideoFilters
+  name: VideoFilters
+shader:
+  author: XT95
+  description: Some video filters
+  id: XsX3z8
+  name: Video filters
+  tags:
+  - filters
+  - invert
+  - desaturate
+  - chromaticaberration
+  - colorswitching
+  url: https://www.shadertoy.com/view/XsX3z8
