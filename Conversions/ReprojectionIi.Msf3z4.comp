@@ -1,8 +1,8 @@
 Composition {
-	CurrentTime = 0,
+	CurrentTime = 79,
 	RenderRange = { 0, 1000 },
 	GlobalRange = { 0, 1000 },
-	CurrentID = 5,
+	CurrentID = 65,
 	HiQ = true,
 	PlaybackUpdateMode = 0,
 	Version = "Fusion Studio 17.0 build 43",
@@ -17,26 +17,29 @@ Composition {
 	},
 	Tools = {
 		ToyCubemap1 = Fuse.ST_Cubemap_nmbr73 {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				texture = Input { Value = 3, },
+				frameX = Input { Value = 1, },
+				GlobalOut = Input { Value = 1000, },
+			},
+			ViewInfo = OperatorInfo { Pos = { 202, 28.8485 } },
+			Version = 1
+		},
+		ToyCubemap2 = Fuse.ST_Cubemap_nmbr73 {
 			CtrlWZoom = false,
 			Inputs = {
 				Width = Input { Value = 1920, },
 				Height = Input { Value = 1080, },
 				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-				texture = Input { Value = 5, },
+				texture = Input { Value = 3, },
+				blurred = Input { Value = 1, },
+				frameX = Input { Value = 1, },
 				GlobalOut = Input { Value = 1000, },
 			},
-			ViewInfo = OperatorInfo { Pos = { 309.333, -0.515154 } },
-			Version = 1
-		},
-		ToyCubemap2 = Fuse.ST_Cubemap_nmbr73 {
-			Inputs = {
-				Width = Input { Value = 1920, },
-				Height = Input { Value = 1080, },
-				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
-				texture = Input { Value = 6, },
-				GlobalOut = Input { Value = 1000, },
-			},
-			ViewInfo = OperatorInfo { Pos = { 414.667, 62.1818 } },
+			ViewInfo = OperatorInfo { Pos = { 203.333, -9 } },
 			Version = 1
 		},
 		ShadersInc1 = Fuse.ShadertoysIncubator {
@@ -51,7 +54,7 @@ Composition {
 					Disabled = true,
 				},
 				iTime = Input {
-					Value = "(100/30.00fps)*1.000= 3.3333",
+					Value = "(79/30.00fps)*1.000= 2.6333",
 					Disabled = true,
 				},
 				iMouse = Input {
@@ -71,7 +74,7 @@ Composition {
 					Source = "Output",
 				},
 			},
-			ViewInfo = OperatorInfo { Pos = { 436, -0.515153 } },
+			ViewInfo = OperatorInfo { Pos = { 358.667, 15.8485 } },
 			Version = 1
 		}
 	},
@@ -166,7 +169,7 @@ Composition {
 						Direction = "Horizontal",
 						PipeStyle = "Direct",
 						RootScale = 1,
-						RootOffset = { 26, 40.5152 }
+						RootOffset = { 26, 30.2121 }
 					}
 				},
 				Keyframes = MultiView {

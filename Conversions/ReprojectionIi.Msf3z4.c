@@ -10,6 +10,56 @@
 
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0f Unported License.
 
+
+
+
+
+
+//#define CubeTexture_RGB(M,X,Y,Z)  _tex2DVecN(M,X,Y,Z).rgb
+//#define CubeTexture_R(M,X,Y,Z)    _tex2DVecN(M,X,Y,Z).r
+
+// https://learnopengl.com/Getting-started/Textures
+// https://learnopengl.com/Advanced-OpenGL/Cubemaps
+// https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/Cube_map_tutorial/cube_map.html
+// https://www.khronos.org/opengl/wiki/Texture
+
+// https://www.khronos.org/opengl/wiki/Cubemap_Texture
+// https://www.shadertoy.com/view/WtlSD4
+
+// Let's say that +Z is forward, and +Y is up, so +X to the right. Given that orientation, the texture coordinates of the 6 faces of the cube look like this:
+//
+// +Z face (directly in front): The U coordinate goes to the right, with the V coordinate going down.
+// +X face (to our right): The U coordinate is going behind the viewer, with the V coordinate going down.
+// -Z face (directly behind): The U coordinate goes to the left (relative to us facing forwards), with the V coordinate going down.
+// -X face (to our left): The U coordinate is going forward, with the V coordinate going down.
+// +Y face (above): The U coordinate goes to the right, with the V coordinate going forward.
+// -Y face (bottom): The U coordinate goes to the right, with the V coordinate going backward.
+
+__DEVICE__ float3 CubeTexture_RGB(__TEXTURE2D__ cross, float x, float y, float z)
+{
+  float3 rgb=to_float3_s(0.5f);
+
+
+  //float h= 1.0f / (512.0f * 3.0f);
+  //rgb = _tex2DVecN(cross,x,y+(3.0f/512.0f),15).xyz;
+  rgb = _tex2DVecN(cross,_fabs(x),0.5f,15).xyz;
+
+
+  return rgb;
+}
+
+__DEVICE__ float CubeTexture_R(__TEXTURE2D__ cross, float x, float y, float z)
+{
+  return CubeTexture_RGB(cross,x,y,z).x;
+}
+
+
+
+
+
+
+
+
 #define FORCE_SHADOW
 #define ENABLE_REFLECTION
 
@@ -372,7 +422,7 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
   float3 vHitPos = ray.vOrigin + ray.vDir * fHitDist;
 
   //float3 vResult = texture(iChannel0, swi3(vHitPos,x,y,z)).rgb;
-  float3 vResult = _tex2DVecN(iChannel0, vHitPos.x, vHitPos.y,vHitPos.z).rgb;
+  float3 vResult = CubeTexture_RGB(iChannel0, vHitPos.x, vHitPos.y, vHitPos.z);
   vResult = vResult * vResult;
 
   #ifdef FORCE_SHADOW
@@ -394,11 +444,11 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
   {
     float fDelta = -0.1f;
     //float vSampleDx = texture(iChannel0, swi3(vHitPos,x,y,z) + to_float3(fDelta, 0.0f, 0.0f)).r;
-    float vSampleDx = _tex2DVecN(iChannel0, vHitPos.x+fDelta,vHitPos.y,vHitPos.z ).r;
+    float vSampleDx = CubeTexture_R(iChannel0, vHitPos.x+fDelta, vHitPos.y, vHitPos.z );
     vSampleDx = vSampleDx * vSampleDx;
 
     //float vSampleDy = texture(iChannel0, swi3(vHitPos,x,y,z) + to_float3(0.0f, 0.0f, fDelta)).r;
-    float vSampleDy = _tex2DVecN(iChannel0, vHitPos.x,vHitPos.y,vHitPos.z+fDelta).r;
+    float vSampleDy = CubeTexture_R(iChannel0, vHitPos.x, vHitPos.y, vHitPos.z+fDelta);
     vSampleDy = vSampleDy * vSampleDy;
 
     float3 vNormal = to_float3(vResult.x - vSampleDx, 2.0f, vResult.x - vSampleDy);
@@ -411,8 +461,7 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
     float r0 = 0.1f;
     float fSchlick =r0 + (1.0f - r0) * (_powf(1.0f - fDot, 5.0f));
 
-    //float3 vResult2 = _tex2DVecN(iChannel1,vReflect.x,vReflect.y,15).rgb;
-    float3 vResult2 = _tex2DVecN(iChannel1,vReflect.x,vReflect.y,vReflect.y).rgb;
+    float3 vResult2 = CubeTexture_RGB(iChannel1,vReflect.x,vReflect.y,vReflect.z);
     vResult2 = vResult2 * vResult2;
     float shade = smoothstep(0.3f, 0.0f, vResult.x);
     vResult += shade * vResult2 * fSchlick * 5.0f;
