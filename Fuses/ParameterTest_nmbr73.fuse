@@ -16,15 +16,21 @@ FuRegisterClass("ParameterTest", CT_Tool, {
 function Create()
 
 
-  InLabel = self:AddInput("Click", "btn", {
+  self:AddInput("Click 1", "btn1", {
 		LINKID_DataType = "Text",
 		INPID_InputControl = "ButtonControl",
 		INP_DoNotifyChanged = true,
 		INP_External = false,
-    --BTNCS_Execute = 'os.execute("python /Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py x y")'
     BTNCS_Execute = 'comp:RunScript("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py",{"--id","ABCD"})'
 	})
 
+  self:AddInput("Click 2", "btn2", {
+		LINKID_DataType = "Text",
+		INPID_InputControl = "ButtonControl",
+		INP_DoNotifyChanged = true,
+		INP_External = false,
+    BTNCS_Execute = 'os.execute("/Users/nmbr73/Projects/Fetch-n-Fuse/.experiments/parameter-test.py")'
+	})
 
 	InImage = self:AddInput("Input", "Input", {
 		LINKID_DataType = "Image",
