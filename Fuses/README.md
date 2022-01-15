@@ -6,6 +6,7 @@ cd '/Users/nmbr73/Library/Application Support/Blackmagic Design/Fusion/Fuses/'
 ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Keyboard_nmbr73.fuse Keyboard_nmbr73.fuse
 ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Texture_nmbr73.fuse Texture_nmbr73.fuse
 ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/Cubemap_nmbr73.fuse Cubemap_nmbr73.fuse
+ln -s /Users/nmbr73/Projects/Fetch-n-Fuse/Fuses/ParameterTest_nmbr73.fuse ParameterTest_nmbr73.fuse
 ```
 
 resp. for Resolve you go to
