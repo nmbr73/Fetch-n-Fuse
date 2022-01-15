@@ -686,29 +686,10 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 			TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
 			})	
 
-  doFetch = [[
-            success = os.execute('D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/spawn xxxx7dlczN D:/Zumsel/Dokumente/Github/Fetch-n-Fuse/')
-                
-            if (not success) then print("Spawn Error") end
-            ]]
-            
---Unfortunately, until now there was no way to pass parameters with RunScript :-(
---BTNCS_Execute = "	args = { tool = comp.ActiveTool, copyTree = true }\n	comp:RunScript([[S:\\net_exe\\BlackMagic\\_customization\\fusion\\scripts\\support\\Loader_MakeLocal.lua]], args)\n					",            
-
-  doFetch_tpl = [[
-            
-            if not tool then
-             	tool = comp.ActiveTool
-            end
-
-            tool:SetInput('InSpawnError', '0', fu.TIME_UNDEFINED)  -- Anzeige über Input -> ändern in Label 
-           
-            success = os.execute('PFADspawn SHADERID PFAD')
-                
-            if (not success) then 
-              print("Spawn Error") 
-            end
-            ]]
+  --Will be customized in Process()
+  doFetch_tpl =  [==[ 
+    comp:RunScript("PFADfetch.py", { id = "SHADERID", verbose=false, noassets=false}) 
+                 ]==]  
 
  	InFetch = self:AddInput('Fetch Shadertoy', 'InFetch', {
 		LINKID_DataType        = 'Number',
@@ -718,7 +699,7 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 		INP_External           = false,
 		INP_Default            = 0.0,
 		ICD_Width              = 1,
-		BTNCS_Execute          = doFetch,
+		BTNCS_Execute          = doFetch_tpl,
 		IC_Visible             = true,
 		}) 
   InSemaphoreFetch = self:AddInput( "SemaphoreFetch","SemaphoreFetch", {
@@ -757,20 +738,10 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
     attrs
     })	
 
-  doFuse_tpl = [[
-            
-            if not tool then
-             	tool = comp.ActiveTool
-            end
-
-            tool:SetInput('InSpawnError', '0', fu.TIME_UNDEFINED)  -- Anzeige über Input -> ändern in Label 
-           
-            success = os.execute('PFADspawn2 SHADERID PFAD')
-                
-            if (not success) then 
-              print("Spawn Error") 
-            end
-            ]]
+  --Will be customized in Process()
+  doFuse_tpl =  [==[ 
+    comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false}) 
+                ]==]  
 
 
 	InFuse = self:AddInput('Fuse a Shadertoy', 'InFuse', {
@@ -1275,14 +1246,13 @@ function Process(req)
     doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository_cor)
     doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
         
-    InFetch:SetAttrs({ BTNCS_Execute          = doFetch, })
-    
-    --doFetchX = [[ args = { --id = 7dlczN}\n    comp:RunScript("D:\\Zumsel\\Dokumente\\Github\\Fetch-n-Fuse\\fetch", args)\n]]            
-    
-    InSemaphoreFetch:SetSource(Number(0),0,0)
+    InFetch:SetAttrs({ BTNCS_Execute = doFetch, }) --Zuweisung notwendig !! Ändern des Strings funktioniert nicht
+    verbose("TestFetch",doFetch)
+        
+    InSemaphoreFetch:SetSource(Number(0),0,0) --nur einmal ändern
   end
 
---print("DoFetch-String-Process",doFetch,"\n SpawnError: ", spawn_error, "\n Success: ", success)
+
 
   if (InSemaphoreFuse:GetValue(req).Value == 1) then
     shaderIDFuse = Conversions[InShaderIDFuse:GetValue(req).Value + 1].ShadertoyID
@@ -1294,16 +1264,12 @@ function Process(req)
     doFuse = string.gsub(doFuse_tpl, 'PFAD', PathToRepository_cor)
     doFuse = string.gsub(doFuse, 'SHADERID', shaderIDFuse)
         
-    InFuse:SetAttrs({ BTNCS_Execute          = doFuse, })
-    
-    --doFetchX = [[ args = { --id = 7dlczN}\n    comp:RunScript("D:\\Zumsel\\Dokumente\\Github\\Fetch-n-Fuse\\fetch", args)\n]]            
+    InFuse:SetAttrs({ BTNCS_Execute = doFuse, })
+ 
+print("----------------\n DoFuse-String-Process",doFuse,"\n----------------" )
     
     InSemaphoreFuse:SetSource(Number(0),0,0)
   end
-
---print("----------------\n DoFuse-String-Process",doFuse,"\n----------------" )
-
-
 
 
   local rebuild = false
