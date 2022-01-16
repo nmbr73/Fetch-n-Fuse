@@ -91,7 +91,7 @@ __DEVICE__ float3 randomPerp(float3 v, float p) {
 }
 
 
-__DEVICE__ float2 map(in float3 pos,float iTime, float foo) {
+__DEVICE__ float2 map(in float3 pos,float iTime, bool showCellGrid) {
 
   const float wrap = 64.0f;
   const float i3 = 0.5773502691896258f;
@@ -146,7 +146,7 @@ __DEVICE__ float2 map(in float3 pos,float iTime, float foo) {
                _fmaxf(-bd, _fminf(min(o1, o2), _fminf(o3, o4)))),
              hueOf(orig+0.5f*VEL*iTime));
 
-  if (foo > 0.0f) {
+  if (showCellGrid) {
 
     float dline = line(e, f, pos);
     dline = _fminf(dline, line(e, g, pos));
@@ -175,7 +175,7 @@ __DEVICE__ float3 hue(float h) {
   return h > 1.0f ? to_float3_s(0.5f) : clamp(_fminf(c, -c+4.0f), 0.0f, 1.0f);
 }
 
-__DEVICE__ float2 castRay( in float3 ro, in float3 rd, in float maxd, float iTime, float foo )
+__DEVICE__ float2 castRay( in float3 ro, in float3 rd, in float maxd, float iTime, bool showCellGrid )
 {
   const int rayiter = 60;
 
@@ -187,7 +187,7 @@ __DEVICE__ float2 castRay( in float3 ro, in float3 rd, in float maxd, float iTim
     {
         if( _fabs(h)<precis||t>maxd ) continue;//break;
         t += h;
-      float2 res = map( ro+rd*t ,iTime,foo);
+      float2 res = map( ro+rd*t ,iTime,showCellGrid);
         h = res.x;
       m = res.y;
     }
@@ -195,24 +195,24 @@ __DEVICE__ float2 castRay( in float3 ro, in float3 rd, in float maxd, float iTim
     return to_float2( t, m );
 }
 
-__DEVICE__ float3 calcNormal( in float3 pos, float iTime, float foo )
+__DEVICE__ float3 calcNormal( in float3 pos, float iTime, bool showCellGrid )
 {
   float3 eps = to_float3( 0.0001f, 0.0f, 0.0f );
   float3 nor = to_float3(
-      map(pos+swi3(eps,x,y,y),iTime,foo).x - map(pos-swi3(eps,x,y,y),iTime,foo).x,
-      map(pos+swi3(eps,y,x,y),iTime,foo).x - map(pos-swi3(eps,y,x,y),iTime,foo).x,
-      map(pos+swi3(eps,y,y,x),iTime,foo).x - map(pos-swi3(eps,y,y,x),iTime,foo).x );
+      map(pos+swi3(eps,x,y,y),iTime,showCellGrid).x - map(pos-swi3(eps,x,y,y),iTime,showCellGrid).x,
+      map(pos+swi3(eps,y,x,y),iTime,showCellGrid).x - map(pos-swi3(eps,y,x,y),iTime,showCellGrid).x,
+      map(pos+swi3(eps,y,y,x),iTime,showCellGrid).x - map(pos-swi3(eps,y,y,x),iTime,showCellGrid).x );
   return normalize(nor);
 }
 
-__DEVICE__ float3 shade( in float3 ro, in float3 rd, float iTime,float foo ) {
+__DEVICE__ float3 shade( in float3 ro, in float3 rd, float iTime,bool showCellGrid ) {
   const float fogv = 0.025f;
   const float dmax = 20.0f;
   float3 L = normalize(to_float3(0.1f, 1.0f, 0.5f));
 
-  float2 tm = castRay(ro, rd, dmax,iTime,foo);
+  float2 tm = castRay(ro, rd, dmax,iTime,showCellGrid);
   if (tm.y >= 0.0f) {
-    float3 n = calcNormal(ro + tm.x * rd,iTime,foo);
+    float3 n = calcNormal(ro + tm.x * rd,iTime,showCellGrid);
     float fog = _expf(-tm.x*tm.x*fogv);
     float3 color = hue(tm.y) * 0.55f + 0.45f;
     float3 diffamb = (0.5f*dot(n,L)+0.5f) * color;
@@ -226,15 +226,22 @@ __DEVICE__ float3 shade( in float3 ro, in float3 rd, float iTime,float foo ) {
 
 __KERNEL__ void RainbowSpaghettiFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, sampler2D iChannel0)
 {
-  const float3 axis = to_float3(1.0f, 1.0f, 0.0f);//to_float3(1.0f, 1.0f, 1.0f);
-  const float3 tgt = to_float3(1.0f, 1.7f, 1.1f);//to_float3(-0.0f, 0.3f, -0.15f);
+
+  CONNECT_CHECKBOX0(Cell_Grid,false);
+  CONNECT_SLIDER0(Axis_X,-2.0f,3.0f,1.0f);
+  CONNECT_SLIDER1(Axis_Y,-2.0f,3.0f,1.0f);
+  CONNECT_SLIDER2(Axis_Z,-2.0f,3.0f,1.0f);
+
+  const float3 axis = to_float3(Axis_X, Axis_Y, Axis_Z);//to_float3(1.0f, 1.0f, 1.0f);
+  const float3 tgt = to_float3(1.0f, 1.7f, 1.1f); // orignal
+  //const float3 tgt = to_float3(-0.0f, 0.3f, -0.15f); // variant
   const float3 cpos = tgt + axis;
 
   // const float3 vel = 0.2f*axis;
 
-  const float KEY_G = 71.5f/256.0f;
-  //float foo = texture(iChannel0, to_float2(KEY_G, 0.75f)).x
-  float foo = _tex2DVecN(iChannel0, KEY_G, 0.75f, 15).x;
+  //const float KEY_G = 71.5f/256.0f;
+  //float showCellGrid = _tex2DVecN(iChannel0, KEY_G, 0.75f, 15).x;
+
 
 
   const float yscl = 720.0f;
@@ -278,7 +285,7 @@ __KERNEL__ void RainbowSpaghettiFuse(float4 fragColor, float2 fragCoord, float i
 
   float3 ro = tgt + R*Rx*Ry*Rt*(cpos-tgt);
 
-  fragColor = to_float4_aw(shade(ro, rd,iTime,foo), 1.0f);
+  fragColor = to_float4_aw(shade(ro, rd,iTime,Cell_Grid), 1.0f);
 
 
 
