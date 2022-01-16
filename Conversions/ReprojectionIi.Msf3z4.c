@@ -24,7 +24,12 @@
 // https://www.khronos.org/opengl/wiki/Texture
 
 // https://www.khronos.org/opengl/wiki/Cubemap_Texture
+// https://www.shadertoy.com/view/tdjXDt <--
+// https://www.shadertoy.com/view/tlyXzG <--
+// https://www.shadertoy.com/view/WsGcRm
+// https://www.shadertoy.com/view/wtV3W1
 // https://www.shadertoy.com/view/WtlSD4
+// https://www.shadertoy.com/view/3l2SDR
 
 // Let's say that +Z is forward, and +Y is up, so +X to the right. Given that orientation, the texture coordinates of the 6 faces of the cube look like this:
 //
