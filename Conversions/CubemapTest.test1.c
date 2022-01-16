@@ -34,13 +34,13 @@ __DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy,
 
   if (ux==-1.0f) { // -X, Face 1
 
-    x = ((uz+1.0f)/2.0f)/4.0f;
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    x = (uz+1.0f)/8.0f;
+    y = (uy-1.0f)/6.0f+2.0f/3.0f;
 
   } else if (uz==1.0f) { // +Z, Face 4
 
-    x = ((ux+1.0f)/2.0f+1.0f)/4.0f;
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    x = (ux+1.0f)/8.0f+0.25;
+    y = (uy-1.0f)/6.0f+2.0f/3.0f;
 
   } else if (ux==1.0f) { // +X, Face 0
 
@@ -56,13 +56,13 @@ __DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy,
 
   } else if (uy==-1.0f) { // -Y, Face 3
 
-    x = ((ux+1.0f)/2.0f/4.0f)+0.25f;
-    y = (uz+1.0f)/2.0f/3.0f+0.0f/3.0f;
+    x = (ux+1.0f)/8.0f+0.25f;
+    y = (uz+1.0f)/6.0f;
 
   } else if (uy==1.0f) { // +Y, Face 2
 
-    x = ((ux+1.0f)/2.0f/4.0f)+0.25f;
-    y = -((uz+1.0f)/2.0f/3.0f+3.0f/3.0f);
+    x = (ux+1.0f)/8.0f+0.25f;
+    y = -((uz+1.0f)/6.0f+1.0f);
 
   } else
   {
