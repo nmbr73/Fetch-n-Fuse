@@ -29,86 +29,47 @@ __DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy,
 
   float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
 
-  float x=ux;
-  float y=uy;
+  float x;
+  float y;
 
-  float ix=0.0f;
-  float iy=0.0f;
-
-  if (ux==-1.0f) {
-    // -X, Face 1
+  if (ux==-1.0f) { // -X, Face 1
 
     x = ((uz+1.0f)/2.0f)/4.0f;
-    y = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-    rv = _tex2DVecN(crossmap,x,y,15);
-
-  } else if (uz==1.0f) {
-
-    // +Z, Face 4
+  } else if (uz==1.0f) { // +Z, Face 4
 
     x = ((ux+1.0f)/2.0f+1.0f)/4.0f;
-    y = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-    rv = _tex2DVecN(crossmap,x,y,15);
+  } else if (ux==1.0f) { // +X, Face 0
 
-
-  } else if (ux==1.0f) {
-
-    // +X, Face 0
-
+    // Spiegelverkehrt!!!
     x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
-    y = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-    rv = _tex2DVecN(crossmap,x,y,15);
+  } else if (uz==-1.0f) { // -Z, Face 5
 
-  } else if (uz==-1.0f) {
-
-    // -Z, Face 5
-
+    // Spiegelverkehrt!!!
     x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
-    y = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-    rv = _tex2DVecN(crossmap,x,y,15);
+  } else if (uy==-1.0f) { // -Y, Face 3
 
-  } else if (uy==-1.0f) {
+    x = ((ux+1.0f)/2.0f/4.0f)+0.25f;
+    y = (uz+1.0f)/2.0f/3.0f+0.0f/3.0f;
 
-    // -Y, Face 3
+  } else if (uy==1.0f) { // +Y, Face 2
 
-        // float2 uv = to_float2((inUV.x - 0.25f) * 4.0f, (inUV.y - float(y) / 3.0f) * 3.0f);
-        // uv = 2.0f * uv - 1.0f;
-        // switch (y) {
-        //   case 0: // NEGATIVE_Y
-        //     samplePos = to_float3(uv.x, -1.0f, uv.y);
-        //     break;
-        //   case 2: // POSITIVE_Y
-        //     samplePos = to_float3(uv.x, 1.0f, -uv.y);
-        //     break;
+    x = ((ux+1.0f)/2.0f/4.0f)+0.25f;
+    y = -((uz+1.0f)/2.0f/3.0f+3.0f/3.0f);
 
-    x = ux;
-    y = uz;
-
-    x = ((x+1.0f)/2.0f/4.0f)+0.25f;
-    y = (y+1.0f)/2.0f/3.0f+0.0f/3.0f;
-
-    rv = _tex2DVecN(crossmap,x,y,15);
-
-
-  } else if (uy==1.0f) {
-
-    // +Y, Face 2
-
-    x = ux;
-    y = uz;
-
-    x = ((x+1.0f)/2.0f/4.0f)+0.25f;
-    y = -((y+1.0f)/2.0f/3.0f+3.0f/3.0f);
-
-    rv = _tex2DVecN(crossmap,x,y,15);
-
+  } else
+  {
+    return rv;
   }
 
-
+  rv = _tex2DVecN(crossmap,x,y,15);
 
   return rv;
 }
