@@ -40,22 +40,85 @@
 // +Y face (above): The U coordinate goes to the right, with the V coordinate going forward.
 // -Y face (bottom): The U coordinate goes to the right, with the V coordinate going backward.
 
+
+__DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
+{
+
+  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
+
+  float x;
+  float y;
+
+//  if (ux==-1.0f) { // -X, Face 1
+  if (ux<0.0f) { // -X, Face 1
+
+    x = (uz+1.0f)/8.0f;
+    y = (uy-1.0f)/6.0f+2.0f/3.0f;
+
+  return to_float4(1.0f,1.0f,0.0f,1.0f);
+
+//  } else if (uz==1.0f) { // +Z, Face 4
+  } else if (uz>=0.0f) { // +Z, Face 4
+
+    x = (ux+1.0f)/8.0f+0.25;
+    y = (uy-1.0f)/6.0f+2.0f/3.0f;
+
+  return to_float4(0.0f,1.0f,1.0f,1.0f);
+
+//  } else if (ux==1.0f) { // +X, Face 0
+  } else if (ux>=0.0f) { // +X, Face 0
+
+    // Spiegelverkehrt!!!
+    x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+
+  return to_float4(1.0f,0.0f,1.0f,1.0f);
+
+//  } else if (uz==-1.0f) { // -Z, Face 5
+  } else if (uz<0.0f) { // -Z, Face 5
+
+    // Spiegelverkehrt!!!
+    x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+
+//  } else if (uy==-1.0f) { // -Y, Face 3
+  } else if (uy<0.0f) { // -Y, Face 3
+
+    x = (ux+1.0f)/8.0f+0.25f;
+    y = (uz+1.0f)/6.0f;
+
+//  } else if (uy==1.0f) { // +Y, Face 2
+  } else if (uy>=0.0f) { // +Y, Face 2
+
+    x = (ux+1.0f)/8.0f+0.25f;
+    y = -((uz+1.0f)/6.0f+1.0f);
+
+  } else
+  {
+    return rv;
+  }
+
+  // Wir kommen nie hier rein?!?
+  // ... ich glaube, es ist zu spaet :-/
+  return to_float4(1.0f,0.0f,0.0f,1.0f);
+
+  rv = _tex2DVecN(crossmap,x,y,15);
+
+  return rv;
+}
+
+
 __DEVICE__ float3 CubeTexture_RGB(__TEXTURE2D__ cross, float x, float y, float z)
 {
-  float3 rgb=to_float3_s(0.5f);
-
-
-  //float h= 1.0f / (512.0f * 3.0f);
-  //rgb = _tex2DVecN(cross,x,y+(3.0f/512.0f),15).xyz;
-  rgb = _tex2DVecN(cross,_fabs(x),0.5f,15).xyz;
-
-
+  float4 pixel=cube_texture_pixel(cross,x,y,z);
+  float3 rgb=to_float3(pixel.x,pixel.y,pixel.z);
   return rgb;
 }
 
 __DEVICE__ float CubeTexture_R(__TEXTURE2D__ cross, float x, float y, float z)
 {
-  return CubeTexture_RGB(cross,x,y,z).x;
+  float4 pixel=cube_texture_pixel(cross,x,y,z);
+  return pixel.x;
 }
 
 
