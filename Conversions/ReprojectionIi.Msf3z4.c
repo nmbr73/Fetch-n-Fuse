@@ -447,7 +447,7 @@ __DEVICE__ float3 BSpline( const in float3 a, const in float3 b, const in float3
   float4 vCoeffsY = to_float4(a.y, b.y, c.y, d.y);
   float4 vCoeffsZ = to_float4(a.z, b.z, c.z, d.z);
 
-  float4 vWeights = T * mSplineBasis;
+  float4 vWeights = mul_f4_mat4(T , mSplineBasis);
 
   float3 vResult;
 
@@ -458,12 +458,12 @@ __DEVICE__ float3 BSpline( const in float3 a, const in float3 b, const in float3
   return vResult;
 }
 
-__DEVICE__ void GetCamera(out float3 vCameraPos, out float3* vCameraTarget, float iTime)
+__DEVICE__ void GetCamera(out float3 *vCameraPos, out float3* vCameraTarget, float iTime)
 {
   float fCameraGlobalTime = iTime * 0.5f;
   float fCameraTime = fract(fCameraGlobalTime);
   float fCameraIndex = _floor(fCameraGlobalTime);
-
+float zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
   float3 vCameraPosA;
   float3 vCameraTargetA;
   GetCameraPosAndTarget(fCameraIndex, &vCameraPosA, &vCameraTargetA);
@@ -480,13 +480,13 @@ __DEVICE__ void GetCamera(out float3 vCameraPos, out float3* vCameraTarget, floa
   float3 vCameraTargetD;
   GetCameraPosAndTarget(fCameraIndex + 3.0f, &vCameraPosD, &vCameraTargetD);
 
-  vCameraPos = BSpline(vCameraPosA, vCameraPosB, vCameraPosC, vCameraPosD, fCameraTime);
+  *vCameraPos = BSpline(vCameraPosA, vCameraPosB, vCameraPosC, vCameraPosD, fCameraTime);
   *vCameraTarget = BSpline(vCameraTargetA, vCameraTargetB, vCameraTargetC, vCameraTargetD, fCameraTime);
 }
 
 __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, float iMouse_z  )
 {
-    float fHitDist = TraceScene(ray);
+  float fHitDist = TraceScene(ray);
   float3 vHitPos = ray.vOrigin + ray.vDir * fHitDist;
 
   //float3 vResult = texture(iChannel0, swi3(vHitPos,x,y,z)).rgb;
@@ -543,7 +543,7 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
     vResult = _mix(vResult, to_float3(0.0f, 0.0f, 1.0f), fGrid);
   }
 
-  return _sqrtf(vResult);
+  return sqrt_f3(vResult);
 }
 
 __KERNEL__ void ReprojectionIiFuse(float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, sampler2D iChannel0, sampler2D iChannel1)
@@ -558,7 +558,7 @@ __KERNEL__ void ReprojectionIiFuse(float2 fragCoord, float iTime, float2 iResolu
   float3 vCameraPos;
   float3 vCameraTarget;
 
-  GetCamera(vCameraPos, &vCameraTarget, iTime);
+  GetCamera(&vCameraPos, &vCameraTarget, iTime);
 
   GetCameraRayLookat( vCameraPos, vCameraTarget, fragCoord, &ray, iResolution);
 

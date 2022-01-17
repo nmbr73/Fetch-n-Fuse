@@ -85,7 +85,7 @@ __KERNEL__ void CubemapTestFuse(float4 fragColor, float2 fragCoord, float2 iReso
     fragColor=to_float4(1.0f,0.0f,0.0f,0.0f);
   } else {
 
-    float2 inUV = fragCoord/iResolution.xy;
+    float2 inUV = fragCoord/iResolution;
     //float2 inUV = fragCoord/iChannelResolution[0].xy;
 
 
