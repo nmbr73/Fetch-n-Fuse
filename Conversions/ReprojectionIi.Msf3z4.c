@@ -44,54 +44,89 @@
 __DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
 {
 
-  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
+  float4 rv=to_float4(1.0f,0.0f,0.0f,1.0f);
 
   float x;
   float y;
 
-//  if (ux==-1.0f) { // -X, Face 1
+#define SHOW 1
+#define ROUGH 2
+
+#if ROUGH == 0
+  if (ux==-1.0f) { // -X, Face 1
+#elif ROUGH == 1
+  if (ux<=-1.0f) { // -X, Face 1
+#elif ROUGH == 2
   if (ux<0.0f) { // -X, Face 1
+#endif
 
     x = (uz+1.0f)/8.0f;
     y = (uy-1.0f)/6.0f+2.0f/3.0f;
 
-  return to_float4(1.0f,1.0f,0.0f,1.0f);
+    #if SHOW == 1
+      return to_float4(0.0f,1.0f,0.0f,1.0f);
+    #endif
 
-//  } else if (uz==1.0f) { // +Z, Face 4
+
+#if ROUGH == 0
+  } else if (uz==1.0f) { // +Z, Face 4
+#elif ROUGH == 1
+  } else if (uz>=1.0f) { // +Z, Face 4
+#elif ROUGH == 2
   } else if (uz>=0.0f) { // +Z, Face 4
+#endif
+
+
 
     x = (ux+1.0f)/8.0f+0.25;
     y = (uy-1.0f)/6.0f+2.0f/3.0f;
 
-  return to_float4(0.0f,1.0f,1.0f,1.0f);
 
-//  } else if (ux==1.0f) { // +X, Face 0
-  } else if (ux>=0.0f) { // +X, Face 0
+    #if SHOW == 1
+      return to_float4(0.0f,0.0f,1.0f,1.0f);
+    #endif
+
+  } else if (ux==1.0f) { // +X, Face 0
+//  } else if (ux>=0.0f) { // +X, Face 0
 
     // Spiegelverkehrt!!!
     x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
     y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-  return to_float4(1.0f,0.0f,1.0f,1.0f);
+    #if SHOW == 1
+      return to_float4(1.0f,1.0f,0.0f,1.0f);
+    #endif
 
-//  } else if (uz==-1.0f) { // -Z, Face 5
-  } else if (uz<0.0f) { // -Z, Face 5
+  } else if (uz==-1.0f) { // -Z, Face 5
+//  } else if (uz<0.0f) { // -Z, Face 5
 
     // Spiegelverkehrt!!!
     x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
     y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-//  } else if (uy==-1.0f) { // -Y, Face 3
-  } else if (uy<0.0f) { // -Y, Face 3
+    #if SHOW == 1
+      return to_float4(0.0f,1.0f,1.0f,1.0f);
+    #endif
+
+  } else if (uy==-1.0f) { // -Y, Face 3
+//  } else if (uy<0.0f) { // -Y, Face 3
 
     x = (ux+1.0f)/8.0f+0.25f;
     y = (uz+1.0f)/6.0f;
 
-//  } else if (uy==1.0f) { // +Y, Face 2
-  } else if (uy>=0.0f) { // +Y, Face 2
+    #if SHOW == 1
+      return to_float4(1.0f,0.0f,1.0f,1.0f);
+    #endif
+
+  } else if (uy==1.0f) { // +Y, Face 2
+//  } else if (uy>=0.0f) { // +Y, Face 2
 
     x = (ux+1.0f)/8.0f+0.25f;
     y = -((uz+1.0f)/6.0f+1.0f);
+
+    #if SHOW == 1
+      return to_float4(1.0f,1.0f,0.0f,1.0f);
+    #endif
 
   } else
   {
@@ -100,7 +135,7 @@ __DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy,
 
   // Wir kommen nie hier rein?!?
   // ... ich glaube, es ist zu spaet :-/
-  return to_float4(1.0f,0.0f,0.0f,1.0f);
+  //return to_float4(1.0f,0.0f,0.0f,1.0f);
 
   rv = _tex2DVecN(crossmap,x,y,15);
 
