@@ -49,14 +49,14 @@ __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2
 
     float2 p = (fragCoord - 0.5f - 0.5f*iResolution)*scl + 0.5f*TABLE_DIMS;
 
-    float2 b = _fabs(p - 0.5f*TABLE_DIMS) - 0.5f*TABLE_DIMS;
+    float2 b = abs_f2(p - 0.5f*TABLE_DIMS) - 0.5f*TABLE_DIMS;
     float dbox = _fmaxf(b.x, b.y);
 
     if (dbox < 0.0f) {
 
         float2 cell = _floor(p/CELL_DIMS);
 
-        int keycode = int(cell.x) + int((15.0f-cell.y)*16.0f);
+        int keycode = (int)(cell.x) + (int)((15.0f-cell.y)*16.0f);
 
         bool hit = false;
 
@@ -65,7 +65,7 @@ __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2
             // ktex[i] = texelFetch(iChannel1, to_int2(keycode, i), 0).x > 0.0f;
             // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/texelFetch.xhtml
             //ktex[i] = _tex2DVecN(iChannel1, (float(keycode)+0.5f)/iResolution.x,(float(i)+0.5f)/iResolution.y, 0).x > 0.0f;
-            ktex[i] = _tex2DVecN(iChannel1, (float(keycode)+0.5f)/256.0f, (float(i)+0.5f)/3.0f, 0).x > 0.0f;
+            ktex[i] = _tex2DVecN(iChannel1, ((float)(keycode)+0.5f)/256.0f, ((float)(i)+0.5f)/3.0f, 0).x > 0.0f;
         }
 
         color = ktex[0] ? to_float3(1.0f, 0.25f, 0.25f) : to_float3_s(0.8f);
@@ -85,9 +85,9 @@ __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2
 
             if (digit > 0 || nonzero || i == 2) {
 
-                float2 p0 = (cell + to_float2(0.5f + (float(i)-i0)*0.3f, 0.5f))*CELL_DIMS;
+                float2 p0 = (cell + to_float2(0.5f + ((float)(i)-i0)*0.3f, 0.5f))*CELL_DIMS;
                 float2 uv = font_from_screen((p - p0), 1.0f, to_float2(digit, 12));
-                float2 dbox = _fabs(p - p0) - 0.5f;
+                float2 dbox = abs_f2(p - p0) - 0.5f;
                 dtext = _fminf(dtext, _fmaxf(max(dbox.x, dbox.y), sample_grad_dist(uv, 1.0f,iChannel0).z));
                 nonzero = true;
 
@@ -106,7 +106,7 @@ __KERNEL__ void KeyboardDebuggingFuse(float4 fragColor, float2 fragCoord, float2
         color = _mix(color, textcolor, smoothstep(0.5f*scl, -0.5f*scl, dtext));
 
         float2 p0 = _floor(p/CELL_DIMS + 0.5f)*CELL_DIMS;
-        float2 dp0 = _fabs(p - p0);
+        float2 dp0 = abs_f2(p - p0);
         dbox = _fminf(_fabs(dbox), _fminf(_fabs(dp0.x), _fabs(dp0.y)));
 
     }
