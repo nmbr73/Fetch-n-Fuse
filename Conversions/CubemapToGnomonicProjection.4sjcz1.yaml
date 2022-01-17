@@ -1,0 +1,24 @@
+fuse:
+  author: nmbr73
+  file: CubemapToGnomonicProjection
+  id: CubemapToGnomonicProjection
+  kernel: CubemapToGnomonicProjection
+  name: CubemapToGnomonicProjection
+shader:
+  author: starea
+  description: Just contribute a gnomonic projection shader to ShaderToy! Move mouse
+    to change the central point. Press space for the Equirectangular Projection; press
+    1-3 for FoVs. The gnomonic / rectilinear projection represents the image formed
+    by a spherical lens.
+  id: 4sjcz1
+  name: Cubemap to Gnomonic Projection
+  tags:
+  - 2d
+  - cubemap
+  - projection
+  - panorama
+  - equirectangular
+  - gnomonic
+  - rectilinear
+  - cylindricalequidistant
+  url: https://www.shadertoy.com/view/4sjcz1
