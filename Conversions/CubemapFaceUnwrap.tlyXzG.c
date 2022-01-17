@@ -1,59 +1,3 @@
-__DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
-{
-
-  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
-
-  float x;
-  float y;
-
-  if (ux==-1.0f) { // -X, Face 1
-
-    x = (uz+1.0f)/8.0f;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
-
-  } else if (uz==1.0f) { // +Z, Face 4
-
-    x = (ux+1.0f)/8.0f+0.25;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
-
-  } else if (ux==1.0f) { // +X, Face 0
-
-    // Spiegelverkehrt!!!
-    x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-  } else if (uz==-1.0f) { // -Z, Face 5
-
-    // Spiegelverkehrt!!!
-    x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-  } else if (uy==-1.0f) { // -Y, Face 3
-
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = (uz+1.0f)/6.0f;
-
-  } else if (uy==1.0f) { // +Y, Face 2
-
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = -((uz+1.0f)/6.0f+1.0f);
-
-  } else
-  {
-    return rv;
-  }
-
-  rv = _tex2DVecN(crossmap,x,y,15);
-
-  return rv;
-}
-
-
-
-
-
-
-
 // ----------------------------------------------------------------------------------
 // - Common                                                                         -
 // ----------------------------------------------------------------------------------
@@ -126,7 +70,7 @@ __DEVICE__ float4 Unwrap(__TEXTURE2D__ ch, float2 q)
 //    d = CubeFaceToDir(DirToCubeFace(d)); // ensure can convert back&forth flawlessly
 //    d = CubeFaceToDir(DirToCubeFace(d));
     //float4 c = textureLod(ch, d, 0.0f);
-    float4 c = cube_texture_pixel(ch,d.x,d.y,d.z);
+    float4 c = cube_texture_f3(ch,d);
     //swi3(c,x,y,z) = _powf(swi3(c,x,y,z), to_float3_s(2.2f)); // gamma correction - skipping as it cancels out here
     return c;
 } // result in srgb gamma atm

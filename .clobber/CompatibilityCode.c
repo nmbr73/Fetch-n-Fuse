@@ -587,3 +587,66 @@
 /*|  to_float4_ui4|*/#define to_float4_ui4(V) to_float4_cuint(V) // uint2 zu float2
 
 /*|  to_float4_f2f2 |*/#define to_float4_f2f2(A,B) to_float4((A).x,(A).y,(B).x,(B).y ) // or is there some to_float_..() for that?!? - No - that is missing in DCTL :-) but now we have "one"
+
+
+
+
+
+
+// -------------  C U B E M A P   E X P E R I M E N T S  -------------
+
+
+__DEVICE__ float4 cube_texture_3f(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
+{
+  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
+
+  float x;
+  float y;
+
+  if (ux==-1.0f) { // -X, Face 1
+
+    x = (uz+1.0f)/8.0f;
+    y = (uy-1.0f)/6.0f+2.0f/3.0f;
+
+  } else if (uz==1.0f) { // +Z, Face 4
+
+    x = (ux+1.0f)/8.0f+0.25;
+    y = (uy-1.0f)/6.0f+2.0f/3.0f;
+
+  } else if (ux==1.0f) { // +X, Face 0
+
+    // Spiegelverkehrt!!!
+    x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+
+  } else if (uz==-1.0f) { // -Z, Face 5
+
+    // Spiegelverkehrt!!!
+    x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
+    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+
+  } else if (uy==-1.0f) { // -Y, Face 3
+
+    x = (ux+1.0f)/8.0f+0.25f;
+    y = (uz+1.0f)/6.0f;
+
+  } else if (uy==1.0f) { // +Y, Face 2
+
+    x = (ux+1.0f)/8.0f+0.25f;
+    y = -((uz+1.0f)/6.0f+1.0f);
+
+  } else
+  {
+    return rv;
+  }
+
+  rv = _tex2DVecN(crossmap,x,y,15);
+
+  return rv;
+}
+
+
+__DEVICE__ float4 cube_texture_f3(__TEXTURE2D__ crossmap, float3 uv)
+{
+  return cube_texture_3f(crossmap,uv.x,uv.y,uv.z);
+}
