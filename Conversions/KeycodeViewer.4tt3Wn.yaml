@@ -1,0 +1,15 @@
+fuse:
+  author: nmbr73
+  file: KeycodeViewer
+  id: KeycodeViewer
+  kernel: KeycodeViewer
+  name: KeycodeViewer
+shader:
+  author: fb39ca4
+  description: Just put this together to check what keycode is what.
+  id: 4tt3Wn
+  name: Keycode Viewer
+  tags:
+  - keyboard
+  - viewer
+  url: https://www.shadertoy.com/view/4tt3Wn
