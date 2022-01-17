@@ -28,7 +28,7 @@ function ShaderKernels_resetData()
             { ComboName  = "Buffer C",  InputName  = "Buffer C", InfoName = "C",       KernelName="", },
             { ComboName  = "Buffer D",  InputName  = "Buffer D", InfoName = "D",       KernelName="", },
             { ComboName  = "Image",     InputName  = "Image",    InfoName = "IMAGE",   KernelName="", },
-            { ComboName  = "=final=",   InputName  = "",         InfoName = "FINAL",   KernelName="", },
+            { ComboName  = "=final=",   InputName  = "",         InfoName = "FINAL",   KernelName="FINAL", },
     },
   }
 end
@@ -88,6 +88,7 @@ NUM_COLOR_CONTROLS      = 10
 NUM_SLIDER_CONTROLS     = 10
 NUM_INTSLIDER_CONTROLS  = 10
 NUM_SCREW_CONTROLS      = 5
+NUM_BUTTON_CONTROLS     = 5
 NUM_CHECKBOX_CONTROLS   = 10
 NUM_POINT_CONTROLS      = 10
 
@@ -98,20 +99,23 @@ NUM_POINT_CONTROLS      = 10
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
-    REGS_Name = "ShadersInc",
-	  REGS_Category = "Fuses",
-    REGS_OpDescription = "An Incubator for Shadertoys",
-	  REGS_OpIconString = "incubus",
-    REG_Source_SizeCtrls = true,
+    REGS_Name              = "ShadersInc",
+	  REGS_Category          = "Fuses",
+    REGS_OpDescription     = "An Incubator for Shadertoys",
+	  REGS_OpIconString      = "incubus",
+    REG_Source_GlobalCtrls = true, 
+    REG_Source_SizeCtrls   = true,
     REG_Source_AspectCtrls = true,
-	  REG_TimeVariant = true,
-	  REGS_Company = "nmbr73",
-	  REGS_URL = "https://nmbr73.github.io/",
-	  REG_Version	= 000001,
+    REG_Source_DepthCtrls  = true,
+  --REG_OpNoMask           = true,
+	  REG_TimeVariant        = true,
+    REG_NoPreCalcProcess   = true,  -- call Process for precalc requests (instead of PreCalcProcess)
+	  REGS_Company           = "nmbr73",
+	  REGS_URL               = "https://nmbr73.github.io/",
+	  REG_Version	           = 000001,
 
-    REG_Source_GlobalCtrls = true, REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
-    -- REG_Source_GlobalCtrls = false, REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
-    -- REG_Source_GlobalCtrls = false, REG_Fuse_NoEdit = true,  REG_Fuse_NoReload = true,
+    REG_Fuse_NoEdit = false, REG_Fuse_NoReload = false,
+
     })
 
 
@@ -258,6 +262,12 @@ function Create()
   end
 
 
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+    --KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_BUTTON"..i.."(NAME,TYP,BTN1,BTN2,BTN3,BTN4,BTN5) float NAME = _shaderParameters->ctrlButton["..i.."]; \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_BUTTON"..i.."(NAME,TYP, ...) float NAME = _shaderParameters->ctrlButton["..i.."]; \n"
+  end
+
+
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_CHECKBOX"..i.."(NAME,SDEFAULT) float NAME = _shaderParameters->ctrlCheckbox["..i.."] \n"
   end
@@ -313,6 +323,7 @@ function Create()
   float ctrlSlider[]]..    NUM_SLIDER_CONTROLS   ..[[];
   int   ctrlIntSlider[]].. NUM_INTSLIDER_CONTROLS..[[];
   float ctrlScrew[]]..     NUM_SCREW_CONTROLS    ..[[];
+  float ctrlButton[]]..    NUM_BUTTON_CONTROLS   ..[[];
   bool  ctrlCheckbox[]]..  NUM_CHECKBOX_CONTROLS ..[[];
 
   ]]
@@ -325,7 +336,7 @@ function Create()
   local next_ctrl_group = 1   -- increment every time you used it for a new control group
   local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
 
-  local attrs
+  local attrs, attrs2
 
   attrs={}
 
@@ -347,10 +358,10 @@ function Create()
 
   ShaderKernels_resetData()
 
-  attrs={}
+  attrs2={}
 
   for i,e in pairs(ShaderKernels.Entries) do
-    table.insert(attrs,{ CCS_AddString = e.ComboName })
+    table.insert(attrs2,{ CCS_AddString = e.ComboName })
   end
 
   ShaderKernels_ComboControl = self:AddInput("Kernel", "kernel", {
@@ -360,7 +371,7 @@ function Create()
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      attrs
+      attrs2
   })
 
   ShaderKernels_LabelControl = self:AddInput(
@@ -567,6 +578,24 @@ function Create()
   end
 
 
+  InButton={}
+
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+	InButton[i] = self:AddInput("Button "..i, "CONNECT_BUTTON"..i, {
+		LINKID_DataType    = "Number",
+		INPID_InputControl = "MultiButtonControl",
+		MBTNC_ForceButtons = true,
+    --MBTNC_Type         = "Toggle", -- oder weglassen :-)
+		MBTNC_ShowName     = false,
+		{ MBTNC_AddButton  = "Nothing" },
+		MBTNC_StretchToFit = true,
+    IC_NoLabel         = true,
+		INP_Default        = 0,
+    IC_Visible         = true,
+	})
+  end
+
+
   InCheckbox={}
 
   for i=0,NUM_CHECKBOX_CONTROLS-1 do
@@ -586,6 +615,7 @@ function Create()
       LINKID_DataType       = "Point",
       INPID_InputControl    = "OffsetControl",
       INPID_PreviewControl  = "CrosshairControl",
+      PC_Visible            = false,
       INP_DefaultX          = 0.5,
       INP_DefaultY          = 0.5,
     })
@@ -624,6 +654,189 @@ function Create()
   --   IC_Visible = true,
   -- })
 
+  InDebugImage = self:AddInput("DebugImage", "DebugImage", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "ComboControl",
+    INP_Default = 0.0,
+    INP_Integer = true,
+    ICD_Width = 1,
+    { CCS_AddString = "BufferA", },
+    { CCS_AddString = "BufferB", },
+    { CCS_AddString = "BufferC", },
+    { CCS_AddString = "BufferD", },
+    CC_LabelPosition = "Horizontal",
+  })
+
+
+
+-- Fetch-n-Fuse
+ self:AddControlPage("F-n-F")
+
+  InSpawnError = self:AddInput("SpawnError", "InSpawnError", {
+     LINKID_DataType = "Number",
+     INPID_InputControl = "CheckboxControl",
+     INP_Default  = 1,
+     INP_MinScale = 0,
+     INP_MaxScale = 1,
+     IC_Visible = false,
+   })
+
+Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    INP_External = false,
+    INP_Passive = true,
+  })
+
+
+		InShaderID = self:AddInput("ShaderID to Fetch", "ShaderID", {
+			LINKID_DataType      = "Text",
+			INPID_InputControl   = "TextEditControl",
+			INP_DoNotifyChanged  = true,
+			INP_External         = false,
+			--IC_NoLabel         = true,
+			ICD_Width            = 1.0,
+			--INPS_DefaultText     = devshader,
+      TEC_Lines            = 1,            -- height of text entry (default is 8)
+			TEC_Wrap             = false,        -- automatic word-wrapping (default is false)
+			TEC_ReadOnly         = false,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit        = 6,	           -- maximum number of allowed characters (default is 0, no limit)
+			TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
+			})	
+
+  --Will be customized in Process()
+  doFetch_tpl =  [==[ 
+    comp:RunScript("PFADfetch.py", { id = "SHADERID", verbose=false, noassets=false}) 
+                 ]==]  
+
+ 	InFetch = self:AddInput('Fetch Shadertoy', 'InFetch', {
+		LINKID_DataType        = 'Number',
+		INPID_InputControl     = 'ButtonControl',
+		INP_DoNotifyChanged    = false,
+    INP_Disabled           = true, --will be enabled in the NotifyChanged 
+		INP_External           = false,
+		INP_Default            = 0.0,
+		ICD_Width              = 1,
+		BTNCS_Execute          = doFetch_tpl,
+		IC_Visible             = true,
+		}) 
+  InSemaphoreFetch = self:AddInput( "SemaphoreFetch","SemaphoreFetch", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 0,
+    IC_Visible          = false,
+  })
+
+
+  Sep2 = self:AddInput("_________________FUSE__________________", "Separator2", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    INP_External = false,
+    INP_Passive = true,
+  })
+
+      
+	InManualID = self:AddInput("Manual ID", "ManualID", {
+			LINKID_DataType    = "Number",
+			INPID_InputControl = "CheckboxControl",
+			INP_Default        = 0,
+			INP_MinScale       = 0,
+			INP_MaxScale       = 1,
+      IC_Visible         = false,
+		})	
+
+	InShaderIDFuse = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
+    IC_ControlPage      = control_page ,
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "ComboControl",
+	  INP_DoNotifyChanged = true,
+    INP_Default         = 0,
+    INP_Integer         = true,
+    attrs
+    })	
+
+  --Will be customized in Process()
+  doFuse_tpl =  [==[ 
+    comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false}) 
+                ]==]  
+
+
+	InFuse = self:AddInput('Fuse a Shadertoy', 'InFuse', {
+		LINKID_DataType        = 'Number',
+		INPID_InputControl     = 'ButtonControl',
+		INP_DoNotifyChanged    = false,
+    --INP_Disabled         = true, --will be enabled in the NotifyChanged 
+		INP_External           = false,
+		INP_Default            = 0.0,
+		ICD_Width              = 1,
+		BTNCS_Execute          = doFuse,
+		IC_Visible             = true,
+		}) 
+  InSemaphoreFuse = self:AddInput( "SemaphoreFuse","SemaphoreFuse", {
+      LINKID_DataType     = "Number",
+      INPID_InputControl  = "CheckboxControl",
+      INP_Integer         = true,
+      INP_Default         = 0,
+      IC_Visible          = false,
+    })
+
+
+  InSize = self:AddInput("Size", "Size_Fuse", {
+    LINKID_DataType  = "Number",
+    INPID_InputControl = "ComboControl",
+	  INP_DoNotifyChanged = true,
+    INP_Default      = 0,
+    INP_Integer      = true,
+    ICD_Width        = 1,
+  	{ CCS_AddString  = "Default", },
+    { CCS_AddString  = "Manually", },
+	  { CCS_AddString  = "Image1", },
+    { CCS_AddString  = "1920x1080", },
+	  { CCS_AddString  = "1200x675", },
+	  { CCS_AddString  = "800x450", },
+	  { CCS_AddString  = "640x360", },
+    CC_LabelPosition = "Horizontal",
+	  ICS_ControlPage  = "Image",
+  })
+	InWidth = self:AddInput("Width", "_Width", {
+		LINKID_DataType 	= "Number",
+		INPID_InputControl 	= "SliderControl",
+		INP_Default 		= 1920,
+		INP_Integer     = true,
+		INP_MinScale 		= 0,
+		INP_MaxScale 		= 4096,
+	})
+	InHeight = self:AddInput("Height", "_Height", {
+		LINKID_DataType 	= "Number",
+		INPID_InputControl 	= "SliderControl",
+		INP_Default 		= 1080,
+		INP_Integer     = true,
+		INP_MinScale 		= 0,
+		INP_MaxScale 		= 4096,
+	})
+  InDepth = self:AddInput("Depth_Fuse", "Depth_Fuse", {
+    LINKID_DataType  = "Number",
+    INPID_InputControl = "ComboControl",
+	  INP_DoNotifyChanged = true,
+    INP_Default      = 0,
+    INP_Integer      = true,
+    ICD_Width        = 1,
+	  { CCS_AddString  = "Default", },
+	  { CCS_AddString  = "int8", },
+	  { CCS_AddString  = "int16", },
+    { CCS_AddString  = "float16", },
+    { CCS_AddString  = "float32", },
+    CC_LabelPosition = "Horizontal",
+	  ICS_ControlPage  = "Image",
+  })
+  
+  InMyWidth = self:FindInput("Width")
+	InMyWidth:SetAttrs({ IC_Visible = false })
+	InMyHeight = self:FindInput("Height")
+	InMyHeight:SetAttrs({ IC_Visible = false })
+	InMyDepth = self:FindInput("Depth")
+	InMyDepth:SetAttrs({ IC_Visible = false })
 
 
 
@@ -632,11 +845,13 @@ function Create()
   for i=0,NUM_INPUT_CHANNELS-1 do
     InChannel[i] = self:AddInput(   "iChannel"..i,  "iChannel"..i,  { LINKID_DataType = "Image", LINK_Main = i+1, INP_Required = false  })
   end
-
   -- InChannel0 = self:AddInput(   "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
-
   OutImage   = self:AddOutput(  "Output",     "Output",     { LINKID_DataType = "Image", LINK_Main = 1                        })
 
+  OutImage2 = self:AddOutput("Output2", "Output2", {
+    LINKID_DataType = "Image",
+    LINK_Main = 2,
+  })
 end
 
 
@@ -662,7 +877,7 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
 
   if kernel_parameters==nil then
     if Part=="Image" then
-      print("kernel for 'Image' not found!")
+      print("kernel for 'Image': ",ConversionFusename," not found!"  )
       
       return "", nil
     end
@@ -969,7 +1184,7 @@ function RebuildParameters()
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SCREW"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
       local name, smin, smax, sdef = ConversionSourcecode:match("%s+CONNECT_SCREW"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
-      print("#SCREW#",name, smin, smax, sdef) --
+      --print("#SCREW#",name, smin, smax, sdef) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."SCREW"..i.."\n"
@@ -987,6 +1202,39 @@ function RebuildParameters()
         InScrew[i]:SetAttrs({ IC_Visible = false })
       end
     end
+
+
+    --CONNECT_BUTTON0(NAME,TYP,BTN1,BTN2,BTN3,BTN4,BTN5)
+    for i=0,NUM_BUTTON_CONTROLS-1 do
+
+      local name, typ, btn1, btn2, btn3, btn4, btn5 = ConversionSourcecode:match("%s+CONNECT_BUTTON"..i.."%s*%(%s*([%a_][%w_]*)%s*,%s*(%d+)%s*,%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*[,|%)]*%s*([%a_]*[%w_]*)%s*%)*%s*.*;")
+      --print("#Button"..i,name, typ, btn1, btn2, btn3, btn4, btn5 ) --
+
+      if (name ~= nil) then
+        ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."; // ".."Button"..i.."\n"
+        ShaderParameters_init   = ShaderParameters_init.."  _hiddenParams."..name.." = _shaderParameters->ctrlButton["..i.."];\n"
+        
+        InButton[i]:SetAttrs({
+          IC_Visible    = true,
+          LINKS_Name    = name,
+        })
+
+        if (btn1 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn1, }) end
+        if (btn2 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn2, }) end
+        if (btn3 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn3, }) end
+        if (btn4 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn4, }) end
+        if (btn5 ~= nil) then InButton[i]:SetAttrs({ MBTNC_AddButton = btn5, }) end
+        
+        if (tonumber(typ) == 1) then 
+          InButton[i]:SetAttrs({ MBTNC_Type = "Toggle", }) 
+        end        
+          
+        
+      else
+        InButton[i]:SetAttrs({ IC_Visible = false })
+      end
+    end
+
 
 
 
@@ -1029,7 +1277,7 @@ function RebuildParameters()
 
       -- local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
       local name, sdefx, sdefy = ConversionSourcecode:match("%s+CONNECT_POINT"..i.."%s*%(([%a_][%w_]*)%s*,%s*(%-?%d+%.%d+)f%s*,%s*(%-?%d+%.%d+)f%s*%)%s*;")
-      print("#POINT#", name, sdefx, sdefy) --
+      --print("#POINT#", name, sdefx, sdefy) --
 
       if (name ~= nil) then
         ShaderParameters_struct = ShaderParameters_struct .. "  float "..name.."[2]; // ".."POINT"..i.."\n"
@@ -1040,6 +1288,7 @@ function RebuildParameters()
         InPoint[i]:SetAttrs({
           IC_Visible = true,
           LINKS_Name = name,
+          PC_Visible = true,
           INP_DefaultX = tonumber(sdefx),
           INP_DefaultY = tonumber(sdefy),
         })
@@ -1062,7 +1311,88 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to render the node.
 --
+ImgAttrs_Global = {
+        { IMG_Channel = "Red", },
+        { IMG_Channel = "Green", },
+        { IMG_Channel = "Blue", },
+        { IMG_Channel = "Alpha", },
+        IMG_Width = Width,
+        IMG_Height = Height,
+	      IMG_DeferAlloc = false,
+        }
+
+Image_Buff_GlobalA = Image(ImgAttrs_Global)
+Image_Buff_GlobalB = Image(ImgAttrs_Global)
+Image_Buff_GlobalC = Image(ImgAttrs_Global)
+Image_Buff_GlobalD = Image(ImgAttrs_Global)
+
+
 function Process(req)
+
+
+	-- Imagesize and Depth
+  if (InSize:GetValue(req).Value >= 1) then
+		if (InSize:GetValue(req).Value == 2) then
+			if (InChannel[0]:GetValue(req) ~= nil) then
+			   Width = InChannel[0]:GetValue(req).Width
+			   Height = InChannel[0]:GetValue(req).Height
+			end
+		else
+			Width = InWidth:GetValue(req).Value
+			Height = InHeight:GetValue(req).Value 
+		end
+	end	
+	if (InDepth:GetValue(req).Value > 0) then
+	  if InDepth:GetValue(req).Value == 1 then 
+	    SourceDepth = 5 
+    else 
+	    if InDepth:GetValue(req).Value == 2 then 
+	        SourceDepth = 6 
+	    else 
+	        if InDepth:GetValue(req).Value == 3 then 
+ 		        SourceDepth = 7 
+		    	else
+			      SourceDepth = 8
+	        end
+		  end
+	  end
+	end
+
+
+
+  if (InSemaphoreFetch:GetValue(req).Value == 1) then
+    shaderID = InShaderID:GetValue(req).Value
+    
+    --Warum auch immer - verstehe wer will    
+    PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
+         
+    doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository_cor)
+    doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
+        
+    InFetch:SetAttrs({ BTNCS_Execute = doFetch, }) --Zuweisung notwendig !! Ändern des Strings funktioniert nicht
+    verbose("TestFetch",doFetch)
+        
+    InSemaphoreFetch:SetSource(Number(0),0,0) --nur einmal ändern
+  end
+
+
+
+  if (InSemaphoreFuse:GetValue(req).Value == 1) then
+    shaderIDFuse = Conversions[InShaderIDFuse:GetValue(req).Value + 1].ShadertoyID
+        
+    --Warum auch immer - verstehe wer will    
+    PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
+         
+    doFuse = string.gsub(doFuse_tpl, 'PFAD', PathToRepository_cor)
+    doFuse = string.gsub(doFuse, 'SHADERID', shaderIDFuse)
+        
+    InFuse:SetAttrs({ BTNCS_Execute = doFuse, })
+ 
+    --print("----------------\n DoFuse-String-Process",doFuse,"\n----------------" )
+    
+    InSemaphoreFuse:SetSource(Number(0),0,0)
+  end
+
 
   local rebuild = false
 
@@ -1075,7 +1405,6 @@ function Process(req)
     InRebuildCheckBox:SetSource(Number(0),0)
     rebuild=true
   end
-
 
 
   if rebuild then
@@ -1126,9 +1455,7 @@ function Process(req)
   if InRebuildParameterNames:GetValue(req).Value == 1 then
     verbose("Process: Parameter Names")
     InRebuildParameterNames:SetSource(Number(0),0)
-
     RebuildParameters()
-
     print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
   end
 
@@ -1148,10 +1475,16 @@ function Process(req)
     IMG_Quality = not req:IsQuick(),
     IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
     IMG_DeferAlloc = true,
-    IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
-    IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+    --IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    --IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
   }
 
+    if not req:IsStampOnly() then
+      imgattrs.IMG_ProxyScale = 1
+    end
+    if SourceDepth ~= 0 then
+      imgattrs.IMG_Depth = SourceDepth
+    end
 
 
 
@@ -1173,9 +1506,11 @@ function Process(req)
       dst:Fill(Pixel({R=0,G=0,B=0,A=0}))
     else
       print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
+      print("NAME: ",ConversionKernelname, "\nCODE\n", ConversionSourcecode)
       dst:Fill(Pixel({R=0.5,G=0,B=0,A=0}))
     end
     OutImage:Set(req,dst)
+    OutImage2:Set(req, out)
     return
   end
 
@@ -1190,6 +1525,7 @@ function Process(req)
     ShaderKernels.RenderErrors = true
     ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
     OutImage:Set(req,nil)
+    OutImage:Set(req,dst)
     return
   end
 
@@ -1198,11 +1534,27 @@ function Process(req)
     verbose("precalc")
     local out = Image({IMG_Like = dst, IMG_NoData = true})
     OutImage:Set(req, out)
+    OutImage2:Set(req,dst)
     ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
     return
   end
 
+-- DCTL-Kernelaufruf
 
+--############################################################################################
+--print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
+
+
+  if(ShaderKernels.Current == 6) then   -- "=final="
+
+    if (ShaderKernels.Quantity > 1) then -- Multibuffer? - dann 
+      ConversionKernelname = ShaderKernels.Entries[1].KernelName --Buffer A zuerst
+    end
+  end
+  
+--  print("\nOrg :",ConversionKernelname)
+  
+  
   local node = DVIPComputeNode(req,
     ConversionKernelname,
     ConversionSourcecode,
@@ -1210,36 +1562,41 @@ function Process(req)
     ShaderParameters
     )
 
-  -- Extern Texture or create a new one
-
-  local iChannel={}
-
-  for i=0,NUM_INPUT_CHANNELS-1 do
-    iChannel[i] = InChannel[i]:GetValue(req)
-
-    if (iChannel[i] == nil) then
-      iChannel[i] = Image(imgattrs)
-      local p = Pixel({R=0,G=0,B=0,A=0})
-      iChannel[i]:Fill(p)
+    -- Extern Texture or create a new one
+    local iChannel={}
+    local Tex={}           -- Signal, ob Textur vorhanden
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      iChannel[i] = InChannel[i]:GetValue(req)
+      Tex[i] = true
+      if (iChannel[i] == nil) then
+        Tex[i] = false
+        iChannel[i] = Image(imgattrs)
+        local p = Pixel({R=0,G=0,B=0,A=0})
+        iChannel[i]:Fill(p)
+      end
     end
-  end
+
+
+--local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  local dstA = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+	local dstB = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+	local dstC = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+	local dstD = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+	local dstI = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
 
 
   -------------- Parameter für DCTL-Code ---------------------
   local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
 
   local params = {}
-
   params = node:GetParamBlock(ShaderParameters)
 
 
   local text  =  nil
 
   -- iMouse
-
   local mouse_xy  = InMouseXY:GetValue(req)
   local mouse_zw  = InMouseZW:GetValue(req)
-
   params.iMouse[0] = mouse_xy.X
   params.iMouse[1] = mouse_xy.Y
   params.iMouse[2] = mouse_zw.X
@@ -1284,13 +1641,9 @@ function Process(req)
     InShaderInputs_iMouse:SetAttrs({INP_Disabled=true})
   end
 
-
   -- iTime
-
   local frequency = InFrequency:GetValue(req).Value
-
   params.iTime            = (req.Time / framerate) * frequency;
-
   text = string.format("(%.0f/%.2ffps)*%.3f= %.4f", req.Time,framerate,frequency,params.iTime)
 
   if InShaderInputs_iTime:GetValue(req).Value ~= text then
@@ -1299,9 +1652,7 @@ function Process(req)
     InShaderInputs_iTime:SetAttrs({INP_Disabled=true})
   end
 
-
   -- Colors
-
   for i=0,NUM_COLOR_CONTROLS-1 do
     for j=0,3 do
       params.ctrlColor[i][j] = InColor[i][j]:GetValue(req).Value
@@ -1309,18 +1660,19 @@ function Process(req)
   end
 
   -- Sliders
-
   for i=0,NUM_SLIDER_CONTROLS-1 do
     params.ctrlSlider[i] = InSlider[i]:GetValue(req).Value
   end
-
-
   for i=0,NUM_INTSLIDER_CONTROLS-1 do
     params.ctrlIntSlider[i] = InIntSlider[i]:GetValue(req).Value
   end
-
   for i=0,NUM_SCREW_CONTROLS-1 do
     params.ctrlScrew[i] = InScrew[i]:GetValue(req).Value
+  end
+
+  -- Buttons
+  for i=0,NUM_BUTTON_CONTROLS-1 do
+    params.ctrlButton[i] = InButton[i]:GetValue(req).Value
   end
 
   -- Checkboxes
@@ -1333,15 +1685,11 @@ function Process(req)
     params.ctrlPoint[i] = {InPoint[i]:GetValue(req).X,InPoint[i]:GetValue(req).Y}
   end
 
-
   -- Resolution
-
   params.width  = dst.Width
   params.height = dst.Height
-
   params.iResolution[0] = dst.Width
   params.iResolution[1] = dst.Height
-
   text = string.format("{%.0f, %.0f}", params.iResolution[0], params.iResolution[1] )
 
   if InShaderInputs_iResolution:GetValue(req).Value ~= text then
@@ -1350,11 +1698,7 @@ function Process(req)
     InShaderInputs_iResolution:SetAttrs({INP_Disabled=true})
   end
 
-
-
-
   params.compOrder        = iChannel[0]:IsMask() and 1 or 15
-
 
   params.iTimeDelta = 1/framerate
   params.iFrame = req.Time
@@ -1364,7 +1708,6 @@ function Process(req)
     params.iChannelResolution[i][0] = iChannel[0].DataWindow:Width()    -- or maybe: iChannel[0].Width
     params.iChannelResolution[i][1] = iChannel[0].DataWindow:Height()   -- or maybe: iChannel[0].Height
   end
-
 
   params.iDate[0] = 0
   params.iDate[1] = 0
@@ -1378,30 +1721,136 @@ function Process(req)
 
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
   --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
-  for i=0,NUM_INPUT_CHANNELS-1 do
-    node:AddInput("iChannel"..i,iChannel[i])
-  end
-	node:AddOutput("dst", dst)
+  
+  -- Multibuffer Buffer A ?
+  if(ShaderKernels.Current == 6) then   -- "=final="  
+    --ToDo  Anpassen Fetch.py: Verwendung der internen Verdrahtung
+    node:AddInput("iChannel0",Image_Buff_GlobalA)
+    node:AddInput("iChannel1",iChannel[0])
+    node:AddInput("iChannel2",iChannel[1])
+    node:AddInput("iChannel3",iChannel[2])
+    node:AddInput("iChannel4",iChannel[3])
+    
+    node:AddOutput("dst", dstA)
+    Image_Buff_GlobalA = dstA
+  else
+    for i=0,NUM_INPUT_CHANNELS-1 do
+      node:AddInput("iChannel"..i,iChannel[i])
+    end
+    node:AddOutput("dst", dst)
+  end 
 
   if rebuild then
     node:ForceRebuild()
   end
 
-
-
-
-
-
   local ok = node:RunSession(req)
-
 	if (not ok) then
     ShaderKernels.RenderErrors = true
 		dst = nil
     dump(node:GetErrorLog())
 	end
 
+  
+  -- Multibuffer Next Buffer: B
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity == 3) then   -- "=final=" und Multibuffer AB? dann
+
+    ConversionKernelname = ShaderKernels.Entries[2].KernelName --Buffer B starten
+ 
+    print("\nBufferB :",ConversionKernelname)
+    
+    local nodeB = DVIPComputeNode(req,
+      ConversionKernelname,
+      ConversionSourcecode,
+      "ShaderParameters",
+      ShaderParameters
+      )
+
+    nodeB:SetParamBlock(params)
+
+    nodeB:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+    --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+    
+    --ToDo  Anpassen Fetch.py: Verwendung der internen Verdrahtung
+    nodeB:AddInput("iChannel0",Image_Buff_GlobalA)
+    nodeB:AddInput("iChannel1",iChannel[0])
+    nodeB:AddInput("iChannel2",iChannel[1])
+    nodeB:AddInput("iChannel3",iChannel[2])
+    nodeB:AddInput("iChannel4",iChannel[3])
+      
+    nodeB:AddOutput("dst", dstB)
+    Image_Buff_GlobalB = dstB
+
+
+    if rebuild then
+      nodeB:ForceRebuild()
+    end
+
+    local ok = nodeB:RunSession(req)
+    if (not ok) then
+      ShaderKernels.RenderErrors = true
+      dstB = nil
+      dump(nodeB:GetErrorLog())
+    end
+  end
+
+
+
+-- Multibuffer Final: Image
+  if(ShaderKernels.Current == 6) then   -- "=final=" und Multibuffer? dann
+
+    ConversionKernelname = ShaderKernels.Entries[5].KernelName --Image zum Schluß starten
+ 
+    print("\nImage :",ConversionKernelname)
+    
+    local nodeI = DVIPComputeNode(req,
+      ConversionKernelname,
+      ConversionSourcecode,
+      "ShaderParameters",
+      ShaderParameters
+      )
+
+    nodeI:SetParamBlock(params)
+
+    nodeI:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+    --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+    
+    --ToDo  Anpassen Fetch.py: Verwendung der internen Verdrahtung
+    nodeI:AddInput("iChannel0",Image_Buff_GlobalA)
+    nodeI:AddInput("iChannel1",iChannel[0])
+    nodeI:AddInput("iChannel2",iChannel[1])
+    nodeI:AddInput("iChannel3",iChannel[2])
+    nodeI:AddInput("iChannel4",iChannel[3])
+      
+    nodeI:AddOutput("dst", dst)
+    
+    if rebuild then
+      nodeI:ForceRebuild()
+    end
+
+    local ok = nodeI:RunSession(req)
+    if (not ok) then
+      ShaderKernels.RenderErrors = true
+      dst = nil
+      dump(nodeI:GetErrorLog())
+    end
+  end
+
+
+
   ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText(),}) -- LBLC_LabelColor = 3,
 
+
+  --Debugging Image
+  OutImage2:Set(req, Image_Buff_GlobalA)
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 1) then 
+    InDebugImage:SetAttrs({ IC_Visible = true })
+    if (InDebugImage:GetValue(req).Value == 1) then OutImage2:Set(req, Image_Buff_GlobalB) end
+    if (InDebugImage:GetValue(req).Value == 2) then OutImage2:Set(req, Image_Buff_GlobalC) end
+    if (InDebugImage:GetValue(req).Value == 3) then OutImage2:Set(req, Image_Buff_GlobalD) end
+  else
+    InDebugImage:SetAttrs({ IC_Visible = false })
+  end  
 
 
   -- Output our result
@@ -1409,7 +1858,6 @@ function Process(req)
   collectgarbage();
 
 end
-
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1441,6 +1889,49 @@ function NotifyChanged(inp, param, time)
       end
     end
 
+		if (inp == InShaderID) then
+			if (string.len(param.Value) == 6) then 
+        InFetch:SetAttrs({INP_Disabled = false})
+        InFetch:SetAttrs({LINKS_Name = "Fetch Shadertoy ID "..param.Value})
+      else
+        InFetch:SetAttrs({INP_Disabled = true})
+        InFetch:SetAttrs({LINKS_Name = "Please Enter ID (6 Characters) "})
+      end
+      
+      --print("\n\nNotify ",param.Value,string.len(param.Value), "\n\n")
+       InSemaphoreFetch:SetSource(Number(1),0,0)
+  	end
+    
+    if (inp == InShaderIDFuse) then  -- ev Button noch modifizieren
+      InSemaphoreFuse:SetSource(Number(1),0,0)
+    end  
+
+		if inp == InSize then
+		  if param.Value == 1 then
+			  InWidth:SetAttrs({ IC_Visible = true })
+			  InHeight:SetAttrs({ IC_Visible = true })
+		  else
+			  InWidth:SetAttrs({ IC_Visible = false })
+			  InHeight:SetAttrs({ IC_Visible = false })
+		  end
+		  
+		  if param.Value == 3 then --1920x1080
+			  InWidth:SetSource(Number(1920),0,0)
+			  InHeight:SetSource(Number(1080),0,0)
+		  end
+		  if param.Value == 4 then --1200x675
+			  InWidth:SetSource(Number(1200),0,0)
+			  InHeight:SetSource(Number(675),0,0)
+		  end
+		  if param.Value == 5 then --800x450
+			  InWidth:SetSource(Number(800),0,0)
+			  InHeight:SetSource(Number(450),0,0)
+		  end
+ 	    if param.Value == 6 then --640x360
+		    InWidth:SetSource(Number(640),0,0)
+	   	  InHeight:SetSource(Number(360),0,0)
+		  end
+		end 
 
 	end
 end
