@@ -6,7 +6,7 @@
 
 
 // ---- 8< ---- GLSL Number Printing - @P_Malin ---- 8< ----
-// Creative Commons CC0 1.0f Universal (CC-0) 
+// Creative Commons CC0 1.0f Universal (CC-0)
 // https://www.shadertoy.com/view/4sBSWW
 
 __DEVICE__ float DigitBin(const in int x)
@@ -25,7 +25,7 @@ __DEVICE__ float PrintValue(const in float2 fragCoord, const in float2 vPixelCoo
   if(fDigitIndex > (-fDecimalPlaces - 1.01f)) {
     if(fDigitIndex > fBiggestIndex) {
       if((fValue < 0.0f) && (fDigitIndex < (fBiggestIndex+1.5f))) fCharBin = 1792.0f;
-    } else {    
+    } else {
       if(fDigitIndex == -1.0f) {
         if(fDecimalPlaces > 0.0f) fCharBin = 2.0f;
       } else {
@@ -33,7 +33,7 @@ __DEVICE__ float PrintValue(const in float2 fragCoord, const in float2 vPixelCoo
         float fDigitValue = (_fabs(fValue / (_powf(10.0f, fDigitIndex))));
                 float kFix = 0.0001f;
                 fCharBin = DigitBin(int(_floor(mod_f(kFix+fDigitValue, 10.0f))));
-      }    
+      }
     }
   }
     return _floor(mod_f((fCharBin / _powf(2.0f, _floor(fract(vStringCharCoords.x) * 4.0f) + (_floor(vStringCharCoords.y * 5.0f) * 4.0f))), 2.0f));
@@ -41,19 +41,22 @@ __DEVICE__ float PrintValue(const in float2 fragCoord, const in float2 vPixelCoo
 
 // ---- 8< -------- 8< -------- 8< -------- 8< ----
 
-__DEVICE__ float keyPressed(int keyCode) {
-  return texture(iChannel0, to_float2((float(keyCode) + 0.5f) / 256.0f, 0.5f/3.0f)).r;   
+__DEVICE__ float keyPressed(__TEXTURE2D__ iChannel0, int keyCode) {
+  //return texture(iChannel0, to_float2((float(keyCode) + 0.5f) / 256.0f, 0.5f/3.0f)).r;
+  return _tex2DVecN(iChannel0,(float(keyCode) + 0.5f) / 256.0f, 0.5f/3.0f,15).x;
+
 }
 
 __KERNEL__ void KeycodeViewerFuse(float4 fragColor, float2 fragCoord, sampler2D iChannel0)
 {
 
-  fragColor = to_float4(0,0,0,1);
-    if (fragCoord.x < 96.0f && fragCoord.y < 64.0f) {
-        float n = -1.0f;
-        for (int i = 0; i < 256; i++) if (bool(keyPressed(i))) n = float(i);
-        fragColor = _mix(fragColor, to_float4(1), PrintValue(fragCoord, to_float2(0,10), to_float2(16,30), n, 3.0f, 0.0f)); 
-    }
+  fragColor = to_float4(0.0f,0.0f,0.0f,1.0f);
+
+  if (fragCoord.x < 96.0f && fragCoord.y < 64.0f) {
+      float n = -1.0f;
+      for (int i = 0; i < 256; i++) if (bool(keyPressed(iChannel0,i))) n = float(i);
+      fragColor = _mix(fragColor, to_float4_s(1.0f), PrintValue(fragCoord, to_float2(0.0f,10.0f), to_float2(16.0f,30.0f), n, 3.0f, 0.0f));
+  }
 
 
   SetFragmentShaderComputedColor(fragColor);
