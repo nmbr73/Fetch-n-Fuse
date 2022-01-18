@@ -77,7 +77,7 @@ __KERNEL__ void CubemapDebugDisplayFuse(float4 fragColor, float2 fragCoord, floa
     }
 
     if ((samplePos.x != 0.0f) && (samplePos.y != 0.0f)) {
-      fragColor = cube_texture_f3(iChannel0,samplePos);
+      fragColor = unfold_cube_f3(iChannel0,samplePos);
       fragColor.w=1.0f;
     }
   }
@@ -100,7 +100,7 @@ __KERNEL__ void CubemapDebugDisplayFuse(float4 fragColor, float2 fragCoord, floa
     float uv_z = 0.0f;
 
     //fragColor = _tex2DVecN(iChannel0,uv_x,uv_y,15);
-    fragColor = cube_texture_pixel(iChannel0,uv_x,uv_y,uv_y);
+    fragColor = unfold_cube_pixel(iChannel0,uv_x,uv_y,uv_y);
   }
 */
 
@@ -150,7 +150,7 @@ __KERNEL__ void CubemapDebugDisplayFuse(float4 fragColor, float2 fragCoord, floa
 	// }
 
 	// if ((samplePos.x != 0.0f) && (samplePos.y != 0.0f)) {
-	// 	//fragColor = to_float4(cube_texture_pixel(iChannel0, samplePos).rgb, 1.0);
-	// 	//fragColor = to_float4(cube_texture_pixel(iChannel0, samplePos).rgb, 1.0);
-	// 	fragColor = to_float4_aw(cube_texture_pixel(iChannel0, samplePos.x,samplePos.y,samplePos.z), 1.0f);
+	// 	//fragColor = to_float4(unfold_cube_pixel(iChannel0, samplePos).rgb, 1.0);
+	// 	//fragColor = to_float4(unfold_cube_pixel(iChannel0, samplePos).rgb, 1.0);
+	// 	fragColor = to_float4_aw(unfold_cube_pixel(iChannel0, samplePos.x,samplePos.y,samplePos.z), 1.0f);
 	// }

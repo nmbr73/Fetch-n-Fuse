@@ -116,7 +116,7 @@ __KERNEL__ void CubemapToGnomonicProjectionFuse(float4 fragColor, float2 fragCoo
     float3 dir = (!bool(keyPressed(KEY_ENTER))) ? calcCubeCoordsInGnomonicProjection(q, centralPoint, FoVScale) : iqCubemap(q, centralPoint, iResolution.x / iResolution.y);
 
   //float3 col = _tex2DVecN(iChannel0,dir.x,dir.y,15).rgb;
-  float4 tmp = cube_texture_f3(iChannel0,dir);
+  float4 tmp = unfold_cube_f3(iChannel0,dir);
   float3 col = to_float3(tmp.x,tmp.y,tmp.z);
 
     // test if the inverse function works correctly by pressing z

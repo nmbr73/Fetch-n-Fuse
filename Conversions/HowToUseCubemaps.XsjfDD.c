@@ -72,7 +72,7 @@ __KERNEL__ void HowToUseCubemapsFuse(float4 fragColor, float2 fragCoord, float2 
     // the cubemap will be skewed.
    	float3 dir =  normalize(uv.x * camR + uv.y * camU + camD);
     //fragColor = texture(iChannel0, dir);
-    fragColor = cube_texture_f3(iChannel0, dir);
+    fragColor = unfold_cube_f3(iChannel0, dir);
 
     // proof of example at mouse = camera center
 	//fragColor = texture(iChannel0, vec3(1., uv.y, uv.x));

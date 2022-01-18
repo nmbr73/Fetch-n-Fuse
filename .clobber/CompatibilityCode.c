@@ -596,57 +596,69 @@
 // -------------  C U B E M A P   E X P E R I M E N T S  -------------
 
 
-__DEVICE__ float4 cube_texture_3f(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
+__DEVICE__ float4 unfold_cube_3f(__TEXTURE2D__ crossmap, float x, float y, float z)
 {
-  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
+  float4 p=to_float4(0.0f,1.0f,0.0f,1.0f);
 
-  float x;
-  float y;
+  float u;
+  float v;
 
-  if (ux==-1.0f) { // -X, Face 1
+//if (x==-1.0f) {
+  if (-x>0.0f && _fabs(z)<-x && _fabs(y)<=-x) {
+    // -X, Face 1, left
 
-    x = (uz+1.0f)/8.0f;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
+    u = (z+1.0f)/8.0f;
+    v = (y-1.0f)/6.0f+2.0f/3.0f;
 
-  } else if (uz==1.0f) { // +Z, Face 4
+//} else if (z==1.0f) {
+  } else if (z>0.0f && _fabs(x)<z && _fabs(y)<z) {
+    // +Z, Face 4, front
 
-    x = (ux+1.0f)/8.0f+0.25;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
+    u = (x+1.0f)/8.0f+0.25;
+    v = (y-1.0f)/6.0f+2.0f/3.0f;
 
-  } else if (ux==1.0f) { // +X, Face 0
+//} else if (x==1.0f) {
+  } else if (x>0.0f && _fabs(z)<x && _fabs(y)<x) {
+    // +X, Face 0, right
 
-    // Spiegelverkehrt!!!
-    x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    u = -(((-z+1.0f)/2.0f+2.0f)/4.0f);
+    v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-  } else if (uz==-1.0f) { // -Z, Face 5
+//} else if (z==-1.0f) {
+  } else if (-z>0.0f && _fabs(x)<-z && _fabs(y)<-z) {
+    // -Z, Face 5, back
 
-    // Spiegelverkehrt!!!
-    x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    u = -(((-x+1.0f)/2.0f+3.0f)/4.0f);
+    v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
-  } else if (uy==-1.0f) { // -Y, Face 3
+//} else if (y==-1.0f) {
+  } else if (-y>0.0f && _fabs(z)<-y && _fabs(x)<-y) {
 
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = (uz+1.0f)/6.0f;
+    // -Y, Face 3, bottom
 
-  } else if (uy==1.0f) { // +Y, Face 2
+    u = (x+1.0f)/8.0f+0.25f;
+    v = (z+1.0f)/6.0f;
 
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = -((uz+1.0f)/6.0f+1.0f);
+//} else if (y==1.0f) {
+  } else if (y>0.0f && _fabs(z)<y && _fabs(x)<y) {
+
+    // +Y, Face 2, top
+
+    u = (x+1.0f)/8.0f+0.25f;
+    v = -((z+1.0f)/6.0f+1.0f);
 
   } else
   {
-    return rv;
+    return p;
   }
 
-  rv = _tex2DVecN(crossmap,x,y,15);
+  p = _tex2DVecN(crossmap,u,v,15);
 
-  return rv;
+  return p;
 }
 
 
-__DEVICE__ float4 cube_texture_f3(__TEXTURE2D__ crossmap, float3 uv)
+__DEVICE__ float4 unfold_cube_f3(__TEXTURE2D__ crossmap, float3 xyz)
 {
-  return cube_texture_3f(crossmap,uv.x,uv.y,uv.z);
+  return unfold_cube_3f(crossmap,xyz.x,xyz.y,xyz.z);
 }
