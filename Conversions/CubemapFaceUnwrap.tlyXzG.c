@@ -70,7 +70,7 @@ __DEVICE__ float4 Unwrap(__TEXTURE2D__ ch, float2 q)
 //    d = CubeFaceToDir(DirToCubeFace(d)); // ensure can convert back&forth flawlessly
 //    d = CubeFaceToDir(DirToCubeFace(d));
     //float4 c = textureLod(ch, d, 0.0f);
-    float4 c = unfold_cube_f3(ch,d);
+    float4 c = decube_f3(ch,d);
     //swi3(c,x,y,z) = _powf(swi3(c,x,y,z), to_float3_s(2.2f)); // gamma correction - skipping as it cancels out here
     return c;
 } // result in srgb gamma atm

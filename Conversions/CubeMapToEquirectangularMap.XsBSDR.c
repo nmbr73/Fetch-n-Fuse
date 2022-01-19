@@ -13,7 +13,7 @@ __KERNEL__ void CubeMapToEquirectangularMapFuse(float4 fragColor, float2 fragCoo
     float3 rayDirection = to_float3(_cosf(thetaphi.y) * _cosf(thetaphi.x), _sinf(thetaphi.y), _cosf(thetaphi.y) * _sinf(thetaphi.x));
   	//fragColor = texture(iChannel0, rayDirection);
     //fragColor = _tex2DVecN(iChannel0,rayDirection.x,rayDirection.y,15);
-    fragColor = unfold_cube_f3(iChannel0,rayDirection);
+    fragColor = decube_f3(iChannel0,rayDirection);
 
     // for apply the equirectangular map like a cubemap:
     // rayDirection = normalize(rayDirection);

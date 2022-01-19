@@ -375,7 +375,6 @@
   /*| refract_f2    |*/#define refract_f2(I,N,eta) refract(I,N,eta)
   /*| refract_f3    |*/#define refract_f3(I,N,eta) refract(I,N,eta)
 
-
 #else
 
   #if defined(USE_NATIVE_OPENCL_IMPL)
@@ -590,97 +589,57 @@
 
 
 
-
-
-
-// -------------  C U B E M A P   E X P E R I M E N T S  -------------
-
-
-__DEVICE__ float4 unfold_cube_3f(__TEXTURE2D__ crossmap, float x, float y, float z)
-{
-  float4 p=to_float4(0.0f,1.0f,0.0f,1.0f);
-
-  float u,v,r,c;
-
-  float ax=_fabs(x);
-  float ay=_fabs(y);
-  float az=_fabs(z);
-
-  if (-x>=0.0f && az<=-x && ay<=-x) {
-
-    // -X, Face 1, left
-
-    c = 0.0f;
-    r = 1.0f;
-
-    u = z/-x;
-    v = y/-x;
-
-  } else if (z>=0.0f && ax<=z && ay<=z) {
-
-    // +Z, Face 4, front
-
-    c = 1.0f;
-    r = 1.0f;
-
-    u = x/z;
-    v = y/z;
-
-  } else if (x>=0.0f && az<=x && ay<=x) {
-
-    // +X, Face 0, right
-
-    c = 2.0f;
-    r = 1.0f;
-
-    u = -z/x;
-    v = y/x;
-
-  } else if (-z>=0.0f && ax<=-z && ay<=-z) {
-
-    // -Z, Face 5, back
-
-    c = 3.0f;
-    r = 1.0f;
-
-    u = -x/-z;
-    v = y/-z;
-
-  } else if (-y>=0.0f && az<=-y && ax<=-y) {
-
-    // -Y, Face 3, bottom
-
-    c = 1.0f;
-    r = 0.0f;
-
-    u = x/-y;
-    v = z/-y;
-
-  } else if (y>=0.0f && az<=y && ax<=y) {
-
-    // +Y, Face 2, top
-
-    c = 1.0f;
-    r = 2.0f;
-
-    u = x/y;
-    v = -z/y;
-
-  } else
-  {
-    return p;
-  }
-
-  u = (u+1.0f)/8.0f + (1.0f/4.0f)*c;
-  v = (v+1.0f)/6.0f + (1.0f/3.0f)*r;
-
-  p = _tex2DVecN(crossmap,u,v,15);
-
-  return p;
-}
-
-
-__DEVICE__ float4 unfold_cube_f3(__TEXTURE2D__ crossmap, float3 xyz)
-{
-  return unfold_cube_3f(crossmap,xyz.x,xyz.y,xyz.z);
-}
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/__DEVICE__ float4 decube_3f(__TEXTURE2D__ t, float x, float y, float z)
+/*|  decube_3f    |*/{
+/*|  decube_3f    |*/  float ax=_fabs(x);
+/*|  decube_3f    |*/  float ay=_fabs(y);
+/*|  decube_3f    |*/  float az=_fabs(z);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  if (x>0.0f && ax>=ay && ax>=az) // +X, Face 0, right
+/*|  decube_3f    |*/    return _tex2DVecN(t,(-z/ax+1.0f)/8.0f + 0.5f,(y/ax+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  if (y>0.0f && ay>=ax && ay>=az) // +Y, Face 2, top
+/*|  decube_3f    |*/    return _tex2DVecN(t,(x/ay+1.0f)/8.0f + 0.25f,(-z/ay+1.0f)/6.0f + (2.0f/3.0f),15);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  if (z>0.0f && az>=ax && az>=ay) // +Z, Face 4, front
+/*|  decube_3f    |*/    return _tex2DVecN(t,(x/az+1.0f)/8.0f + 0.25f,(y/az+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  if (x<0.0f && ax>=ay && ax>=az) // -X, Face 1, left
+/*|  decube_3f    |*/    return _tex2DVecN(t,(z/ax+1.0f)/8.0f,(y/ax+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  if (y<0.0f && ay>=ax && ay>=az) // -Y, Face 3, bottom
+/*|  decube_3f    |*/    return _tex2DVecN(t,(x/ay+1.0f)/8.0f + 0.25f,(z/ay+1.0f)/6.0f,15);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  if (z<0.0f && az>=ax && az>=ay) // -Z, Face 5, back
+/*|  decube_3f    |*/    return _tex2DVecN(t,(-x/az+1.0f)/8.0f + 0.75f,(y/az+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_3f    |*/
+/*|  decube_3f    |*/  return to_float4(1.0f,0.0f,0.0f,1.0f); // error
+/*|  decube_3f    |*/}
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/__DEVICE__ float4 decube_f3(__TEXTURE2D__ t, float3 xyz)
+/*|  decube_f3    |*/{
+/*|  decube_f3    |*/  float ax=_fabs(xyz.x);
+/*|  decube_f3    |*/  float ay=_fabs(xyz.y);
+/*|  decube_f3    |*/  float az=_fabs(xyz.z);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  if (xyz.x>0.0f && ax>=ay && ax>=az) // +X, Face 0, right
+/*|  decube_f3    |*/    return _tex2DVecN(t,(-xyz.z/ax+1.0f)/8.0f + 0.5f,(xyz.y/ax+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  if (xyz.y>0.0f && ay>=ax && ay>=az) // +Y, Face 2, top
+/*|  decube_f3    |*/    return _tex2DVecN(t,(xyz.x/ay+1.0f)/8.0f + 0.25f,(-xyz.z/ay+1.0f)/6.0f + (2.0f/3.0f),15);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  if (xyz.z>0.0f && az>=ax && az>=ay) // +Z, Face 4, front
+/*|  decube_f3    |*/    return _tex2DVecN(t,(xyz.x/az+1.0f)/8.0f + 0.25f,(xyz.y/az+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  if (xyz.x<0.0f && ax>=ay && ax>=az) // -X, Face 1, left
+/*|  decube_f3    |*/    return _tex2DVecN(t,(xyz.z/ax+1.0f)/8.0f,(xyz.y/ax+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  if (xyz.y<0.0f && ay>=ax && ay>=az) // -Y, Face 3, bottom
+/*|  decube_f3    |*/    return _tex2DVecN(t,(xyz.x/ay+1.0f)/8.0f + 0.25f,(xyz.z/ay+1.0f)/6.0f,15);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  if (xyz.z<0.0f && az>=ax && az>=ay) // -Z, Face 5, back
+/*|  decube_f3    |*/    return _tex2DVecN(t,(-xyz.x/az+1.0f)/8.0f + 0.75f,(xyz.y/az+1.0f)/6.0f + (1.0f/3.0f),15);
+/*|  decube_f3    |*/
+/*|  decube_f3    |*/  return to_float4(1.0f,0.0f,0.0f,1.0f); // error
+/*|  decube_f3    |*/}
