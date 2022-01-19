@@ -10,7 +10,6 @@
 #define TRACE_DISTANCE 30.0f
 #define NORMAL_EPSILON 0.01f
 #define REFLECT_DEPTH 4
-#define NUM_BALLS 7
 #define CUBEMAP_SIZE 128
 
 
@@ -18,7 +17,7 @@
 
 
 
-__DEVICE__ float world(float3 at, POINTERPARAMETER const float3* balls) {
+__DEVICE__ float world(float3 at, int NUM_BALLS, POINTERPARAMETER const float3* balls) {
 	//return touching_balls(at);
 	float sum = 0.0f;
 	for (int i = 0; i < NUM_BALLS; ++i) {
@@ -39,14 +38,18 @@ __DEVICE__ float3 lookAtDir(in float3 dir, in float3 pos, in float3 at) {
 
 __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, sampler2D iChannel0 ) {
 
+  CONNECT_INTSLIDER0(numBalls,1,20,7);
+
   float t = iTime * 0.11f;
 
-  float3 balls[NUM_BALLS];
+  #define MAX_BALLS 20
+
+  float3 balls[MAX_BALLS];
 
 	// update_balls(t);
   {
 
-    for (int i = 0; i < NUM_BALLS; ++i) {
+    for (int i = 0; i < numBalls; ++i) {
 		balls[i] = 3.0f * to_float3(
 			_sinf(0.3f+float(i+1)*t),
 			_cosf(1.7f+float(i-5)*t),
@@ -70,7 +73,7 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
     {
       float l = 0.0f;
       for (int i = 0; i < TRACE_STEPS; ++i) {
-        float d = world(pos + dir * l,balls);
+        float d = world(pos + dir * l,numBalls,balls);
         if (d < TRACE_EPSILON*l) break; // if we return here, browser will crash on mac os x, lols
         l += d;
         if (l > TRACE_DISTANCE) break;
@@ -103,9 +106,9 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
     {
 	    float2 e = float2(0.0f, NORMAL_EPSILON);
 	    at = normalize(float3(
-              world(at+e.yxx,balls)-world(at,balls),
-						  world(at+e.xyx,balls)-world(at,balls),
-						  world(at+e.xxy,balls)-world(at,balls)
+              world(at+e.yxx,numBalls,balls)-world(at,numBalls,balls),
+						  world(at+e.xyx,numBalls,balls)-world(at,numBalls,balls),
+						  world(at+e.xxy,numBalls,balls)-world(at,numBalls,balls)
               ));
     }
 
