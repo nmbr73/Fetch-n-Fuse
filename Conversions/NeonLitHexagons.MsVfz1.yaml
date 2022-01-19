@@ -1,0 +1,18 @@
+fuse:
+  author: nmbr73
+  file: NeonLitHexagons
+  id: NeonLitHexagons
+  kernel: NeonLitHexagons
+  name: NeonLitHexagons
+shader:
+  author: Shane
+  description: A simple raymarched hexagon scene with some neon elements.
+  id: MsVfz1
+  name: Neon Lit Hexagons
+  tags:
+  - raymarching
+  - volumetric
+  - hexagon
+  - glow
+  - neon
+  url: https://www.shadertoy.com/view/MsVfz1

@@ -1,0 +1,15 @@
+fuse:
+  author: nmbr73
+  file: CubeMapToEquirectangularMap
+  id: CubeMapToEquirectangularMap
+  kernel: CubeMapToEquirectangularMap
+  name: CubeMapToEquirectangularMap
+shader:
+  author: BeRo
+  description: Cube map to equirectangular map converter example
+  id: XsBSDR
+  name: Cube map to equirectangular map
+  tags:
+  - cubemap
+  - equirectangularmap
+  url: https://www.shadertoy.com/view/XsBSDR
