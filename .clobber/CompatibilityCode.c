@@ -607,45 +607,102 @@ __DEVICE__ float4 unfold_cube_3f(__TEXTURE2D__ crossmap, float x, float y, float
   if (-x>0.0f && _fabs(z)<-x && _fabs(y)<=-x) {
     // -X, Face 1, left
 
-    u = (z+1.0f)/8.0f;
-    v = (y-1.0f)/6.0f+2.0f/3.0f;
+    u = -z/-x; u=(u+1.0f)/2.0f;
+    v = y/-x;  v=(v+1.0f)/2.0f;
+
+    u=u/4.0f;
+    v=v/3.0f;
+
+    v=v+1.0f/3.0f;
+
+    //u = (z+1.0f)/8.0f;
+    //v = (y-1.0f)/6.0f+2.0f/3.0f;
 
 //} else if (z==1.0f) {
   } else if (z>0.0f && _fabs(x)<z && _fabs(y)<z) {
     // +Z, Face 4, front
 
-    u = (x+1.0f)/8.0f+0.25;
-    v = (y-1.0f)/6.0f+2.0f/3.0f;
+    u = x/z; u = (u+1.0f)/2.0f;
+    v = y/z; v = (v+1.0f)/2.0f;
+
+    u=u/4.0f;
+    v=v/3.0f;
+
+    u=u+1.0f/4.0f;
+    v=v+1.0f/3.0f;
+
+
+    // u = (x+1.0f)/8.0f+0.25;
+    // v = (y-1.0f)/6.0f+2.0f/3.0f;
 
 //} else if (x==1.0f) {
   } else if (x>0.0f && _fabs(z)<x && _fabs(y)<x) {
     // +X, Face 0, right
 
-    u = -(((-z+1.0f)/2.0f+2.0f)/4.0f);
-    v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    u = -z/x; u=(u+1.0f)/2.0f;
+    v = y/x;  v=(v+1.0f)/2.0f;
+
+    u=u/4.0f;
+    v=v/3.0f;
+
+    u=u+(1.0f/4.0f)*2.0f;
+    v=v+1.0f/3.0f;
+
+    // u = -(((-z+1.0f)/2.0f+2.0f)/4.0f);
+    // v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
 //} else if (z==-1.0f) {
   } else if (-z>0.0f && _fabs(x)<-z && _fabs(y)<-z) {
     // -Z, Face 5, back
 
-    u = -(((-x+1.0f)/2.0f+3.0f)/4.0f);
-    v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
+    u = x/-z; u = (u+1.0f)/2.0f;
+    v = y/-z; v = (v+1.0f)/2.0f;
+
+    u=u/4.0f;
+    v=v/3.0f;
+
+    u=u+(1.0f/4.0f)*3.0f;
+    v=v+1.0f/3.0f;
+
+
+    // u = -(((-x+1.0f)/2.0f+3.0f)/4.0f);
+    // v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
 
 //} else if (y==-1.0f) {
   } else if (-y>0.0f && _fabs(z)<-y && _fabs(x)<-y) {
 
     // -Y, Face 3, bottom
 
-    u = (x+1.0f)/8.0f+0.25f;
-    v = (z+1.0f)/6.0f;
+    u = x/-y; u = (u+1.0f)/2.0f;
+    v = z/-y; v = (v+1.0f)/2.0f;
+
+    u=u/4.0f;
+    v=v/3.0f;
+
+    u=u+(1.0f/4.0f)*1.0f;
+    //v=v+(1.0f/3.0f)*2.0f;
+
+
+    // u = (x+1.0f)/8.0f+0.25f;
+    // v = (z+1.0f)/6.0f;
 
 //} else if (y==1.0f) {
   } else if (y>0.0f && _fabs(z)<y && _fabs(x)<y) {
 
     // +Y, Face 2, top
 
-    u = (x+1.0f)/8.0f+0.25f;
-    v = -((z+1.0f)/6.0f+1.0f);
+    u = x/y; u = (u+1.0f)/2.0f;
+    v = z/y; v = (v+1.0f)/2.0f;
+
+    u=u/4.0f;
+    v=v/3.0f;
+
+    u=u+(1.0f/4.0f)*1.0f;
+    v=v+(1.0f/3.0f)*2.0f;
+
+
+    // u = (x+1.0f)/8.0f+0.25f;
+    // v = -((z+1.0f)/6.0f+1.0f);
 
   } else
   {

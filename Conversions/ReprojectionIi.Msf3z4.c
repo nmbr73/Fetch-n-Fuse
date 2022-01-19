@@ -419,7 +419,7 @@ float zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
   *vCameraTarget = BSpline(vCameraTargetA, vCameraTargetB, vCameraTargetC, vCameraTargetD, fCameraTime);
 }
 
-__DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, float iMouse_z  )
+__DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, bool showGrid  )
 {
   float fHitDist = TraceScene(ray);
   float3 vHitPos = ray.vOrigin + ray.vDir * fHitDist;
@@ -471,7 +471,7 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
   }
   #endif
 
-  if(iMouse_z > 0.0f)
+  if(showGrid)
   {
     float3 vGrid =  step(to_float3_s(0.9f), fract(vHitPos + 0.01f));
     float fGrid = _fminf(dot(vGrid, to_float3_s(1.0f)), 1.0f);
@@ -483,8 +483,8 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
 
 __KERNEL__ void ReprojectionIiFuse(float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, sampler2D iChannel0, sampler2D iChannel1)
 {
-
-    C_Ray ray;
+  CONNECT_CHECKBOX0(Show_Grid,false);
+  C_Ray ray;
 
   // float3 vResult = to_float3_s(0.0f);
 
@@ -498,8 +498,9 @@ __KERNEL__ void ReprojectionIiFuse(float2 fragCoord, float iTime, float2 iResolu
   GetCameraRayLookat( vCameraPos, vCameraTarget, fragCoord, &ray, iResolution);
 
   //swi3(fragColor,x,y,z) = SceneColor( ray, iChannel0 );
-  float3 sceneColor=SceneColor( ray, iChannel0, iChannel1, iMouse.z );
+//  float3 sceneColor=SceneColor( ray, iChannel0, iChannel1, iMouse.z );
 
+  float3 sceneColor=SceneColor( ray, iChannel0, iChannel1, Show_Grid );
 
 
   SetFragmentShaderComputedColor(to_float4(sceneColor.x,sceneColor.y,sceneColor.z,1.0f));
