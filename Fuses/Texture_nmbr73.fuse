@@ -113,7 +113,7 @@ function Create()
       LINKID_DataType = "Number",
       INPID_InputControl = "ComboControl",
       INP_DoNotifyChanged = true,
-      INP_Default = 0,
+      INP_Default = 1,
       INP_Integer = true,
       options
       })
