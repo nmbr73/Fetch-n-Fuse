@@ -51,9 +51,9 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
 
     for (int i = 0; i < numBalls; ++i) {
 		balls[i] = 3.0f * to_float3(
-			_sinf(0.3f+float(i+1)*t),
-			_cosf(1.7f+float(i-5)*t),
-			1.1f*sin(2.3f+float(i+7)*t));
+                              _sinf(0.3f+(float)(i+1)*t),
+                              _cosf(1.7f+(float)(i-5)*t),
+                              1.1f*sin(2.3f+(float)(i+7)*t));
 	  }
   }
 
@@ -63,7 +63,7 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
 	float2 uv = (fragCoord / iResolution * 2.0f - 1.0f) * to_float2(aspect, 1.0f);
 
 	float3 pos = to_float3(cos(2.0f+4.0f*cos(t))*10.0f, 2.0f+8.0f*cos(t*0.8f), 10.0f*sin(2.0f+3.0f*cos(t)));
-	float3 dir = lookAtDir(normalize(to_float3_aw(uv, 2.0f)), pos.xyz, balls[0]);
+	float3 dir = lookAtDir(normalize(to_float3_aw(uv, 2.0f)), swi3(pos,x,y,z), balls[0]);
 
 	fragColor = to_float4_s(0.0f);
 	float k = 1.0f;
@@ -78,7 +78,7 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
         l += d;
         if (l > TRACE_DISTANCE) break;
       }
-      tpos= float4(pos + dir * l, l);
+      tpos= to_float4_aw(pos + dir * l, l);
     }
 
 		if (tpos.w >= TRACE_DISTANCE) {
@@ -88,7 +88,7 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
       // __DEVICE__ float3 cube(in float3 dir)
       {
         float M = max(max(_fabs(dir.x), _fabs(dir.y)), _fabs(dir.z));
-        float scale = (float(CUBEMAP_SIZE) - 1.0f) / float(CUBEMAP_SIZE);
+        float scale = ((float)(CUBEMAP_SIZE) - 1.0f) / (float)(CUBEMAP_SIZE);
         if (_fabs(dir.x) != M) dir.x *= scale;
         if (_fabs(dir.y) != M) dir.y *= scale;
         if (_fabs(dir.z) != M) dir.z *= scale;
@@ -102,18 +102,19 @@ __KERNEL__ void BallsAreTouchingFuse(float4 fragColor, float2 fragCoord, float i
 		k *= .6;
 
     // normal
-    float3 at=tpos.xyz;
+    float3 at=swi3(tpos,x,y,z);
     {
-	    float2 e = float2(0.0f, NORMAL_EPSILON);
-	    at = normalize(float3(
-              world(at+e.yxx,numBalls,balls)-world(at,numBalls,balls),
-						  world(at+e.xyx,numBalls,balls)-world(at,numBalls,balls),
-						  world(at+e.xxy,numBalls,balls)-world(at,numBalls,balls)
+      
+	    float2 e = to_float2(0.0f, NORMAL_EPSILON);
+	    at = normalize(to_float3(
+              world(at+swi3(e,y,x,x),numBalls,balls)-world(at,numBalls,balls),
+						  world(at+swi3(e,x,y,x),numBalls,balls)-world(at,numBalls,balls),
+						  world(at+swi3(e,x,x,y),numBalls,balls)-world(at,numBalls,balls)
               ));
     }
 
 		dir = normalize(reflect(dir, at));
-		pos = tpos.xyz + dir * REFLECT_EPSILON;
+		pos = swi3(tpos,x,y,z) + dir * REFLECT_EPSILON;
 	}
 
   fragColor.w=1.0f;
