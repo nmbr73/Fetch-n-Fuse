@@ -1,0 +1,16 @@
+fuse:
+  author: nmbr73
+  file: CubemapFaceUnwrap
+  id: CubemapFaceUnwrap
+  kernel: CubemapFaceUnwrap
+  name: CubemapFaceUnwrap
+shader:
+  author: spalmer
+  description: A debugging tool, visual aid, some helper functions for managing cubemap
+    uvw and face indices.  Hope it's useful.
+  id: tlyXzG
+  name: Cubemap Face Unwrap
+  tags:
+  - cubemap
+  - unwrap
+  url: https://www.shadertoy.com/view/tlyXzG

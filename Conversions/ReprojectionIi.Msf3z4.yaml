@@ -1,0 +1,20 @@
+fuse:
+  author: nmbr73
+  file: ReprojectionIi
+  id: ReprojectionIi
+  kernel: ReprojectionIi
+  name: ReprojectionIi
+shader:
+  author: P_Malin
+  description: 'Projecting a cubemap texture onto a 3d scene. Click in window to see
+    the grid over the 3d scene.
+
+    The cubemap texture is sampled to generate a bumpmap and the blurry cubemap is
+    used as a reflection.'
+  id: Msf3z4
+  name: Reprojection II
+  tags:
+  - cubemap
+  - raytrace
+  - projection
+  url: https://www.shadertoy.com/view/Msf3z4
