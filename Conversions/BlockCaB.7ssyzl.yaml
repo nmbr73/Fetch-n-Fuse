@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: BlockCaB
+  id: BlockCaB
+  kernel: BlockCaB
+  name: BlockCaB
+shader:
+  author: N.N.
+  description: 'block cellular automaton using the critters rules.
+
+    click to place cells.
+
+    press "a" to toggle reversing time'
+  id: 7ssyzl
+  name: Fork block CA b JiPi 935
+  parent:
+    id: 7sVXWG
+    name: block CA by racon
+    url: https://www.shadertoy.com/view/7sVXWG
+  tags:
+  - cellular
+  - automaton
+  url: https://www.shadertoy.com/view/7ssyzl

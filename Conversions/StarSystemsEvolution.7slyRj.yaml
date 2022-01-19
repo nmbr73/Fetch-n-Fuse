@@ -11,10 +11,5 @@ shader:
   id: 7slyRj
   name: Star systems evolution
   tags:
-  - procedural
-  - 2d
-  - fractal
-  - cloud
-  - fire
-  - generated
+  - simulation
   url: https://www.shadertoy.com/view/7slyRj

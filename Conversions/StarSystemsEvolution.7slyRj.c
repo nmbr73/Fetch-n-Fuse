@@ -2,8 +2,8 @@
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer A'Previsualization: Buffer A' to iChannel0
+// Connect Buffer A'Previsualization: Buffer B' to iChannel1
 
 #define swi2S(a,b,c,d) {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;} 
 #define texture(ch,uv) _tex2DVecN(ch, (uv).x, (uv).y, 15)
@@ -131,8 +131,8 @@ __KERNEL__ void StarSystemsEvolutionFuse__Buffer_A(float4 fragColor, float2 frag
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
+// Connect Image'Previsualization: Buffer A' to iChannel0
+// Connect Image'Previsualization: Buffer B' to iChannel1
 
 
 // (C) Copyright 2021 by Yury Ershov

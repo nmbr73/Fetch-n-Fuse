@@ -22,13 +22,13 @@ function ShaderKernels_resetData()
     RenderErrors  = false,
     MaxEntries    = 0,
     Entries       = {
-      [0] = { ComboName  = "<none>",    InputName  = "",         InfoName = "",        KernelName=nil, },
-            { ComboName  = "Buffer A",  InputName  = "Buffer A", InfoName = "A",       KernelName="", },
-            { ComboName  = "Buffer B",  InputName  = "Buffer B", InfoName = "B",       KernelName="", },
-            { ComboName  = "Buffer C",  InputName  = "Buffer C", InfoName = "C",       KernelName="", },
-            { ComboName  = "Buffer D",  InputName  = "Buffer D", InfoName = "D",       KernelName="", },
-            { ComboName  = "Image",     InputName  = "Image",    InfoName = "IMAGE",   KernelName="", },
-            { ComboName  = "=final=",   InputName  = "",         InfoName = "FINAL",   KernelName="FINAL", },
+      [0] = { ComboName  = "<none>",    InputName  = "",         InfoName = "",        KernelName=nil, Channel = {nil}, },
+            { ComboName  = "Buffer A",  InputName  = "Buffer A", InfoName = "A",       KernelName="",  Channel = {nil}, },
+            { ComboName  = "Buffer B",  InputName  = "Buffer B", InfoName = "B",       KernelName="",  Channel = {nil}, },
+            { ComboName  = "Buffer C",  InputName  = "Buffer C", InfoName = "C",       KernelName="",  Channel = {nil}, },
+            { ComboName  = "Buffer D",  InputName  = "Buffer D", InfoName = "D",       KernelName="",  Channel = {nil}, },
+            { ComboName  = "Image",     InputName  = "Image",    InfoName = "IMAGE",   KernelName="",  Channel = {nil}, },
+            { ComboName  = "=final=",   InputName  = "",         InfoName = "FINAL",   KernelName="FINAL",  Channel = {nil}, },
     },
   }
 end
@@ -71,6 +71,16 @@ function ShaderKernels_getLabelText()
   return '<center>'..table.concat(htm,'&nbsp;')..'</center>'
 
 end
+
+function TestLabelText()
+  local htm = {}
+  --i = 3
+  table.insert(htm,'<font style="color:#00ff00; ">&nbsp;'.. ShaderKernels.Entries[1].InfoName ..i..'&nbsp;</font>')
+  --return '<center>'..table.concat(htm,'&nbsp;')..'</center>'
+  return table.concat(htm,'&nbsp;')
+end
+
+
 
 
 ShaderParameters        = nil
@@ -128,9 +138,12 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 -- @param[type=string] msg The message to output in DaFusions console window.
 --
 function verbose(msg)
-   print(msg)
+   --print(msg)
 end
 
+function verbose_MB(msg,...)
+   --print(msg,...)
+end   
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -202,7 +215,6 @@ function CompatibilityCode_loadFile()
   CompatibilityCode = ""
 
   f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
-
   if not f then
     print("failed to read compatibility code")
   else
@@ -212,9 +224,7 @@ function CompatibilityCode_loadFile()
     if CompatibilityCode=="" then
       print("no compatibility code?!?")
     end
-
   end
-
 end
 
 
@@ -384,6 +394,18 @@ function Create()
     INP_Passive = true,
     INP_DoNotifyChanged = false,
     INP_Disabled=false,
+  })
+
+i=4
+
+  Test_Label = self:AddInput(  TestLabelText(), "TestLabel", {
+    IC_ControlPage     = control_page ,
+    LINKID_DataType    = "Text",
+    INPID_InputControl = "LabelControl",
+    INP_External       = false,
+    INP_Passive        = true,
+    INP_DoNotifyChanged = false,
+    INP_Disabled       = false,
   })
 
 
@@ -667,6 +689,146 @@ function Create()
     CC_LabelPosition = "Horizontal",
   })
 
+-- Channels
+ self:AddControlPage("Channels")
+
+		InChannelBufferA = self:AddInput("Buffer A", "ChannelBufferA", {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_DoNotifyChanged  = false,
+			INP_External = false,
+			--IC_NoLabel = true,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "Channel0: not used\nChannel1: Buffer B\nChannel1: Abstract 3\nChannel1: Buffer A",
+      TEC_Lines = 4,              -- height of text entry (default is 8)
+			TEC_Wrap = false,            -- automatic word-wrapping (default is false)
+			TEC_ReadOnly = true,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit = 0,	         -- maximum number of allowed characters (default is 0, no limit)
+			--TEC_DeferSetInputs = false,  -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
+      IC_Visible      = false,
+			})
+		
+
+SepBufferA = self:AddInput("________________Buffer A__________________", "SepBufferA", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    IC_NoLabel = true,
+    INP_External = false,
+    INP_Passive = true,
+  })
+    
+  InChBufferA={}
+ 
+  
+  for i=0,3 do  
+
+    InChBufferA[i] = self:AddInput("Channel"..i, "ChBufferA"..i, {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			--IC_NoLabel = true,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "Buffer B",
+      TEC_Lines = 1,              -- height of text entry (default is 8)
+			TEC_ReadOnly = true,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit = 0,	         -- maximum number of allowed characters (default is 0, no limit)
+			})
+  end
+SepBufferB = self:AddInput("________________Buffer B__________________", "SepBufferB", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    IC_NoLabel = true,
+    INP_External = false,
+    INP_Passive = true,
+  })
+    
+  InChBufferB={}
+  for i=0,3 do
+    InChBufferB[i] = self:AddInput("Channel"..i, "ChBufferB"..i, {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			--IC_NoLabel = true,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "not used",
+      TEC_Lines = 1,              -- height of text entry (default is 8)
+			TEC_ReadOnly = true,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit = 0,	         -- maximum number of allowed characters (default is 0, no limit)
+			})
+  end
+SepBufferC = self:AddInput("________________Buffer C__________________", "SepBufferC", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    IC_NoLabel = true,
+    INP_External = false,
+    INP_Passive = true,
+  })
+    
+  InChBufferC={}
+  for i=0,3 do
+    InChBufferC[i] = self:AddInput("Channel"..i, "ChBufferC"..i, {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			--IC_NoLabel = true,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "Abstract 3",
+      TEC_Lines = 1,              -- height of text entry (default is 8)
+			TEC_ReadOnly = true,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit = 0,	         -- maximum number of allowed characters (default is 0, no limit)
+			})
+  end
+SepBufferD = self:AddInput("________________Buffer D__________________", "SepBufferD", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    IC_NoLabel = true,
+    INP_External = false,
+    INP_Passive = true,
+  })
+    
+  InChBufferD={}
+  for i=0,3 do
+    InChBufferD[i] = self:AddInput("Channel"..i, "ChBufferD"..i, {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			--IC_NoLabel = true,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "Buffer A",
+      TEC_Lines = 1,              -- height of text entry (default is 8)
+			TEC_ReadOnly = true,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit = 0,	         -- maximum number of allowed characters (default is 0, no limit)
+			})
+  end
+SepImage = self:AddInput("________________Image__________________", "SepBufferImage", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "LabelControl",
+    IC_NoLabel = true,
+    INP_External = false,
+    INP_Passive = true,
+  })
+    
+  InChImage={}
+  for i=0,3 do
+    InChImage[i] = self:AddInput("Channel"..i, "ChImage"..i, {
+			LINKID_DataType = "Text",
+			INPID_InputControl = "TextEditControl",
+			INP_External = false,
+			--IC_NoLabel = true,
+			ICD_Width = 1.0,
+			INPS_DefaultText = "Buffer D",
+      TEC_Lines = 1,              -- height of text entry (default is 8)
+			TEC_ReadOnly = true,        -- default is false (you should also set INP_External = false)
+			TEC_CharLimit = 0,	         -- maximum number of allowed characters (default is 0, no limit)
+			})
+  end
+
+
+
+
+
+
+
 
 
 -- Fetch-n-Fuse
@@ -856,6 +1018,69 @@ end
 
 
 
+
+
+
+--------------------------------------------------------------------------------------
+--  Get the Channels of a Buffer
+--
+
+-- Examples
+--  // Connect Buffer A 'Texture: RGBA Noise Medium' to iChannel0
+--  // Connect Buffer A 'Preset: Keyboard' to iChannel1
+--  
+--  // Connect Image 'Previsualization: Buffer A' to iChannel0
+
+function GetChannels(ConversionSourcecode, Part, Channels)
+
+  --// Connect Buffer A 'Previsualization: Buffer B' to iChannel0
+  local BufferChannel0 = ConversionSourcecode:match(Part.."%s*'[A-Za-z0-9_]*:%s+([%sA-Za-z0-9_]*)'%s*to iChannel0") --OK
+  local BufferChannel1 = ConversionSourcecode:match(Part.."%s*'[A-Za-z0-9_]*:%s+([%sA-Za-z0-9_]*)'%s*to iChannel1") --OK
+  local BufferChannel2 = ConversionSourcecode:match(Part.."%s*'[A-Za-z0-9_]*:%s+([%sA-Za-z0-9_]*)'%s*to iChannel2") --OK
+  local BufferChannel3 = ConversionSourcecode:match(Part.."%s*'[A-Za-z0-9_]*:%s+([%sA-Za-z0-9_]*)'%s*to iChannel3") --OK
+
+--print("\nChannel0: ", BufferChannel0)
+--print("Channel1: ", BufferChannel1)
+--print("Channel2: ", BufferChannel2)
+--print("Channel3: ", BufferChannel3,"\n")
+
+	Channels[0] = BufferChannel0
+	Channels[1] = BufferChannel1
+	Channels[2] = BufferChannel2
+	Channels[3] = BufferChannel3
+  -- should be solved more elegantly -> double array
+  if(Part == "Buffer A") then
+    InChBufferA[0]:SetSource(Text(BufferChannel0),0,0)
+    InChBufferA[1]:SetSource(Text(BufferChannel1),0,0)
+    InChBufferA[2]:SetSource(Text(BufferChannel2),0,0)
+    InChBufferA[3]:SetSource(Text(BufferChannel3),0,0)
+  else if(Part == "Buffer B") then
+        InChBufferB[0]:SetSource(Text(BufferChannel0),0,0)
+        InChBufferB[1]:SetSource(Text(BufferChannel1),0,0)
+        InChBufferB[2]:SetSource(Text(BufferChannel2),0,0)
+        InChBufferB[3]:SetSource(Text(BufferChannel3),0,0)
+       else if(Part == "Buffer C") then
+            InChBufferC[0]:SetSource(Text(BufferChannel0),0,0)
+            InChBufferC[1]:SetSource(Text(BufferChannel1),0,0)
+            InChBufferC[2]:SetSource(Text(BufferChannel2),0,0)
+            InChBufferC[3]:SetSource(Text(BufferChannel3),0,0)
+            else if(Part == "Buffer D") then
+                InChBufferD[0]:SetSource(Text(BufferChannel0),0,0)
+                InChBufferD[1]:SetSource(Text(BufferChannel1),0,0)
+                InChBufferD[2]:SetSource(Text(BufferChannel2),0,0)
+                InChBufferD[3]:SetSource(Text(BufferChannel3),0,0)
+                 else if(Part == "Image") then
+                    InChImage[0]:SetSource(Text(BufferChannel0),0,0)
+                    InChImage[1]:SetSource(Text(BufferChannel1),0,0)
+                    InChImage[2]:SetSource(Text(BufferChannel2),0,0)
+                    InChImage[3]:SetSource(Text(BufferChannel3),0,0)
+                    end                  
+                 end     
+            end
+       end
+  end
+  
+end
 
 
 
@@ -1054,7 +1279,20 @@ function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
 
   ShaderKernels_resetData()
 
+
+-- Channel
   local i=0
+ 
+ --print("#################### Multibuffertest ########################\n")
+
+  for i,e in pairs(ShaderKernels.Entries) do
+    if e.InputName ~= "" then
+      --print("\n-------------------------GetChannelsaufruf: ",i,e.InputName,e.Channel[1])
+      GetChannels(ConversionSourcecode,e.InputName,e.Channel)  
+    end
+  end
+
+  i=0
   local kn
 
   for i,e in pairs(ShaderKernels.Entries) do
@@ -1301,11 +1539,55 @@ function RebuildParameters()
     ShaderParameters_struct = ShaderParameters_struct .. "\n} Params;\n"
     ShaderParameters_init   = ShaderParameters_init .. "  Params* params = &_hiddenParams;\n"
 
-    print("typedef to simulate the parameters struct would be:\n\n"..ShaderParameters_struct.."\n\n")
-    print("and then something like this would have to be inserted into the kernel:\n\n"..ShaderParameters_init.."\n\n")
-    print("so we'd need the struct declaration right after the Compatibility and straight before the Conversion code (an easy one) and the initialization code should then be placed and the top of the kernel function - then we schould end up with 'params' as we know it ... but no idea if this works - in particular when handing over the pointer to other functions (what is what the whole thing would be needed for)\n\n")
+--    print("typedef to simulate the parameters struct would be:\n\n"..ShaderParameters_struct.."\n\n")
+--    print("and then something like this would have to be inserted into the kernel:\n\n"..ShaderParameters_init.."\n\n")
+--    print("so we'd need the struct declaration right after the Compatibility and straight before the Conversion code (an easy one) and the initialization code should then be placed and the top of the kernel function - then we schould end up with 'params' as we know it ... but no idea if this works - in particular when handing over the pointer to other functions (what is what the whole thing would be needed for)\n\n")
 end
 
+---------------------------------------------Add_Inputs for Multibuffer--------------------------------------------
+function Add_Inputs(node, iChannel, ImageCnt, e, InCh)
+
+    local imgcnt = 0 -- Fortlaufend Images "auffüllen", die nicht vom Shader definiert wurden
+    for i=0,3 do -- iChannel0..3
+
+      if(e.Channel[i] == "Buffer A") then   
+        --print("iChannel"..i, "GlobalA")
+        node:AddInput("iChannel"..i,Image_Buff_GlobalA)        
+      else if(e.Channel[i] == "Buffer B") then   
+             --print("iChannel"..i, "GlobalB") 
+             node:AddInput("iChannel"..i,Image_Buff_GlobalB)
+           else if(e.Channel[i] == "Buffer C") then   
+                  --print("iChannel"..i, "GlobalC") 
+                  node:AddInput("iChannel"..i,Image_Buff_GlobalC)
+                else if(e.Channel[i] == "Buffer D") then
+                       --print("iChannel"..i, "GlobalD")
+                       node:AddInput("iChannel"..i,Image_Buff_GlobalD)
+                     else if(e.Channel[i] ~= nil) then
+                            -- Textur Eingänge des Shaders
+                            --print("iChannel"..i, "Image"..ImageCnt)
+                            node:AddInput("iChannel"..i,iChannel[ImageCnt])
+                            
+                            -- Anzeige 
+                            InCh[i]:SetAttrs({LINKS_Name = "Image"..ImageCnt, LBLC_LabelColor = 2,})
+                            ImageCnt = ImageCnt+1
+                            if (ImageCnt == 5) then print("Error Multibuffer - zuviele Textureingänge") ImageCnt = 4 end
+                          else
+                            if (ImageCnt+imgcnt > 4) then print("Multibuffer - Textureingänge überprüfen") imgcnt = 0 end
+                            --print("iChannel"..i, "Image"..ImageCnt+imgcnt)
+                            node:AddInput("iChannel"..i,iChannel[ImageCnt+imgcnt])
+                            imgcnt = imgcnt+1
+                          end
+                     end      
+                end 
+           end
+      end
+
+    end
+    if (ImageCnt+imgcnt > 4) then print("Multibuffer - Textureingänge überprüfen") imgcnt = 0 end
+    --print("iChannel4", "Image"..ImageCnt+imgcnt) -- Zusätzlicher Eingang
+    node:AddInput("iChannel4",iChannel[ImageCnt+imgcnt])
+    
+end    
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -1456,7 +1738,7 @@ function Process(req)
     verbose("Process: Parameter Names")
     InRebuildParameterNames:SetSource(Number(0),0)
     RebuildParameters()
-    print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
+    --print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
   end
 
 
@@ -1531,7 +1813,7 @@ function Process(req)
 
 
   if req:IsPreCalc() then
-    verbose("precalc")
+    --verbose("precalc")
     local out = Image({IMG_Like = dst, IMG_NoData = true})
     OutImage:Set(req, out)
     OutImage2:Set(req,dst)
@@ -1545,14 +1827,15 @@ function Process(req)
 --print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
 
 
-  if(ShaderKernels.Current == 6) then   -- "=final="
-
-    if (ShaderKernels.Quantity > 1) then -- Multibuffer? - dann 
-      ConversionKernelname = ShaderKernels.Entries[1].KernelName --Buffer A zuerst
-    end
+  if(ShaderKernels.Current == 6) then                            -- "=final=" ? 
+    if(ShaderKernels.Quantity > 1) then                          -- und Multibuffer ? dann   
+      ConversionKernelname = ShaderKernels.Entries[1].KernelName -- Buffer A zuerst
+    else
+      ConversionKernelname = ShaderKernels.Entries[5].KernelName -- Nur Image vorhanden
+    end  
   end
   
---  print("\nOrg :",ConversionKernelname)
+  verbose_MB("\n Kernelname:",ConversionKernelname)
   
   
   local node = DVIPComputeNode(req,
@@ -1578,11 +1861,11 @@ function Process(req)
 
 
 --local dst = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-  local dstA = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-	local dstB = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-	local dstC = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-	local dstD = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
-	local dstI = Image {IMG_Like = iChannel[0], IMG_DeferAlloc = true}
+  local dstA = Image {IMG_Like = dst, IMG_DeferAlloc = true}
+	local dstB = Image {IMG_Like = dst, IMG_DeferAlloc = true}
+	local dstC = Image {IMG_Like = dst, IMG_DeferAlloc = true}
+	local dstD = Image {IMG_Like = dst, IMG_DeferAlloc = true}
+	local dstI = Image {IMG_Like = dst, IMG_DeferAlloc = true}
 
 
   -------------- Parameter für DCTL-Code ---------------------
@@ -1722,15 +2005,16 @@ function Process(req)
   node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
   --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
   
+  ImageCnt = 0 -- Textureingänge des Shaders forlaufend mitzählen ! Achtung mehr als 5 insgesamt nicht möglich 
+  
   -- Multibuffer Buffer A ?
-  if(ShaderKernels.Current == 6) then   -- "=final="  
-    --ToDo  Anpassen Fetch.py: Verwendung der internen Verdrahtung
-    node:AddInput("iChannel0",Image_Buff_GlobalA)
-    node:AddInput("iChannel1",iChannel[0])
-    node:AddInput("iChannel2",iChannel[1])
-    node:AddInput("iChannel3",iChannel[2])
-    node:AddInput("iChannel4",iChannel[3])
-    
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 1) then   -- "=final=" und Multibuffer 
+
+    verbose_MB("\n------Multibuffer Buffer A:",ConversionKernelname)
+
+
+    Add_Inputs(node, iChannel, ImageCnt, ShaderKernels.Entries[1], InChBufferA )
+        
     node:AddOutput("dst", dstA)
     Image_Buff_GlobalA = dstA
   else
@@ -1757,7 +2041,7 @@ function Process(req)
 
     ConversionKernelname = ShaderKernels.Entries[2].KernelName --Buffer B starten
  
-    print("\nBufferB :",ConversionKernelname)
+    verbose_MB("------Multibuffer Buffer B:",ConversionKernelname)
     
     local nodeB = DVIPComputeNode(req,
       ConversionKernelname,
@@ -1771,12 +2055,7 @@ function Process(req)
     nodeB:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
     --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
     
-    --ToDo  Anpassen Fetch.py: Verwendung der internen Verdrahtung
-    nodeB:AddInput("iChannel0",Image_Buff_GlobalA)
-    nodeB:AddInput("iChannel1",iChannel[0])
-    nodeB:AddInput("iChannel2",iChannel[1])
-    nodeB:AddInput("iChannel3",iChannel[2])
-    nodeB:AddInput("iChannel4",iChannel[3])
+    Add_Inputs(nodeB, iChannel, ImageCnt, ShaderKernels.Entries[2], InChBufferB)
       
     nodeB:AddOutput("dst", dstB)
     Image_Buff_GlobalB = dstB
@@ -1794,14 +2073,91 @@ function Process(req)
     end
   end
 
+  -- Multibuffer Next Buffer: C
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity == 4) then   -- "=final=" und Multibuffer AB? dann
+
+    ConversionKernelname = ShaderKernels.Entries[3].KernelName --Buffer C starten
+ 
+    verbose_MB("------Multibuffer Buffer C:",ConversionKernelname)
+    
+    local nodeC = DVIPComputeNode(req,
+      ConversionKernelname,
+      ConversionSourcecode,
+      "ShaderParameters",
+      ShaderParameters
+      )
+
+    nodeC:SetParamBlock(params)
+
+    nodeC:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+    --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+    
+    Add_Inputs(nodeC, iChannel, ImageCnt, ShaderKernels.Entries[3], InChBufferC)
+      
+    nodeC:AddOutput("dst", dstC)
+    Image_Buff_GlobalC = dstC
+
+
+    if rebuild then
+      nodeC:ForceRebuild()
+    end
+
+    local ok = nodeC:RunSession(req)
+    if (not ok) then
+      ShaderKernels.RenderErrors = true
+      dstC = nil
+      dump(nodeC:GetErrorLog())
+    end
+  end
+
+  -- Multibuffer Next Buffer: D
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity == 5) then   -- "=final=" und Multibuffer AB? dann
+
+    ConversionKernelname = ShaderKernels.Entries[4].KernelName --Buffer B starten
+ 
+    verbose_MB("------Multibuffer Buffer D:",ConversionKernelname)
+    
+    local nodeD = DVIPComputeNode(req,
+      ConversionKernelname,
+      ConversionSourcecode,
+      "ShaderParameters",
+      ShaderParameters
+      )
+
+    nodeD:SetParamBlock(params)
+
+    nodeD:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+    --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
+    
+    Add_Inputs(nodeD, iChannel, ImageCnt, ShaderKernels.Entries[4], InChBufferD)
+      
+    nodeD:AddOutput("dst", dstD)
+    Image_Buff_GlobalD = dstD
+
+
+    if rebuild then
+      nodeD:ForceRebuild()
+    end
+
+    local ok = nodeD:RunSession(req)
+    if (not ok) then
+      ShaderKernels.RenderErrors = true
+      dstD = nil
+      dump(nodeD:GetErrorLog())
+    end
+  end
+
+
+
+
 
 
 -- Multibuffer Final: Image
-  if(ShaderKernels.Current == 6) then   -- "=final=" und Multibuffer? dann
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 1 ) then   -- "=final=" und Multibuffer? dann
 
     ConversionKernelname = ShaderKernels.Entries[5].KernelName --Image zum Schluß starten
  
-    print("\nImage :",ConversionKernelname)
+    verbose_MB("------Multibuffer Image:",ConversionKernelname)
     
     local nodeI = DVIPComputeNode(req,
       ConversionKernelname,
@@ -1815,12 +2171,7 @@ function Process(req)
     nodeI:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
     --node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_BORDER, TEX_NORMALIZED_COORDS_TRUE)
     
-    --ToDo  Anpassen Fetch.py: Verwendung der internen Verdrahtung
-    nodeI:AddInput("iChannel0",Image_Buff_GlobalA)
-    nodeI:AddInput("iChannel1",iChannel[0])
-    nodeI:AddInput("iChannel2",iChannel[1])
-    nodeI:AddInput("iChannel3",iChannel[2])
-    nodeI:AddInput("iChannel4",iChannel[3])
+    Add_Inputs(nodeI, iChannel, ImageCnt, ShaderKernels.Entries[5], InChImage)
       
     nodeI:AddOutput("dst", dst)
     

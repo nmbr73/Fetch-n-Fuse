@@ -52,6 +52,7 @@ const float dt = 1.;
 const float G = 0.01;
 const float m_epsilon = 0.000001;
 const float speed_rnd = 0.08;
+const float center_gravity = 0.0005;
 
 vec2 vclamp(vec2 v) {
     float l = length(v);
@@ -127,7 +128,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     
     // Slight gravity towards the center to compensate the inability to feel further than 10 pts.
     vec2 to_c = iResolution.xy/2. - fragCoord;
-    to_c = length(to_c) < 5. ? vec2(0.) : normalize(to_c)/2000.;
+    to_c = length(to_c) < 5. ? vec2(0.) : normalize(to_c)*center_gravity;
 
     fragColor.r = 0.;
     fragColor.a = mass2 > m_epsilon ? mass2 : 0.;
