@@ -15,11 +15,11 @@
 
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
-FuRegisterClass("nmnr73Keyboard", CT_SourceTool, {
-    REGS_Name = "Keyboard",
+FuRegisterClass("ST_Keyboard_nmbr73", CT_SourceTool, {
+    REGS_Name = "Toy Keyboard",
 	  REGS_Category = "Fuses",
-    REGS_OpDescription = "A keyboard input for Shaderfuses",
-	  REGS_OpIconString = "kbd",
+    REGS_OpDescription = "A (not yet working) keyboard input for Shadertoy fuses",
+	  REGS_OpIconString = "toykbd",
     REG_Source_GlobalCtrls = true,
     REG_Source_SizeCtrls = true,
     REG_Source_AspectCtrls = true,
@@ -129,20 +129,6 @@ end
 -- Callback to render the node.
 --
 function Process(req)
-
-
-
-  local node = DVIPComputeNode(req,
-    ConversionKernelname,
-    ConversionSourcecode,
-    "ShaderParameters",
-    ShaderParameters
-    )
-
-
-
-
-
 
   local dst = Image({
     IMG_Document = self.Comp,

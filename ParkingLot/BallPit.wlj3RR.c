@@ -1,3 +1,9 @@
+
+// Der hier laesst sich vielleicht ganhz gut verwenden,
+// um mehrere Buffer zu testen.
+
+
+
 #define texelFetch_i2(C,XY,M) _tex2DVecN((C),(XY).x,(XY).y,(M))
 
 // ----------------------------------------------------------------------------------

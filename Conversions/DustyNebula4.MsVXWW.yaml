@@ -1,0 +1,21 @@
+fuse:
+  author: nmbr73
+  file: DustyNebula4
+  id: DustyNebula4
+  kernel: DustyNebula4
+  name: DustyNebula4
+shader:
+  author: Duke
+  description: Visualization technique is basically the same as in the [url=https://www.shadertoy.com/view/lsVSRW]Dusty
+    nebula 3[/url], but this time, I tried to imitate the filaments, which can be
+    seen on most of the photos of nebulae.
+  id: MsVXWW
+  name: Dusty nebula 4
+  tags:
+  - cloud
+  - star
+  - space
+  - nebula
+  - dust
+  - filament
+  url: https://www.shadertoy.com/view/MsVXWW

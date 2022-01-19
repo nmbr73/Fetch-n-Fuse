@@ -1,13 +1,25 @@
-# output directory for creating the fuses:
-DaFuses/
+
+
 
 Conversions/*.*.assets/
 Assets/Textures/*
 !Assets/Textures/README.md
+Assets/Cubemaps/*
+!Assets/Cubemaps/README.md
 Assets/Misc/*
 !Assets/Misc/README.md
 Assets/UNKNOWN/*
 !Assets/UNKNOWN/README.md
+
+Assets/media/a/*
+!Assets/media/a/README.md
+Assets/media/ap/*
+!Assets/media/ap/README.md
+
+# -- ignore Fusions automatically saved copies:
+
+Conversions/*.autocomp
+Converted/*.autocomp
 
 # -------- MACOS
 

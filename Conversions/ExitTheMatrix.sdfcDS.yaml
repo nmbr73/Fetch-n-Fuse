@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: ExitTheMatrix
+  id: ExitTheMatrix
+  kernel: ExitTheMatrix
+  name: ExitTheMatrix
+shader:
+  author: N.N.
+  description: Circuit fractal applied to a KIFS structure and a transparent cube
+  id: sdfcDS
+  name: Fork Exit the Matrix JiPi 194
+  parent:
+    id: NlsXDH
+    name: Exit the Matrix
+    url: https://www.shadertoy.com/view/NlsXDH
+  tags:
+  - raymarching
+  - fractal
+  - texture
+  url: https://www.shadertoy.com/view/sdfcDS

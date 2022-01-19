@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: ElevatedA
+  id: ElevatedA
+  kernel: ElevatedA
+  name: ElevatedA
+shader:
+  author: N.N.
+  description: Fork of IQ's Elevated, but with analytical normals. The calcNormal
+    code is replaced by single FBM function that computes a high-quality analytical
+    normal. This shader probably still needs some TAA like the Rainforest shader for
+    an identical result.
+  id: NdsyDM
+  name: Fork Elevated a JiPi 342
+  parent:
+    id: fdlyW4
+    name: Elevated analytical normal
+    url: https://www.shadertoy.com/view/fdlyW4
+  tags:
+  - procedural
+  - 3d
+  - raymarching
+  - distancefield
+  - terrain
+  - motionblur
+  url: https://www.shadertoy.com/view/NdsyDM
