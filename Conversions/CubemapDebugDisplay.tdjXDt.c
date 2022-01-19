@@ -23,58 +23,7 @@
   // METAL_FUNC vec<T, 4> sample(sampler s, float2 coord, gradient2d options, int2 offset = int2(0)) const constant
 
 
-
-__DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
-{
-
-  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
-
-  float x;
-  float y;
-
-  if (ux==-1.0f) { // -X, Face 1
-
-    x = (uz+1.0f)/8.0f;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
-
-  } else if (uz==1.0f) { // +Z, Face 4
-
-    x = (ux+1.0f)/8.0f+0.25;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
-
-  } else if (ux==1.0f) { // +X, Face 0
-
-    // Spiegelverkehrt!!!
-    x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-  } else if (uz==-1.0f) { // -Z, Face 5
-
-    // Spiegelverkehrt!!!
-    x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-  } else if (uy==-1.0f) { // -Y, Face 3
-
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = (uz+1.0f)/6.0f;
-
-  } else if (uy==1.0f) { // +Y, Face 2
-
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = -((uz+1.0f)/6.0f+1.0f);
-
-  } else
-  {
-    return rv;
-  }
-
-  rv = _tex2DVecN(crossmap,x,y,15);
-
-  return rv;
-}
-
-__KERNEL__ void CubemapTestFuse(float4 fragColor, float2 fragCoord, float2 iResolution, float2 iChannelResolution[], sampler2D iChannel0)
+__KERNEL__ void CubemapDebugDisplayFuse(float4 fragColor, float2 fragCoord, float2 iResolution, float2 iChannelResolution[], sampler2D iChannel0)
 {
   float x = fragCoord.x;
   float y = fragCoord.y;
@@ -128,7 +77,7 @@ __KERNEL__ void CubemapTestFuse(float4 fragColor, float2 fragCoord, float2 iReso
     }
 
     if ((samplePos.x != 0.0f) && (samplePos.y != 0.0f)) {
-      fragColor = cube_texture_pixel(iChannel0,samplePos.x,samplePos.y,samplePos.z);
+      fragColor = decube_f3(iChannel0,samplePos);
       fragColor.w=1.0f;
     }
   }
@@ -151,7 +100,7 @@ __KERNEL__ void CubemapTestFuse(float4 fragColor, float2 fragCoord, float2 iReso
     float uv_z = 0.0f;
 
     //fragColor = _tex2DVecN(iChannel0,uv_x,uv_y,15);
-    fragColor = cube_texture_pixel(iChannel0,uv_x,uv_y,uv_y);
+    fragColor = decube_pixel(iChannel0,uv_x,uv_y,uv_y);
   }
 */
 
@@ -201,7 +150,7 @@ __KERNEL__ void CubemapTestFuse(float4 fragColor, float2 fragCoord, float2 iReso
 	// }
 
 	// if ((samplePos.x != 0.0f) && (samplePos.y != 0.0f)) {
-	// 	//fragColor = to_float4(cube_texture_pixel(iChannel0, samplePos).rgb, 1.0);
-	// 	//fragColor = to_float4(cube_texture_pixel(iChannel0, samplePos).rgb, 1.0);
-	// 	fragColor = to_float4_aw(cube_texture_pixel(iChannel0, samplePos.x,samplePos.y,samplePos.z), 1.0f);
+	// 	//fragColor = to_float4(decube_pixel(iChannel0, samplePos).rgb, 1.0);
+	// 	//fragColor = to_float4(decube_pixel(iChannel0, samplePos).rgb, 1.0);
+	// 	fragColor = to_float4_aw(decube_pixel(iChannel0, samplePos.x,samplePos.y,samplePos.z), 1.0f);
 	// }

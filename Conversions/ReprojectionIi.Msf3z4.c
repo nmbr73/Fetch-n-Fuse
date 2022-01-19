@@ -12,125 +12,6 @@
 
 
 
-
-
-
-//#define CubeTexture_RGB(M,X,Y,Z)  _tex2DVecN(M,X,Y,Z).rgb
-//#define CubeTexture_R(M,X,Y,Z)    _tex2DVecN(M,X,Y,Z).r
-
-// https://learnopengl.com/Getting-started/Textures
-// https://learnopengl.com/Advanced-OpenGL/Cubemaps
-// https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/Cube_map_tutorial/cube_map.html
-// https://www.khronos.org/opengl/wiki/Texture
-
-// https://www.khronos.org/opengl/wiki/Cubemap_Texture
-// https://www.shadertoy.com/view/tdjXDt <--
-// https://www.shadertoy.com/view/tlyXzG <--
-// https://www.shadertoy.com/view/WsGcRm
-// https://www.shadertoy.com/view/wtV3W1
-// https://www.shadertoy.com/view/WtlSD4
-// https://www.shadertoy.com/view/3l2SDR
-
-// Let's say that +Z is forward, and +Y is up, so +X to the right. Given that orientation, the texture coordinates of the 6 faces of the cube look like this:
-//
-// +Z face (directly in front): The U coordinate goes to the right, with the V coordinate going down.
-// +X face (to our right): The U coordinate is going behind the viewer, with the V coordinate going down.
-// -Z face (directly behind): The U coordinate goes to the left (relative to us facing forwards), with the V coordinate going down.
-// -X face (to our left): The U coordinate is going forward, with the V coordinate going down.
-// +Y face (above): The U coordinate goes to the right, with the V coordinate going forward.
-// -Y face (bottom): The U coordinate goes to the right, with the V coordinate going backward.
-
-
-__DEVICE__ float4 cube_texture_pixel(__TEXTURE2D__ crossmap, float ux, float uy, float uz)
-{
-
-  float4 rv=to_float4(0.0f,1.0f,0.0f,1.0f);
-
-  float x;
-  float y;
-
-//  if (ux==-1.0f) { // -X, Face 1
-  if (ux<0.0f) { // -X, Face 1
-
-    x = (uz+1.0f)/8.0f;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
-
-  return to_float4(1.0f,1.0f,0.0f,1.0f);
-
-//  } else if (uz==1.0f) { // +Z, Face 4
-  } else if (uz>=0.0f) { // +Z, Face 4
-
-    x = (ux+1.0f)/8.0f+0.25;
-    y = (uy-1.0f)/6.0f+2.0f/3.0f;
-
-  return to_float4(0.0f,1.0f,1.0f,1.0f);
-
-//  } else if (ux==1.0f) { // +X, Face 0
-  } else if (ux>=0.0f) { // +X, Face 0
-
-    // Spiegelverkehrt!!!
-    x = -(((uz+1.0f)/2.0f+2.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-  return to_float4(1.0f,0.0f,1.0f,1.0f);
-
-//  } else if (uz==-1.0f) { // -Z, Face 5
-  } else if (uz<0.0f) { // -Z, Face 5
-
-    // Spiegelverkehrt!!!
-    x = -(((ux+1.0f)/2.0f+3.0f)/4.0f);
-    y = (uy-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-//  } else if (uy==-1.0f) { // -Y, Face 3
-  } else if (uy<0.0f) { // -Y, Face 3
-
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = (uz+1.0f)/6.0f;
-
-//  } else if (uy==1.0f) { // +Y, Face 2
-  } else if (uy>=0.0f) { // +Y, Face 2
-
-    x = (ux+1.0f)/8.0f+0.25f;
-    y = -((uz+1.0f)/6.0f+1.0f);
-
-  } else
-  {
-    return rv;
-  }
-
-  // Wir kommen nie hier rein?!?
-  // ... ich glaube, es ist zu spaet :-/
-  return to_float4(1.0f,0.0f,0.0f,1.0f);
-
-  rv = _tex2DVecN(crossmap,x,y,15);
-
-  return rv;
-}
-
-
-__DEVICE__ float3 CubeTexture_RGB(__TEXTURE2D__ cross, float x, float y, float z)
-{
-  float4 pixel=cube_texture_pixel(cross,x,y,z);
-  float3 rgb=to_float3(pixel.x,pixel.y,pixel.z);
-  return rgb;
-}
-
-__DEVICE__ float CubeTexture_R(__TEXTURE2D__ cross, float x, float y, float z)
-{
-  float4 pixel=cube_texture_pixel(cross,x,y,z);
-  return pixel.x;
-}
-
-
-
-
-
-
-
-
-#define FORCE_SHADOW
-#define ENABLE_REFLECTION
-
 struct C_Ray
 {
     float3 vOrigin;
@@ -463,7 +344,7 @@ __DEVICE__ void GetCamera(out float3 *vCameraPos, out float3* vCameraTarget, flo
   float fCameraGlobalTime = iTime * 0.5f;
   float fCameraTime = fract(fCameraGlobalTime);
   float fCameraIndex = _floor(fCameraGlobalTime);
-float zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
+
   float3 vCameraPosA;
   float3 vCameraTargetA;
   GetCameraPosAndTarget(fCameraIndex, &vCameraPosA, &vCameraTargetA);
@@ -484,17 +365,17 @@ float zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
   *vCameraTarget = BSpline(vCameraTargetA, vCameraTargetB, vCameraTargetC, vCameraTargetD, fCameraTime);
 }
 
-__DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, float iMouse_z  )
+__DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, bool showGrid, bool forceShadow, bool enableReflection  )
 {
   float fHitDist = TraceScene(ray);
   float3 vHitPos = ray.vOrigin + ray.vDir * fHitDist;
 
   //float3 vResult = texture(iChannel0, swi3(vHitPos,x,y,z)).rgb;
-  float3 vResult = CubeTexture_RGB(iChannel0, vHitPos.x, vHitPos.y, vHitPos.z);
+  float4 color=decube_f3(iChannel0,vHitPos);
+  float3 vResult = to_float3(color.x,color.y,color.z);
   vResult = vResult * vResult;
 
-  #ifdef FORCE_SHADOW
-  if( _fabs(vHitPos.z) > 9.48f)
+  if( forceShadow && _fabs(vHitPos.z) > 9.48f)
   {
     if( _fabs(vHitPos.x) < 20.0f)
     {
@@ -505,18 +386,16 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
       vResult = normalize(vResult) * fIntensity;
     }
   }
-  #endif
 
-  #ifdef ENABLE_REFLECTION
-  if(vHitPos.y < -1.4f)
+  if(enableReflection && vHitPos.y < -1.4f)
   {
     float fDelta = -0.1f;
     //float vSampleDx = texture(iChannel0, swi3(vHitPos,x,y,z) + to_float3(fDelta, 0.0f, 0.0f)).r;
-    float vSampleDx = CubeTexture_R(iChannel0, vHitPos.x+fDelta, vHitPos.y, vHitPos.z );
+    float vSampleDx = decube_3f(iChannel0, vHitPos.x+fDelta, vHitPos.y, vHitPos.z ).x;
     vSampleDx = vSampleDx * vSampleDx;
 
     //float vSampleDy = texture(iChannel0, swi3(vHitPos,x,y,z) + to_float3(0.0f, 0.0f, fDelta)).r;
-    float vSampleDy = CubeTexture_R(iChannel0, vHitPos.x, vHitPos.y, vHitPos.z+fDelta);
+    float vSampleDy = decube_3f(iChannel0, vHitPos.x, vHitPos.y, vHitPos.z+fDelta).x;
     vSampleDy = vSampleDy * vSampleDy;
 
     float3 vNormal = to_float3(vResult.x - vSampleDx, 2.0f, vResult.x - vSampleDy);
@@ -529,14 +408,15 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
     float r0 = 0.1f;
     float fSchlick =r0 + (1.0f - r0) * (_powf(1.0f - fDot, 5.0f));
 
-    float3 vResult2 = CubeTexture_RGB(iChannel1,vReflect.x,vReflect.y,vReflect.z);
+    //float3 vResult2 = CubeTexture_RGB(iChannel1,vReflect.x,vReflect.y,vReflect.z);
+    float4 color=decube_f3(iChannel1,vReflect);
+    float3 vResult2 = to_float3(color.x,color.y,color.z);
     vResult2 = vResult2 * vResult2;
     float shade = smoothstep(0.3f, 0.0f, vResult.x);
     vResult += shade * vResult2 * fSchlick * 5.0f;
   }
-  #endif
 
-  if(iMouse_z > 0.0f)
+  if(showGrid)
   {
     float3 vGrid =  step(to_float3_s(0.9f), fract(vHitPos + 0.01f));
     float fGrid = _fminf(dot(vGrid, to_float3_s(1.0f)), 1.0f);
@@ -548,8 +428,10 @@ __DEVICE__ float3 SceneColor( C_Ray ray, __TEXTURE2D__ iChannel0, __TEXTURE2D__ 
 
 __KERNEL__ void ReprojectionIiFuse(float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, sampler2D iChannel0, sampler2D iChannel1)
 {
-
-    C_Ray ray;
+  CONNECT_CHECKBOX0(Show_Grid,false);
+  CONNECT_CHECKBOX1(Force_Shadow,true);
+  CONNECT_CHECKBOX2(Enable_Reflection,true);
+  C_Ray ray;
 
   // float3 vResult = to_float3_s(0.0f);
 
@@ -563,8 +445,9 @@ __KERNEL__ void ReprojectionIiFuse(float2 fragCoord, float iTime, float2 iResolu
   GetCameraRayLookat( vCameraPos, vCameraTarget, fragCoord, &ray, iResolution);
 
   //swi3(fragColor,x,y,z) = SceneColor( ray, iChannel0 );
-  float3 sceneColor=SceneColor( ray, iChannel0, iChannel1, iMouse.z );
+//  float3 sceneColor=SceneColor( ray, iChannel0, iChannel1, iMouse.z );
 
+  float3 sceneColor=SceneColor( ray, iChannel0, iChannel1, Show_Grid, Force_Shadow, Enable_Reflection );
 
 
   SetFragmentShaderComputedColor(to_float4(sceneColor.x,sceneColor.y,sceneColor.z,1.0f));
