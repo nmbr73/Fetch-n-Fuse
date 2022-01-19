@@ -6,14 +6,6 @@
 
 // Star map shader...procedural space background
 
-// Uncomment to see the lat-long grid for context
-// #define SHOW_LARGE_GRID
-#define SHOW_SPHERE
-#define SHOW_SPHERE_GRID
-#define SHOW_PLANET
-
-//const float pi = 3.1415927f;
-//const float deg = pi / 180.0f;
 #define deg (3.1415927f / 180.0f)
 
 // See derivation of noise functions by Morgan McGuire at https://www.shadertoy.com/view/4dS3Wd
@@ -120,7 +112,6 @@ __DEVICE__ float3 sun(float3 d, float iTime) {
 
 
 __DEVICE__ float4 planet(float3 view, float iTime) {
-#ifdef SHOW_PLANET
     const float PLANET_RADIUS = 0.65f;
     if (view.y > -PLANET_RADIUS) {
         return to_float4_s(0.0f);
@@ -151,15 +142,17 @@ __DEVICE__ float4 planet(float3 view, float iTime) {
     return to_float4_aw(
         _mix(swi3(surface,x,y,z), swi3(cloud,x,y,z), cloud.w) * (_fmaxf(0.1f, s.y) * to_float3_s(1.0f - latLongLine)),
         _fmaxf(surface.w, cloud.w));
-#else
-    return to_float4_s(0.0f);
-#endif
 }
 
 
-__DEVICE__ float3 sphereColor(float3 dir, float screenscale, float iTime) {
+__DEVICE__ float3 sphereColor(float3 dir, float screenscale, float iTime, bool SHOW_PLANET) {
     float3 n = nebula(dir);
-    float4 p = planet(dir,iTime);
+    float4 p;
+    if (SHOW_PLANET)
+      p= planet(dir,iTime);
+    else
+      p= to_float4_s(0.0f);
+
     float3 color =
         sun(dir,iTime) +
         _mix(to_float3_s(starfield(dir,screenscale,iTime)) * (1.0f - maxComponent(n)) +  // Nebula holds out star
@@ -173,30 +166,36 @@ __DEVICE__ float3 sphereColor(float3 dir, float screenscale, float iTime) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Spheremap visualization code from https://www.shadertoy.com/view/4sSXzG
 
-__KERNEL__ void StarMap1Fuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse)
+__KERNEL__ void StarMap1Fuse(float2 fragCoord, float iTime, float2 iResolution, float4 iMouse)
 {
+  CONNECT_CHECKBOX0(SHOW_LARGE_GRID,false);
+  CONNECT_CHECKBOX1(SHOW_SPHERE,true);
+  CONNECT_CHECKBOX2(SHOW_SPHERE_GRID,true);
+  CONNECT_CHECKBOX3(SHOW_PLANET,true);
 
-    float scale = 1.0f / _fminf(iResolution.x, iResolution.y);
-    float screenscale = 1.0f / iResolution.x;
+  float3 fragColorRGB;
+
+  float scale = 1.0f / _fminf(iResolution.x, iResolution.y);
+  float screenscale = 1.0f / iResolution.x;
 
 
   // Of the background
   const float verticalFieldOfView = 60.0f * deg;
   const float insetSphereRadius = 0.22f;
 
-    float yaw   = -((iMouse.x / iResolution.y) * 2.0f - 1.0f) * 3.0f;
-    float pitch = ((iMouse.y / iResolution.y) * 2.0f - 1.0f) * 3.0f;
+  float yaw   = -((iMouse.x / iResolution.y) * 2.0f - 1.0f) * 3.0f;
+  float pitch = ((iMouse.y / iResolution.y) * 2.0f - 1.0f) * 3.0f;
 
   float3 dir = rotation(yaw, pitch) * normalize(to_float3_aw(fragCoord - iResolution / 2.0f, iResolution.y / ( -2.0f * _tanf(verticalFieldOfView / 2.0f))));
 
-    swi3(fragColor,x,y,z) = sphereColor(dir,screenscale,iTime);
-#  ifdef SHOW_LARGE_GRID
-      float latLongLine = (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
-        swi3(fragColor,x,y,z) += latLongLine * to_float3(0.0f, 0.7f, 1.5f);
-#  endif
+  fragColorRGB = sphereColor(dir,screenscale,iTime,SHOW_PLANET);
+  if (SHOW_LARGE_GRID) {
+    float latLongLine = (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
+      fragColorRGB += latLongLine * to_float3(0.0f, 0.7f, 1.5f);
+  }
 
 
-    #ifdef SHOW_SPHERE
+  if (SHOW_SPHERE) {
     // Inset sphere
     float2 spherePoint = (fragCoord * scale - insetSphereRadius * 1.1f) / insetSphereRadius;
     if (length(spherePoint) <= 1.0f) {
@@ -205,25 +204,24 @@ __KERNEL__ void StarMap1Fuse(float4 fragColor, float2 fragCoord, float iTime, fl
         float3 c = to_float3_s(0.0f);
         for (int x = -3; x <= 3; ++x) {
           for (int y = -3; y <= 3; ++y) {
-          float2 s = clamp(((fragCoord + to_float2((float)x, (float)y) / 7.0f) * scale - insetSphereRadius * 1.1f) / insetSphereRadius, to_float2_s(-1.0f), to_float2_s(1.0f));
+            float2 s = clamp(((fragCoord + to_float2((float)x, (float)y) / 7.0f) * scale - insetSphereRadius * 1.1f) / insetSphereRadius, to_float2_s(-1.0f), to_float2_s(1.0f));
             dir = rotation(iTime, -iTime * 0.17f) * to_float3_aw(swi2(s,x,y), _sqrtf(_fmaxf(0.0f, 1.0f - dot(swi2(s,x,y), swi2(s,x,y)))));
-        c += sphereColor(dir,screenscale,iTime);
-#        ifdef SHOW_SPHERE_GRID
-            float latLongLine = (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
-              c += latLongLine * to_float3(0.0f, 0.7f, 1.5f);
-#        endif
+            c += sphereColor(dir,screenscale,iTime,SHOW_PLANET);
+
+            if (SHOW_SPHERE_GRID) {
+              float latLongLine = (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
+                c += latLongLine * to_float3(0.0f, 0.7f, 1.5f);
             }
+          }
         }
         c /= 36.0f;
 
         // Fade the inset sphere to antialias its border transition
-        swi3(fragColor,x,y,z) = _mix(_sqrtf(swi3(fragColor,x,y,z)), c, clamp((1.0f - length(spherePoint)) * 100.0f, 0.0f, 1.0f));
+        fragColorRGB = _mix(_sqrtf(fragColorRGB), c, clamp((1.0f - length(spherePoint)) * 100.0f, 0.0f, 1.0f));
     }
-    #endif
+  }
 
-    swi3(fragColor,x,y,z) = _sqrtf(swi3(fragColor,x,y,z));
-    fragColor.w = 1.0f;
+  fragColorRGB = _sqrtf(fragColorRGB);
 
-
-  SetFragmentShaderComputedColor(fragColor);
+  SetFragmentShaderComputedColor(to_float4_aw(fragColorRGB,1.0f));
 }
