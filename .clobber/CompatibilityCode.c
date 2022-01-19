@@ -600,114 +600,79 @@ __DEVICE__ float4 unfold_cube_3f(__TEXTURE2D__ crossmap, float x, float y, float
 {
   float4 p=to_float4(0.0f,1.0f,0.0f,1.0f);
 
-  float u;
-  float v;
+  float u,v,r,c;
 
-//if (x==-1.0f) {
-  if (-x>=0.0f && _fabs(z)<=-x && _fabs(y)<=-x) {
+  float ax=_fabs(x);
+  float ay=_fabs(y);
+  float az=_fabs(z);
+
+  if (-x>=0.0f && az<=-x && ay<=-x) {
+
     // -X, Face 1, left
 
-    u = z/-x; u=(u+1.0f)/2.0f;
-    v = y/-x;  v=(v+1.0f)/2.0f;
+    c = 0.0f;
+    r = 1.0f;
 
-    u=u/4.0f;
-    v=v/3.0f;
+    u = z/-x;
+    v = y/-x;
 
-    v=v+1.0f/3.0f;
+  } else if (z>=0.0f && ax<=z && ay<=z) {
 
-    //u = (z+1.0f)/8.0f;
-    //v = (y-1.0f)/6.0f+2.0f/3.0f;
-
-//} else if (z==1.0f) {
-  } else if (z>=0.0f && _fabs(x)<=z && _fabs(y)<=z) {
     // +Z, Face 4, front
 
-    u = x/z; u = (u+1.0f)/2.0f;
-    v = y/z; v = (v+1.0f)/2.0f;
+    c = 1.0f;
+    r = 1.0f;
 
-    u=u/4.0f;
-    v=v/3.0f;
+    u = x/z;
+    v = y/z;
 
-    u=u+1.0f/4.0f;
-    v=v+1.0f/3.0f;
+  } else if (x>=0.0f && az<=x && ay<=x) {
 
-
-    // u = (x+1.0f)/8.0f+0.25;
-    // v = (y-1.0f)/6.0f+2.0f/3.0f;
-
-//} else if (x==1.0f) {
-  } else if (x>=0.0f && _fabs(z)<=x && _fabs(y)<=x) {
     // +X, Face 0, right
 
-    u = -z/x; u=(u+1.0f)/2.0f;
-    v = y/x;  v=(v+1.0f)/2.0f;
+    c = 2.0f;
+    r = 1.0f;
 
-    u=u/4.0f;
-    v=v/3.0f;
+    u = -z/x;
+    v = y/x;
 
-    u=u+(1.0f/4.0f)*2.0f;
-    v=v+1.0f/3.0f;
+  } else if (-z>=0.0f && ax<=-z && ay<=-z) {
 
-    // u = -(((-z+1.0f)/2.0f+2.0f)/4.0f);
-    // v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-//} else if (z==-1.0f) {
-  } else if (-z>=0.0f && _fabs(x)<=-z && _fabs(y)<=-z) {
     // -Z, Face 5, back
 
-    u = -x/-z; u = (u+1.0f)/2.0f;
-    v = y/-z; v = (v+1.0f)/2.0f;
+    c = 3.0f;
+    r = 1.0f;
 
-    u=u/4.0f;
-    v=v/3.0f;
+    u = -x/-z;
+    v = y/-z;
 
-    u=u+(1.0f/4.0f)*3.0f;
-    v=v+1.0f/3.0f;
-
-
-    // u = -(((-x+1.0f)/2.0f+3.0f)/4.0f);
-    // v = (y-1.0f)/6.0f+1.0f/3.0f + 1.0f/3.0f;
-
-//} else if (y==-1.0f) {
-  } else if (-y>=0.0f && _fabs(z)<=-y && _fabs(x)<=-y) {
+  } else if (-y>=0.0f && az<=-y && ax<=-y) {
 
     // -Y, Face 3, bottom
 
-    u = x/-y; u = (u+1.0f)/2.0f;
-    v = z/-y; v = (v+1.0f)/2.0f;
+    c = 1.0f;
+    r = 0.0f;
 
-    u=u/4.0f;
-    v=v/3.0f;
+    u = x/-y;
+    v = z/-y;
 
-    u=u+(1.0f/4.0f)*1.0f;
-    //v=v+(1.0f/3.0f)*2.0f;
-
-
-    // u = (x+1.0f)/8.0f+0.25f;
-    // v = (z+1.0f)/6.0f;
-
-//} else if (y==1.0f) {
-  } else if (y>=0.0f && _fabs(z)<=y && _fabs(x)<=y) {
+  } else if (y>=0.0f && az<=y && ax<=y) {
 
     // +Y, Face 2, top
 
-    u = x/y; u = (u+1.0f)/2.0f;
-    v = -z/y; v = (v+1.0f)/2.0f;
+    c = 1.0f;
+    r = 2.0f;
 
-    u=u/4.0f;
-    v=v/3.0f;
-
-    u=u+(1.0f/4.0f)*1.0f;
-    v=v+(1.0f/3.0f)*2.0f;
-
-
-    // u = (x+1.0f)/8.0f+0.25f;
-    // v = -((z+1.0f)/6.0f+1.0f);
+    u = x/y;
+    v = -z/y;
 
   } else
   {
     return p;
   }
+
+  u = (u+1.0f)/8.0f + (1.0f/4.0f)*c;
+  v = (v+1.0f)/6.0f + (1.0f/3.0f)*r;
 
   p = _tex2DVecN(crossmap,u,v,15);
 
