@@ -1,0 +1,198 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stKSDd",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Sedimentat JiPi 623",
+  "description": "when making an erosion simulation, it's important not to forget sedimentation. What you take, you must return",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "automata"
+  ],
+  "hasliked": 0,
+  "parentid": "7tySWt",
+  "parentname": "Sedimentation"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Fork of \"Water Fall\" by wyatt. https://shadertoy.com/view/NtKGWD\n// 2022-01-06 18:16:24\n\n// Fork of \"Aqua Vista\" by wyatt. https://shadertoy.com/view/ssXGDB\n// 2021-11-24 02:54:37\n\n// Fork of \"Temperatures\" by wyatt. https://shadertoy.com/view/fsf3zS\n// 2021-03-22 22:23:14\n\n// Fork of \"Transport Dynamics II\" by wyatt. https://shadertoy.com/view/sdl3RN\n// 2021-03-18 22:39:28\n\n// Display\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    vec4 f = atan(A(U));\n    vec4 g = atan(C(U));\n    Q = (.5-.5*sin(f.z+vec4(1,2,3,4)))*min(f.w,1.);\n    vec4 C = (.5+.5*sin(.3+2.*g.x+vec4(1,2,3,4)));\n    Q = mix(Q,C,1.-1.7*f.w);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define R iResolution.xy\n#define A(U) texture(iChannel0,(U)/R)\n#define B(U) texture(iChannel1,(U)/R)\n#define C(U) texture(iChannel2,(U)/R)\n#define D(U) texture(iChannel3,(U)/R)\n//#define Main void mainImage(out vec4 Q, in vec2 U)\n#define box for(int _x=-1;_x<=1;_x++)for(int _y=-1;_y<=1;_y++)\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Forces\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 c = C(U);\n    vec4 dQ = vec4(0);\n    box if(abs(_x)!=abs(_y)) \n    {\n        vec2 u = vec2(_x,_y);\n        vec4 a = A(U+u);\n        vec4 c = C(U+u);\n        float f = 0.25*(a.w+c.x);\n        dQ.xy -= f*u;\n    }\n    dQ.xy = clamp(dQ.xy,-1.,1.);\n    Q += dQ;;\n    // erosion \n    c.z;\n    // sedimentation\n    c.w;\n    if (Q.w>0.) Q.z = (Q.w*Q.z+c.z-c.w)/Q.w;\n    if (U.x<1.&&abs(U.y-.5*R.y)<20.) Q.w *= 0.;\n    vec2 M = 1.5*R;\n    if (iMouse.z>0.) M = iMouse.xy;\n    if(length(U-M)<.02*R.y)Q = vec4(.1*normalize(M-0.5*R),-1,1.);\n    if (length(Q.xy)>.5) Q.xy = .5*normalize(Q.xy);\n    if (iFrame < 1) Q = vec4(0,0,0,.3);\n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(_x)!=abs(_y))\n    {\n        vec2 u = vec2(_x,_y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float wa = 0.5*Q.w*min(i,.5);\n       float wb = 0.5*q.w*max(i-.5,0.);\n       dQ.xyz += Q.xyz*wa+q.xyz*wb;\n       dQ.w += wa+wb;\n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdXGzr",
+     "filepath": "/media/a/8979352a182bde7c3c651ba2b2f4e0615de819585cc37b7175bcefbca15a6683.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, in vec2 U) \n{\n    Q = C(U);\n    vec4 a = A(U);\n    \n    // erosion\n    Q.z = 5e-3*length(a.xy)*a.w;\n    // sedimentation\n    Q.w = 1e-2*max(.5-length(a.xy),0.)*a.w*a.z;\n    \n    Q.x -= Q.z-Q.w;\n    \n    if (iFrame < 100)\n        Q = vec4(B(U).x,0,0,0);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

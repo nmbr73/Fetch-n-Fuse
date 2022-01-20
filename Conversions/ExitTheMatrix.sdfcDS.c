@@ -5,6 +5,9 @@
 
 #define swi2S(a,b,c,d) {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;} 
 
+//#define swi2S(a,b,c,d) a.b##c = d // if metal
+
+
 
 __DEVICE__ float hash(float2 p)
 {
@@ -51,19 +54,19 @@ __DEVICE__ float de(float3 p, inout float *boxhit, float t, float3 adv, inout fl
 {
     *boxhit=0.0f;
     float3 p2=p-adv;
-    swi2S(p2,x,z,mul_f2_mat2(swi2(p2,x,z),rot(t*0.2f)))
-    swi2S(p2,x,y,mul_f2_mat2(swi2(p2,x,y),rot(t*0.1f)))
-    swi2S(p2,y,z,mul_f2_mat2(swi2(p2,y,z),rot(t*0.15f)))
+    swi2S(p2,x,z,mul_f2_mat2(swi2(p2,x,z),rot(t*0.2f)));
+    swi2S(p2,x,y,mul_f2_mat2(swi2(p2,x,y),rot(t*0.1f)));
+    swi2S(p2,y,z,mul_f2_mat2(swi2(p2,y,z),rot(t*0.15f)));
     float b=box(p2,to_float3_s(1.0f));
-    swi2S(p,x,y,swi2(p,x,y)-swi2(path(p.z),x,y))
+    swi2S(p,x,y,swi2(p,x,y)-swi2(path(p.z),x,y));
     float s=sign_f(p.y);
     p.y=-_fabs(p.y)-3.0f;
     p.z=mod_f(p.z,20.0f)-10.0f;
     for (int i=0; i<5; i++)
     {
         p=abs_f3(p)-1.0f;
-        swi2S(p,x,z,mul_f2_mat2(swi2(p,x,z),rot(radians(s*-45.0f))))
-        swi2S(p,y,z,mul_f2_mat2(swi2(p,y,z),rot(radians(90.0f))))
+        swi2S(p,x,z,mul_f2_mat2(swi2(p,x,z),rot(radians(s*-45.0f))));
+        swi2S(p,y,z,mul_f2_mat2(swi2(p,y,z),rot(radians(90.0f))));
     }
     float f=-box(p,to_float3(5.0f,5.0f,10.0f));
     float d=_fminf(f,b);

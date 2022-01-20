@@ -1,0 +1,169 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7dscz4",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Magnet Sim JiPi 914",
+  "description": "Rigid body physics + magnetism. ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "magnetism"
+  ],
+  "hasliked": 0,
+  "parentid": "ssfcRN",
+  "parentname": "Magnet Simulation"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Fork of \"Rigid Body Test 123\" by wyatt. https://shadertoy.com/view/fsscRr\n// 2022-01-10 00:45:24\n\nvoid mainImage(out vec4 Q, in vec2 U) {\n\nvec2 R=iResolution.xy; float T=iTime; int I=iFrame; vec4 M=iMouse;\n//if (iFrame % 8 > 0) discard;\nQ = sin(5.3+U.y/R.y+(1.+U.x/R.x)*vec4(1,2,3,4));\nQ *= .5*(exp(-30.*U.x/R.x)+exp(-30.*(R.x-U.x)/R.x)+exp(-30.*U.y/R.y)+exp(-30.*(R.y-U.y)/R.y));\nQ = 1.-Q;\nvec2 m = vec2(0);\nvec2 p = U;\nfor (float i = 0.; i < N; i++) {\n    vec4 a = A(vec2(i,0)+.5);\n    vec4 at= A(vec2(i,1)+.5);\n    vec2 aw = size(i)/6.;\n    float d = map(p,a,at,aw);\n    if (abs(d)<2.) Q = vec4(0);\n    else if (dot(p-a.xy,vec2(0,1)*ei(at.x))>0.&&\n        d<0.);\n    else if (d<0.) Q = vec4(1,.2,.5,0);\n    else {\n        m += mag(p,a,at);\n    }\n}\nQ *= 1.-.8*(Q.y)*length(m)*(.5+.5*sin(atan(m.x,m.y)+vec4(1,2,3,4)));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "vec2 R; float T; int I; vec4 M;\n#define A(U) texture(iChannel0,(U)/R)\n#define Main void mainImage(out vec4 Q, in vec2 U) {R=iResolution.xy;T=iTime;I=iFrame;M=iMouse;\n#define ei(a) mat2(cos(a),-sin(a),sin(a),cos(a))\n\n#define N min(5.+float(I/10),100.)\n\n\nvec2 size (float i) {\n    vec2 s = vec2(1,2.+3.5*i/100.)*.012*R.x;\n    return s;\n}\nvec2 mag (vec2 p, vec4 a, vec4 t) {\n    //https://en.wikipedia.org/wiki/Magnetic_moment#Magnetism\n    vec2 r = (p.xy-a.xy)*ei(-t.x);\n    vec2 m = vec2(0,1);\n    float l = length(r);\n    if (l >0.) return 1e2*(3.*r/l*dot(r/l,m)-m)/(l*l);\n    else return vec2(0);\n}\n#define dt .3\nvec2 vel (vec2 p, vec4 a, vec4 t) {\n    vec2 w = p.xy-a.xy;\n    if (length(w)>0.) w = vec2(-w.y,w.x);\n    return a.zw + w*t.y;\n}\nvec2 MF (vec2 p, vec4 a, vec4 t, vec4 b, vec4 bt) {\n    vec2 r = p.xy-a.xy;\n    vec2 m1 = vec2(0,300./sqrt(1.+N))*ei(t.x);\n    vec2 m2 = vec2(0,300./sqrt(1.+N))*ei(bt.x);\n    float l = length(r);\n    if (l>0.) {\n          vec2 rh = r/l;\n          return (m2*dot(m1,rh)+m1*dot(m2,rh)+rh*dot(m1,m2)-5.*rh*dot(m1,rh)*dot(m2,rh)) / ( l*l*l*l );\n    } else return vec2(0);\n}\nfloat map ( vec2 p, vec4 a, vec4 t, vec2 b )\n{ //iquilezles.org/www/articles/distfunctions/distfunctions.html\n  p = (p-a.xy)*ei(-t.x);\n  vec2 q = (abs(p) - b);\n  return length(max(q,0.0)) + min(max(q.x,q.y),0.0);\n}\n\nvec2 norm (vec2 p, vec4 a, vec4 t, vec2 b)\n{   \n    vec2 e = vec2(1,0);\n    return 1./dt*normalize(vec2(\n        map(p+e.xy,a,t,b)-map(p-e.xy,a,t,b),\n        map(p+e.yx,a,t,b)-map(p-e.yx,a,t,b)\n    ));\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, in vec2 U) {\n\n    vec2 R=iResolution.xy; float T=iTime; int I=iFrame; vec4 M=iMouse;\n\n    if (U.y>4.)discard;\n    Q = A(vec2(U.x,.5));\n    vec4 t = A(vec2(U.x,1.5));\n    vec4 oQ = A(vec2(U.x,2.5));\n    vec4 ot = A(vec2(U.x,3.5));\n    vec2 w = size(floor(U.x));\n    \n    if (U.y<2.) {\n        vec2 f = vec2(0);\n        float tor = 0.;\n        float h = 0.;\n        for(float j = 0.; j < N; j++) if (j!=floor(U.x)) {\n            vec4 b = A(vec2(j,0)+.5);\n            vec4 bt = A(vec2(j,1)+.5);\n            vec2 bw = size(j);\n            for (float x = 0.; x<=1.; x++)\n            for (float y = 0.; y<=1.; y++)\n            {\n                { \n                    vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n                    // magnetic force\n                    {\n                        vec2 r = q-b.xy;\n                        vec2 im = MF(q,Q,t,b,bt);\n                        if (length(r)>0.) {\n                            tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                            f += im*abs(dot(normalize(r),normalize(im)));\n                        }\n                    }\n                    // my point in their box\n                    float m = map(q,b,bt,.5*bw);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n                { // their point in my box\n                    vec2 q = bw*(vec2(x,y)-.5)*ei(bt.x)+b.xy;\n                    float m = map(q,Q,t,.5*w);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n            }\n        }\n        for (float x = 0.; x<=1.; x++)\n        for (float y = 0.; y<=1.; y++)\n        {\n            vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n            vec4 b = vec4(.5*R.xy,0,0);\n            float m = -map(q,b,vec4(0),b.xy);\n            if (m<0.) {\n                vec2 r = q-Q.xy;\n                vec2 v = vel(q,b,vec4(0))-vel(q,Q,t);\n                float l = length(r);\n                vec2 im = -norm(q,b,vec4(0),.5*R.xy)+v;\n                tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                f += im*abs(dot(normalize(r),normalize(im)));\n                h += 1.;\n            }\n        }\n        if (h>0.) f/=h, tor/=h;\n        Q.zw += dt*(f);\n        Q.xy += dt*(.5*f+Q.zw);\n        t.y += dt*(tor);\n        t.x += dt*(.5*tor+t.y);\n        if (M.z>0.) Q.zw += 1e-3*(Q.xy-M.xy)*exp(-.001*length(Q.xy-M.xy));\n        if (length(Q.zw)>1./dt) Q.zw = 1./dt*normalize(Q.zw);\n        if (abs(t.y)>dt) t.y = dt*sign(t.y);\n    }\n    \n    if(iFrame < 1) {\n        vec2 size = size(floor(U.x));\n        Q = vec4(.5*R+.1*R.y*(1.+6.*U.x/N)*vec2(cos(36.*U.x/N),sin(36.*U.x/N)),0,0);\n        t = vec4(10.*U.x/N,0,0,0);\n    }\n    if (mod(U.y,2.)>1.) Q = t;\n\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, in vec2 U) {\n\n    vec2 R=iResolution.xy; float T=iTime; int I=iFrame; vec4 M=iMouse;\n    if (U.y>4.)discard;\n    Q = A(vec2(U.x,.5));\n    vec4 t = A(vec2(U.x,1.5));\n    vec4 oQ = A(vec2(U.x,2.5));\n    vec4 ot = A(vec2(U.x,3.5));\n    vec2 w = size(floor(U.x));\n    \n    if (U.y<2.) {\n        vec2 f = vec2(0);\n        float tor = 0.;\n        float h = 0.;\n        for(float j = 0.; j < N; j++) if (j!=floor(U.x)) {\n            vec4 b = A(vec2(j,0)+.5);\n            vec4 bt = A(vec2(j,1)+.5);\n            vec2 bw = size(j);\n            for (float x = 0.; x<=1.; x++)\n            for (float y = 0.; y<=1.; y++)\n            {\n                { \n                    vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n                    // magnetic force\n                    {\n                        vec2 r = q-b.xy;\n                        vec2 im = MF(q,Q,t,b,bt);\n                        if (length(r)>0.) {\n                            tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                            f += im*abs(dot(normalize(r),normalize(im)));\n                        }\n                    }\n                    // my point in their box\n                    float m = map(q,b,bt,.5*bw);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n                { // their point in my box\n                    vec2 q = bw*(vec2(x,y)-.5)*ei(bt.x)+b.xy;\n                    float m = map(q,Q,t,.5*w);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n            }\n        }\n        for (float x = 0.; x<=1.; x++)\n        for (float y = 0.; y<=1.; y++)\n        {\n            vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n            vec4 b = vec4(.5*R.xy,0,0);\n            float m = -map(q,b,vec4(0),b.xy);\n            if (m<0.) {\n                vec2 r = q-Q.xy;\n                vec2 v = vel(q,b,vec4(0))-vel(q,Q,t);\n                float l = length(r);\n                vec2 im = -norm(q,b,vec4(0),.5*R.xy)+v;\n                tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                f += im*abs(dot(normalize(r),normalize(im)));\n                h += 1.;\n            }\n        }\n        if (h>0.) f/=h, tor/=h;\n        Q.zw += dt*(f);\n        Q.xy += dt*(.5*f+Q.zw);\n        t.y += dt*(tor);\n        t.x += dt*(.5*tor+t.y);\n        if (M.z>0.) Q.zw += 1e-3*(Q.xy-M.xy)*exp(-.001*length(Q.xy-M.xy));\n        if (length(Q.zw)>1./dt) Q.zw = 1./dt*normalize(Q.zw);\n        if (abs(t.y)>dt) t.y = dt*sign(t.y);\n    }\n    \n    if(iFrame < 1) {\n        vec2 size = size(floor(U.x));\n        Q = vec4(.5*R+.1*R.y*(1.+6.*U.x/N)*vec2(cos(36.*U.x/N),sin(36.*U.x/N)),0,0);\n        t = vec4(10.*U.x/N,0,0,0);\n    }\n    if (mod(U.y,2.)>1.) Q = t;\n\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, in vec2 U) {\n\n    vec2 R=iResolution.xy; float T=iTime; int I=iFrame; vec4 M=iMouse;\n    if (U.y>4.)discard;\n    Q = A(vec2(U.x,.5));\n    vec4 t = A(vec2(U.x,1.5));\n    vec4 oQ = A(vec2(U.x,2.5));\n    vec4 ot = A(vec2(U.x,3.5));\n    vec2 w = size(floor(U.x));\n    \n    if (U.y<2.) {\n        vec2 f = vec2(0);\n        float tor = 0.;\n        float h = 0.;\n        for(float j = 0.; j < N; j++) if (j!=floor(U.x)) {\n            vec4 b = A(vec2(j,0)+.5);\n            vec4 bt = A(vec2(j,1)+.5);\n            vec2 bw = size(j);\n            for (float x = 0.; x<=1.; x++)\n            for (float y = 0.; y<=1.; y++)\n            {\n                { \n                    vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n                    // magnetic force\n                    {\n                        vec2 r = q-b.xy;\n                        vec2 im = MF(q,Q,t,b,bt);\n                        if (length(r)>0.) {\n                            tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                            f += im*abs(dot(normalize(r),normalize(im)));\n                        }\n                    }\n                    // my point in their box\n                    float m = map(q,b,bt,.5*bw);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n                { // their point in my box\n                    vec2 q = bw*(vec2(x,y)-.5)*ei(bt.x)+b.xy;\n                    float m = map(q,Q,t,.5*w);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n            }\n        }\n        for (float x = 0.; x<=1.; x++)\n        for (float y = 0.; y<=1.; y++)\n        {\n            vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n            vec4 b = vec4(.5*R.xy,0,0);\n            float m = -map(q,b,vec4(0),b.xy);\n            if (m<0.) {\n                vec2 r = q-Q.xy;\n                vec2 v = vel(q,b,vec4(0))-vel(q,Q,t);\n                float l = length(r);\n                vec2 im = -norm(q,b,vec4(0),.5*R.xy)+v;\n                tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                f += im*abs(dot(normalize(r),normalize(im)));\n                h += 1.;\n            }\n        }\n        if (h>0.) f/=h, tor/=h;\n        Q.zw += dt*(f);\n        Q.xy += dt*(.5*f+Q.zw);\n        t.y += dt*(tor);\n        t.x += dt*(.5*tor+t.y);\n        if (M.z>0.) Q.zw += 1e-3*(Q.xy-M.xy)*exp(-.001*length(Q.xy-M.xy));\n        if (length(Q.zw)>1./dt) Q.zw = 1./dt*normalize(Q.zw);\n        if (abs(t.y)>dt) t.y = dt*sign(t.y);\n    }\n    \n    if(iFrame < 1) {\n        vec2 size = size(floor(U.x));\n        Q = vec4(.5*R+.1*R.y*(1.+6.*U.x/N)*vec2(cos(36.*U.x/N),sin(36.*U.x/N)),0,0);\n        t = vec4(10.*U.x/N,0,0,0);\n    }\n    if (mod(U.y,2.)>1.) Q = t;\n\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, in vec2 U) {\n\n    vec2 R=iResolution.xy; float T=iTime; int I=iFrame; vec4 M=iMouse;\n    if (U.y>4.)discard;\n    Q = A(vec2(U.x,.5));\n    vec4 t = A(vec2(U.x,1.5));\n    vec4 oQ = A(vec2(U.x,2.5));\n    vec4 ot = A(vec2(U.x,3.5));\n    vec2 w = size(floor(U.x));\n    \n    if (U.y<2.) {\n        vec2 f = vec2(0);\n        float tor = 0.;\n        float h = 0.;\n        for(float j = 0.; j < N; j++) if (j!=floor(U.x)) {\n            vec4 b = A(vec2(j,0)+.5);\n            vec4 bt = A(vec2(j,1)+.5);\n            vec2 bw = size(j);\n            for (float x = 0.; x<=1.; x++)\n            for (float y = 0.; y<=1.; y++)\n            {\n                { \n                    vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n                    // magnetic force\n                    {\n                        vec2 r = q-b.xy;\n                        vec2 im = MF(q,Q,t,b,bt);\n                        if (length(r)>0.) {\n                            tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                            f += im*abs(dot(normalize(r),normalize(im)));\n                        }\n                    }\n                    // my point in their box\n                    float m = map(q,b,bt,.5*bw);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n                { // their point in my box\n                    vec2 q = bw*(vec2(x,y)-.5)*ei(bt.x)+b.xy;\n                    float m = map(q,Q,t,.5*w);\n                    if (m<0.) {\n                        vec2 r = q-Q.xy;\n                        vec2 v = vel(q,b,bt)-vel(q,Q,t);\n                        float l = length(r);\n                        vec2 im = norm(q,b,bt,.5*bw)+v;\n                        tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                        f += im*abs(dot(normalize(r),normalize(im)));\n                        h += 1.;\n                    }\n                }\n            }\n        }\n        for (float x = 0.; x<=1.; x++)\n        for (float y = 0.; y<=1.; y++)\n        {\n            vec2 q = w*(vec2(x,y)-.5)*ei(t.x)+Q.xy;\n            vec4 b = vec4(.5*R.xy,0,0);\n            float m = -map(q,b,vec4(0),b.xy);\n            if (m<0.) {\n                vec2 r = q-Q.xy;\n                vec2 v = vel(q,b,vec4(0))-vel(q,Q,t);\n                float l = length(r);\n                vec2 im = -norm(q,b,vec4(0),.5*R.xy)+v;\n                tor -= dot(r,vec2(-im.y,im.x))/(w.x*w.y);\n                f += im*abs(dot(normalize(r),normalize(im)));\n                h += 1.;\n            }\n        }\n        if (h>0.) f/=h, tor/=h;\n        Q.zw += dt*(f);\n        Q.xy += dt*(.5*f+Q.zw);\n        t.y += dt*(tor);\n        t.x += dt*(.5*tor+t.y);\n        if (M.z>0.) Q.zw += 1e-3*(Q.xy-M.xy)*exp(-.001*length(Q.xy-M.xy));\n        if (length(Q.zw)>1./dt) Q.zw = 1./dt*normalize(Q.zw);\n        if (abs(t.y)>dt) t.y = dt*sign(t.y);\n    }\n    \n    if(iFrame < 1) {\n        vec2 size = size(floor(U.x));\n        Q = vec4(.5*R+.1*R.y*(1.+6.*U.x/N)*vec2(cos(36.*U.x/N),sin(36.*U.x/N)),0,0);\n        t = vec4(10.*U.x/N,0,0,0);\n    }\n    if (mod(U.y,2.)>1.) Q = t;\n\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

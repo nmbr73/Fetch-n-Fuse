@@ -34,8 +34,8 @@ __DEVICE__ float pie (float2 p, float2 a, float2 b, float sa, float sb) {
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer A 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer A 'Previsualization: Buffer D' to iChannel3
 
 #define swi2S(a,b,c,d) (a).b = (d).x; (a).c = (d).y
 
@@ -43,7 +43,8 @@ __DEVICE__ float pie (float2 p, float2 a, float2 b, float sa, float sb) {
 // Save bubble position and calc force 
 __KERNEL__ void BubbleBatFuse__Buffer_A(float4 Q, float2 U, float iTime, float2 iResolution, float4 iMouse, int iFrame)
 {
- 
+    
+    U += 0.5f;
     float2 R = iResolution; float T = iTime; int I = iFrame;
     Q = A(U);
     float sz = size(U,R);
@@ -96,17 +97,17 @@ __KERNEL__ void BubbleBatFuse__Buffer_A(float4 Q, float2 U, float iTime, float2 
 // ----------------------------------------------------------------------------------
 // - Buffer B                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect '/media/a/94284d43be78f00eb6b298e6d78656a1b34e2b91b34940d02f1ca8b22310e8a0.png' to iChannel1
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer B 'Forest_0' to iChannel1
+// Connect Buffer B 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer B 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer B 'Previsualization: Buffer D' to iChannel3
 
 #define texture(ch,uv) _tex2DVecN(ch, (uv).x, (uv).y, 15)
 
 // Display Bubbles 
 __KERNEL__ void BubbleBatFuse__Buffer_B(float4 Q, float2 U, float iTime, float2 iResolution, int iFrame, sampler2D iChannel1)
 {
- 
+    U += 0.5f;
     float2 R = iResolution; float T = iTime; int I = iFrame;
     Q = to_float4_s(0);
     float4 c = C(U);
@@ -134,10 +135,10 @@ __KERNEL__ void BubbleBatFuse__Buffer_B(float4 Q, float2 U, float iTime, float2 
 // ----------------------------------------------------------------------------------
 // - Buffer C                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer C 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer C 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer C 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer C 'Previsualization: Buffer D' to iChannel3
 
 
 // track nearest bubble
@@ -149,7 +150,7 @@ __DEVICE__ void X (inout float4 *Q, float2 U, float4 a, float2 R, __TEXTURE2D__ 
 }
 __KERNEL__ void BubbleBatFuse__Buffer_C(float4 Q, float2 U, float iTime, float2 iResolution, int iFrame)
 {
- 
+    U += 0.5f;
     float2 R = iResolution; float T = iTime; int I = iFrame;
     Q = C(U);
     X(&Q,U,C(U+to_float2(0,1)),R,iChannel0);
@@ -175,10 +176,10 @@ __KERNEL__ void BubbleBatFuse__Buffer_C(float4 Q, float2 U, float iTime, float2 
 // ----------------------------------------------------------------------------------
 // - Buffer D                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer D 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer D 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer D 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer D 'Previsualization: Buffer D' to iChannel3
 
 
 // Track neighborhood network
@@ -192,7 +193,7 @@ __DEVICE__ void Y (inout float4 *Q, float2 U, float4 c ,float4 a, float2 R, __TE
 }
 __KERNEL__ void BubbleBatFuse__Buffer_D(float4 Q, float2 U, float iTime, float2 iResolution, int iFrame)
 {
- 
+    U += 0.5f;
     float2 R = iResolution; float T = iTime; int I = iFrame;
     Q = D(U);
     float4 c = A(swi2(C(U),x,y));
@@ -216,10 +217,10 @@ __KERNEL__ void BubbleBatFuse__Buffer_D(float4 Q, float2 U, float iTime, float2 
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Image 'Previsualization: Buffer A' to iChannel0
+// Connect Image 'Previsualization: Buffer B' to iChannel1
+// Connect Image 'Previsualization: Buffer C' to iChannel2
+// Connect Image 'Previsualization: Buffer D' to iChannel3
 
 
 // Sparkle

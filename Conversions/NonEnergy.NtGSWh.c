@@ -5,7 +5,7 @@
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Buffer A' to iChannel0
+// Connect Buffer A 'Previsualization: Buffer A' to iChannel0
 
 
 __DEVICE__ float2 hash( float2 p ) // replace this by something better
@@ -58,6 +58,8 @@ __DEVICE__ float3 texTiedCylinder(float2 uv, __TEXTURE2D__ iChannel0) {
 // inspired by suture fluid: https://www.shadertoy.com/view/XddSRX
 __KERNEL__ void NonEnergyFuse__Buffer_A(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
 {
+
+    fragCoord +=0.5f;
 
     float2 vUv = fragCoord / iResolution;
     float2 step = 1.0f / iResolution;
@@ -138,7 +140,7 @@ __KERNEL__ void NonEnergyFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
-// Connect 'Buffer A' to iChannel0
+// Connect Image 'Previsualization: Buffer A' to iChannel0
 
 
 #define PI 3.14159265

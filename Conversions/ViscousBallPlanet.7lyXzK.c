@@ -52,8 +52,8 @@ __DEVICE__ float noise1D(float t) {
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Keyboard' to iChannel3
-// Connect 'Buffer B' to iChannel0
+// Connect Buffer A  'Preset: Keyboard' to iChannel3
+// Connect Buffer A  'Previsualization: Buffer B' to iChannel0
 
 
 //grid hashing
@@ -61,6 +61,7 @@ __DEVICE__ float noise1D(float t) {
 __KERNEL__ void ViscousBallPlanetFuse__Buffer_A(float4 state, float2 fragCoord, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0, sampler2D iChannel3)
 {
 
+    fragCoord += 0.5f;
     int2 maxIndex = particleEdge * hashEdge;
     int2 ind = to_int2_cfloat(_floor(fragCoord));
     
@@ -145,7 +146,7 @@ __KERNEL__ void ViscousBallPlanetFuse__Buffer_A(float4 state, float2 fragCoord, 
 // ----------------------------------------------------------------------------------
 // - Buffer B                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Buffer A' to iChannel0
+// Connect Buffer B 'Previsualization: Buffer A' to iChannel0
 
 
 //state update
@@ -158,6 +159,7 @@ __KERNEL__ void ViscousBallPlanetFuse__Buffer_A(float4 state, float2 fragCoord, 
 __KERNEL__ void ViscousBallPlanetFuse__Buffer_B(float4 state, float2 fragCoord, float2 iResolution, sampler2D iChannel0)
 {
 
+    fragCoord +=0.5f;
     int2 maxIndex = particleEdge * hashEdge;
     int2 ind = to_int2_cfloat(_floor(fragCoord));
     //int2 id = ind/hashEdge; //cell id
@@ -263,7 +265,7 @@ __KERNEL__ void ViscousBallPlanetFuse__Buffer_B(float4 state, float2 fragCoord, 
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
-// Connect 'Buffer A' to iChannel0
+// Connect Image 'Previsualization: Buffer A' to iChannel0
 
 
 __KERNEL__ void ViscousBallPlanetFuse(float4 fragColor, float2 fragCoord, float2 iResolution, sampler2D iChannel0)

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: MagnetSim
+  id: MagnetSim
+  kernel: MagnetSim
+  name: MagnetSim
+shader:
+  author: N.N.
+  description: 'Rigid body physics + magnetism. '
+  id: 7dscz4
+  name: Fork Magnet Sim JiPi 914
+  parent:
+    id: ssfcRN
+    name: Magnet Simulation
+    url: https://www.shadertoy.com/view/ssfcRN
+  tags:
+  - magnetism
+  url: https://www.shadertoy.com/view/7dscz4

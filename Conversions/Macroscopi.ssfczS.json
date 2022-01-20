@@ -1,0 +1,116 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ssfczS",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Macroscopi JiPi 965",
+  "description": "Based on:\nMacroscopic Lattice Boltzmann for Shallow Water Equations (MacLABSWE) by Jian Guo Zhou\nhttps://arxiv.org/abs/1902.02999\n\nSpace: Toggle View Mode\nQ: Toggle Force Input Mode (Height / Velocity Injection)\nW: Toggle Water\nR: Reset Simulation",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "lbm",
+   "latticeboltzmann",
+   "shallowwater"
+  ],
+  "hasliked": 0,
+  "parentid": "NdXyRB",
+  "parentname": "Macroscopic LBM Shallow Water"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Macroscopic LBM Shallow Water by Nico Ell\n// Contact: nico@nicoell.dev\n\n\n// ----------------------------------------------------------\n// Triangulator by nimitz (twitter: @stormoid)\n// https://www.shadertoy.com/view/lllGRr\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License\n// Contact the author for other licensing options\n\n#define ITR 50\n#define FAR 1000.\n#define BASECOLOR vec3(0.05,0.1,0.85)\n\nmat2 mm2(in float a){float c = cos(a), s = sin(a);return mat2(c,-s,s,c);}\nmat2 m2 = mat2(0.934, 0.358, -0.358, 0.934);\nfloat tri(in float x){return abs(fract(x)-0.5);}\n\nfloat heightmap(in vec2 p)\n{\n    vec2 uv = (p.xy * .005);\n    uv.y += .45;\n    uv.x -= 0.5;\n    float waterDepth = texture(iChannel0, uv).z;\n    float terrainHeight = texture(iChannel0, uv).w;\n    if (ReadKey(iChannel3, kToggleWater, true))\n    {\n        return terrainHeight;\n    } else\n    {\n        return (terrainHeight + waterDepth);\n    }\n}\n\n//from jessifin (https://www.shadertoy.com/view/lslXDf)\nvec3 bary(vec2 a, vec2 b, vec2 c, vec2 p) \n{\n    vec2 v0 = b - a, v1 = c - a, v2 = p - a;\n    float inv_denom = 1.0 / (v0.x * v1.y - v1.x * v0.y)+1e-9;\n    float v = (v2.x * v1.y - v1.x * v2.y) * inv_denom;\n    float w = (v0.x * v2.y - v2.x * v0.y) * inv_denom;\n    float u = 1.0 - v - w;\n    return abs(vec3(u,v,w));\n}\n\n/*\n\tIdea is quite simple, find which (triangular) side of a given tile we're in,\n\tthen get 3 samples and compute height using barycentric coordinates.\n*/\nfloat map(vec3 p)\n{\n    vec3 q = fract(p)-0.5;\n    vec3 iq = floor(p);\n    vec2 p1 = vec2(iq.x-.5, iq.z+.5);\n    vec2 p2 = vec2(iq.x+.5, iq.z-.5);\n    \n    float d1 = heightmap(p1);\n    float d2 = heightmap(p2);\n    \n    float sw = sign(q.x+q.z); \n    vec2 px = vec2(iq.x+.5*sw, iq.z+.5*sw);\n    float dx = heightmap(px);\n    vec3 bar = bary(vec2(.5*sw,.5*sw),vec2(-.5,.5),vec2(.5,-.5), q.xz);\n    return (bar.x*dx + bar.y*d1 + bar.z*d2 + p.y + 3.)*.9;\n}\n\nfloat march(in vec3 ro, in vec3 rd)\n{\n\tfloat precis = 0.001;\n    float h=precis*2.0;\n    float d = 0.;\n    for( int i=0; i<ITR; i++ )\n    {\n        if( abs(h)<precis || d>FAR ) break;\n        d += h;\n\t    float res = map(ro+rd*d)*.1;\n        h = res;\n    }\n\treturn d;\n}\n\nvec3 normal(const in vec3 p)\n{  \n    vec2 e = vec2(-1., 1.)*0.01;\n\treturn normalize(e.yxx*map(p + e.yxx) + e.xxy*map(p + e.xxy) + \n\t\t\t\t\t e.xyx*map(p + e.xyx) + e.yyy*map(p + e.yyy) );   \n}\n// ----------------------------------------------------------\n\n// From https://www.shadertoy.com/view/Xdy3zG\n//fancy function to compute a color from the velocity\nvec4 computeColor(float normal_value)\n{\n    vec3 color;\n    if(normal_value<0.0) normal_value = 0.0;\n    if(normal_value>1.0) normal_value = 1.0;\n    float v1 = 0.01/7.0;\n    float v2 = 2.0/7.0;\n    float v3 = 3.0/7.0;\n    float v4 = 4.0/7.0;\n    float v5 = 5.0/7.0;\n    float v6 = 6.0/7.0;\n    //compute color\n    if(normal_value<v1)\n    {\n      float c = normal_value/v1;\n      color.x = 140.*(1.-c);\n      color.y = 70.*(1.-c);\n      color.z = 19.*(1.-c) + 91.*c;\n    }\n    else if(normal_value<v2)\n    {\n      float c = (normal_value-v1)/(v2-v1);\n      color.x = 0.;\n      color.y = 255.*c;\n      color.z = 91.*(1.-c) + 255.*c;\n    }\n    else if(normal_value<v3)\n    {\n      float c = (normal_value-v2)/(v3-v2);\n      color.x =  0.*c;\n      color.y = 255.*(1.-c) + 128.*c;\n      color.z = 255.*(1.-c) + 0.*c;\n    }\n    else if(normal_value<v4)\n    {\n      float c = (normal_value-v3)/(v4-v3);\n      color.x = 255.*c;\n      color.y = 128.*(1.-c) + 255.*c;\n      color.z = 0.;\n    }\n    else if(normal_value<v5)\n    {\n      float c = (normal_value-v4)/(v5-v4);\n      color.x = 255.*(1.-c) + 255.*c;\n      color.y = 255.*(1.-c) + 96.*c;\n      color.z = 0.;\n    }\n    else if(normal_value<v6)\n    {\n      float c = (normal_value-v5)/(v6-v5);\n      color.x = 255.*(1.-c) + 107.*c;\n      color.y = 96.*(1.-c);\n      color.z = 0.;\n    }\n    else\n    {\n      float c = (normal_value-v6)/(1.-v6);\n      color.x = 107.*(1.-c) + 223.*c;\n      color.y = 77.*c;\n      color.z = 77.*c;\n    }\n    return vec4(color.r/255.0,color.g/255.0,color.b/255.0,1.0);\n}\n\n// ----------------------------------------------------------\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    vec4 velocityHeight = texture(iChannel0, uv);\n\n    vec4 mixedColor;\n    if (!ReadKey(iChannel3, kViewMode, true))\n    {\n        if (ReadKey(iChannel3, kToggleWater, true))\n        {\n            mixedColor = vec4(computeColor((velocityHeight.w / MaxShallowWaterDepth)).xyz, 1.0);\n        }\n        else\n        {\n            mixedColor = vec4(computeColor((velocityHeight.z / MaxShallowWaterDepth)).xyz, 1.0);\n        }\n    }\n    else\n    {\n        vec2 eps = vec2(0.1, 0.0);\n    \n        vec2 st = fragCoord.xy / iResolution.xy;\n        float finv = tan(40.0 * 0.5 * pi / 180.0);\n        float aspect = iResolution.x / iResolution.y;\n        st.x = st.x * aspect;\n        st = (st - vec2(aspect * 0.5, 0.95)) * finv;\n\n        vec3 ro = vec3(0., 75., 0.);\n        vec3 rd = normalize(vec3(st, .5));\n\n        float rz = march(ro,rd);\n        vec3 col = vec3(0.);\n\n        if ( rz < FAR ) \n        {\n            vec3 pos = ro+rz*rd;\n            vec3 nor= normal(pos);\n            vec3 ligt = normalize(vec3(-.2, 0.05, -0.2));\n\n            float dif = clamp(dot( nor, ligt ), 0., 1.);\n            float fre = pow(clamp(1.0+dot(nor,rd),0.0,1.0), 3.);\n            vec3 brdf = 2.*vec3(0.10,0.11,0.1);\n            brdf += 1.9*dif*vec3(.8,1.,.05);\n            col = BASECOLOR;\n            col = col*brdf + fre*0.5*vec3(.7,.8,1.);\n        }\n        col = clamp(col,0.,1.);\n        col = pow(col,vec3(.9));\n        col *= pow( 16.0*uv.x*uv.y*(1.0-uv.x)*(1.0-uv.y), 0.1);\n        \n        mixedColor = vec4(col, 1.0);\n    }\n\n\n    fragColor = mixedColor;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 GetWind(vec2 uv)\n{\n\treturn sin(iTime) * WindAmplitude *\tvec2(-cos(uv.y * pi * 4.0), 0);\n}\n\nfloat GetTerrainHeight(vec2 uv)\n{\n\tfloat h = (0.4 * max(cos(uv.x * pitwo), cos(uv.y * pitwo)) + 0.6);\n\treturn h * TerrainHeightScale;\n}\n\n//Inigo Quilez; https://www.iquilezles.org/www/articles/smin/smin.htm\nfloat smoothmin(float a, float b, float k)\n{\n\tfloat h = max(k - abs(a - b), 0.0) / k;\n\treturn min(a, b) - h * h * k * (1.0 / 4.0);\n}\n\nvoid EnforceStabilityConditions(inout vec2 u, inout float h, float WaterDepthLimit, float VelocityMagnitudeLimit)\n{\n\t/*\n\t* u = velocity\n\t* g = gravity\n\t* h = water depth\n\t* gh = squared wave speed\n\t* e = lattice speed (speed at which information travels) / MacroscopicParticleSpeed\n\t*\n\t* Stability Requirements:\n\t* |u| < sqrt(gh)\n\t*\tgh < e^2\n\t* u.u < e^2 && |u| << e\n\t*\t|u| DeltaX / Viscosity < 1\n\t*\n\t* => |u| < e/6\n\t*\t\t|u| < sqrt(gh) < sqrt(e^2) (this is always larger than e/6)\n\t*\t\t h\t< e^2/g\n\t*/\n\t// The factors 0.96 and 0.2 were empirically found.\n\t// Smoothmin prevents introducing sharp edges, which then produce ripples and waves on the surface.\t\n\th = smoothmin(h, 0.96 * WaterDepthLimit, 0.2 * WaterDepthLimit);\n\t// VelocityMagnitudeLimit should always be smaller than sqrt(Gravity * h)\n\tfloat speedLimit = VelocityMagnitudeLimit;\n\n\tfloat magnitudeU = length(u);\n\tif (magnitudeU > 0.0)\n\t{\n\t\tu /= magnitudeU;\n\t\tu *= min(magnitudeU, speedLimit);\n\t}\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\t\n\t// 5 6 7\n\t//\t\\|/\t\t // D2Q9\n\t// 0-C-1\t\t// Unweighted raw vectors\n\t//\t/|\\\t\t // These need to be weighted with MacroscopicParticleSpeed\n\t// 2 3 4\n\n\tconst vec2 GridVectors[8] = vec2[]\n\t(\n\t\tvec2(-1, 0), vec2(1, 0),\n\t\tvec2(-1, -1), vec2(0, -1), vec2(1, -1),\n\t\tvec2(-1, 1), vec2(0, 1), vec2(1, 1)\n\t);\n\tconst vec2 ForceWeights = vec2(1.0 / 3.0, 1.0 / 12.0);\n\t\n\t// ----------------------------------------------------------\n\t// Dynamic derived parameters\n\t// ----------------------------------------------------------\n\tfloat MinEddyViscosity = sqrt(Gravity * MaxShallowWaterDepth)\t* MaxShallowWaterDepth / 6.0;\n\tMinEddyViscosity *= ViscosityModifier;\n\n\tfloat MacroscopicParticleSpeed = (6.0 * MinEddyViscosity) / LatticeSize;\n\tfloat VelocityMagnitudeLimit = (1.0 / 6.0) * MacroscopicParticleSpeed;\n\n\tfloat DeltaTime = LatticeSize / sqrt(Gravity * MaxShallowWaterDepth);\n\t\n\tfloat mpsPower = MacroscopicParticleSpeed * MacroscopicParticleSpeed;\n\tfloat WaterHeightLimit = mpsPower / Gravity;\n\tvec4 ParticleSpeedDenominators;\n\tParticleSpeedDenominators.x = 1.0 / (6.0 * mpsPower);\n\tParticleSpeedDenominators.y = 1.0 / (3.0 * mpsPower);\n\tParticleSpeedDenominators.z = 1.0 / (2.0 * mpsPower * mpsPower);\n\tParticleSpeedDenominators.w = 1.0 / mpsPower;\n\t// ----------------------------------------------------------\n\n\tvec2 inverseTextureSize = vec2(1.0) / iResolution.xy;\n\tvec2 uv = fragCoord * inverseTextureSize;\n    \n    // ----------------------------------------------------------\n\t// Early out for Reset/Init Simulation\n\t// ----------------------------------------------------------\n    if(ReadKey(iChannel3, kResetSimulation, false) || iFrame == 0)\n\t{\n\t\tvec2 inverseTextureSize = vec2(1.0) / iResolution.xy;\n\t\tvec2 uv = fragCoord * inverseTextureSize;\n\n\t\tvec2 initVelocity = vec2(VelocityMagnitudeLimit, 0);\n\t\tfloat initHeight = RelInitialWaterDepth * MaxShallowWaterDepth;\n        float terrainHeight = GetTerrainHeight(uv);\n\n\t\tfragColor = vec4(initVelocity, max(initHeight - terrainHeight, 0.0), terrainHeight);\n\t\treturn;\n\t}\n\n\t// ----------------------------------------------------------\n\t// Simulated Outputs\n\t// ----------------------------------------------------------\n\tvec2 newVelocity = vec2(0.0, 0.0);\n\tfloat newHeight = 0.;\n\t\n\t// ----------------------------------------------------------\n\t// Other & Intermediates\n\t// ----------------------------------------------------------\n\tfloat hCenterHalf;\n\tfloat terrainElevationCenter = GetTerrainHeight(uv);\n\n\tvec2 externalForce = vec2(0.0, 0.0);\n\tfloat heightInjection = 0.0;\n\t\n\texternalForce += GetWind(uv);\n\n\t// User Force Input\n\tif (ReadKey(iChannel3, kMouseInputType, true))\n\t{\n\t\tif( iMouse.z>0.1 && distance(iMouse.xy,fragCoord) < MouseRadius)\n\t\t{\n\t\t\texternalForce += MouseForce;\n\t\t}\n\t}\n\telse \n\t{\n\t\tif (iMouse.z>0.1 && distance(iMouse.xy,fragCoord) < MouseRadius)\n\t\t{\n\t\t\theightInjection = MouseHeightInjection;\n\t\t}\n\t}\n\t\n\t// ----------------------------------------------------------\n\t// First Handle hCenter\n\t// ---------------------------------------------------------- \n\t{\n\t\tfloat h = texture(iChannel0, uv).z + heightInjection;\n\t\tvec2 u = texture(iChannel0, uv).xy;\n\n\t\thCenterHalf = h * 0.5;\n\n\t\tfloat localEquilibrium = -5.0 * Gravity * h * ParticleSpeedDenominators.x;\n\t\tlocalEquilibrium -= 2.0 * dot(u, u) * ParticleSpeedDenominators.y;\n\t\tlocalEquilibrium = localEquilibrium * h + h;\n\n\t\tnewHeight = localEquilibrium;\n\t}\n\t\n\t\t\t\n\t// ----------------------------------------------------------\n\t// Neighbours\n\t// ----------------------------------------------------------\n\tfor (int i = 0; i < 8; i++)\n\t{\n\t\tvec2 uvNeighbour = uv - GridVectors[i] * inverseTextureSize;\n\t\tfloat terrainElevation = GetTerrainHeight(uvNeighbour);\n\t\tfloat h = texture(iChannel0, uvNeighbour).z + heightInjection;\n\t\tvec2 u = texture(iChannel0, uvNeighbour).xy;\n\n\t\tvec2 particleVelocityVector = -GridVectors[i] * MacroscopicParticleSpeed;\n\n\t\tvec2 bedShearStress = BedFrictionCoefficient * u * length(u);\n\t\texternalForce -= bedShearStress;\n\n\t\tfloat doteu = dot(particleVelocityVector, u);\n\t\tfloat localEquilibrium = 0.0;\n\n\t\tif (i == 0 || i == 1 || i == 3 || i == 6) // Direct Neighbours\n\t\t{\n\t\t\tlocalEquilibrium = ParticleSpeedDenominators.x * (Gravity * h - dot(u, u));\n\t\t\tlocalEquilibrium += doteu * (doteu * ParticleSpeedDenominators.z + ParticleSpeedDenominators.y);\n\t\t\tlocalEquilibrium *= h;\n\t\t} else // Diagonal Neighbours\n\t\t{\n\t\t\tlocalEquilibrium = ParticleSpeedDenominators.x * (Gravity * h - dot(u, u));\n\t\t\tlocalEquilibrium += doteu * (doteu * ParticleSpeedDenominators.z + ParticleSpeedDenominators.y);\n\t\t\tlocalEquilibrium *= 0.25 * h;\n\t\t}\n\t\t\n\t\t// Terrain Bed influence\n\t\tfloat actingForce = 0.;\n\t\tfloat hOverline = 0.5 * h + hCenterHalf;\n\t\tfloat terrainSlope = terrainElevation - terrainElevationCenter;\n\n\t\t // (Gravity * hOverline *\tParticleSpeedDenominators.w) is hOverline / ShallowWaterVolumeHeight and therefore the relative height 0...1\n\t\tfloat relativeShallowWaterHeight = (Gravity * hOverline * ParticleSpeedDenominators.w);\n\t\tactingForce += relativeShallowWaterHeight * terrainSlope;\n\n\t\tactingForce += (DeltaTime * ParticleSpeedDenominators.w) * dot(particleVelocityVector, externalForce);\n\t\tif (i == 0 || i == 1 || i == 3 || i == 6) // Direct Neighbours\n\t\t{\n\t\t\tactingForce *= ForceWeights.x;\n\t\t}\n\t\telse\n\t\t{\n\t\t\tactingForce *= ForceWeights.y;\n\t\t}\n\n\t\tfloat hi = localEquilibrium + actingForce;\n\t\tnewHeight += hi;\n\t\tnewVelocity += particleVelocityVector * hi;\n\t}\n\n\tif (newHeight > 0.0)\n\t{\n\t\tnewVelocity /= newHeight;\n\t}\n\telse\n\t{\n\t\tnewVelocity = vec2(0.0, 0.0);\n\t\tnewHeight = 0.0;\n\t}\n\n\tEnforceStabilityConditions(newVelocity, newHeight, WaterHeightLimit, VelocityMagnitudeLimit);\n\t\n\n\tfragColor = vec4(newVelocity.xy, newHeight, terrainElevationCenter);\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define pi 3.141\n#define pitwo 6.28318\n\n#define Gravity 9.81\n// LatticeSize at which Simulation is performed\n#define LatticeSize 5.5\n// Maximum Depth of Water in Meter\n#define MaxShallowWaterDepth 5.0\n#define RelInitialWaterDepth 0.5\n// Guaranteed stable at 1.0\n#define ViscosityModifier 1.\n#define BedFrictionCoefficient 0.0\n#define TerrainHeightScale 5.\n#define WindAmplitude .0\n\n// User Input\n#define MouseRadius 25.0\n#define MouseForce vec2(10., 0)\n#define MouseHeightInjection .1\n\n// Keys\nconst int kA=65,kB=66,kC=67,kD=68,kE=69,kF=70,kG=71,kH=72,kI=73,kJ=74,kK=75,kL=76,kM=77,kN=78,kO=79,kP=80,kQ=81,kR=82,kS=83,kT=84,kU=85,kV=86,kW=87,kX=88,kY=89,kZ=90;\nconst int k0=48,k1=49,k2=50,k3=51,k4=52,k5=53,k6=54,k7=55,k8=56,k9=57;\nconst int kSpace=32,kLeft=37,kUp=38,kRight=39,kDown=40;\n\nconst int kViewMode = kSpace;\nconst int kMouseInputType = kQ;\nconst int kResetSimulation = kR;\nconst int kToggleWater = kW;\n\nbool ReadKey(sampler2D textureChannel, int key, bool toggle )\n{\n\tfloat keyVal = texture( textureChannel, vec2( (float(key)+.5)/256.0, toggle?.75:.25 ) ).x;\n\treturn (keyVal>.5)?true:false;\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

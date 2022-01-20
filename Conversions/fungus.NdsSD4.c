@@ -2,6 +2,9 @@
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
+// Connect Buffer A 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer A 'Preset: Keyboard' to iChannel1
+// Connect Buffer A 'Texture: London' to iChannel2
 
 
 
@@ -15,6 +18,7 @@
   float4 iMouse
   ) {
 
+    u+=0.5f;
     float4 a = A(u+to_float2(0,0));
     float b = 0.0f;
 
@@ -90,6 +94,7 @@
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
+// Connect Image 'Previsualization: Buffer A' to iChannel0
 
 	__KERNEL__ void fungusFuse(
   float4 fragColor,

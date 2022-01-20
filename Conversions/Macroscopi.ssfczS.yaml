@@ -1,0 +1,35 @@
+fuse:
+  author: JiPi
+  file: Macroscopi
+  id: Macroscopi
+  kernel: Macroscopi
+  name: Macroscopi
+shader:
+  author: N.N.
+  description: 'Based on:
+
+    Macroscopic Lattice Boltzmann for Shallow Water Equations (MacLABSWE) by Jian
+    Guo Zhou
+
+    https://arxiv.org/abs/1902.02999
+
+
+    Space: Toggle View Mode
+
+    Q: Toggle Force Input Mode (Height / Velocity Injection)
+
+    W: Toggle Water
+
+    R: Reset Simulation'
+  id: ssfczS
+  name: Fork Macroscopi JiPi 965
+  parent:
+    id: NdXyRB
+    name: Macroscopic LBM Shallow Water
+    url: https://www.shadertoy.com/view/NdXyRB
+  tags:
+  - fluid
+  - lbm
+  - latticeboltzmann
+  - shallowwater
+  url: https://www.shadertoy.com/view/ssfczS

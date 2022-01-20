@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: Sedimentat.stKSDd
+  id: Sedimentat
+  name: Sedimentat
+shader:
+  author: N.N.
+  description: when making an erosion simulation, it's important not to forget sedimentation.
+    What you take, you must return
+  id: stKSDd
+  name: Fork Sedimentat JiPi 623
+  parent:
+    id: 7tySWt
+    name: Sedimentation
+    url: https://www.shadertoy.com/view/7tySWt
+  tags:
+  - fluid
+  - automata
+  url: https://www.shadertoy.com/view/stKSDd

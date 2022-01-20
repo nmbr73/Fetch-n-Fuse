@@ -26,10 +26,10 @@ __DEVICE__ float4 hash (float p) // Dave (Hash)kins
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer A 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer A 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer A 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer A 'Previsualization: Buffer D' to iChannel3
 
 
 // FLUID DYNAMICS
@@ -39,7 +39,8 @@ __DEVICE__ float4 T (float2 U, float2 iResolution, __TEXTURE2D__ iChannel0 ) {re
 
 __KERNEL__ void BiologicalParticlesFuse__Buffer_A(float4 Q, float2 U, float iTime, float2 iResolution, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
-
+    U += 0.5f;
+     
     Q = T(U,iResolution,iChannel0);
     float4 // neighborhood
         n = T(U+to_float2(0,1),iResolution,iChannel0),
@@ -86,10 +87,10 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_A(float4 Q, float2 U, float iTim
 // ----------------------------------------------------------------------------------
 // - Buffer B                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer B 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer B 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer B 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer B 'Previsualization: Buffer D' to iChannel3
 
 
 // SPACIALLY SORT VORONOI PARTICLES
@@ -100,7 +101,8 @@ __DEVICE__ void swap (inout float4 *Q, float2 U, float2 r, float2 iResolution, _
 }
 __KERNEL__ void BiologicalParticlesFuse__Buffer_B(float4 Q, float2 U, float2 iResolution, float4 iMouse, float iTime, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
-
+    U += 0.5f;
+    
     // FIND NEAREST PARTICLE
     Q = B(U);
     swap(&Q,U,to_float2(1,0),iResolution,iChannel1);
@@ -128,15 +130,16 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_B(float4 Q, float2 U, float2 iRe
 // ----------------------------------------------------------------------------------
 // - Buffer C                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer C 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer C 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer C 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer C 'Previsualization: Buffer D' to iChannel3
 
 
 // BLUR PARTICLES PASS 1
 __KERNEL__ void BiologicalParticlesFuse__Buffer_C(float4 Q, float2 U, float2 iResolution, sampler2D iChannel1)
 {
+    U += 0.5f;
 
     Q = to_float4_s(0);
     for (float i = -I; i <= I; i++) {
@@ -152,16 +155,17 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_C(float4 Q, float2 U, float2 iRe
 // ----------------------------------------------------------------------------------
 // - Buffer D                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Buffer D 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer D 'Previsualization: Buffer B' to iChannel1
+// Connect Buffer D 'Previsualization: Buffer C' to iChannel2
+// Connect Buffer D 'Previsualization: Buffer D' to iChannel3
 
 
 // BLUR PASS 2
 __KERNEL__ void BiologicalParticlesFuse__Buffer_D(float4 Q, float2 U, float2 iResolution, int iFrame, sampler2D iChannel2, sampler2D iChannel3)
 {
 
+    U += 0.5f;
     Q = 0.5f*D(U);
     for (float i = -I; i <= I; i++) {
       float4 c = C(U+to_float2(0,i));
@@ -175,10 +179,10 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_D(float4 Q, float2 U, float2 iRe
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
-// Connect 'Previsualization: Buffer B' to iChannel1
-// Connect 'Previsualization: Buffer C' to iChannel2
-// Connect 'Previsualization: Buffer D' to iChannel3
+// Connect Image 'Previsualization: Buffer A' to iChannel0
+// Connect Image 'Previsualization: Buffer B' to iChannel1
+// Connect Image 'Previsualization: Buffer C' to iChannel2
+// Connect Image 'Previsualization: Buffer D' to iChannel3
 
 
 /*

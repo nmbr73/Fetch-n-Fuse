@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer D' to iChannel0
+// Connect Buffer A 'Previsualization: Buffer D' to iChannel0
 
 
 #define R iResolution
@@ -16,7 +16,8 @@ __DEVICE__ float4 X (inout float2 *c,inout float *m, float2 u, float2 r,float2 i
 } 
 __KERNEL__ void BranchingPathsFuse__Buffer_A(float4 Q, float2 U, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
 {
-
+    U += 0.5f;
+     
     Q = A(U);
     float2 c = swi2(Q,x,y);
     float m=0.0f;
@@ -53,12 +54,14 @@ __KERNEL__ void BranchingPathsFuse__Buffer_A(float4 Q, float2 U, float2 iResolut
 // ----------------------------------------------------------------------------------
 // - Buffer B                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
+// Connect Buffer B 'Previsualization: Buffer A' to iChannel0
 
 
 __KERNEL__ void BranchingPathsFuse__Buffer_B(float4 Q, float2 U, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
 {
 
+    U += 0.5f;
+    
     Q = A(U);
     float2 c = swi2(Q,x,y);
     float m=0.0f;
@@ -94,10 +97,11 @@ __KERNEL__ void BranchingPathsFuse__Buffer_B(float4 Q, float2 U, float2 iResolut
 // ----------------------------------------------------------------------------------
 // - Buffer C                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer B' to iChannel0
+// Connect Buffer C 'Previsualization: Buffer B' to iChannel0
 
 __KERNEL__ void BranchingPathsFuse__Buffer_C(float4 Q, float2 U, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
 {
+    U += 0.5f;
 
     Q = A(U);
     float2 c = swi2(Q,x,y);
@@ -134,10 +138,11 @@ __KERNEL__ void BranchingPathsFuse__Buffer_C(float4 Q, float2 U, float2 iResolut
 // ----------------------------------------------------------------------------------
 // - Buffer D                                                                       -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer C' to iChannel0
+// Connect Buffer D 'Previsualization: Buffer C' to iChannel0
 
 __KERNEL__ void BranchingPathsFuse__Buffer_D(float4 Q, float2 U, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
 {
+    U += 0.5f;
 
     Q = A(U);
     float2 c = swi2(Q,x,y);
@@ -174,7 +179,7 @@ __KERNEL__ void BranchingPathsFuse__Buffer_D(float4 Q, float2 U, float2 iResolut
 // ----------------------------------------------------------------------------------
 // - Image                                                                          -
 // ----------------------------------------------------------------------------------
-// Connect 'Previsualization: Buffer A' to iChannel0
+// Connect Image 'Previsualization: Buffer A' to iChannel0
 
 
 __DEVICE__ float4 X_Image(inout float2 *c, float2 u, float2 r,float2 iResolution, __TEXTURE2D__ iChannel0) {
