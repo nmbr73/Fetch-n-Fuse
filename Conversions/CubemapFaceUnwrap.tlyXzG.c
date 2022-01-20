@@ -8,15 +8,17 @@
 
 __DEVICE__ int CubeFaceOfDir(float3 d) // just the face id
 {
-    float3 a = _fabs(d);
+    float _d[3] = {d.x,d.y,d.z};
+    float3 a = abs_f3(d);
     int f = a.x >= a.y ? (a.x >= a.z ? 0 : 2) : (a.y >= a.z ? 1 : 2);
     int i = f + f;
-    if (d[f] < 0.0f) ++i;
+    if (_d[f] < 0.0f) ++i;
     return i;
 }
 // takes normalized direction vector, returns uv in swi2(c,x,y) and face id in c.z
 __DEVICE__ float3 DirToCubeFace(float3 d)
 {
+    float _d[3] = {d.x,d.y,d.z}; 
     int i = CubeFaceOfDir(d)
     , f = i >> 1;
     float2 uv;
@@ -25,16 +27,16 @@ __DEVICE__ float3 DirToCubeFace(float3 d)
         case 1: uv = swi2(d,x,z); break;
         case 2: uv = swi2(d,x,y); break;
     }
-    uv /= _fabs(d[f]); // project
+    uv /= _fabs(_d[f]); // project
     if ((i&1) != 0) // negative faces are odd indices
         uv.x = -uv.x; // flip u
-    return to_float3_aw(uv, float(i));
+    return to_float3_aw(uv, (float)(i));
 }
 // takes uv in swi2(c,x,y) and face id in c.z, returns unnormalized direction vector
 __DEVICE__ float3 CubeFaceToDir(float3 c)
 {
-    int i = int(c.z);
-    float3 d = to_float3(c.x,c.y, 1.0f - 2.0f * float(i & 1));
+    int i = (int)(c.z);
+    float3 d = to_float3(c.x,c.y, 1.0f - 2.0f * (float)(i & 1));
     d.x *= d.z; // only unflip u
     switch (i >> 1) { // f
         case 0: d = swi3(d,z,x,y); break;
@@ -53,20 +55,20 @@ __DEVICE__ float4 Unwrap(__TEXTURE2D__ ch, float2 q)
     uv -= to_float2(0.0f,0.5f);
     int i = -1;
     if (uv.y >= 1.0f && uv.y < 2.0f) {
-        int f = int(_floor(uv.x));
+        int f = (int)(_floor(uv.x));
         if (f >= 0 && f < 2) i = 3*f + 1;
        else if (f >= 2 && f < 4) i = 5*f - 10;
         if (f == 2) uv = to_float2(uv.y, -uv.x); // maybe rotate, different directions
         else if (f == 0) uv = to_float2(-uv.y, uv.x);
     } else {
-    if (int(uv.x) == 1) {
+    if ((int)(uv.x) == 1) {
           if (uv.y >= 0.0f && uv.y < 1.0f) { i = 3; uv.x = 0.0f-uv.x; }
           else if (uv.y >= 2.0f && uv.y < 3.0f) { i = 2; uv.y = 0.0f-uv.y; }
       }
     }
   if (!(i >= 0)) return to_float4_aw(to_float3_s(0.7f),1);
-    uv = fract(uv);
-    float3 d = CubeFaceToDir(to_float3_aw(uv * 2.0f - 1.0f, float(i)));
+    uv = fract_f2(uv);
+    float3 d = CubeFaceToDir(to_float3_aw(uv * 2.0f - 1.0f, (float)(i)));
 //    d = CubeFaceToDir(DirToCubeFace(d)); // ensure can convert back&forth flawlessly
 //    d = CubeFaceToDir(DirToCubeFace(d));
     //float4 c = textureLod(ch, d, 0.0f);

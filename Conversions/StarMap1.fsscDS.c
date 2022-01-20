@@ -17,16 +17,16 @@ __DEVICE__ float hash(float2 p) { return fract(1e4 * _sinf(17.0f * p.x + p.y * 0
 // 1 octave value noise
 __DEVICE__ float noise(float x) { float i = _floor(x); float f = fract(x); float u = f * f * (3.0f - 2.0f * f); return _mix(hash(i), hash(i + 1.0f), u); }
 __DEVICE__ float noise(float2 x) { float2 i = _floor(x); float2 f = fract(x);  float a = hash(i); float b = hash(i + to_float2(1.0f, 0.0f)); float c = hash(i + to_float2(0.0f, 1.0f)); float d = hash(i + to_float2(1.0f, 1.0f)); float2 u = f * f * (3.0f - 2.0f * f); return _mix(a, b, u.x) + (c - a) * u.y * (1.0f - u.x) + (d - b) * u.x * u.y; }
-__DEVICE__ float noise(float3 x) { const float3 step = to_float3(110, 241, 171); float3 i = _floor(x); float3 f = fract(x); float n = dot(i, step); float3 u = f * f * (3.0f - 2.0f * f); return _mix(mix(_mix( hash(n + dot(step, to_float3(0, 0, 0))), hash(n + dot(step, to_float3(1, 0, 0))), u.x), _mix( hash(n + dot(step, to_float3(0, 1, 0))), hash(n + dot(step, to_float3(1, 1, 0))), u.x), u.y), _mix(mix( hash(n + dot(step, to_float3(0, 0, 1))), hash(n + dot(step, to_float3(1, 0, 1))), u.x), _mix( hash(n + dot(step, to_float3(0, 1, 1))), hash(n + dot(step, to_float3(1, 1, 1))), u.x), u.y), u.z); }
+__DEVICE__ float noise(float3 x) { const float3 step = to_float3(110, 241, 171); float3 i = _floor(x); float3 f = fract(x); float n = dot(i, step); float3 u = f * f * (3.0f - 2.0f * f); return _mix(_mix(_mix( hash(n + dot(step, to_float3(0, 0, 0))), hash(n + dot(step, to_float3(1, 0, 0))), u.x), _mix( hash(n + dot(step, to_float3(0, 1, 0))), hash(n + dot(step, to_float3(1, 1, 0))), u.x), u.y), _mix(_mix( hash(n + dot(step, to_float3(0, 0, 1))), hash(n + dot(step, to_float3(1, 0, 1))), u.x), _mix( hash(n + dot(step, to_float3(0, 1, 1))), hash(n + dot(step, to_float3(1, 1, 1))), u.x), u.y), u.z); }
 // Multi-octave value noise
 __DEVICE__ float NOISE(float x) { float v = 0.0f; float a = 0.5f; float shift = float(100); for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(x); x = x * 2.0f + shift; a *= 0.5f; } return v; }
-__DEVICE__ float NOISE(float2 x) { float v = 0.0f; float a = 0.5f; float2 shift = to_float2_s(100.0f); mat2 rot = mat2(_cosf(0.5f), _sinf(0.5f), -_sinf(0.5f), _cosf(0.50f)); for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(x); x = rot * x * 2.0f + shift; a *= 0.5f; } return v; }
+__DEVICE__ float NOISE(float2 x) { float v = 0.0f; float a = 0.5f; float2 shift = to_float2_s(100.0f); mat2 rot = to_mat2(_cosf(0.5f), _sinf(0.5f), -_sinf(0.5f), _cosf(0.50f)); for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(x); x = mul_mat2_f2(rot , x * 2.0f) + shift; a *= 0.5f; } return v; }
 // Fast hash2 from https://www.shadertoy.com/view/lsfGWH
 __DEVICE__ float hash2(float2 co) { return fract(_sinf(dot(swi2(co,x,y), to_float2(12.9898f,78.233f))) * 43758.5453f); }
 __DEVICE__ float maxComponent(float2 v) { return _fmaxf(v.x, v.y); }
 __DEVICE__ float maxComponent(float3 v) { return _fmaxf(max(v.x, v.y), v.z); }
 __DEVICE__ float minComponent(float2 v) { return _fminf(v.x, v.y); }
-__DEVICE__ mat3 rotation(float yaw, float pitch) { return mat3(_cosf(yaw), 0, -_sinf(yaw), 0, 1, 0, _sinf(yaw), 0, _cosf(yaw)) * mat3(1, 0, 0, 0, _cosf(pitch), _sinf(pitch), 0, -_sinf(pitch), _cosf(pitch)); }
+__DEVICE__ mat3 rotation(float yaw, float pitch) { return mul_mat3_mat3(to_mat3(_cosf(yaw), 0, -_sinf(yaw), 0, 1, 0, _sinf(yaw), 0, _cosf(yaw)) , to_mat3(1, 0, 0, 0, _cosf(pitch), _sinf(pitch), 0, -_sinf(pitch), _cosf(pitch))); }
 __DEVICE__ float square(float x) { return x * x; }
 
 ///////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ __DEVICE__ float starbox(float3 dir, float screenscale, float iTime) {
 
 
 __DEVICE__ float starfield(float3 dir, float screenscale, float iTime) {
-    return starbox(dir,screenscale,iTime) + starbox(rotation(45.0f * deg, 45.0f * deg) * dir, screenscale, iTime);
+    return starbox(dir,screenscale,iTime) + starbox(mul_mat3_f3(rotation(45.0f * deg, 45.0f * deg) , dir), screenscale, iTime);
 }
 
 
@@ -125,7 +125,7 @@ __DEVICE__ float4 planet(float3 view, float iTime) {
 
 
     float3 dir = s;
-    dir = rotation(0.0f, iTime * 0.01f) * dir;
+    dir = mul_mat3_f3(rotation(0.0f, iTime * 0.01f) , dir);
     float latLongLine = 0.0f;// (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
 
     // Antialias the edge of the planet
@@ -186,7 +186,7 @@ __KERNEL__ void StarMap1Fuse(float2 fragCoord, float iTime, float2 iResolution, 
   float yaw   = -((iMouse.x / iResolution.y) * 2.0f - 1.0f) * 3.0f;
   float pitch = ((iMouse.y / iResolution.y) * 2.0f - 1.0f) * 3.0f;
 
-  float3 dir = rotation(yaw, pitch) * normalize(to_float3_aw(fragCoord - iResolution / 2.0f, iResolution.y / ( -2.0f * _tanf(verticalFieldOfView / 2.0f))));
+  float3 dir = mul_mat3_f3(rotation(yaw, pitch) , normalize(to_float3_aw(fragCoord - iResolution / 2.0f, iResolution.y / ( -2.0f * _tanf(verticalFieldOfView / 2.0f)))));
 
   fragColorRGB = sphereColor(dir,screenscale,iTime,SHOW_PLANET);
   if (SHOW_LARGE_GRID) {
@@ -205,7 +205,7 @@ __KERNEL__ void StarMap1Fuse(float2 fragCoord, float iTime, float2 iResolution, 
         for (int x = -3; x <= 3; ++x) {
           for (int y = -3; y <= 3; ++y) {
             float2 s = clamp(((fragCoord + to_float2((float)x, (float)y) / 7.0f) * scale - insetSphereRadius * 1.1f) / insetSphereRadius, to_float2_s(-1.0f), to_float2_s(1.0f));
-            dir = rotation(iTime, -iTime * 0.17f) * to_float3_aw(swi2(s,x,y), _sqrtf(_fmaxf(0.0f, 1.0f - dot(swi2(s,x,y), swi2(s,x,y)))));
+            dir = mul_mat3_f3(rotation(iTime, -iTime * 0.17f) , to_float3_aw(swi2(s,x,y), _sqrtf(_fmaxf(0.0f, 1.0f - dot(swi2(s,x,y), swi2(s,x,y))))));
             c += sphereColor(dir,screenscale,iTime,SHOW_PLANET);
 
             if (SHOW_SPHERE_GRID) {
@@ -217,11 +217,11 @@ __KERNEL__ void StarMap1Fuse(float2 fragCoord, float iTime, float2 iResolution, 
         c /= 36.0f;
 
         // Fade the inset sphere to antialias its border transition
-        fragColorRGB = _mix(_sqrtf(fragColorRGB), c, clamp((1.0f - length(spherePoint)) * 100.0f, 0.0f, 1.0f));
+        fragColorRGB = _mix(sqrt_f3(fragColorRGB), c, clamp((1.0f - length(spherePoint)) * 100.0f, 0.0f, 1.0f));
     }
   }
 
-  fragColorRGB = _sqrtf(fragColorRGB);
+  fragColorRGB = sqrt_f3(fragColorRGB);
 
   SetFragmentShaderComputedColor(to_float4_aw(fragColorRGB,1.0f));
 }

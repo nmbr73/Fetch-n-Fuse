@@ -51,7 +51,7 @@ __KERNEL__ void HowToUseCubemapsFuse(float4 fragColor, float2 fragCoord, float2 
     // cross of CamD and (0, 1, 0)
     // example at center
     //		(1, 0, 0) x (0, 1, 0) = (0, 0, 1)
-    float3 camR = normalize(cross(camD, float3(0.0f, 1.0f, 0.0f)));
+    float3 camR = normalize(cross(camD, to_float3(0.0f, 1.0f, 0.0f)));
 
     // Cam Up
     // cross of CamR and CamD
