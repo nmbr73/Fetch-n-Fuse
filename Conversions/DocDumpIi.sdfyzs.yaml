@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: DocDumpIi
+  id: DocDumpIi
+  kernel: DocDumpIi
+  name: DocDumpIi
+shader:
+  author: eiffie
+  description: 'Rainy day shader #2 of 6'
+  id: sdfyzs
+  name: Doc Dump II
+  tags:
+  - music
+  url: https://www.shadertoy.com/view/sdfyzs
