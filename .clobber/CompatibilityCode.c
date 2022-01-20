@@ -39,11 +39,17 @@
 /*| swi3          |*/    #define swi3(A,a,b,c)   (A).a##b##c
 /*| swi4          |*/    #define swi4(A,a,b,c,d) (A).a##b##c##d
 
+/*| swi2S         |*/    #define swi2S(a,b,c,d)   #define swi2S(a,b,c,d) a.b##c = d
+/*| swi3S         |*/    #define swi3S(a,b,c,d,e) #define swi3S(a,b,c,d,e) a.b##c##d = e
+
   #else
 
 /*| swi2          |*/    #define swi2(A,a,b)     to_float2((A).a,(A).b)
 /*| swi3          |*/    #define swi3(A,a,b,c)   to_float3((A).a,(A).b,(A).c)
 /*| swi4          |*/    #define swi4(A,a,b,c,d) to_float4((A).a,(A).b,(A).c,(A).d)
+
+/*| swi2S         |*/    #define swi2S(a,b,c,d)   {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;} 
+/*| swi3S         |*/    #define swi3S(a,b,c,d,e) {float3 tmp = e; (a).b = tmp.x; (a).c = tmp.y; (a).d = tmp.z;} 
 
   #endif
 
@@ -315,72 +321,67 @@
 
 #if defined(USE_NATIVE_METAL_IMPL)
 
-  /*| fract_f       |*/#define fract_f(A)  fract(A)
-  /*| fract_f2      |*/#define fract_f2(A) fract(A)
-  /*| fract_f3      |*/#define fract_f3(A) fract(A)
-  /*| fract_f4      |*/#define fract_f4(A) fract(A)
+  /*| fract_f       |*/ #define fract_f(A)  fract(A)
+  /*| fract_f2      |*/ #define fract_f2(A) fract(A)
+  /*| fract_f3      |*/ #define fract_f3(A) fract(A)
+  /*| fract_f4      |*/ #define fract_f4(A) fract(A)
 
-  /*| mod_f         |*/#define mod_f(a,b)  fmod((a),(b))
-  /*| mod_f2        |*/#define mod_f2(value,divisor) fmod(value,divisor)
-  /*| mod_f3        |*/#define mod_f3(value,divisor) fmod(value,divisor)
-  /*| mod_f4        |*/#define mod_f4(value,divisor) fmod(value,divisor)
-  /*| mod_f2f2      |*/#define mod_f2f2(value,divisor) fmod(value,divisor)
-  /*| mod_f3f3      |*/#define mod_f3f3(value,divisor) fmod(value,divisor)
-  /*| mod_f4f4      |*/#define mod_f4f4(value,divisor) fmod(value,divisor)
+  /*| mod_f         |*/ #define mod_f(a,b)  fmod((a),(b))
+  /*| mod_f2        |*/ #define mod_f2(value,divisor) fmod(value,divisor)
+  /*| mod_f3        |*/ #define mod_f3(value,divisor) fmod(value,divisor)
+  /*| mod_f4        |*/ #define mod_f4(value,divisor) fmod(value,divisor)
+  /*| mod_f2f2      |*/ #define mod_f2f2(value,divisor) fmod(value,divisor)
+  /*| mod_f3f3      |*/ #define mod_f3f3(value,divisor) fmod(value,divisor)
+  /*| mod_f4f4      |*/ #define mod_f4f4(value,divisor) fmod(value,divisor)
 
-  /*| sin_f2        |*/#define sin_f2(i) sin(i)
-  /*| sin_f3        |*/#define sin_f3(i) sin(i)
-  /*| sin_f4        |*/#define sin_f4(i) sin(i)
-  /*| cos_f2        |*/#define cos_f2(i) cos(i)
-  /*| cos_f3        |*/#define cos_f3(i) cos(i)
-  /*| cos_f4        |*/#define cos_f4(i) cos(i)
-  /*| acos_f3       |*/#define acos_f3(i) acos(i)
-  /*| tan_f3        |*/#define tan_f3(i) tan(i)
-  /*| tanh_f3       |*/#define tanh_f3(i) tanh(i)
-  /*| atan_f2       |*/#define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
-  /*| atan_f3       |*/#define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
-  /*| atan_f4       |*/#define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
-  /*| abs_f2        |*/#define abs_f2(a) _fabs(a)
-  /*| abs_f3        |*/#define abs_f3(a) _fabs(a)
-  /*| abs_f4        |*/#define abs_f4(a) _fabs(a)
-  /*| sqrt_f2       |*/#define sqrt_f2(a) _sqrtf(a)
-  /*| sqrt_f3       |*/#define sqrt_f3(a) _sqrtf(a)
-  /*| sqrt_f4       |*/#define sqrt_f4(a) _sqrtf(a)
-  /*| exp_f2        |*/#define exp_f2(a) _expf((a).x)
-  /*| exp_f3        |*/#define exp_f3(a) _expf((a).x)
-  /*| exp_f4        |*/#define exp_f4(a) _expf((a).x)
-  /*| exp2_f2       |*/#define exp2_f2(a) _exp2f((a).x)
-  /*| exp2_f3       |*/#define exp2_f3(a) _exp2f((a).x)
-  /*| exp2_f4       |*/#define exp2_f4(a) _exp2f((a).x)
-  /*| ceil_f2       |*/#define ceil_f2(a) ceil(a)
-  /*| mix_f2        |*/#define mix_f2(v,i,m) mix(v,i,m)
-  /*| mix_f3        |*/#define mix_f3(v,i,m) mix(v,i,m)
-  /*| mix_f4        |*/#define mix_f4_f(v,i,m) mix(v,i,m)
-  /*| log_f3        |*/#define log_f3(a) log(a)
-  /*| log2_f3       |*/#define log2_f3(a) log2(a)
-  /*| round_f2      |*/#define round_f2(a) round(a)
-  /*| round_f3      |*/#define round_f3(a) round(a)
-  /*| round_f4      |*/#define round_f4(a) round(a)
-
-  /*| sign          |*/#define sign_f (value) sign(value)
-  /*| sign          |*/#define sign_f2(a) sign(value)
-  /*| sign          |*/#define sign_f3(a) sign(value)
-  /*| sign          |*/#define sign_f4(a) sign(value)
-
-  /*| distance_f    |*/#define distance_f ( p1, p2) _fabs(p1 - p2)
-  /*| distance_f2   |*/#define distance_f2(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
-  /*| distance_f3   |*/#define distance_f3(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
-
-  /*| pow_f2        |*/#define pow_f2(a,b) pow(a,b)
-  /*| pow_f3        |*/#define pow_f3(a,b) pow(a,b)
-  /*| pow_f4        |*/#define pow_f4(a,b) pow(a,b)
-
-  /*| lessThan_f2   |*/#define lessThan_2f(a,b) to_float2((a).x < (b).x,(a).y < (b).y);
-  /*| lessThan_f3   |*/#define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
-  /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
-
-  /*| refract_f2    |*/#define refract_f2(I,N,eta) refract(I,N,eta)
-  /*| refract_f3    |*/#define refract_f3(I,N,eta) refract(I,N,eta)
+  /*| sin_f2        |*/ #define sin_f2(i) sin(i)
+  /*| sin_f3        |*/ #define sin_f3(i) sin(i)
+  /*| sin_f4        |*/ #define sin_f4(i) sin(i)
+  /*| cos_f2        |*/ #define cos_f2(i) cos(i)
+  /*| cos_f3        |*/ #define cos_f3(i) cos(i)
+  /*| cos_f4        |*/ #define cos_f4(i) cos(i)
+  /*| acos_f3       |*/ #define acos_f3(i) acos(i)
+  /*| tan_f3        |*/ #define tan_f3(i) tan(i)
+  /*| tanh_f3       |*/ #define tanh_f3(i) tanh(i)
+  /*| atan_f2       |*/ #define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
+  /*| atan_f3       |*/ #define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
+  /*| atan_f4       |*/ #define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
+  /*| abs_f2        |*/ #define abs_f2(a) _fabs(a)
+  /*| abs_f3        |*/ #define abs_f3(a) _fabs(a)
+  /*| abs_f4        |*/ #define abs_f4(a) _fabs(a)
+  /*| sqrt_f2       |*/ #define sqrt_f2(a) _sqrtf(a)
+  /*| sqrt_f3       |*/ #define sqrt_f3(a) _sqrtf(a)
+  /*| sqrt_f4       |*/ #define sqrt_f4(a) _sqrtf(a)
+  /*| exp_f2        |*/ #define exp_f2(a) _expf((a).x)
+  /*| exp_f3        |*/ #define exp_f3(a) _expf((a).x)
+  /*| exp_f4        |*/ #define exp_f4(a) _expf((a).x)
+  /*| exp2_f2       |*/ #define exp2_f2(a) _exp2f((a).x)
+  /*| exp2_f3       |*/ #define exp2_f3(a) _exp2f((a).x)
+  /*| exp2_f4       |*/ #define exp2_f4(a) _exp2f((a).x)
+  /*| ceil_f2       |*/ #define ceil_f2(a) ceil(a)
+  /*| mix_f2        |*/ #define mix_f2(v,i,m) mix(v,i,m)
+  /*| mix_f3        |*/ #define mix_f3(v,i,m) mix(v,i,m)
+  /*| mix_f4        |*/ #define mix_f4_f(v,i,m) mix(v,i,m)
+  /*| log_f3        |*/ #define log_f3(a) log(a)
+  /*| log2_f3       |*/ #define log2_f3(a) log2(a)
+  /*| round_f2      |*/ #define round_f2(a) round(a)
+  /*| round_f3      |*/ #define round_f3(a) round(a)
+  /*| round_f4      |*/ #define round_f4(a) round(a)
+  /*| sign_f        |*/ #define sign_f(a) sign(a)
+  /*| sign_f2       |*/ #define sign_f2(a) sign(a)
+  /*| sign_f3       |*/ #define sign_f3(a) sign(a)
+  /*| sign_f4       |*/ #define sign_f4(a) sign(a)
+  /*| distance_f    |*/ #define distance_f ( p1, p2) _fabs(p1 - p2)
+  /*| distance_f2   |*/ #define distance_f2(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
+  /*| distance_f3   |*/ #define distance_f3(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
+  /*| pow_f2        |*/ #define pow_f2(a,b) pow(a,b)
+  /*| pow_f3        |*/ #define pow_f3(a,b) pow(a,b)
+  /*| pow_f4        |*/ #define pow_f4(a,b) pow(a,b)
+  /*| lessThan_f2   |*/ #define lessThan_2f(a,b) to_float2((a).x < (b).x,(a).y < (b).y);
+  /*| lessThan_f3   |*/ #define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
+  /*| lessThan_f4   |*/ #define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
+  /*| refract_f2    |*/ #define refract_f2(I,N,eta) refract(I,N,eta)
+  /*| refract_f3    |*/ #define refract_f3(I,N,eta) refract(I,N,eta)
 
 #else
 
@@ -390,69 +391,61 @@
 
     #define fract(a) ((a)-_floor(a))  // oder Pointer bauen: gentype fract(gentype x, gentype *itpr)
 
-    /*| fract_f       |*/#define fract_f(A)  fract(A)
-    /*| fract_f2      |*/#define fract_f2(A) to_float2(fract((A).x),fract((A).y))
-    /*| fract_f3      |*/#define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
-    /*| fract_f4      |*/#define fract_f4(A) to_float4(fract((A).x),fract((A).y),fract((A).z),fract((A).w))
+    /*| fract_f       |*/ #define fract_f(A)  fract(A)
+    /*| fract_f2      |*/ #define fract_f2(A) to_float2(fract((A).x),fract((A).y))
+    /*| fract_f3      |*/ #define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
+    /*| fract_f4      |*/ #define fract_f4(A) to_float4(fract((A).x),fract((A).y),fract((A).z),fract((A).w))
+    /*| mod_f         |*/ #define mod_f(a,b) _fmod(a,b)
+    /*| mod_f2        |*/ #define mod_f2(value,divisor) _fmod(value,divisor)
+    /*| mod_f3        |*/ #define mod_f3(value,divisor) _fmod(value,divisor)
+    /*| mod_f4        |*/ #define mod_f4(value,divisor) _fmod(value,divisor)
+    /*| mod_f2f2      |*/ #define mod_f2f2(value,divisor) _fmod(value,divisor)
+    /*| mod_f3f3      |*/ #define mod_f3f3(value,divisor) _fmod(value,divisor)
+    /*| mod_f4f4      |*/ #define mod_f4f4(value,divisor) _fmod(value,divisor)
+    /*| sin_f2        |*/ #define sin_f2(i) sin(i)
+    /*| sin_f3        |*/ #define sin_f3(i) sin(i)
+    /*| sin_f4        |*/ #define sin_f4(i) sin(i)
+    /*| cos_f2        |*/ #define cos_f2(i) cos(i)
+    /*| cos_f3        |*/ #define cos_f3(i) cos(i)
+    /*| cos_f4        |*/ #define cos_f4(i) cos(i)
+    /*| acos_f3       |*/ #define acos_f3(i) acos(i)
+    /*| tan_f3        |*/ #define tan_f3(i) tan(i)
+    /*| tanh_f3       |*/ #define tanh_f3(i) tanh(i)
+    /*| atan_f2       |*/ #define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
+    /*| atan_f3       |*/ #define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
+    /*| atan_f4       |*/ #define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
+    /*| abs_f2        |*/ #define abs_f2(a) fabs(a)
+    /*| abs_f3        |*/ #define abs_f3(a) fabs(a)
+    /*| abs_f4        |*/ #define abs_f4(a) fabs(a)
+    /*| sqrt_f2       |*/ #define sqrt_f2(a) sqrtf(a)
+    /*| sqrt_f3       |*/ #define sqrt_f3(a) sqrtf(a)
+    /*| sqrt_f4       |*/ #define sqrt_f4(a) sqrtf(a)
+    /*| exp_f2        |*/ #define exp_f2(a) _expf((a).x)
+    /*| exp_f3        |*/ #define exp_f3(a) _expf((a).x)
+    /*| exp_f4        |*/ #define exp_f4(a) _expf((a).x)
+    /*| exp2_f2       |*/ #define exp2_f2(a) _exp2f((a).x)
+    /*| exp2_f3       |*/ #define exp2_f3(a) _exp2f((a).x)
+    /*| exp2_f4       |*/ #define exp2_f4(a) _exp2f((a).x)
+    /*| ceil_f2       |*/ #define ceil_f2(a) ceil(a)
+    /*| mix_f2        |*/ #define mix_f2(v,i,m) mix(v,i,m)
+    /*| mix_f3        |*/ #define mix_f3(v,i,m) mix(v,i,m)
+    /*| mix_f4        |*/ #define mix_f4_f(v,i,m) mix(v,i,m)
+    /*| log_f3        |*/ #define log_f3(a) log(a)
+    /*| log2_f3       |*/ #define log2_f3(a) log2(a)
+    /*| sign_f        |*/ #define sign_f(a) sign(a)
+    /*| sign_f2       |*/ #define sign_f2(a) sign(a)
+    /*| sign_f3       |*/ #define sign_f3(a) sign(a)
+    /*| sign_f4       |*/ #define sign_f4(a) sign(a)
+    /*| distance_f    |*/ #define distance_f ( p1, p2) distance(p1, p2)
+    /*| distance_f2   |*/ #define distance_f2(pt1,pt2) distance(p1, p2)
+    /*| distance_f3   |*/ #define distance_f3(pt1,pt2) distance(p1, p2)
+    /*| pow_f2        |*/ #define pow_f2(a,b) pow(a,b)
+    /*| pow_f3        |*/ #define pow_f3(a,b) pow(a,b)
+    /*| pow_f4        |*/ #define pow_f4(a,b) pow(a,b)
+    /*| lessThan_f2   |*/ #define lessThan_2f(a,b) to_float2((a).x < (b).x,(a).y < (b).y);
+    /*| lessThan_f3   |*/ #define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
+    /*| lessThan_f4   |*/ #define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
 
-    /*| mod_f         |*/#define mod_f(a,b) _fmod(a,b)
-    /*| mod_f2        |*/#define mod_f2(value,divisor) _fmod(value,divisor)
-    /*| mod_f3        |*/#define mod_f3(value,divisor) _fmod(value,divisor)
-    /*| mod_f4        |*/#define mod_f4(value,divisor) _fmod(value,divisor)
-    /*| mod_f2f2      |*/#define mod_f2f2(value,divisor) _fmod(value,divisor)
-    /*| mod_f3f3      |*/#define mod_f3f3(value,divisor) _fmod(value,divisor)
-    /*| mod_f4f4      |*/#define mod_f4f4(value,divisor) _fmod(value,divisor)
-
-    /*| sin_f2        |*/#define sin_f2(i) sin(i)
-    /*| sin_f3        |*/#define sin_f3(i) sin(i)
-    /*| sin_f4        |*/#define sin_f4(i) sin(i)
-    /*| cos_f2        |*/#define cos_f2(i) cos(i)
-    /*| cos_f3        |*/#define cos_f3(i) cos(i)
-    /*| cos_f4        |*/#define cos_f4(i) cos(i)
-    /*| acos_f3       |*/#define acos_f3(i) acos(i)
-    /*| tan_f3        |*/#define tan_f3(i) tan(i)
-    /*| tanh_f3       |*/#define tanh_f3(i) tanh(i)
-    /*| atan_f2       |*/#define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
-    /*| atan_f3       |*/#define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
-    /*| atan_f4       |*/#define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
-    /*| abs_f2        |*/#define abs_f2(a) fabs(a)
-    /*| abs_f3        |*/#define abs_f3(a) fabs(a)
-    /*| abs_f4        |*/#define abs_f4(a) fabs(a)
-    /*| sqrt_f2       |*/#define sqrt_f2(a) sqrtf(a)
-    /*| sqrt_f3       |*/#define sqrt_f3(a) sqrtf(a)
-    /*| sqrt_f4       |*/#define sqrt_f4(a) sqrtf(a)
-    /*| exp_f2        |*/#define exp_f2(a) _expf((a).x)
-    /*| exp_f3        |*/#define exp_f3(a) _expf((a).x)
-    /*| exp_f4        |*/#define exp_f4(a) _expf((a).x)
-    /*| exp2_f2       |*/#define exp2_f2(a) _exp2f((a).x)
-    /*| exp2_f3       |*/#define exp2_f3(a) _exp2f((a).x)
-    /*| exp2_f4       |*/#define exp2_f4(a) _exp2f((a).x)
-    /*| ceil_f2       |*/#define ceil_f2(a) ceil((a).x)
-    /*| mix_f2        |*/#define mix_f2(v,i,m) mix(v,i,m)
-    /*| mix_f3        |*/#define mix_f3(v,i,m) mix(v,i,m)
-    /*| mix_f4        |*/#define mix_f4_f(v,i,m) mix(v,i,m)
-    /*| log_f3        |*/#define log_f3(a) log(a)
-    /*| log2_f3       |*/#define log2_f3(a) log2(a)
-
-    /*| sign          |*/#define sign_f (value) sign(value)
-    /*| sign          |*/#define sign_f2(a) sign(value)
-    /*| sign          |*/#define sign_f3(a) sign(value)
-    /*| sign          |*/#define sign_f4(a) sign(value)
-
-    /*| distance_f    |*/#define distance_f ( p1, p2) distance(p1, p2)
-    /*| distance_f2   |*/#define distance_f2(pt1,pt2) distance(p1, p2)
-    /*| distance_f3   |*/#define distance_f3(pt1,pt2) distance(p1, p2)
-
-    /*| pow_f2        |*/#define pow_f2(a,b) pow(a,b)
-    /*| pow_f3        |*/#define pow_f3(a,b) pow(a,b)
-    /*| pow_f4        |*/#define pow_f4(a,b) pow(a,b)
-
-    /*| lessThan_f2   |*/#define lessThan_2f(a,b) to_float2((a).x < (b).x,(a).y < (b).y);
-    /*| lessThan_f3   |*/#define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
-    /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
-
-
-    /*|               |*/ //-------refract--------
     /*| refract_f2    |*/__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
     /*| refract_f2    |*/    float dotNI = dot(N, I);
     /*| refract_f2    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
@@ -461,7 +454,6 @@
     /*| refract_f2    |*/    }
     /*| refract_f2    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * N;
     /*| refract_f2    |*/ }
-    /*|               |*/
     /*| refract_f3    |*/__DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
     /*| refract_f3    |*/   float dotNI = dot(N, I);
     /*| refract_f3    |*/   float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
@@ -470,89 +462,78 @@
     /*| refract_f3    |*/   }
     /*| refract_f3    |*/   return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
     /*| refract_f3    |*/ }
-    /*|               |*/
 
  #else // Generic
 
-    /*| reflect       |*/#if defined(DEVICE_IS_OPENCL)
-    /*| reflect       |*/  __DEVICE__ float3 reflect(float3 I, float3 N) {return I - 2.0f * dot(N, I) * N;}
-    /*| reflect       |*/#endif
+    /*| reflect       |*/ #if defined(DEVICE_IS_OPENCL)
+    /*| reflect       |*/   __DEVICE__ float3 reflect(float3 I, float3 N) {return I - 2.0f * dot(N, I) * N;}
+    /*| reflect       |*/ #endif
 
-    /*| radians       |*/#if defined(DEVICE_IS_CUDA)
-    /*| radians       |*/  #define radians(a) a * M_PI/180.0f
-    /*| radians       |*/#endif
+    /*| radians       |*/ #if defined(DEVICE_IS_CUDA)
+    /*| radians       |*/   #define radians(a) a * M_PI/180.0f
+    /*| radians       |*/ #endif
 
-
-    /*| length_f      |*/#if defined(DEVICE_IS_CUDA) //Besonderheit bei Cuda - length(float) nicht definiert - alles andere ja
-    /*| length_f      |*/  #define length_f(value) fabs(value);
-    /*| length_f      |*/#endif
+    /*| length_f      |*/ #if defined(DEVICE_IS_CUDA) //Besonderheit bei Cuda - length(float) nicht definiert - alles andere ja
+    /*| length_f      |*/   #define length_f(a) fabs(a);
+    /*| length_f      |*/ #endif
 
     #define fract(a) ((a)-_floor(a))
 
-    /*| fract_f       |*/#define fract_f(A)  fract(A)
-    /*| fract_f2      |*/#define fract_f2(A) to_float2(fract((A).x),fract((A).y))
-    /*| fract_f3      |*/#define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
-    /*| fract_f4      |*/#define fract_f4(A) to_float4(fract((A).x),fract((A).y),fract((A).z),fract((A).w))
-
-    /*| mod_f         |*/#define mod_f(a,b) ((a)-(b)*_floor((a)/(b)))
-    /*| mod_f2        |*/#define mod_f2(value,divisor) to_float2(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)))
-    /*| mod_f3        |*/#define mod_f3(value,divisor) to_float3(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)))
-    /*| mod_f4        |*/#define mod_f4(value,divisor) to_float4(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)),mod_f((value).w, (divisor)))
-    /*| mod_f2f2      |*/#define mod_f2f2(value,divisor) to_float2(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y))
-    /*| mod_f3f3      |*/#define mod_f3f3(value,divisor) to_float3(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z))
-    /*| mod_f4f4      |*/#define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w))
-
-    /*| sin_f2        |*/#define sin_f2(i) to_float2( _sinf((i).x), _sinf((i).y))
-    /*| sin_f3        |*/#define sin_f3(i) to_float3( _sinf((i).x), _sinf((i).y), _sinf((i).z))
-    /*| sin_f4        |*/#define sin_f4(i) to_float4( _sinf((i).x), _sinf((i).y), _sinf((i).z), _sinf((i).w))
-    /*| cos_f2        |*/#define cos_f2(i) to_float2( _cosf((i).x), _cosf((i).y))
-    /*| cos_f3        |*/#define cos_f3(i) to_float3( _cosf((i).x), _cosf((i).y), _cosf((i).z))
-    /*| cos_f4        |*/#define cos_f4(i) to_float4( _cosf((i).x), _cosf((i).y), _cosf((i).z), _cosf((i).w))
-    /*| acos_f3       |*/#define acos_f3(i) to_float3( _acosf((i).x), _acosf((i).y), _acosf((i).z))
-    /*| tan_f3        |*/#define tan_f3(i) to_float3(_tanf((i).x), _tanf((i).y), _tanf((i).z))
-    /*| tanh_f3       |*/#define tanh_f3(i) to_float3(_tanhf(i.x), _tanhf((i).y), _tanhf((i).z))
-    /*| atan_f2       |*/#define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
-    /*| atan_f3       |*/#define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
-    /*| atan_f4       |*/#define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
-    /*| abs_f2        |*/#define abs_f2(a) to_float2(_fabs((a).x), _fabs((a).y))
-    /*| abs_f3        |*/#define abs_f3(a) to_float3(_fabs((a).x), _fabs((a).y),_fabs((a).z))
-    /*| abs_f4        |*/#define abs_f4(a) to_float4(_fabs((a).x), _fabs((a).y),_fabs((a).z),_fabs((a).w))
-    /*| sqrt_f2       |*/#define sqrt_f2(a) to_float2(_sqrtf((a).x),_sqrtf((a).y))
-    /*| sqrt_f3       |*/#define sqrt_f3(a) to_float3(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z))
-    /*| sqrt_f4       |*/#define sqrt_f4(a) to_float4(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z),_sqrtf((a).w);)
-    /*| exp_f2        |*/#define exp_f2(a) to_float2(_expf((a).x), _expf((a).y))
-    /*| exp_f3        |*/#define exp_f3(a) to_float3(_expf((a).x), _expf((a).y),_expf((a).z))
-    /*| exp_f4        |*/#define exp_f4(a) to_float4(_expf((a).x), _expf((a).y),_expf((a).z),_expf((a).w))
-    /*| exp2_f2       |*/#define exp2_f2(a) to_float2(_exp2f((a).x), _exp2f((a).y))
-    /*| exp2_f3       |*/#define exp2_f3(a) to_float3(_exp2f((a).x), _exp2f((a).y), _exp2f((a).z))
-    /*| exp2_f4       |*/#define exp2_f4(a) to_float4(_exp2f((a).x), _exp2f((a).y), _exp2f((a).z), _exp2f((a).w))
-    /*| ceil_f2       |*/#define ceil_f2(a) to_float2(_ceil((a).x), _ceil((a).y))
-    /*| mix_f2        |*/#define mix_f2(v,i,m) to_float2(_mix((v).x,(i).x,m.x),_mix((v).y,(i).y,(m).y))
-    /*| mix_f3        |*/#define mix_f3(v,i,m) to_float3(_mix((v).x,(i).x,m.x),_mix((v).y,(i).y,(m).y),_mix((v).z,(i).z,(m).z))
-    /*| mix_f4        |*/#define mix_f4_f(v,i,m) to_float4(_mix((v).x,(i).x,m),_mix((v).y,(i).y,m),_mix((v).z,(i).z,m),_mix((v).w,(i).w,m))
-    /*| log_f3        |*/#define log_f3(a) to_float3(_logf((a).x), _logf((a).y),_logf((a).z))
-    /*| log2_f3       |*/#define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))
-
-    /*| sign          |*/#define sign_f(value) (value == 0.0f ? 0.0f : value > 0.0f ? 1.0f : -1.0f)
-    /*| sign_f2       |*/#define sign_f2(a) to_float2(sign_f((a).x), sign_f((a).y))
-    /*| sign_f3       |*/#define sign_f3(a) to_float3(sign_f((a).x), sign_f((a).y),sign_f((a).z))
-    /*| sign_f4       |*/#define sign_f4(a) to_float4(sign_f((a).x), sign_f((a).y),sign_f((a).z),sign_f((a).w))
-
-    /*| distance_f    |*/#define distance_f ( p1, p2) _fabs(p1 - p2)
-    /*| distance_f2   |*/#define distance_f2(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
-    /*| distance_f3   |*/#define distance_f3(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
-
-    /*| pow_f2        |*/#define pow_f2(a,b) to_float2(_powf((a).x,(b).x),_powf((a).y,(b).y))
-    /*| pow_f3        |*/#define pow_f3(a,b) to_float3(_powf((a).x,(b).x),_powf((a).y,(b).y),_powf((a).z,(b).z))
-    /*| pow_f4        |*/#define pow_f4(a,b) to_float4(_powf((a).x,(b).x),_powf((a).y,(b).y),_powf((a).z,(b).z),_powf((a).w,(b).w))
-
-    /*| lessThan_f2   |*/#define lessThan_2f(a,b) to_float2((a).x < (b).x,(a).y < (b).y);
-    /*| lessThan_f3   |*/#define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
-    /*| lessThan_f4   |*/#define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
-
-
-    /*|               |*/ //-------refract--------
-    /*| refract_f2    |*/__DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
+    /*| fract_f       |*/ #define fract_f(A)  fract(A)
+    /*| fract_f2      |*/ #define fract_f2(A) to_float2(fract((A).x),fract((A).y))
+    /*| fract_f3      |*/ #define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
+    /*| fract_f4      |*/ #define fract_f4(A) to_float4(fract((A).x),fract((A).y),fract((A).z),fract((A).w))
+    /*| mod_f         |*/ #define mod_f(a,b) ((a)-(b)*_floor((a)/(b)))
+    /*| mod_f2        |*/ #define mod_f2(value,divisor) to_float2(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)))
+    /*| mod_f3        |*/ #define mod_f3(value,divisor) to_float3(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)))
+    /*| mod_f4        |*/ #define mod_f4(value,divisor) to_float4(mod_f((value).x, (divisor)),mod_f((value).y, (divisor)),mod_f((value).z, (divisor)),mod_f((value).w, (divisor)))
+    /*| mod_f2f2      |*/ #define mod_f2f2(value,divisor) to_float2(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y))
+    /*| mod_f3f3      |*/ #define mod_f3f3(value,divisor) to_float3(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z))
+    /*| mod_f4f4      |*/ #define mod_f4f4(value,divisor) to_float4(mod_f((value).x, (divisor).x),mod_f((value).y, (divisor).y),mod_f((value).z, (divisor).z),mod_f((value).w, (divisor).w))
+    /*| sin_f2        |*/ #define sin_f2(i) to_float2( _sinf((i).x), _sinf((i).y))
+    /*| sin_f3        |*/ #define sin_f3(i) to_float3( _sinf((i).x), _sinf((i).y), _sinf((i).z))
+    /*| sin_f4        |*/ #define sin_f4(i) to_float4( _sinf((i).x), _sinf((i).y), _sinf((i).z), _sinf((i).w))
+    /*| cos_f2        |*/ #define cos_f2(i) to_float2( _cosf((i).x), _cosf((i).y))
+    /*| cos_f3        |*/ #define cos_f3(i) to_float3( _cosf((i).x), _cosf((i).y), _cosf((i).z))
+    /*| cos_f4        |*/ #define cos_f4(i) to_float4( _cosf((i).x), _cosf((i).y), _cosf((i).z), _cosf((i).w))
+    /*| acos_f3       |*/ #define acos_f3(i) to_float3( _acosf((i).x), _acosf((i).y), _acosf((i).z))
+    /*| tan_f3        |*/ #define tan_f3(i) to_float3(_tanf((i).x), _tanf((i).y), _tanf((i).z))
+    /*| tanh_f3       |*/ #define tanh_f3(i) to_float3(_tanhf(i.x), _tanhf((i).y), _tanhf((i).z))
+    /*| atan_f2       |*/ #define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
+    /*| atan_f3       |*/ #define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
+    /*| atan_f4       |*/ #define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
+    /*| abs_f2        |*/ #define abs_f2(a) to_float2(_fabs((a).x), _fabs((a).y))
+    /*| abs_f3        |*/ #define abs_f3(a) to_float3(_fabs((a).x), _fabs((a).y),_fabs((a).z))
+    /*| abs_f4        |*/ #define abs_f4(a) to_float4(_fabs((a).x), _fabs((a).y),_fabs((a).z),_fabs((a).w))
+    /*| sqrt_f2       |*/ #define sqrt_f2(a) to_float2(_sqrtf((a).x),_sqrtf((a).y))
+    /*| sqrt_f3       |*/ #define sqrt_f3(a) to_float3(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z))
+    /*| sqrt_f4       |*/ #define sqrt_f4(a) to_float4(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z),_sqrtf((a).w);)
+    /*| exp_f2        |*/ #define exp_f2(a) to_float2(_expf((a).x), _expf((a).y))
+    /*| exp_f3        |*/ #define exp_f3(a) to_float3(_expf((a).x), _expf((a).y),_expf((a).z))
+    /*| exp_f4        |*/ #define exp_f4(a) to_float4(_expf((a).x), _expf((a).y),_expf((a).z),_expf((a).w))
+    /*| exp2_f2       |*/ #define exp2_f2(a) to_float2(_exp2f((a).x), _exp2f((a).y))
+    /*| exp2_f3       |*/ #define exp2_f3(a) to_float3(_exp2f((a).x), _exp2f((a).y), _exp2f((a).z))
+    /*| exp2_f4       |*/ #define exp2_f4(a) to_float4(_exp2f((a).x), _exp2f((a).y), _exp2f((a).z), _exp2f((a).w))
+    /*| ceil_f2       |*/ #define ceil_f2(a) to_float2(_ceil((a).x), _ceil((a).y))
+    /*| mix_f2        |*/ #define mix_f2(v,i,m) to_float2(_mix((v).x,(i).x,(m).x),_mix((v).y,(i).y,(m).y))
+    /*| mix_f3        |*/ #define mix_f3(v,i,m) to_float3(_mix((v).x,(i).x,(m).x),_mix((v).y,(i).y,(m).y),_mix((v).z,(i).z,(m).z))
+    /*| mix_f4        |*/ #define mix_f4_f(v,i,m) to_float4(_mix((v).x,(i).x,m),_mix((v).y,(i).y,m),_mix((v).z,(i).z,m),_mix((v).w,(i).w,m))
+    /*| log_f3        |*/ #define log_f3(a) to_float3(_logf((a).x), _logf((a).y),_logf((a).z))
+    /*| log2_f3       |*/ #define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))  
+    /*| sign_f        |*/ #define sign_f(a) (a==0.0f?0.0f:a>0.0f?1.0f:-1.0f)
+    /*| sign_f2       |*/ #define sign_f2(a) to_float2((a).x==0.0f?0.0f:a>0.0f?1.0f:-1.0f, (a).y==0.0f?0.0f:a>0.0f?1.0f:-1.0f)
+    /*| sign_f3       |*/ #define sign_f3(a) to_float3((a).x==0.0f?0.0f:a>0.0f?1.0f:-1.0f, (a).y==0.0f?0.0f:a>0.0f?1.0f:-1.0f,(a).z==0.0f?0.0f:a>0.0f?1.0f:-1.0f)
+    /*| sign_f4       |*/ #define sign_f4(a) to_float4((a).x==0.0f?0.0f:a>0.0f?1.0f:-1.0f, (a).y==0.0f?0.0f:a>0.0f?1.0f:-1.0f,(a).z==0.0f?0.0f:a>0.0f?1.0f:-1.0f,(a).w==0.0f?0.0f:a>0.0f?1.0f:-1.0f)
+    /*| distance_f    |*/ #define distance_f ( p1, p2) _fabs(p1 - p2)
+    /*| distance_f2   |*/ #define distance_f2(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
+    /*| distance_f3   |*/ #define distance_f3(pt1,pt2) _sqrtf(dot(pt2 - pt1,pt2 - pt1))
+    /*| pow_f2        |*/ #define pow_f2(a,b) to_float2(_powf((a).x,(b).x),_powf((a).y,(b).y))
+    /*| pow_f3        |*/ #define pow_f3(a,b) to_float3(_powf((a).x,(b).x),_powf((a).y,(b).y),_powf((a).z,(b).z))
+    /*| pow_f4        |*/ #define pow_f4(a,b) to_float4(_powf((a).x,(b).x),_powf((a).y,(b).y),_powf((a).z,(b).z),_powf((a).w,(b).w))
+    /*| lessThan_f2   |*/ #define lessThan_2f(a,b) to_float2((a).x < (b).x,(a).y < (b).y);
+    /*| lessThan_f3   |*/ #define lessThan_3f(a,b) to_float3((a).x < (b).x,(a).y < (b).y,(a).z < (b).z);
+    /*| lessThan_f4   |*/ #define lessThan_4f(a,b) to_float4((a).x < (b).x,(a).y < (b).y,(a).z < (b).z,(a).w < (b).w);
+    /*| refract_f2    |*/ __DEVICE__ float2 refract_f2(float2 I, float2 N, float eta) {
     /*| refract_f2    |*/    float dotNI = dot(N, I);
     /*| refract_f2    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
     /*| refract_f2    |*/    if (k < 0.0f) {
@@ -561,7 +542,7 @@
     /*| refract_f2    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * N;
     /*| refract_f2    |*/ }
     /*|               |*/
-    /*| refract_f3    |*/__DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
+    /*| refract_f3    |*/ __DEVICE__ float3 refract_f3(float3 I, float3 N, float eta) {
     /*| refract_f3    |*/    float dotNI = dot(N, I);
     /*| refract_f3    |*/    float k = 1.0f - eta * eta * (1.0f - dotNI * dotNI);
     /*| refract_f3    |*/    if (k < 0.0f) {
@@ -569,7 +550,7 @@
     /*| refract_f3    |*/    }
     /*| refract_f3    |*/    return eta * I - (eta * dotNI * _sqrtf(k)) * N; //+0.5f;   * -01.50f;(MarchingCubes)  - 0.15f; (GlassDuck)
     /*| refract_f3    |*/ }
-    /*|               |*/
+
   #endif
 
 #endif
