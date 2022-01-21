@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import sys
+import pathlib
 import io
 import re
 import requests
@@ -8,6 +10,7 @@ import json
 import yaml
 import argparse
 from dotenv import load_dotenv
+
 
 CONVERSIONS_PATH = './Conversions/'
 VERBOSE = False
@@ -50,7 +53,7 @@ MEDIAMAP = {
   "/media/a/585f9546c092f53ded45332b343144396c0b2d70d9965f585ebc172080d8aa58.jpg" : { "type": "Cubemap", "folder":"Cubemaps", "name":"Uffizi Gallery_0"             },
   "/media/a/793a105653fbdadabdc1325ca08675e1ce48ae5f12e37973829c87bea4be3232.png" : { "type": "Cubemap", "folder":"Cubemaps", "name":"Uffizi Gallery Blurred_0"     },
 
-  # "/presets/tex00.jpg" : { "type": "Preset", "folder":"Misc", "name":"Keyboard"  },
+  "/presets/tex00.jpg" : { "type": "Preset", "folder":"Misc", "name":"Keyboard"  },
   # /presets/tex00.jpg does not work, or does it?!?
   # thumbnail says it's previz/keyboard.png ?!?
   }
@@ -100,7 +103,7 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
 #  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
   code=re.sub(r'(.*)texture(\s*\(\s*)(\w+)\s*\,\s*(\w+)\s*\)','\g<1>_tex2DVecN\g<2>\g<3>,\g<4>.x,\g<4>.y,15)',code)
-#  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geaendert werden
+#  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geändert werden
 
 
 
@@ -642,12 +645,12 @@ def create_assets(json_data):
       if media != None:
 
         # known asset
-        filename="./Assets/"+media['folder']+"/"+media['name']+"."+media['suffix']
+        filename=selfpath+"./Assets/"+media['folder']+"/"+media['name']+"."+media['suffix']
 
       else:
 
         # unknown media
-        filename="./Assets/UNKNOWN/"+re.sub(r'/','_',src)
+        filename=selfpath+"./Assets/UNKNOWN/"+re.sub(r'/','_',src)
 
 
       # do nothing if already downloaded
@@ -678,7 +681,7 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
   shader_name = json_data['info']['name']
   kernel_name = asKernelname(shader_name,shader_id)
 
-  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image']
+  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image','Sound']
 
   code_parts={}
 
@@ -715,7 +718,8 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
 
     if inputs!=None and len(inputs)>0:
       for input in inputs:
-          header=header + "// Connect '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
+          #header=header + "// Connect '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
+          header=header + "// Connect "+name+" '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
 
     code_parts[name]['code'] = header + "\n\n" + patchForDCTL(code,kernel_name,name)
 
@@ -743,8 +747,45 @@ def doFetch(shader_id):
   #yaml_data   = read_yaml(conv_name, shader_id)
 
 # =====================================================================================================================
+print("\n#################### Fetch Script ###################")
+#print("Aufruf :",sys.argv[0]) #ok
 
-if not(os.path.isfile(".env")):
+if (sys.argv[0] != "fetch.py"):
+ selfpath = os.path.dirname(sys.argv[0])+"\\"
+
+ print("#SELFPATH:",selfpath)
+ print(sys.argv, len(sys.argv))
+ #print("##Argv2##",id,param,txt)
+
+ CONVERSIONS_PATH = selfpath+"\Conversions\\"  
+ 
+ NOASSETS  = False 
+ #VERBOSE   = verbose
+ ID = id
+ 
+else:
+ selfpath = ""
+
+ parser = argparse.ArgumentParser(description='Fetch fuse source code.')
+ #parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
+ #parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
+ parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
+ #parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
+ parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
+ #parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
+ parser.add_argument('-v','--verbose',action='store_true',help='verbose output')
+ args = parser.parse_args()
+
+ #print(args.echo)
+
+ NOASSETS  = args.no_assets
+ VERBOSE   = args.verbose
+ ID        = args.id
+
+print("\n##PATH##",CONVERSIONS_PATH)
+
+#if not(os.path.isfile(".env")):
+if not(selfpath+".env"):
   with open(".env", 'w') as f:
      f.write( "AUTHOR=\"\"\n"
               "APIKEY=\"\"\n"
@@ -754,23 +795,14 @@ if not(os.path.isfile(".env")):
             )
   print(".env file created - please enter your credentials to use")
 
-load_dotenv()
+load_dotenv(selfpath+".env")
 
-parser = argparse.ArgumentParser(description='Fetch fuse source code.')
-#parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
-#parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
-parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
-#parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
-parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
-#parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
-parser.add_argument('-v','--verbose',action='store_true',help='verbose output')
-args = parser.parse_args()
+print("\nENVIRIONMENT ",os.getenv('APIKEY'))
 
-NOASSETS  = args.no_assets
-VERBOSE   = args.verbose
 
 #try:
 #  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
 #except Exception as e:
 #  print("ERROR: "+str(e))
-doFetch(args.id)
+doFetch(ID)
+#doFetch(id)

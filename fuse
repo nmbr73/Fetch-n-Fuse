@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import sys
+import pathlib
 import io
 import re
 import requests
@@ -29,7 +31,7 @@ def get_compatibility_code(conversionCode):
 
   # copatibility code laden
 
-  with open("./.clobber/CompatibilityCode.c", "r") as f:
+  with open(selfpath+"./.clobber/CompatibilityCode.c", "r") as f:
     compatibilityCode=f.read()
 
 
@@ -426,8 +428,8 @@ def check_controls(conversionCode):
 
 def fuse_it(id,force=False):
 
-  source_path='./Conversions/'
-  target_path='./Converted/'
+  source_path=selfpath+'./Conversions/'
+  target_path=selfpath+'./Converted/'
 
   conversion_file = get_basefilename(source_path,id)
 
@@ -477,7 +479,7 @@ def fuse_it(id,force=False):
 
   # load the data from yaml file
 
-  with open(".clobber/fuse-parameters.yaml", "r") as f:
+  with open(selfpath+".clobber/fuse-parameters.yaml", "r") as f:
     src=f.read()
 
   has_param=yaml.load(src, Loader=yaml.FullLoader)
@@ -565,7 +567,7 @@ def fuse_it(id,force=False):
       fuse_process +=  p['Proc']
 
 
-  with open(".clobber/fuse-template.lua", "r") as f:
+  with open(selfpath+".clobber/fuse-template.lua", "r") as f:
     fuse=f.read()
 
 
@@ -595,7 +597,7 @@ def fuse_it(id,force=False):
   fuse_author_url   = ''
   fuse_author_logo  = ''
 
-  with open(".clobber/fuse-authors.yaml", "r") as f:
+  with open(selfpath+".clobber/fuse-authors.yaml", "r") as f:
     tmp=f.read()
 
   tmp=yaml.load(tmp, Loader=yaml.FullLoader)
@@ -636,21 +638,39 @@ def fuse_it(id,force=False):
 
 
 
+print("\n#################### Fuse Script ###################")
+#print("Aufruf :",sys.argv[0]) #ok
+
+if (sys.argv[0] != "fuse.py"):
+ selfpath = os.path.dirname(sys.argv[0])+"\\"
+
+ print("#SELFPATH:",selfpath)
+ print(sys.argv, len(sys.argv))
+ #print("##Argv2##",id,param,txt)
+
+ CONVERSIONS_PATH = selfpath+"\Conversions\\"  
+  
+ #VERBOSE   = verbose
+ ID = id
+ FORCE = pforce
+else:
+ selfpath = ""
+
+ parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
+ parser.add_argument('-f','--force',action='store_true',help='overwrite fuse and/or markdown file even if it already exists')
+ parser.add_argument('-v','--verbose',action='store_true',help="tell what's happening")
+ parser.add_argument('-i','--id', help="shadertoy id as it can be found in the conversion's filename right before the'.c' suffix", required=True)
+ args = parser.parse_args()
+
+ VERBOSE=args.verbose
+ FORCE  =args.force 
+ ID     =args.id
 
 
+load_dotenv(selfpath+".env")
 
-
-
-load_dotenv()
-
-parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
-parser.add_argument('-f','--force',action='store_true',help='overwrite fuse and/or markdown file even if it already exists')
-parser.add_argument('-v','--verbose',action='store_true',help="tell what's happening")
-parser.add_argument('-i','--id', help="shadertoy id as it can be found in the conversion's filename right before the'.c' suffix", required=True)
-args = parser.parse_args()
-
-VERBOSE=args.verbose
-fuse_it(args.id,force=args.force)
+#fuse_it(args.id,force=args.force)
+fuse_it(ID,force=FORCE)
 
 # try:
 #   fuse_it(args.id)
