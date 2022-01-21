@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MengerBuilding
+  id: MengerBuilding
+  kernel: MengerBuilding
+  name: MengerBuilding
+shader:
+  author: jorge2017a2
+  description: menger building
+  id: 7ssyD8
+  name: menger building
+  tags:
+  - mengerbuilding
+  url: https://www.shadertoy.com/view/7ssyD8

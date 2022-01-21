@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: VoxelHall
+  id: VoxelHall
+  kernel: VoxelHall
+  name: VoxelHall
+shader:
+  author: N.N.
+  description: 'Forked from Shane''s Voxel Corridor. Please check out the original
+    if you haven''t already.
+
+    I remove the texture and added a surface color with a time gradient (looked better
+    to me than just changing the ambient light color).'
+  id: 7dlczN
+  name: Fork Voxel Hall JiPi 925
+  parent:
+    id: fsXczN
+    name: Voxel Hall Colors
+    url: https://www.shadertoy.com/view/fsXczN
+  tags:
+  - tunnel
+  - raymarch
+  - voxel
+  - brick
+  - corridor
+  - passage
+  url: https://www.shadertoy.com/view/7dlczN
