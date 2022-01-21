@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: FluidicBoidsIi
+  id: FluidicBoidsIi
+  kernel: FluidicBoidsIi
+  name: FluidicBoidsIi
+shader:
+  author: davidar
+  description: Separation is handled a bit more sensibly, and now has mouse interaction.
+  id: 7dlcW7
+  name: Fluidic Boids II
+  tags:
+  - simulation
+  - fluid
+  - boids
+  - ecology
+  url: https://www.shadertoy.com/view/7dlcW7
