@@ -681,7 +681,7 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
   shader_name = json_data['info']['name']
   kernel_name = asKernelname(shader_name,shader_id)
 
-  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image']
+  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image','Sound']
 
   code_parts={}
 

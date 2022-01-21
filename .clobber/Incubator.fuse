@@ -72,15 +72,6 @@ function ShaderKernels_getLabelText()
 
 end
 
-function TestLabelText()
-  local htm = {}
-  --i = 3
-  table.insert(htm,'<font style="color:#00ff00; ">&nbsp;'.. ShaderKernels.Entries[1].InfoName ..i..'&nbsp;</font>')
-  --return '<center>'..table.concat(htm,'&nbsp;')..'</center>'
-  return table.concat(htm,'&nbsp;')
-end
-
-
 
 
 ShaderParameters        = nil
@@ -395,19 +386,6 @@ function Create()
     INP_DoNotifyChanged = false,
     INP_Disabled=false,
   })
-
-i=4
-
-  Test_Label = self:AddInput(  TestLabelText(), "TestLabel", {
-    IC_ControlPage     = control_page ,
-    LINKID_DataType    = "Text",
-    INPID_InputControl = "LabelControl",
-    INP_External       = false,
-    INP_Passive        = true,
-    INP_DoNotifyChanged = false,
-    INP_Disabled       = false,
-  })
-
 
   InShadertoyButton=self:AddInput("Show on shadertoy.com", "openShaderInBrowser", {
     IC_ControlPage = control_page ,
@@ -1367,7 +1345,7 @@ function RebuildParameters()
     end
 
 
-    --CONNECT_TINYSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
+    --CONNECT_SLIDER0(NAME,SMIN,SMAX,SDEFAULT)
     for i=0,NUM_SLIDER_CONTROLS-1 do
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_SLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
@@ -2037,7 +2015,7 @@ function Process(req)
 
   
   -- Multibuffer Next Buffer: B
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity == 3) then   -- "=final=" und Multibuffer AB? dann
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 2) then   -- "=final=" und Multibuffer AB? dann
 
     ConversionKernelname = ShaderKernels.Entries[2].KernelName --Buffer B starten
  
@@ -2074,7 +2052,7 @@ function Process(req)
   end
 
   -- Multibuffer Next Buffer: C
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity == 4) then   -- "=final=" und Multibuffer AB? dann
+  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 3) then   -- "=final=" und Multibuffer AB? dann
 
     ConversionKernelname = ShaderKernels.Entries[3].KernelName --Buffer C starten
  
