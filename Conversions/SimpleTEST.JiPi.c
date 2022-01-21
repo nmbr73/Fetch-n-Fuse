@@ -3,22 +3,22 @@ __DEVICE__ float DigitBin(const int x)
 {
 return x==0?480599.0f:x==1?139810.0f:x==2?476951.0f:x==3?476999.0f:x==4?350020.0f:x==5?464711.0f:x==6?464727.0f:x==7?476228.0f:x==8?481111.0f:x==9?481095.0f:0.0f;
 }
-__DEVICE__ float PrintValue(float2 fragCoord, float2 pixelCoord, float2 fontSize, float value, float digits, float decimals) 
+__DEVICE__ float PrintValue(float2 fragCoord, float2 pixelCoord, float2 fontSize, float value, float digits, float decimals)
 {
    float2 charCoord = (fragCoord - pixelCoord) / fontSize;
    if(charCoord.y < 0.0f || charCoord.y >= 1.0f) return 0.0f;
    float bits = 0.0f;
    float digitIndex1 = digits - _floor(charCoord.x)+ 1.0f;
-   if(-digitIndex1 <= decimals) 
+   if(-digitIndex1 <= decimals)
 	{
 	float pow1 = _powf(10.0f, digitIndex1);
 	float absValue = _fabs(value);
 	float pivot = _fmaxf(absValue, 1.5f) * 10.0f;
-	if(pivot < pow1) 
+	if(pivot < pow1)
 		{
 		if(value < 0.0f && pivot >= pow1 * 0.1f) bits = 1792.0f;
 		}
-	else if(digitIndex1 == 0.0f) 
+	else if(digitIndex1 == 0.0f)
 			{
 			if(decimals > 0.0f) bits = 2.0f;
 			}
@@ -47,10 +47,10 @@ __KERNEL__ void SimpleTESTFuse(float4 fragColor, float2 fragCoord, float2 iResol
 
   CONNECT_POINT0(Look, 0.8f, 0.35f);
   CONNECT_SCREW0(JiPiScrewer,0.1f ,0.5f , 0.25f );
-  
+
   #define typ  0
-  
-  CONNECT_BUTTON0(JiPiBtn, 0, Left, Right, Mid )
+
+  CONNECT_BUTTON0(JiPiBtn, 0, Left, Right, Mid );
 
 
   if (typ == 0)  JiPiBtn = (int)JiPiBtn-1;
@@ -67,42 +67,42 @@ __KERNEL__ void SimpleTESTFuse(float4 fragColor, float2 fragCoord, float2 iResol
 
 
   fragColor=to_float4(red,green,blue,alpha);
-  
+
   float4 var = to_float4(JiPiScrewer,JiPiSlider,IntegerEinfach,JiPiBtn);
-  
+
     //************************* Print Values *******************************
     float printsize = _fmaxf(iResolution.x/960,1.0f);
     float2 fontSize = to_float2(4,5) * to_float2(5,3)*printsize;// * 1.5f;
     float3 vColour = to_float3(fragColor.x,fragColor.y,fragColor.z);//to_float3_s(0.0f);// to_float3(0.2f, 0.05f, 0.1f);
     float fDecimalPlaces = 4.0f;
     float fDigits = 6.0f;
-    
+
     int column = 0;
     int row   = 16;
-    
+
     if (JiPiBtn == 1)
-    {  
+    {
       column = 30;
       row    =  8;
     }
-    
+
     if (JiPiBtn == 2)
-    {  
+    {
       column = 15;
       row    = 10;
     }
-    
+
     vColour = _mix( vColour, to_float3(01.0f, 00.0f, 0.0f), PrintValue(fragCoord, grid(column,row+6,fontSize), fontSize, var.x, fDigits, fDecimalPlaces+4.0f));
     vColour = _mix( vColour, to_float3(00.0f, 01.0f, 0.0f), PrintValue(fragCoord, grid(column,row+4,fontSize), fontSize, var.y, fDigits, fDecimalPlaces));
     vColour = _mix( vColour, to_float3(00.0f, 00.0f, 01.0f), PrintValue(fragCoord, grid(column,row+2,fontSize), fontSize, var.z, fDigits, fDecimalPlaces));
     vColour = _mix( vColour, to_float3(01.0f, 01.0f, 01.0f), PrintValue(fragCoord, grid(column,row,fontSize), fontSize, var.w, fDigits, fDecimalPlaces));
     //************************* End Print Values ***************************
-  
-  
-  fragColor = to_float4_aw(vColour,alpha); 
-  
-   
-  
+
+
+  fragColor = to_float4_aw(vColour,alpha);
+
+
+
 
   SetFragmentShaderComputedColor(fragColor);
 }
