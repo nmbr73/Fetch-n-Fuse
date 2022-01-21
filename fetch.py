@@ -53,7 +53,7 @@ MEDIAMAP = {
   "/media/a/585f9546c092f53ded45332b343144396c0b2d70d9965f585ebc172080d8aa58.jpg" : { "type": "Cubemap", "folder":"Cubemaps", "name":"Uffizi Gallery_0"             },
   "/media/a/793a105653fbdadabdc1325ca08675e1ce48ae5f12e37973829c87bea4be3232.png" : { "type": "Cubemap", "folder":"Cubemaps", "name":"Uffizi Gallery Blurred_0"     },
 
-  # "/presets/tex00.jpg" : { "type": "Preset", "folder":"Misc", "name":"Keyboard"  },
+  "/presets/tex00.jpg" : { "type": "Preset", "folder":"Misc", "name":"Keyboard"  },
   # /presets/tex00.jpg does not work, or does it?!?
   # thumbnail says it's previz/keyboard.png ?!?
   }
@@ -681,7 +681,7 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
   shader_name = json_data['info']['name']
   kernel_name = asKernelname(shader_name,shader_id)
 
-  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image']
+  known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image','Sound']
 
   code_parts={}
 
@@ -718,7 +718,8 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
 
     if inputs!=None and len(inputs)>0:
       for input in inputs:
-          header=header + "// Connect '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
+          #header=header + "// Connect '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
+          header=header + "// Connect "+name+" '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
 
     code_parts[name]['code'] = header + "\n\n" + patchForDCTL(code,kernel_name,name)
 
