@@ -103,7 +103,7 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
 #  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
   code=re.sub(r'(.*)texture(\s*\(\s*)(\w+)\s*\,\s*(\w+)\s*\)','\g<1>_tex2DVecN\g<2>\g<3>,\g<4>.x,\g<4>.y,15)',code)
-#  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geändert werden
+#  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geaendert werden
 
 
 
@@ -757,12 +757,12 @@ if (sys.argv[0] != "fetch.py"):
  print(sys.argv, len(sys.argv))
  #print("##Argv2##",id,param,txt)
 
- CONVERSIONS_PATH = selfpath+"\Conversions\\"  
- 
- NOASSETS  = False 
+ CONVERSIONS_PATH = selfpath+"\Conversions\\"
+
+ NOASSETS  = False
  #VERBOSE   = verbose
  ID = id
- 
+
 else:
  selfpath = ""
 
