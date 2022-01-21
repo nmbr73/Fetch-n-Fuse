@@ -1,0 +1,170 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7ssyzl",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork block CA b JiPi 935",
+  "description": "block cellular automaton using the critters rules.\nclick to place cells.\npress \"a\" to toggle reversing time",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cellular",
+   "automaton"
+  ],
+  "hasliked": 0,
+  "parentid": "7sVXWG",
+  "parentname": "block CA by racon"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = texelFetch(iChannel0,ivec2(fragCoord),0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3Rr",
+     "filepath": "/media/a/79520a3d3a0f4d3caa440802ef4362e99d54e12b1392973e4ea321840970a88a.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const int   map[]=int[]\n//0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15\n(15,14,13, 3,11, 5, 6, 1, 7, 9,10, 2,12, 4, 8, 0);\nconst int undomap[]=int[]\n(15,7,11,3,13,5,6,8,14,9,10,4,12,2,1,0);\nivec2 modIvec2(ivec2 a,ivec2 b){\n    return ivec2(int(mod(float(a.x),float(b.x))),int(mod(float(a.y),float(b.y))));\n}\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    int isInverted;//\"a\" to invert time\n    if(texelFetch(iChannel2,ivec2(65,2),0).x>0.)isInverted=1;\n    else isInverted=0;\n    \n    vec2 uv = fragCoord/iResolution.xy;\n    ivec2 worldSize=ivec2(iResolution.xy/renderScale);\n    vec2 edge=(iResolution.xy/renderScale-fragCoord);\n    vec2 t=uv+vec2(1.-1./renderScale);\n    int thift = getShift(iFrame);\n    if(1.>min(min(fragCoord.x,fragCoord.y),min(edge.x,edge.y))){\n        fragColor = vec4(1-thift,0.0,0.0,1.0);//on border\n        return ;\n    }if(max(t.x,t.y)>1.){\n        fragColor = vec4(thift,0.0,0.0,1.0);//outside screen\n        return;\n    }\n    if(iFrame<freezeFrames){//on start\n        int state=0;\n        ivec2 pos=ivec2(fragCoord)-ivec2(10,10);\n        if(pos.x>=0&&pos.y>=0)\n        if(pos.x<seedLen.x&&pos.y<seedLen.y)state = seed[pos.y*seedLen.x+pos.x];\n        fragColor = vec4(float(mod(float(1-thift+state),2.)));\n        //fragColor = texture(iChannel1,uv+iMouse.xy/iResolution.xy);\n        return;\n    }if(mod(float(iFrame-freezeFrames),loopTime)!=0.){\n        fragColor = texture(iChannel0,uv);\n        return;\n    }\n    if(mouseSize>length(iMouse.xy/renderScale-fragCoord)){\n        if(iMouse.z>0.5){fragColor = vec4(thift,0.5,0.0,1.0);return;}\n        if(iMouse.w>0.5){fragColor = vec4(1-thift,0.5,0.0,1.0);return;}\n    }\n    int shift1 = int(mod(float(isInverted+thift),2.));\n    ivec2 pos = (ivec2(fragCoord)+shift1)/2*2-shift1;\n    ivec2 dif = (ivec2(fragCoord)-pos);\n    int n = dif.x+2*dif.y;\n    ivec2 c=ivec2(fragCoord);\n    int sum;\n    if(true){\n    sum=int(\n        +1*int(population*texelFetch(iChannel0,pos+ivec2(0,0),0).x)\n        +2*int(population*texelFetch(iChannel0,pos+ivec2(1,0),0).x)\n        +4*int(population*texelFetch(iChannel0,pos+ivec2(0,1),0).x)\n        +8*int(population*texelFetch(iChannel0,pos+ivec2(1,1),0).x)\n    );\n    }else{/*\n        ivec2 pos1=pos;\n        ivec2 worldSize1=worldSize -ivec2(10);\n        ivec2 worldSize2=worldSize1-ivec2(0);\n        sum+=1*int(population*texelFetch(iChannel0,pos+ivec2(0,0),0).x);\n        \n        pos1=modIvec2(pos+worldSize1+ivec2(1,0),worldSize1);\n        sum+=2*int(population*texelFetch(iChannel0,pos1,0).x);\n        \n        pos1=modIvec2(pos+worldSize1+ivec2(0,1),worldSize1);\n        sum+=4*int(population*texelFetch(iChannel0,pos1,0).x);\n        \n        pos1=modIvec2(pos+worldSize1+ivec2(1,1),worldSize1);\n        sum+=8*int(population*texelFetch(iChannel0,pos1,0).x);\n    */}\n    if(bool(isInverted))sum=(map[sum]>>n)&1;\n    else sum=(undomap[sum]>>n)&1;\n    \n    fragColor = vec4(vec3(sum),1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\nconst float renderScale=2.;\nconst float loopTime=1.;\nconst float population=1.5;//1.<pop<2.;\nconst float mouseSize=6.;\nconst int freezeFrames=4;\nint getShift(int iFrame){\n    return int(float(0)+mod(float(iFrame-freezeFrames)/abs(loopTime),2.));\n}\nivec2 seedLen=ivec2(12);\n\nconst int seed[]=int[](\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,1,\n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,1,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,1, 1,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n1,0, 0,1, 0,0, 0,0, 0,0, 0,0,\n                             \n0);\n/*\nconst int seed_destroys_vertical[]=int[](\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,1,\n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,1,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,1, 1,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n1,0, 0,1, 0,0, 0,0, 0,0, 0,0,\n                             \n0);\nconst int seed_reflect[]=int[](\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n0,0, 0,0, 0,0, 0,1, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,1, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,1, 1,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n1,0, 0,1, 0,0, 0,0, 0,0, 0,0,\n                             \n0);\nconst int seed_moveThrough[]=int[](\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n0,0, 0,0, 0,0, 0,1, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,1, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,1, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 0,1, 1,0, 0,0, 0,0, 0,0,\n                             \n0,0, 0,0, 0,0, 0,0, 0,0, 0,0,\n0,0, 1,0, 0,1, 0,0, 0,0, 0,0,\n                             \n0);*/",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    if(getShift(iFrame)==1)\n    fragColor = texelFetch(iChannel0,ivec2(fragCoord/renderScale),0);\n    else\n    fragColor = texelFetch(iChannel1,ivec2(fragCoord),0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

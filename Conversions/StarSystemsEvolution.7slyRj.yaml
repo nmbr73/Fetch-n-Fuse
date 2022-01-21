@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: StarSystemsEvolution
+  id: StarSystemsEvolution
+  kernel: StarSystemsEvolution
+  name: StarSystemsEvolution
+shader:
+  author: ersh
+  description: Star dynamics. Mass conservation guaranteed. Walls in reality do not
+    exist but this makes it more fun :)
+  id: 7slyRj
+  name: Star systems evolution
+  tags:
+  - simulation
+  url: https://www.shadertoy.com/view/7slyRj

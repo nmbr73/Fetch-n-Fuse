@@ -686,7 +686,6 @@ function Create()
       IC_Visible      = false,
 			})
 
-
 SepBufferA = self:AddInput("________________Buffer A__________________", "SepBufferA", {
     LINKID_DataType = "Text",
     INPID_InputControl = "LabelControl",
@@ -719,7 +718,6 @@ SepBufferB = self:AddInput("________________Buffer B__________________", "SepBuf
     INP_External = false,
     INP_Passive = true,
   })
-
   InChBufferB={}
   for i=0,3 do
     InChBufferB[i] = self:AddInput("Channel"..i, "ChBufferB"..i, {
@@ -741,7 +739,6 @@ SepBufferC = self:AddInput("________________Buffer C__________________", "SepBuf
     INP_External = false,
     INP_Passive = true,
   })
-
   InChBufferC={}
   for i=0,3 do
     InChBufferC[i] = self:AddInput("Channel"..i, "ChBufferC"..i, {
@@ -763,7 +760,6 @@ SepBufferD = self:AddInput("________________Buffer D__________________", "SepBuf
     INP_External = false,
     INP_Passive = true,
   })
-
   InChBufferD={}
   for i=0,3 do
     InChBufferD[i] = self:AddInput("Channel"..i, "ChBufferD"..i, {
@@ -785,7 +781,6 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
     INP_External = false,
     INP_Passive = true,
   })
-
   InChImage={}
   for i=0,3 do
     InChImage[i] = self:AddInput("Channel"..i, "ChImage"..i, {
@@ -875,7 +870,6 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
     INP_External = false,
     INP_Passive = true,
   })
-
 
 	InManualID = self:AddInput("Manual ID", "ManualID", {
 			LINKID_DataType    = "Number",
@@ -970,7 +964,6 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
     CC_LabelPosition = "Horizontal",
 	  ICS_ControlPage  = "Image",
   })
-
   InMyWidth = self:FindInput("Width")
 	InMyWidth:SetAttrs({ IC_Visible = false })
 	InMyHeight = self:FindInput("Height")
@@ -1081,7 +1074,6 @@ function PatchKernel(ConversionSourcecode,ConversionFusename,Part,NodeName)
   if kernel_parameters==nil then
     if Part=="Image" then
       print("kernel for 'Image': ",ConversionFusename," not found!"  )
-
       return "", nil
     end
     return ConversionSourcecode, nil
@@ -1260,7 +1252,6 @@ function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
 
 -- Channel
   local i=0
-
  --print("#################### Multibuffertest ########################\n")
 
   for i,e in pairs(ShaderKernels.Entries) do
