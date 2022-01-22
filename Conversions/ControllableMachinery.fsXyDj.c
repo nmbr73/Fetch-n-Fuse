@@ -559,7 +559,7 @@ __DEVICE__ float GearSShadow (float3 ro, float3 rd, float dstFar, float angRot, 
   return sh;
 }
 
-__DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, float tMov, float tCur, float3 ltDir)
+__DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, float tMov, float tCur, float3 ltDir, __TEXTURE2D__ iChannel1)
 {
   float3 vnBlk;
   float2 qBlk;
@@ -591,6 +591,12 @@ __DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, f
       vn = vnBlk;
       col4 = to_float4_aw(HsvToRgb (to_float3 (hitBlk / nBlk, 1.0f, 1.0f)), 0.2f) *
              (1.0f - 0.4f * step (0.8f * bEdge, Maxv2 (abs_f2(qBlk))));
+      if (hitBlk == 2.0f ) 
+      {
+        col4 = to_float4_s(1.0f);       
+        col4 = texture(iChannel1,ro);
+      }
+             
     } else {
       ro += dstObj * rd;
       vn = (idObj == idGr) ? GearNf (ro,dstFar,angRot,bEdge) : ObjNf (ro,&idObj,dstFar,angRot,bEdge,wgObj);
@@ -656,7 +662,7 @@ __DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, f
   return clamp (col, 0.0f, 1.0f);
 }
 //**************************************************************************************************************************************************************************
-__KERNEL__ void ControllableMachineryFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, int iFrame, sampler2D iChannel0)
+__KERNEL__ void ControllableMachineryFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
   const float txRow = 128.0f;
   
@@ -694,7 +700,7 @@ __KERNEL__ void ControllableMachineryFuse(float4 fragColor, float2 fragCoord, fl
   for (float a = (float)(VAR_ZERO); a < naa; a ++) {
     rd = mul_mat3_f3(vuMat , normalize (to_float3_aw (uv + step (1.5f, naa) * Rot2D (to_float2 (0.5f / canvas.y, 0.0f),
                                         sr * (0.667f * a + 0.5f) * pi), zmFac)));
-    col += (1.0f / naa) * ShowScene (ro, rd, dstFar,wgObj, tMov, tCur, ltDir);
+    col += (1.0f / naa) * ShowScene (ro, rd, dstFar,wgObj, tMov, tCur, ltDir, iChannel1);
   }
   fragColor = to_float4_aw (col, 1.0f);
   

@@ -50,8 +50,11 @@ __KERNEL__ void SimpleTESTFuse(float4 fragColor, float2 fragCoord, float2 iResol
 
   #define typ  0
 
+#if defined(DEVICE_IS_OPENCL)
+  CONNECT_BUTTON0(JiPiBtn, 0, Left, Right, Mid, Empty1, Empty2 );
+#else  
   CONNECT_BUTTON0(JiPiBtn, 0, Left, Right, Mid );
-
+#endif
 
   if (typ == 0)  JiPiBtn = (int)JiPiBtn-1;
   if (typ == 1)  JiPiBtn = (int)JiPiBtn>>1;  //Korrektur, weil Basicbutton nicht ausblendbar -> Fertige Fuse hat kein Basicbutton, daher hier die Anpassung, kann ins Define !toDo! - ev auch Defines für die Namen anlegen . also #define Left = 0
