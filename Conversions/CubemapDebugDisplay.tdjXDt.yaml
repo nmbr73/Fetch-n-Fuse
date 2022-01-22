@@ -1,0 +1,15 @@
+fuse:
+  author: nmbr73
+  file: CubemapDebug
+  id: CubemapDebug
+  kernel: CubemapDebug
+  name: CubemapDebug
+shader:
+  author: SaschaWillems
+  description: Simple debug display of a cube map using only screen space UV coordinates
+  id: tdjXDt
+  name: Cubemap Debug
+  tags:
+  - cubemap
+  - debug
+  url: https://www.shadertoy.com/view/tdjXDt
