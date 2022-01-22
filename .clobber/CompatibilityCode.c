@@ -561,10 +561,6 @@
 /*| to_int2_2f    |*/#define to_int2_2f(A,B) to_int2((int)(A),(int)(B))
 /*| mod_i2        |*/#define mod_i2(V,I) to_int2( (V).x % (I), (V).y % (I)  )
 
-// #define eq_i2_i2(A,B) ((A).x==(B).x && (A).y==(B).y)
-// #define eq_f2_f2(A,B) ((A).x==(B).x && (A).y==(B).y)
-// #define eq_i2_1i(A,I) ((A).x==(I) && (A).y==(I))
-// #define eq_f2_1f(A,I) ((A).x==(I) && (A).y==(I))
 
 /*|  to_float2_i2 |*/#define to_float2_i2(V) to_float2_cint(V)   // int2 zu float2
 /*|  to_float2_ui2|*/#define to_float2_ui2(V) to_float2_cuint(V) // uint2 zu float2
