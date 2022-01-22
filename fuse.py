@@ -641,15 +641,15 @@ def fuse_it(id,force=False):
 print("\n#################### Fuse Script ###################")
 #print("Aufruf :",sys.argv[0]) #ok
 
-if (sys.argv[0] != "fuse.py"):
+if (sys.argv[0] != "fuse.py" and sys.argv[0] != "./fuse.py" ):
  selfpath = os.path.dirname(sys.argv[0])+"\\"
 
  print("#SELFPATH:",selfpath)
  print(sys.argv, len(sys.argv))
  #print("##Argv2##",id,param,txt)
 
- CONVERSIONS_PATH = selfpath+"\Conversions\\"  
-  
+ CONVERSIONS_PATH = selfpath+"\Conversions\\"
+
  #VERBOSE   = verbose
  ID = id
  FORCE = pforce
@@ -663,7 +663,7 @@ else:
  args = parser.parse_args()
 
  VERBOSE=args.verbose
- FORCE  =args.force 
+ FORCE  =args.force
  ID     =args.id
 
 
