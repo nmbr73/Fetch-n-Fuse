@@ -750,7 +750,7 @@ def doFetch(shader_id):
 print("\n#################### Fetch Script ###################")
 #print("Aufruf :",sys.argv[0]) #ok
 
-if (sys.argv[0] != "fetch.py"):
+if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
  selfpath = os.path.dirname(sys.argv[0])+"\\"
 
  print("#SELFPATH:",selfpath)
