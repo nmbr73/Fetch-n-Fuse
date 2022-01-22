@@ -39,8 +39,8 @@
 /*| swi3          |*/    #define swi3(A,a,b,c)   (A).a##b##c
 /*| swi4          |*/    #define swi4(A,a,b,c,d) (A).a##b##c##d
 
-/*| swi2S         |*/    #define swi2S(a,b,c,d)   #define swi2S(a,b,c,d) a.b##c = d
-/*| swi3S         |*/    #define swi3S(a,b,c,d,e) #define swi3S(a,b,c,d,e) a.b##c##d = e
+/*| swi2S         |*/    #define swi2S(a,b,c,d)   a.b##c = d
+/*| swi3S         |*/    #define swi3S(a,b,c,d,e) a.b##c##d = e
 
   #else
 
@@ -48,8 +48,8 @@
 /*| swi3          |*/    #define swi3(A,a,b,c)   to_float3((A).a,(A).b,(A).c)
 /*| swi4          |*/    #define swi4(A,a,b,c,d) to_float4((A).a,(A).b,(A).c,(A).d)
 
-/*| swi2S         |*/    #define swi2S(a,b,c,d)   {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;} 
-/*| swi3S         |*/    #define swi3S(a,b,c,d,e) {float3 tmp = e; (a).b = tmp.x; (a).c = tmp.y; (a).d = tmp.z;} 
+/*| swi2S         |*/    #define swi2S(a,b,c,d)   {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;}
+/*| swi3S         |*/    #define swi3S(a,b,c,d,e) {float3 tmp = e; (a).b = tmp.x; (a).c = tmp.y; (a).d = tmp.z;}
 
   #endif
 
@@ -519,7 +519,7 @@
     /*| mix_f3        |*/ #define mix_f3(v,i,m) to_float3(_mix((v).x,(i).x,(m).x),_mix((v).y,(i).y,(m).y),_mix((v).z,(i).z,(m).z))
     /*| mix_f4        |*/ #define mix_f4_f(v,i,m) to_float4(_mix((v).x,(i).x,m),_mix((v).y,(i).y,m),_mix((v).z,(i).z,m),_mix((v).w,(i).w,m))
     /*| log_f3        |*/ #define log_f3(a) to_float3(_logf((a).x), _logf((a).y),_logf((a).z))
-    /*| log2_f3       |*/ #define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))  
+    /*| log2_f3       |*/ #define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))
     /*| sign_f        |*/ #define sign_f(a) (a==0.0f?0.0f:a>0.0f?1.0f:-1.0f)
     /*| sign_f2       |*/ #define sign_f2(a) to_float2((a).x==0.0f?0.0f:(a).x>0.0f?1.0f:-1.0f, (a).y==0.0f?0.0f:(a).y>0.0f?1.0f:-1.0f)
     /*| sign_f3       |*/ #define sign_f3(a) to_float3((a).x==0.0f?0.0f:(a).x>0.0f?1.0f:-1.0f, (a).y==0.0f?0.0f:(a).y>0.0f?1.0f:-1.0f,(a).z==0.0f?0.0f:(a).z>0.0f?1.0f:-1.0f)
