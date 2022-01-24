@@ -1,0 +1,783 @@
+--[[--/*
+
+  StarMap1.fuse
+
+  Based on https://www.shadertoy.com/view/4sBXzG a WebGL shader created by morgan3d.
+  Converted to DCTL and embeddet into a Lua Fuse by nmbr73 (https://www.youtube.com/c/nmbr73).
+  Place this file in your Fusion's and/or DaVinci Resolve's 'Fuses/' folder to use it.
+
+*/--]]--
+
+
+
+
+-- /*
+-- MANDATORY -----------------------------------------------------------------
+local shadertoy_name       = "Star Map 1"
+local shadertoy_author     = "morgan3d"
+local shadertoy_id         = "4sBXzG"
+local shadertoy_license    = "CC BY-NC-SA 3.0"
+local dctlfuse_category    = "Incubator"
+local dctlfuse_name        = "StarMap1"
+local dctlfuse_author      = "nmbr73"
+-- OPTIONAL ------------------------------------------------------------------
+local dctlfuse_versionNo   = 1
+local dctlfuse_versionDate = "January 24, 2022"
+local dctlfuse_authorurl   = "https://www.youtube.com/c/nmbr73"
+local dctlfuse_authorlogo  = 'width="212" height="41" src="data:image/png;base64,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"'
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Registry declaration
+-- // ------------------------------------------------------------------------
+
+FuRegisterClass(
+
+-- >>> SCHNIPP::FUREGISTERCLASS.version="MonumentsAndSites"
+   (FC_PREFIX==nil and "ST_" or (FC_PREFIX=="" and "" or FC_PREFIX.."_"))..dctlfuse_name, CT_SourceTool, { REGS_Category = (FC_SUBMENU==nil and "Shadertoys (dev)" or (FC_SUBMENU=="" and "Fuses" or FC_SUBMENU))..(FC_CATEGORY==nil and "\\"..dctlfuse_category or ( FC_CATEGORY ~= "" and "\\"..FC_CATEGORY or "")), REGS_OpIconString = (FC_SCPREFIX==nil and "ST-" or (SC_SCPREFIX=="" and "" or FC_SCPREFIX.."-"))..shadertoy_id,
+   REGS_OpDescription = "Shadertoy '"..shadertoy_name.."' (ID: "..shadertoy_id..") created by "..shadertoy_author.." and ported by "..dctlfuse_author..(shadertoy_license == "" and ". Copyright "..shadertoy_author.." (CC BY-NC-SA 3.0)" or ". "..shadertoy_license)..". This port is by no means meant to take advantage of anyone or to do anyone wrong : Contact us on Discord (https://discord.gg/75FUn4N4pv) and/or GitHub (https://github.com/nmbr73/Shadertoys) if you see your rights abused or your intellectual property violated by this work.",
+   REG_Fuse_NoEdit = not(FC_DEVELOP==nil or FC_DEVELOP==true), REG_Fuse_NoReload = not(FC_DEVELOP==nil or FC_DEVELOP==true), REG_Fuse_TilePic = FC_TITLEPIC, REGS_Company = dctlfuse_company==nil and dctlfuse_author or dctlfuse_company, REGS_URL = dctlfuse_authorurl==nil and "https://nmbr73.github.io/Shadertoys/" or dctlfuse_authorurl,
+   REG_Version = FC_VERSIONNO~=nil and FC_VERSIONNO or (dctlfuse_versionNo==nil and 1 or dctlfuse_versionNo),
+-- <<< SCHNAPP::FUREGISTERCLASS
+
+  REG_NoObjMatCtrls      = true,
+  REG_NoMotionBlurCtrls  = true,
+  REG_Source_GlobalCtrls = false,
+  REG_Source_SizeCtrls   = true,
+  REG_Source_AspectCtrls = true,
+  REG_Source_DepthCtrls  = true,
+  REG_OpNoMask           = true,
+  REG_TimeVariant        = true,
+  })
+
+
+
+-- // ------------------------------------------------------------------------
+-- // DCTL kernel parameters
+-- // ------------------------------------------------------------------------
+
+-- */
+ShaderParameters =
+[[
+
+  float  iResolution[2];
+  float  iTime;
+  float  iMouse[4];
+  bool   SHOW_LARGE_GRID;
+  bool   SHOW_SPHERE;
+  bool   SHOW_SPHERE_GRID;
+  bool   SHOW_PLANET;
+
+  int    width,height;
+  int    compOrder;
+
+]]
+-- /*
+
+
+
+-- // ------------------------------------------------------------------------
+-- DCTL kernel compatibility code
+-- // ------------------------------------------------------------------------
+
+-- */
+ShaderCompatibilityCode =
+[[
+
+
+#if defined(DEVICE_IS_METAL)
+  #define in
+  #define out thread
+  #define inout thread
+#else
+  #define in
+  #define out
+  #define inout
+#endif
+
+#undef USE_NATIVE_METAL_IMPL
+#undef USE_NATIVE_CUDA_IMPL
+#undef USE_NATIVE_OPENCL_IMPL
+
+  // 0 to use the generic implementations; 1 for Metal, OpenCL, Cuda specific code if existing
+
+  #if 1
+    #if defined(DEVICE_IS_METAL)
+      #define USE_NATIVE_METAL_IMPL   1
+    #elif defined(DEVICE_IS_CUDA)
+      #define USE_NATIVE_CUDA_IMPL    1
+    #elif defined(DEVICE_IS_OPENCL)
+      #define USE_NATIVE_OPENCL_IMPL  1
+    #endif
+  #endif
+
+  #if defined(USE_NATIVE_METAL_IMPL)
+
+    #define swi2(A,a,b)     (A).a##b
+    #define swi3(A,a,b,c)   (A).a##b##c
+
+  #else
+
+    #define swi2(A,a,b)     to_float2((A).a,(A).b)
+    #define swi3(A,a,b,c)   to_float3((A).a,(A).b,(A).c)
+
+  #endif
+
+// ----------------------------------------------------------------------------------------------------------
+// mat2 implementation
+// ----------------------------------------------------------------------------------------------------------
+
+#if defined(USE_NATIVE_METAL_IMPL)
+
+  typedef float2x2 mat2;
+
+  #define to_mat2(A,B,C,D)   mat2((A),(B),(C),(D))
+
+  #define mul_mat2_f2(A,B)   ((A)*(B))
+
+#else
+
+  typedef struct { float2 r0; float2 r1; } mat2;
+
+  __DEVICE__ inline mat2 to_mat2      ( float  a, float  b, float c, float d)  { mat2 t; t.r0.x = a; t.r0.y = b; t.r1.x = c; t.r1.y = d;         return t; }
+
+  __DEVICE__ inline float2 mul_mat2_f2( mat2 m, float2 v )
+  {
+    float2 t; t.x = v.x*m.r0.x + v.y*m.r1.x; t.y = v.x*m.r0.y + v.y*m.r1.y; return t;
+  }
+
+#endif // end of mat2 implementation
+
+// ----------------------------------------------------------------------------------------------------------
+// mat3 implementation
+// ----------------------------------------------------------------------------------------------------------
+
+#if defined(USE_NATIVE_METAL_IMPL)
+
+  typedef float3x3 mat3;
+
+  __DEVICE__ inline mat3 to_mat3( float a, float b, float c, float d, float e, float f, float g, float h, float i)
+  {
+    return mat3(a,b,c,d,e,f,g,h,i);
+  }
+
+  __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }
+  __DEVICE__ inline mat3 mul_mat3_mat3( mat3 A, mat3 B) { return (A*B); }
+
+#else
+
+  typedef struct { float3 r0; float3 r1; float3 r2; } mat3;
+
+  __DEVICE__ inline mat3 to_mat3( float  a, float  b, float c,   float d, float e, float f,   float g, float h, float i)
+  {
+    mat3 t;
+    t.r0.x = a; t.r0.y = b; t.r0.z = c;
+    t.r1.x = d; t.r1.y = e; t.r1.z = f;
+    t.r2.x = g; t.r2.y = h; t.r2.z = i;
+    return t;
+  }
+
+__DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {
+     float3 C;
+
+     C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;
+     C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;
+     C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;
+     return C;
+  }
+
+__DEVICE__ mat3 mul_mat3_mat3( mat3 A, mat3 B)
+{
+   float r[3][3];
+   float a[3][3] = {{A.r0.x, A.r0.y, A.r0.z},
+                    {A.r1.x, A.r1.y, A.r1.z},
+                    {A.r2.x, A.r2.y, A.r2.z}};
+   float b[3][3] = {{B.r0.x, B.r0.y, B.r0.z},
+                    {B.r1.x, B.r1.y, B.r1.z},
+                    {B.r2.x, B.r2.y, B.r2.z}};
+
+  for( int i = 0; i < 3; ++i)
+  {
+    for( int j = 0; j < 3; ++j)
+    {
+      r[i][j] = 0.0f;
+      for( int k = 0; k < 3; ++k)
+      {
+        r[i][j] = r[i][j] + a[i][k] * b[k][j];
+      }
+    }
+  }
+  mat3 R = to_mat3(r[0][0], r[0][1], r[0][2],
+                   r[1][0], r[1][1], r[1][2],
+                   r[2][0], r[2][1], r[2][2]);
+  return R;
+}
+#endif // end of mat3 implementation
+
+#if defined(USE_NATIVE_METAL_IMPL)
+
+ #define sqrt_f3(a) _sqrtf(a)
+
+#else
+
+  #if defined(USE_NATIVE_OPENCL_IMPL)
+
+    #define reflect(I,N) (I-2.0f*dot(N,I)*N)
+
+    #define fract(a) ((a)-_floor(a))  // oder Pointer bauen: gentype fract(gentype x, gentype *itpr)
+
+ #define sqrt_f3(a) sqrtf(a)
+
+ #else // Generic
+
+    #define fract(a) ((a)-_floor(a))
+
+ #define sqrt_f3(a) to_float3(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z))
+
+  #endif
+
+#endif
+
+
+]]
+-- /*
+
+
+
+-- // ------------------------------------------------------------------------
+-- DCTL kernel implementation
+-- // ------------------------------------------------------------------------
+
+-- */
+ShaderKernelCode =
+[[
+
+// ----------------------------------------------------------------------------------
+// - Image                                                                          -
+// ----------------------------------------------------------------------------------
+
+
+// Star map shader...procedural space background
+
+#define deg (3.1415927f / 180.0f)
+
+// See derivation of noise functions by Morgan McGuire at https://www.shadertoy.com/view/4dS3Wd
+//const int NUM_OCTAVES = 4;
+#define NUM_OCTAVES 4
+
+__DEVICE__ float hash(float n) { return fract(_sinf(n) * 1e4); }
+__DEVICE__ float hash(float2 p) { return fract(1e4 * _sinf(17.0f * p.x + p.y * 0.1f) * (0.1f + _fabs(_sinf(p.y * 13.0f + p.x)))); }
+// 1 octave value noise
+__DEVICE__ float noise(float x) { float i = _floor(x); float f = fract(x); float u = f * f * (3.0f - 2.0f * f); return _mix(hash(i), hash(i + 1.0f), u); }
+__DEVICE__ float noise(float2 x) { float2 i = _floor(x); float2 f = fract(x);  float a = hash(i); float b = hash(i + to_float2(1.0f, 0.0f)); float c = hash(i + to_float2(0.0f, 1.0f)); float d = hash(i + to_float2(1.0f, 1.0f)); float2 u = f * f * (3.0f - 2.0f * f); return _mix(a, b, u.x) + (c - a) * u.y * (1.0f - u.x) + (d - b) * u.x * u.y; }
+__DEVICE__ float noise(float3 x) { const float3 step = to_float3(110, 241, 171); float3 i = _floor(x); float3 f = fract(x); float n = dot(i, step); float3 u = f * f * (3.0f - 2.0f * f); return _mix(_mix(_mix( hash(n + dot(step, to_float3(0, 0, 0))), hash(n + dot(step, to_float3(1, 0, 0))), u.x), _mix( hash(n + dot(step, to_float3(0, 1, 0))), hash(n + dot(step, to_float3(1, 1, 0))), u.x), u.y), _mix(_mix( hash(n + dot(step, to_float3(0, 0, 1))), hash(n + dot(step, to_float3(1, 0, 1))), u.x), _mix( hash(n + dot(step, to_float3(0, 1, 1))), hash(n + dot(step, to_float3(1, 1, 1))), u.x), u.y), u.z); }
+// Multi-octave value noise
+__DEVICE__ float NOISE(float x) { float v = 0.0f; float a = 0.5f; float shift = float(100); for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(x); x = x * 2.0f + shift; a *= 0.5f; } return v; }
+__DEVICE__ float NOISE(float2 x) { float v = 0.0f; float a = 0.5f; float2 shift = to_float2_s(100.0f); mat2 rot = to_mat2(_cosf(0.5f), _sinf(0.5f), -_sinf(0.5f), _cosf(0.50f)); for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(x); x = mul_mat2_f2(rot , x * 2.0f) + shift; a *= 0.5f; } return v; }
+// Fast hash2 from https://www.shadertoy.com/view/lsfGWH
+__DEVICE__ float hash2(float2 co) { return fract(_sinf(dot(swi2(co,x,y), to_float2(12.9898f,78.233f))) * 43758.5453f); }
+__DEVICE__ float maxComponent(float2 v) { return _fmaxf(v.x, v.y); }
+__DEVICE__ float maxComponent(float3 v) { return _fmaxf(max(v.x, v.y), v.z); }
+__DEVICE__ float minComponent(float2 v) { return _fminf(v.x, v.y); }
+__DEVICE__ mat3 rotation(float yaw, float pitch) { return mul_mat3_mat3(to_mat3(_cosf(yaw), 0, -_sinf(yaw), 0, 1, 0, _sinf(yaw), 0, _cosf(yaw)) , to_mat3(1, 0, 0, 0, _cosf(pitch), _sinf(pitch), 0, -_sinf(pitch), _cosf(pitch))); }
+__DEVICE__ float square(float x) { return x * x; }
+
+///////////////////////////////////////////////////////////////////////
+
+// Only globals needed for the actual spheremap
+
+// starplane was derived from https://www.shadertoy.com/view/lsfGWH
+__DEVICE__ float starplane(float3 dir, float screenscale, float iTime) {
+    //float screenscale = 1.0f / iResolution.x;
+
+    // Project to a cube-map plane and scale with the resolution of the display
+    float2 basePos = swi2(dir,x,y) * (0.5f / screenscale) / _fmaxf(1e-3, _fabs(dir.z));
+
+  const float largeStarSizePixels = 20.0f;
+
+    // Probability that a pixel is NOT on a large star. Must change with largeStarSizePixels
+  const float prob = 0.97f;
+
+  float color = 0.0f;
+  float2 pos = _floor(basePos / largeStarSizePixels);
+  float starValue = hash2(pos);
+
+    // Big stars
+  if (starValue > prob) {
+
+        // Sphere blobs
+    float2 delta = basePos - largeStarSizePixels * (pos + to_float2_s(0.5f));
+    color = _fmaxf(1.0f - length(delta) / (0.5f * largeStarSizePixels), 0.0f);
+
+        // Star shapes
+        color *= 1.0f / _fmaxf(1e-3, _fabs(delta.x) * _fabs(delta.y));
+
+        // Avoid triplanar seams where star distort and clump
+        color *= _powf(_fabs(dir.z), 12.0f);
+    }
+
+    // Small stars
+
+    // Stabilize stars under motion by locking to a grid
+    basePos = _floor(basePos);
+
+    if (hash2(swi2(basePos,x,y) * screenscale) > 0.997f) {
+        float r = hash2(swi2(basePos,x,y) * 0.5f);
+        color += r * (0.3f * _sinf(iTime * (r * 5.0f) + r) + 0.7f) * 1.5f;
+    }
+
+    // Weight by the z-plane
+    return color * _fabs(dir.z);
+}
+
+
+__DEVICE__ float starbox(float3 dir, float screenscale, float iTime) {
+  return starplane(swi3(dir,x,y,z),screenscale,iTime) + starplane(swi3(dir,y,z,x),screenscale,iTime) + starplane(swi3(dir,z,x,y),screenscale,iTime);
+}
+
+
+__DEVICE__ float starfield(float3 dir, float screenscale, float iTime) {
+    return starbox(dir,screenscale,iTime) + starbox(mul_mat3_f3(rotation(45.0f * deg, 45.0f * deg) , dir), screenscale, iTime);
+}
+
+
+__DEVICE__ float3 nebula(float3 dir) {
+    float purple = _fabs(dir.x);
+    float yellow = noise(dir.y);
+    float3 streakyHue = to_float3(purple + yellow, yellow * 0.7f, purple);
+    float3 puffyHue = to_float3(0.8f, 0.1f, 1.0f);
+
+    float streaky = _fminf(1.0f, 8.0f * _powf(NOISE(swi2(dir,y,z) * square(dir.x) * 13.0f + swi2(dir,x,y) * square(dir.z) * 7.0f + to_float2(150.0f, 2.0f)), 10.0f));
+    float puffy = square(NOISE(swi2(dir,x,z) * 4.0f + to_float2(30, 10)) * dir.y);
+
+    return clamp(puffyHue * puffy * (1.0f - streaky) + streaky * streakyHue, 0.0f, 1.0f);
+}
+
+
+__DEVICE__ float3 sun(float3 d, float iTime) {
+    float angle = _atan2f(d.x, d.y);
+    float falloff = _powf(_fmaxf(d.z, 0.0f), 10.0f);
+  float3 core = to_float3(2.8f, 1.5f + 0.5f * noise(iTime * 0.25f + swi2(d,x,y) * 5.0f), 1.5f) * falloff;
+    float corona = NOISE(to_float2(d.z * 250.0f + iTime, iTime * 0.2f + angle * 50.0f)) * smoothstep(0.95f, 0.92f, d.z) * falloff * square(d.z);
+
+    return core * (1.0f - corona);
+}
+
+
+__DEVICE__ float4 planet(float3 view, float iTime) {
+    const float PLANET_RADIUS = 0.65f;
+    if (view.y > -PLANET_RADIUS) {
+        return to_float4_s(0.0f);
+    }
+
+    // Compute the point on the planet sphere
+    // float angle  = _atan2f(view.x, view.z); unused
+    float radius = _sqrtf((1.0f + view.y) / (1.0f - PLANET_RADIUS));
+
+    float3 s = to_float3_aw(radius * normalize(swi2(view,x,z)), _sqrtf(1.0f - square(radius)));
+
+
+    float3 dir = s;
+    dir = mul_mat3_f3(rotation(0.0f, iTime * 0.01f) , dir);
+    float latLongLine = 0.0f;// (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
+
+    // Antialias the edge of the planet
+    float4 surface = to_float4_aw(1.2f * to_float3(1.0f, 0.3f, 0.4f) *
+        (noise(dir * 39.0f + 3.5f) * 0.5f + noise(dir * 26.0f) + 2.0f * noise(dir * 13.0f + 1.0f)) *
+         //to_float3_aw(swi2(s,y,x) * 0.5f + 0.5f, 0.0f).rbg, smoothstep(0.992f, 0.988f, radius));
+         to_float3(s.y*0.5f+0.5,s.x*0.5+0.5f,0.0f), smoothstep(0.992f, 0.988f, radius));
+
+    // Keep the clouds above the planet
+    float4 cloud = to_float4_aw(to_float3_s(1.5f),
+                      smoothstep(1.0f, 0.995f, radius) *
+                      square(NOISE(to_float2(iTime * 0.1f, 0.0f) + swi2(dir,x,z) * 11.0f * square(dir.y) + swi2(dir,y,x) * 3.0f + swi2(dir,z,y) * 1.2f)));
+
+    return to_float4_aw(
+        _mix(swi3(surface,x,y,z), swi3(cloud,x,y,z), cloud.w) * (_fmaxf(0.1f, s.y) * to_float3_s(1.0f - latLongLine)),
+        _fmaxf(surface.w, cloud.w));
+}
+
+
+__DEVICE__ float3 sphereColor(float3 dir, float screenscale, float iTime, bool SHOW_PLANET) {
+    float3 n = nebula(dir);
+    float4 p;
+    if (SHOW_PLANET)
+      p= planet(dir,iTime);
+    else
+      p= to_float4_s(0.0f);
+
+    float3 color =
+        sun(dir,iTime) +
+        _mix(to_float3_s(starfield(dir,screenscale,iTime)) * (1.0f - maxComponent(n)) +  // Nebula holds out star
+          n, // nebula
+            swi3(p,x,y,z), p.w); // planet
+
+  return color;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Spheremap visualization code from https://www.shadertoy.com/view/4sSXzG
+
+__KERNEL__ void StarMap1Fuse(__CONSTANTREF__ Params*  params, __TEXTURE2D_WRITE__ destinationTexture)
+{
+   DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);
+
+   if (fusion_x >= params->width || fusion_y >= params->height)
+     return;
+
+  float2 iResolution = to_float2(params->iResolution[0], params->iResolution[1]);
+  float  iTime       = params->iTime;
+  float4 iMouse      = to_float4(params->iMouse[0],params->iMouse[1],params->iMouse[2],params->iMouse[3]);
+  float2 fragCoord   = to_float2(fusion_x,fusion_y);
+
+
+  bool   SHOW_LARGE_GRID = params->SHOW_LARGE_GRID;
+  bool   SHOW_SPHERE = params->SHOW_SPHERE;
+  bool   SHOW_SPHERE_GRID = params->SHOW_SPHERE_GRID;
+  bool   SHOW_PLANET = params->SHOW_PLANET;
+
+  // --------
+
+
+
+  float3 fragColorRGB;
+
+  float scale = 1.0f / _fminf(iResolution.x, iResolution.y);
+  float screenscale = 1.0f / iResolution.x;
+
+
+  // Of the background
+  const float verticalFieldOfView = 60.0f * deg;
+  const float insetSphereRadius = 0.22f;
+
+  float yaw   = -((iMouse.x / iResolution.y) * 2.0f - 1.0f) * 3.0f;
+  float pitch = ((iMouse.y / iResolution.y) * 2.0f - 1.0f) * 3.0f;
+
+  float3 dir = mul_mat3_f3(rotation(yaw, pitch) , normalize(to_float3_aw(fragCoord - iResolution / 2.0f, iResolution.y / ( -2.0f * _tanf(verticalFieldOfView / 2.0f)))));
+
+  fragColorRGB = sphereColor(dir,screenscale,iTime,SHOW_PLANET);
+  if (SHOW_LARGE_GRID) {
+    float latLongLine = (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
+      fragColorRGB += latLongLine * to_float3(0.0f, 0.7f, 1.5f);
+  }
+
+
+  if (SHOW_SPHERE) {
+    // Inset sphere
+    float2 spherePoint = (fragCoord * scale - insetSphereRadius * 1.1f) / insetSphereRadius;
+    if (length(spherePoint) <= 1.0f) {
+
+        // Antialias using many samples
+        float3 c = to_float3_s(0.0f);
+        for (int x = -3; x <= 3; ++x) {
+          for (int y = -3; y <= 3; ++y) {
+            float2 s = clamp(((fragCoord + to_float2((float)x, (float)y) / 7.0f) * scale - insetSphereRadius * 1.1f) / insetSphereRadius, to_float2_s(-1.0f), to_float2_s(1.0f));
+            dir = mul_mat3_f3(rotation(iTime, -iTime * 0.17f) , to_float3_aw(swi2(s,x,y), _sqrtf(_fmaxf(0.0f, 1.0f - dot(swi2(s,x,y), swi2(s,x,y))))));
+            c += sphereColor(dir,screenscale,iTime,SHOW_PLANET);
+
+            if (SHOW_SPHERE_GRID) {
+              float latLongLine = (1.0f - _powf(smoothstep(0.0f, 0.04f, _fminf(_fabs(fract(_atan2f(dir.y, length(swi2(dir,x,z))) / (15.0f * deg)) - 0.5f), _fabs(fract(_atan2f(dir.x, dir.z) / (15.0f * deg)) - 0.5f)) * 2.0f), 10.0f));
+                c += latLongLine * to_float3(0.0f, 0.7f, 1.5f);
+            }
+          }
+        }
+        c /= 36.0f;
+
+        // Fade the inset sphere to antialias its border transition
+        fragColorRGB = _mix(sqrt_f3(fragColorRGB), c, clamp((1.0f - length(spherePoint)) * 100.0f, 0.0f, 1.0f));
+    }
+  }
+
+  fragColorRGB = sqrt_f3(fragColorRGB);
+
+  _tex2DVec4Write(destinationTexture, fusion_x, fusion_y, to_float4_aw(fragColorRGB,1.0f));
+}
+]]
+-- /*
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Create
+-- // ------------------------------------------------------------------------
+
+function Create()
+
+  StandardShaderFuseTopControls();
+
+  ----- In/Out
+
+
+  OutImage = self:AddOutput("Output", "Output", {
+    LINKID_DataType = "Image",
+    LINK_Main       = 1,
+  })
+
+  ----- Inspector Panel Controls
+
+
+  -- Speed Slider
+
+  InFrequency = self:AddInput("Speedup", "speed", {
+    LINKID_DataType    = "Number",
+    INPID_InputControl = "SliderControl",
+    INP_Default        = 1.0,
+    INP_MinScale 	     = 0.0,
+    INP_MaxScale 	     = 5.0,
+    SLCS_LowName       = "stop",
+    SLCS_HighName      = "5x",
+  })
+
+  -- iMouse Controls
+
+  InMouseXY = self:AddInput("iMouse.xy", "iMouseXY", {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+    INP_DoNotifyChanged  = false,
+    INP_Passive = true,
+    INPID_PreviewControl = "CrosshairControl",
+  })
+
+  InMouseZW = self:AddInput("iMouse.zw", "iMouseZW", {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+    INP_DoNotifyChanged  = false,
+    INP_Passive = true,
+    INPID_PreviewControl = "CrosshairControl",
+    INP_Disabled = true,
+  })
+
+  InMouseDrag = self:AddInput("Mouse Button Pressed", "iMouseClick", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_DoNotifyChanged  = false,
+    INP_Passive = true,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    INP_Default = 0,
+  })
+  InSHOW_LARGE_GRIDCheckbox = self:AddInput("SHOW_LARGE_GRID", "SHOW_LARGE_GRID", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 0,
+  })
+
+  InSHOW_SPHERECheckbox = self:AddInput("SHOW_SPHERE", "SHOW_SPHERE", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 1,
+  })
+
+  InSHOW_SPHERE_GRIDCheckbox = self:AddInput("SHOW_SPHERE_GRID", "SHOW_SPHERE_GRID", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 1,
+  })
+
+  InSHOW_PLANETCheckbox = self:AddInput("SHOW_PLANET", "SHOW_PLANET", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 1,
+  })
+
+
+
+  StandardShaderFuseBottomControls();
+
+end
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Process
+-- // ------------------------------------------------------------------------
+
+function Process(req)
+
+  local imgattrs = {
+    IMG_Document = self.Comp,
+    { IMG_Channel = "Red", },
+    { IMG_Channel = "Green", },
+    { IMG_Channel = "Blue", },
+    { IMG_Channel = "Alpha", },
+    IMG_Width  = Width,
+    IMG_Height = Height,
+    IMG_XScale = XAspect,
+    IMG_YScale = YAspect,
+    IMAT_OriginalWidth  = realwidth, -- nil !?!
+    IMAT_OriginalHeight = realheight, -- nil !?!
+    IMG_Quality = not req:IsQuick(),
+    IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
+    IMG_DeferAlloc = true,
+    IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+  }
+
+  local dst   = Image(imgattrs)
+  local black = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(black)
+
+  if req:IsPreCalc() then
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    return
+  end
+
+  local node = DVIPComputeNode(req,
+    "StarMap1Fuse", ShaderCompatibilityCode..ShaderKernelCode,
+    "Params", ShaderParameters
+  )
+
+  -- Extern texture or create a new one
+
+  -- DCTL parameters
+
+  local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
+
+  local params = {}
+
+  params = node:GetParamBlock(ShaderParameters)
+
+  params.iResolution[0] = dst.Width
+  params.iResolution[1] = dst.Height
+  params.iTime = (req.Time / framerate) * InFrequency:GetValue(req).Value
+
+  -- iMouse
+
+  local mouse_xy  = InMouseXY:GetValue(req)
+  local mouse_zw  = InMouseZW:GetValue(req)
+
+  params.iMouse[0] = mouse_xy.X
+  params.iMouse[1] = mouse_xy.Y
+  params.iMouse[2] = mouse_zw.X
+  params.iMouse[3] = mouse_zw.Y
+
+  if InMouseDrag:GetValue(req).Value ~= 0 then
+    if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
+      params.iMouse[2]=params.iMouse[0]
+      params.iMouse[3]=params.iMouse[1]
+    end
+  else
+    params.iMouse[2] = -1
+    params.iMouse[3] = -1
+  end
+
+  if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+    InMouseZW:SetAttrs({INP_Disabled=false})
+    InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
+    InMouseZW:SetAttrs({INP_Disabled=true})
+  end
+
+  params.iMouse[0] = params.iMouse[0] * Width
+  params.iMouse[1] = params.iMouse[1] * Height
+  if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
+  else
+    params.iMouse[2] = params.iMouse[2] * Width
+    params.iMouse[3] = params.iMouse[3] * Height
+  end
+
+  params.SHOW_LARGE_GRID = InSHOW_LARGE_GRIDCheckbox:GetValue(req).Value
+  params.SHOW_SPHERE = InSHOW_SPHERECheckbox:GetValue(req).Value
+  params.SHOW_SPHERE_GRID = InSHOW_SPHERE_GRIDCheckbox:GetValue(req).Value
+  params.SHOW_PLANET = InSHOW_PLANETCheckbox:GetValue(req).Value
+  -- Resolution
+
+  params.width  = dst.Width
+  params.height = dst.Height
+
+  -- Per channel time and resolution
+
+
+  -- Set parameters and add I/O
+
+  node:SetParamBlock(params)
+  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+  node:AddOutput("dst", dst)
+
+  local ok = node:RunSession(req)
+
+	if (not ok) then
+		dst = nil
+    dump(node:GetErrorLog())
+	end
+
+  OutImage:Set(req,dst)
+end
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Callback
+-- // ------------------------------------------------------------------------
+
+-- function NotifyChanged(inp, param, time)
+-- 	if (param ~= nil) then
+-- 		if (param.Value == 1) then
+-- 			if (inp == ...) then
+--         ...
+-- 			end
+-- 		end
+-- 	end
+-- end
+
+
+-- */
+
+-- /* ====================== DO NOT TOUCH OR APPEND ANY CODE HERE ===========================================
+
+-- >>> SCHNIPP::SHADERFUSECONTROLS.version="MonumentsAndSites"
+
+function ShaderFuseControls_AuthImg() if FC_AUTHIMG ~= nil and FC_AUTHIMG ~= ""  then self:AddInput('<p align="'..FC_AUTHIMGALIGN..'"><a href="https://github.com/nmbr73/Shadertoys"><img '..FC_AUTHIMG..' /></a></p>',"DctlFuseLogoLabel", {ICS_ControlPage = (FC_AUTHIMGPOS == 2 and 'Info' or nil),IC_ControlPage=(FC_AUTHIMGPOS == 2 and 1 or FC_AUTHIMGPOS),LINKID_DataType = "Text",INPID_InputControl = "LabelControl",LBLC_MultiLine = true,IC_NoLabel = true,IC_NoReset = true,INP_External = false,INP_Passive = true,}) end end
+function ShaderFuseControls_InfoBtn() self:AddInput(dctlfuse_name.." Info ...", "DctlFuseInfoButton", {ICS_ControlPage = (FC_INFOBTNPOS == 2 and 'Info' or nil),IC_ControlPage = (FC_INFOBTNPOS == 2 and 1 or FC_INFOBTNPOS),LINKID_DataType = "Text",INPID_InputControl = "ButtonControl",INP_DoNotifyChanged = false,INP_External = false,BTNCS_Execute = 'bmd.openurl("'..(dctlfuse_infourl~=nil and dctlfuse_infourl or 'https://nmbr73.github.io/Shadertoys/Shaders/'..dctlfuse_category..'/'..dctlfuse_name..'.html')..'")'}) end
+function ShaderFuseControls_BandImg() if FC_SHOWBRANDIMG then self:AddInput('<p align="center"><a href="https://github.com/nmbr73/Shadertoys"><img height="18" src="data:image/png;base64,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" /></a></p>', "DctlFuseBrandLabel",{ IC_ControlPage = -1 ,LINKID_DataType = "Text",INPID_InputControl = "LabelControl",LBLC_MultiLine = true,IC_NoLabel = true,IC_NoReset = true,INP_External = false,INP_Passive = true,}) end end
+
+function ShaderFuseControls_InfoTxt()
+  self:AddInput('<p align="'..FC_INFOTXTALIGN ..'">'
+    ..'Shadertoy <a href="https://www.shadertoy.com/view/'..shadertoy_id..'" style="color:white; text-decoration:none; ">'..shadertoy_name..'</a> by <a href="https://www.shadertoy.com/user/'..shadertoy_author..'" style="color:yellow; text-decoration:none; ">'..shadertoy_author..'</a><br />'
+    ..'<span style="color:#ff6060; ">'..(shadertoy_license == "" and '&copy; '..shadertoy_author..' (CC BY-NC-SA 3.0)' or shadertoy_license)..'</span><br />'
+    ..'DCTLified and DaFused by <a href="'..(dctlfuse_authorurl==nil and "https://nmbr73.github.io/Shadertoys/" or dctlfuse_authorurl)..'" style="color:yellow; text-decoration:none; ">'..dctlfuse_author..'</a><br />'
+    ..'<span style="color:#4060ff; ">'..(FC_VERSIONNO==nil and '' or 'Version '..FC_VERSIONNO)..(FC_VERSIONNO~=nil and FC_VERSIONDATE~=nil and ' - ' or '')..(FC_VERSIONDATE==nil and '' or FC_VERSIONDATE)..(FC_VERSIONNO~=nil and FC_VERSIONDATE~=nil and '<br />' or '')..'</span></p>'
+    ,"DctlFuseInfoLabel", {ICS_ControlPage =(FC_INFOTXTPOS == 2 and 'Info' or nil),IC_ControlPage = (FC_INFOTXTPOS == 2 and 1 or FC_INFOTXTPOS),LINKID_DataType="Text",INPID_InputControl="LabelControl",LBLC_MultiLine=true,IC_NoLabel=true,IC_NoReset=true,INP_External=false,INP_Passive=true})
+end
+
+function StandardShaderFuseTopControls()
+  if FC_ITEMORDER         == nil then FC_ITEMORDER       = {ShaderFuseControls_InfoTxt,ShaderFuseControls_BandImg,ShaderFuseControls_InfoBtn,ShaderFuseControls_AuthImg} end
+  if FC_SHOWBRANDIMG      == nil then FC_SHOWBRANDIMG    = true                  end
+  if FC_AUTHBASEDLAYOUT   == nil then FC_AUTHBASEDLAYOUT = true                  end
+  if FC_INFOBTNPOS        == nil then FC_INFOBTNPOS      = 2                     end
+  if FC_INFOTXTPOS        == nil then FC_INFOTXTPOS      = 2                     end
+  if FC_INFOTXTALIGN      == nil then FC_INFOTXTALIGN    = 'center'              end
+  if FC_AUTHIMGPOS        == nil then FC_AUTHIMGPOS      = 2                     end
+  if FC_AUTHIMGALIGN      == nil then FC_AUTHIMGALIGN    = 'center'              end
+  if FC_VERSIONNO         == nil then FC_VERSIONNO       = dctlfuse_versionNo    end
+  if FC_VERSIONDATE       == nil then FC_VERSIONDATE     = dctlfuse_versionDate  end
+  if FC_AUTHIMG           == nil then FC_AUTHIMG         = ''                    end
+  if dctlfuse_authorlogo  ~= nil then FC_AUTHIMG         = dctlfuse_authorlogo   end
+  if FC_AUTHBASEDLAYOUT then
+    if dctlfuse_author=='JiPi' then
+    --FC_SHOWBRANDIMG=false
+      FC_ITEMORDER  = {ShaderFuseControls_BandImg, ShaderFuseControls_AuthImg,ShaderFuseControls_InfoBtn,ShaderFuseControls_InfoTxt}
+      FC_INFOBTNPOS = 1; FC_AUTHIMGPOS = -1; FC_AUTHIMGALIGN = 'center'; FC_INFOTXTPOS = 1; FC_INFOTXTALIGN = 'center'
+    elseif dctlfuse_author=='nmbr73' then
+      FC_ITEMORDER = {ShaderFuseControls_InfoBtn,ShaderFuseControls_BandImg,ShaderFuseControls_InfoTxt,ShaderFuseControls_AuthImg}
+      FC_INFOBTNPOS = -1; FC_AUTHIMGPOS = 1; FC_AUTHIMGALIGN = 'right'; FC_INFOTXTPOS = 1; FC_INFOTXTALIGN = 'left'
+    end
+  end
+end
+
+function StandardShaderFuseBottomControls()
+  if FC_INFOBTNPOS == 1 or FC_INFOTXTPOS == 1 or FC_AUTHIMGPOS==1 then
+    self:AddInput( '<br />',"DctlFuseSeparatorLabel",{LINKID_DataType="Text",INPID_InputControl="LabelControl",LBLC_MultiLine=true,IC_NoLabel=true,IC_NoReset=true,INP_External=false,INP_Passive=true})
+  end
+  FC_ITEMORDER[1](); FC_ITEMORDER[2](); FC_ITEMORDER[3](); FC_ITEMORDER[4]();
+end
+-- <<< SCHNAPP::SHADERFUSECONTROLS
+-- */
