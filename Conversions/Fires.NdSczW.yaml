@@ -1,0 +1,21 @@
+fuse:
+  author: nmbr73
+  file: Fires
+  id: Fires
+  kernel: Fires
+  name: Fires
+shader:
+  author: N.N.
+  description: Simple fire flames rendering. Multiple flame perturbations illustrated
+    from candle light to strong fire.
+  id: NdSczW
+  name: Fork Fires nmbr73 265
+  parent:
+    id: XsXSWS
+    name: Fires
+    url: https://www.shadertoy.com/view/XsXSWS
+  tags:
+  - procedural
+  - 2d
+  - fire
+  url: https://www.shadertoy.com/view/NdSczW
