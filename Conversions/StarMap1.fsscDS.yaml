@@ -5,7 +5,7 @@ fuse:
   kernel: StarMap1
   name: StarMap1
 shader:
-  author: N.N.
+  author: morgan3d
   description: Procedural space background. This is a nice alternative to cube maps,
     which are static and require a lot of memory at the resolutions needed for representing
     stars. Drag to rotate.
