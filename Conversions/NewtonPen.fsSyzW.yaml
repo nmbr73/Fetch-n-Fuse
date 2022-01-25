@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: NewtonPen
+  id: NewtonPen
+  kernel: NewtonPen
+  name: NewtonPen
+shader:
+  author: N.N.
+  description: Pendule de Newton
+  id: fsSyzW
+  name: Fork Newton Pen JiPi 312
+  parent:
+    id: 7sXyzX
+    name: Newton Pendulum
+    url: https://www.shadertoy.com/view/7sXyzX
+  tags:
+  - reproduction
+  url: https://www.shadertoy.com/view/fsSyzW

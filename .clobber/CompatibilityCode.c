@@ -160,20 +160,20 @@
 /*|               |*/
 /*| to_mat3_f3    |*/  __DEVICE__ inline mat3 to_mat3_f3( float3 A, float3 B, float3 C)
 /*| to_mat3_f3    |*/  {
-/*| to_mat3_f3    |*/	   mat3 D;
-/*| to_mat3_f3    |*/	   D.r0 = A;
-/*| to_mat3_f3    |*/	   D.r1 = B;
-/*| to_mat3_f3    |*/	   D.r2 = C;
-/*| to_mat3_f3    |*/	   return D;
+/*| to_mat3_f3    |*/    mat3 D;
+/*| to_mat3_f3    |*/    D.r0 = A;
+/*| to_mat3_f3    |*/    D.r1 = B;
+/*| to_mat3_f3    |*/    D.r2 = C;
+/*| to_mat3_f3    |*/    return D;
 /*| to_mat3_f3    |*/  }
 /*|               |*/
 /*| mul_mat3_f3   |*/__DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {
-/*| mul_mat3_f3   |*/	   float3 C;
+/*| mul_mat3_f3   |*/    float3 C;
 /*| mul_mat3_f3   |*/
-/*| mul_mat3_f3   |*/	   C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;
-/*| mul_mat3_f3   |*/	   C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;
-/*| mul_mat3_f3   |*/	   C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;
-/*| mul_mat3_f3   |*/	   return C;
+/*| mul_mat3_f3   |*/    C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;
+/*| mul_mat3_f3   |*/    C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;
+/*| mul_mat3_f3   |*/    C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;
+/*| mul_mat3_f3   |*/    return C;
 /*| mul_mat3_f3   |*/  }
 /*|               |*/
 /*| mul_f3_mat3   |*/__DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
@@ -197,18 +197,18 @@
 /*| mul_mat3_mat3 |*/
 /*| mul_mat3_mat3 |*/  for( int i = 0; i < 3; ++i)
 /*| mul_mat3_mat3 |*/  {
-/*| mul_mat3_mat3 |*/	  for( int j = 0; j < 3; ++j)
-/*| mul_mat3_mat3 |*/	  {
-/*| mul_mat3_mat3 |*/		  r[i][j] = 0.0f;
-/*| mul_mat3_mat3 |*/		  for( int k = 0; k < 3; ++k)
-/*| mul_mat3_mat3 |*/		  {
-/*| mul_mat3_mat3 |*/			  r[i][j] = r[i][j] + a[i][k] * b[k][j];
-/*| mul_mat3_mat3 |*/		  }
-/*| mul_mat3_mat3 |*/	  }
+/*| mul_mat3_mat3 |*/   for( int j = 0; j < 3; ++j)
+/*| mul_mat3_mat3 |*/   {
+/*| mul_mat3_mat3 |*/     r[i][j] = 0.0f;
+/*| mul_mat3_mat3 |*/     for( int k = 0; k < 3; ++k)
+/*| mul_mat3_mat3 |*/     {
+/*| mul_mat3_mat3 |*/       r[i][j] = r[i][j] + a[i][k] * b[k][j];
+/*| mul_mat3_mat3 |*/     }
+/*| mul_mat3_mat3 |*/   }
 /*| mul_mat3_mat3 |*/  }
 /*| mul_mat3_mat3 |*/  mat3 R = to_mat3(r[0][0], r[0][1], r[0][2],
 /*| mul_mat3_mat3 |*/                   r[1][0], r[1][1], r[1][2],
-/*| mul_mat3_mat3 |*/					         r[2][0], r[2][1], r[2][2]);
+/*| mul_mat3_mat3 |*/                  r[2][0], r[2][1], r[2][2]);
 /*| mul_mat3_mat3 |*/  return R;
 /*| mul_mat3_mat3 |*/}
 /*| mat3          |*/#endif // end of mat3 implementation
@@ -299,19 +299,19 @@
 /*| mul_mat4_mat4 |*/
 /*| mul_mat4_mat4 |*/  for( int i = 0; i < 4; ++i)
 /*| mul_mat4_mat4 |*/  {
-/*| mul_mat4_mat4 |*/	  for( int j = 0; j < 4; ++j)
-/*| mul_mat4_mat4 |*/	  {
-/*| mul_mat4_mat4 |*/		  r[i][j] = 0.0f;
-/*| mul_mat4_mat4 |*/		  for( int k = 0; k < 4; ++k)
-/*| mul_mat4_mat4 |*/		  {
-/*| mul_mat4_mat4 |*/			r[i][j] = r[i][j] + a[i][k] * b[k][j];
-/*| mul_mat4_mat4 |*/		  }
-/*| mul_mat4_mat4 |*/	  }
+/*| mul_mat4_mat4 |*/   for( int j = 0; j < 4; ++j)
+/*| mul_mat4_mat4 |*/   {
+/*| mul_mat4_mat4 |*/     r[i][j] = 0.0f;
+/*| mul_mat4_mat4 |*/     for( int k = 0; k < 4; ++k)
+/*| mul_mat4_mat4 |*/     {
+/*| mul_mat4_mat4 |*/     r[i][j] = r[i][j] + a[i][k] * b[k][j];
+/*| mul_mat4_mat4 |*/     }
+/*| mul_mat4_mat4 |*/   }
 /*| mul_mat4_mat4 |*/  }
 /*| mul_mat4_mat4 |*/  mat4 R = to_mat4(r[0][0], r[0][1], r[0][2], r[0][3],
 /*| mul_mat4_mat4 |*/                   r[1][0], r[1][1], r[1][2], r[1][3],
-/*| mul_mat4_mat4 |*/  	                r[2][0], r[2][1], r[2][2], r[2][3],
-/*| mul_mat4_mat4 |*/	                  r[3][0], r[3][1], r[3][2], r[3][3]);
+/*| mul_mat4_mat4 |*/                   r[2][0], r[2][1], r[2][2], r[2][3],
+/*| mul_mat4_mat4 |*/                   r[3][0], r[3][1], r[3][2], r[3][3]);
 /*| mul_mat4_mat4 |*/  return R;
 /*| mul_mat4_mat4 |*/}
 /*| mat4          |*/#endif // end of mat3 implementation
@@ -417,9 +417,9 @@
     /*| abs_f2        |*/ #define abs_f2(a) fabs(a)
     /*| abs_f3        |*/ #define abs_f3(a) fabs(a)
     /*| abs_f4        |*/ #define abs_f4(a) fabs(a)
-    /*| sqrt_f2       |*/ #define sqrt_f2(a) sqrtf(a)
-    /*| sqrt_f3       |*/ #define sqrt_f3(a) sqrtf(a)
-    /*| sqrt_f4       |*/ #define sqrt_f4(a) sqrtf(a)
+    /*| sqrt_f2       |*/ #define sqrt_f2(a) _sqrtf(a)
+    /*| sqrt_f3       |*/ #define sqrt_f3(a) _sqrtf(a)
+    /*| sqrt_f4       |*/ #define sqrt_f4(a) _sqrtf(a)
     /*| exp_f2        |*/ #define exp_f2(a) _expf((a).x)
     /*| exp_f3        |*/ #define exp_f3(a) _expf((a).x)
     /*| exp_f4        |*/ #define exp_f4(a) _expf((a).x)
@@ -507,7 +507,7 @@
     /*| abs_f4        |*/ #define abs_f4(a) to_float4(_fabs((a).x), _fabs((a).y),_fabs((a).z),_fabs((a).w))
     /*| sqrt_f2       |*/ #define sqrt_f2(a) to_float2(_sqrtf((a).x),_sqrtf((a).y))
     /*| sqrt_f3       |*/ #define sqrt_f3(a) to_float3(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z))
-    /*| sqrt_f4       |*/ #define sqrt_f4(a) to_float4(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z),_sqrtf((a).w);)
+    /*| sqrt_f4       |*/ #define sqrt_f4(a) to_float4(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z),_sqrtf((a).w))
     /*| exp_f2        |*/ #define exp_f2(a) to_float2(_expf((a).x), _expf((a).y))
     /*| exp_f3        |*/ #define exp_f3(a) to_float3(_expf((a).x), _expf((a).y),_expf((a).z))
     /*| exp_f4        |*/ #define exp_f4(a) to_float4(_expf((a).x), _expf((a).y),_expf((a).z),_expf((a).w))
