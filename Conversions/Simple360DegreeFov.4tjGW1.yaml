@@ -1,0 +1,18 @@
+fuse:
+  author: nmbr73
+  file: Simple360DegreeFov
+  id: Simple360DegreeFov
+  kernel: Simple360DegreeFov
+  name: Simple360DegreeFov
+shader:
+  author: Madsy
+  description: Mapping from spherical coordinates to cartesian 3D coordinates, which
+    is then used as normals/tcoords for a cube map. Use the mouse to move around (hold
+    LMB)
+  id: 4tjGW1
+  name: Simple 360 degree fov
+  tags:
+  - camera
+  - fov
+  - fieldofview
+  url: https://www.shadertoy.com/view/4tjGW1
