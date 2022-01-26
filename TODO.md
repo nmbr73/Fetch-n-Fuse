@@ -21,3 +21,4 @@ Vermutlich arg drüber, für jede kleine Auffälligkeit ein "Issue" zu erzeugen.
 
 - [ ] CONNECT-Makros bleiben drin, falls bspw. Kommetare in der Zeile sind (sieht man, wenn man SimpleDCTL generiert) ... [#18](https://github.com/nmbr73/Fetch-n-Fuse/issues/18)
 - [x] <del>sign_f wird nicht übernommen (sign_f wird für die weiteren Dimensionen benötigt !)
+- [ ] Nochmal ausprobieren: Bei den Slidern wird anscheinend der Default nicht richtig gesetzt @nmbr73
