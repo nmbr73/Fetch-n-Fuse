@@ -14,6 +14,8 @@ Vermutlich arg drüber, für jede kleine Auffälligkeit ein "Issue" zu erzeugen.
 - [x] Ceil() für OpenCL
 - [x] <del>sign_f Generic: sign_f neccessary for all sign()
 - [ ] mix ohne Unterstrich:  "return _mix(mix(_mix( hash(n..."
+- [ ] Es gibt Fuses mit namenlosen Codeblöcken - das führt dann im GLSL code zu einem "broken marker" (Beispiel: 4tjGW1) @nmbr73
+
 
 # fuse
 
