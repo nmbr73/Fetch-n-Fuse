@@ -64,8 +64,13 @@ __KERNEL__ void Simple360DegreeFovFuse(float4 fragColor, float2 fragCoord, float
 
 //Try changing these for a different FOV.
 //For example 180 deg horisontal and 90 degree vertical
-float FOVX = 360.0f; //Max 360 deg
-float FOVY = 180.0f; //Max 180 deg
+//float FOVX = 360.0f; //Max 360 deg
+//float FOVY = 180.0f; //Max 180 deg
+
+  CONNECT_SLIDER0(POSX,-1.0f,1.0f,0.0f);
+  CONNECT_SLIDER1(POSY,-1.0f,1.0f,0.0f);
+  CONNECT_SLIDER2(FOVX,0.0f,360.0f,360.0f);
+  CONNECT_SLIDER3(FOVY,0.0f,360.0f,360.0f);
 
 
 float4 faceColors[6];
@@ -79,7 +84,8 @@ float4 faceColors[6];
 
   float2 interp = fragCoord / iResolution;
     //Mouse coordinates in [-1, 1] range
-    float2 mp = swi2(iMouse,x,y) / iResolution * to_float2_s(2.0f) + to_float2_s(1.0f);
+    //float2 mp = swi2(iMouse,x,y) / iResolution * to_float2_s(2.0f) + to_float2_s(1.0f);
+    float2 mp=to_float2(POSX,POSY);
 
     interp.y = 1.0f - interp.y;
     mp.y = 1.0f - mp.y;
