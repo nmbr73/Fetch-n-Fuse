@@ -82,6 +82,7 @@ KernelInputCtrlDefines  = nil
 ConversionShaderID      = ""
 ConversionFusename      = ""
 ConversionSourcecode    = ""
+PathToUse               = "Root"
 
 NUM_INPUT_CHANNELS      = 5
 
@@ -296,8 +297,55 @@ function Create()
   -- get the list of conversions and read compatibility and params code
 
 
+  local next_ctrl_group = 1   -- increment every time you used it for a new control group
+  local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
 
-  Conversions_resetData(REPOSITORYPATH..'Conversions/')
+  -- Choose the Path
+  InPathToUseCombo = self:AddInput("Path", "PathConversion", {
+    IC_ControlPage      = control_page ,
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "ComboIDControl",
+	  --INP_DoNotifyChanged = true,
+    INP_Default         = 0,
+    INP_Integer         = true,
+    {CCS_AddString       = "Root",},
+    {CCS_AddString       = "nmbr73",},
+    {CCS_AddString       = "JiPi",},
+    {CCS_AddString       = "ToDo",},
+    {CCS_AddString       = "Defect",},
+    {CCS_AddString       = "CheckMetal",},
+    {CCS_AddString       = "CheckCuda",},
+    {CCS_AddString       = "Archive",},
+    })
+
+  InInfoReload = self:AddInput( "------ Path has changed ! ------\n------      Push Reload      ------","InfoReload", {
+      LINKID_DataType    = "Text",
+      INPID_InputControl = "LabelControl",
+      LBLC_MultiLine     = true,
+      LBLC_LabelColor    = 2,
+      IC_NoReset         = false,
+      INP_External       = false,
+      INP_Passive        = true,
+      --IC_NoLabel       = true,
+      ICD_Width          = 1.0,
+      IC_Visible         = false,
+  })
+
+  
+  pathToConversions = REPOSITORYPATH..'Conversions/'
+
+
+  PathToUse = readAll()
+  
+  print("PathToUse - Create",PathToUse) --pathToConversions..InPathToUseCombo:GetSource(0).Value..'/')
+
+  
+  if (PathToUse ~= "Root") then
+      print("Create - NeuerPath: ",pathToConversions..PathToUse..'/')
+      pathToConversions = pathToConversions..PathToUse..'/'
+  end
+
+  Conversions_resetData(pathToConversions)
 
   CompatibilityCode_loadFile()
 
@@ -333,9 +381,6 @@ function Create()
 
 
   -- combo box with all the conversions + a reload button
-
-  local next_ctrl_group = 1   -- increment every time you used it for a new control group
-  local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
 
   local attrs, attrs2
 
@@ -995,8 +1040,42 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 end
 
 
+InstallPath = [[c:\Users\Zumsel\AppData\Roaming\Blackmagic Design\Fusion\Fuses\]]
+---------------------------------- Helperfunctions PathToUse---------------------------------------
+function readAll()
+ 
+ 
+  file = InstallPath.."PathToUse.txt"
+  
+  local f = io.open(file, "r")
+  if not f then
+    print("File-Error-Reading: ",f)
+    return "root"
+  end
+  --print("READING*************************************\n ",content)
+  local content = f:read("*all")
+  local size = f:seek("end")
+  
+  f:close()
+  return content
+end
 
 
+function writeAll(content)
+  --file = self.Comp:MapPath(file)
+  file = InstallPath.."PathToUse.txt"
+  local f = io.open(file, "w")
+  if not f then
+    print("File-Error-Writing: ",f)
+    return
+  end
+  --print("WRITING*************************************\n ", content)
+  f:write(content)
+  local size = f:seek("end")
+  
+  f:close()
+  return 0
+end
 
 
 --------------------------------------------------------------------------------------
@@ -1370,7 +1449,7 @@ function RebuildParameters()
       end
     end
 
-    --CONNECT_TINYINT0(NAME,SMIN,SMAX,SDEFAULT)
+    --CONNECT_INTSLIDER0(NAME,SMIN,SMAX,SDEFAULT)
     for i=0,NUM_INTSLIDER_CONTROLS-1 do
 
       -- local name, smin, smax, sdef = ConversionSourcecode:match("%s+ CONNECT_INTSLIDER"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*,%s*(%-?%d*)%s*.*$") -- geht
@@ -1617,6 +1696,15 @@ function Process(req)
 		  end
 	  end
 	end
+  
+        --fusion = eyeon.scriptapp('Fusion', 'localhost')
+        --if (fusion) then print("Fusion funktioniert",fusion:GetCurrentComp()) end
+        --cmp = fusion:GetCurrentComp()
+        --print("VERSUCH1: ",cmp.ActiveTool.Name)
+  
+  InPathToUseCombo:SetAttrs({INP_DoNotifyChanged = true,})
+  --PathToUse = InPathToUseCombo:GetValue(req).Value
+  --print("PathToUse - Process",PathToUse)
 
 
 
@@ -1631,13 +1719,17 @@ function Process(req)
         
     InFetch:SetAttrs({ BTNCS_Execute = doFetch, }) --Zuweisung notwendig !! Ändern des Strings funktioniert nicht
     verbose("TestFetch",doFetch)
-        
+
+    --print("----------------\n DoFetch-String-Process",doFetch,"\n----------------" )    
+
+    
     InSemaphoreFetch:SetSource(Number(0),0,0) --nur einmal ändern
   end
 
 
+print("Anzahl Entries: ",table.getn(Conversions))
 
-  if (InSemaphoreFuse:GetValue(req).Value == 1) then
+  if (InSemaphoreFuse:GetValue(req).Value == 1 and table.getn(Conversions) > 0) then
     shaderIDFuse = Conversions[InShaderIDFuse:GetValue(req).Value + 1].ShadertoyID
         
     --Warum auch immer - verstehe wer will    
@@ -1667,7 +1759,7 @@ function Process(req)
   end
 
 
-  if rebuild then
+  if (rebuild and table.getn(Conversions) > 0) then
     ConversionSourcecode  = ""
     local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
     ConversionFusename    = item.Name
@@ -1680,6 +1772,14 @@ function Process(req)
 
     verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
 
+
+    f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
+
+    if (InPathToUseCombo:GetValue(req).Value ~= "Root") then
+      -- print("Testpath",item.Path..InPathToUseCombo:GetValue(req).Value..'/')
+      --item.Path = item.Path..InPathToUseCombo:GetValue(req).Value..'/'
+    end
+    
     file = io.open(item.Path .. item.Filename,"r")
 
     if file ~= nil then
@@ -1716,7 +1816,7 @@ function Process(req)
     verbose("Process: Parameter Names")
     InRebuildParameterNames:SetSource(Number(0),0)
     RebuildParameters()
-    --print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
+    print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
   end
 
 
@@ -2202,6 +2302,47 @@ function NotifyChanged(inp, param, time)
         return
       end
     end
+    
+		if (inp == InPathToUseCombo) then
+      print("\nPathToUse-Notify: ",param.Value)
+    end
+    
+    if (inp == InPathToUseCombo) then
+    
+      --print("NotifyChanged-selected: "..param.Value)
+      --InSemaphore:SetSource(Number(1),0,0)
+      --file = InstallPath.."Test.txt"
+      
+      print("AlterWert: ", readAll())
+      print("NeuerWert",param.Value)
+      
+      writeAll(param.Value)
+      
+      InFileToUseCombo:SetSource(Number(0),0) -- Auf den Ersten Eintrag stellen, da sonst bei kleinerer Liste Fehler erzeugt wird
+
+      InInfoReload:SetAttrs({IC_Visible = true})
+
+      -- Verzweifelter Versuch - automatisch ein reload zu bewerkstelligen -> keine Chance - Scripte sind erst nach dem "Create" verfügbar!       
+      --if not tool then
+        --fusion = eyeon.scriptapp('Fusion', 'localhost')
+        --cmp = fusion:GetCurrentComp()
+        --print("VERSUCH1: ",fusion.ActiveTool.Name)
+        
+--	      tool = fusion.ActiveTool
+      --end 
+        
+--      tool.ScriptReload[fu.TIME_UNDEFINED] = 1
+--	    print("Fuse Reloaded")
+--	    tool.ScriptReload[fu.TIME_UNDEFINED] = 0
+        
+        
+      --InInfoReload:SetAttrs({IC_Visible = true})
+    end
+    
+    
+    
+    
+
 
 		if (inp == InFileToUseCombo) then
       verbose("NotifyChanged: file to use changed - set flag for a rebuild")
