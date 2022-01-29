@@ -82,7 +82,7 @@ KernelInputCtrlDefines  = nil
 ConversionShaderID      = ""
 ConversionFusename      = ""
 ConversionSourcecode    = ""
-PathToUse               = "Root"
+PathToUse               = ""
 
 NUM_INPUT_CHANNELS      = 5
 
@@ -305,7 +305,8 @@ function Create()
     IC_ControlPage      = control_page ,
     LINKID_DataType     = "Number",
     INPID_InputControl  = "ComboIDControl",
-	  --INP_DoNotifyChanged = true,
+	  INP_DoNotifyChanged = false,
+    INP_InitialNotify   = false,
     INP_Default         = 0,
     INP_Integer         = true,
     {CCS_AddString       = "Root",},
@@ -336,12 +337,10 @@ function Create()
 
 
   PathToUse = readAll()
-  
-  print("PathToUse - Create",PathToUse) --pathToConversions..InPathToUseCombo:GetSource(0).Value..'/')
-
+  --print("PathToUse - Create",pathToConversions..PathToUse) --pathToConversions..InPathToUseCombo:GetSource(0).Value..'/')
   
   if (PathToUse ~= "Root") then
-      print("Create - NeuerPath: ",pathToConversions..PathToUse..'/')
+      --print("Create - NeuerPath: ",pathToConversions..PathToUse..'/')
       pathToConversions = pathToConversions..PathToUse..'/'
   end
 
@@ -878,6 +877,7 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 			LINKID_DataType      = "Text",
 			INPID_InputControl   = "TextEditControl",
 			INP_DoNotifyChanged  = true,
+      INP_InitialNotify    = false,
 			INP_External         = false,
 			--IC_NoLabel         = true,
 			ICD_Width            = 1.0,
@@ -891,7 +891,7 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 
   --Will be customized in Process()
   doFetch_tpl =  [==[ 
-    comp:RunScript("PFADfetch.py", { id = "SHADERID", verbose=false, noassets=false}) 
+    comp:RunScript("PFADfetch.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
                  ]==]  
 
  	InFetch = self:AddInput('Fetch Shadertoy', 'InFetch', {
@@ -936,6 +936,7 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
     LINKID_DataType     = "Number",
     INPID_InputControl  = "ComboControl",
 	  INP_DoNotifyChanged = true,
+    INP_InitialNotify   = false,
     INP_Default         = 0,
     INP_Integer         = true,
     attrs
@@ -943,7 +944,7 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 
   --Will be customized in Process()
   doFuse_tpl =  [==[ 
-    comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false}) 
+    comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false, folder="FOLDER"}) 
                 ]==]  
 
 
@@ -1702,10 +1703,7 @@ function Process(req)
         --cmp = fusion:GetCurrentComp()
         --print("VERSUCH1: ",cmp.ActiveTool.Name)
   
-  InPathToUseCombo:SetAttrs({INP_DoNotifyChanged = true,})
-  --PathToUse = InPathToUseCombo:GetValue(req).Value
-  --print("PathToUse - Process",PathToUse)
-
+  InPathToUseCombo:SetAttrs({INP_DoNotifyChanged = true,}) -- INP_InitialNotify ? funktioniert wohl nicht
 
 
   if (InSemaphoreFetch:GetValue(req).Value == 1) then
@@ -1716,6 +1714,7 @@ function Process(req)
          
     doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository_cor)
     doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
+    doFetch = string.gsub(doFetch, 'FOLDER', PathToUse)
         
     InFetch:SetAttrs({ BTNCS_Execute = doFetch, }) --Zuweisung notwendig !! Ändern des Strings funktioniert nicht
     verbose("TestFetch",doFetch)
@@ -1726,9 +1725,6 @@ function Process(req)
     InSemaphoreFetch:SetSource(Number(0),0,0) --nur einmal ändern
   end
 
-
-print("Anzahl Entries: ",table.getn(Conversions))
-
   if (InSemaphoreFuse:GetValue(req).Value == 1 and table.getn(Conversions) > 0) then
     shaderIDFuse = Conversions[InShaderIDFuse:GetValue(req).Value + 1].ShadertoyID
         
@@ -1737,6 +1733,7 @@ print("Anzahl Entries: ",table.getn(Conversions))
          
     doFuse = string.gsub(doFuse_tpl, 'PFAD', PathToRepository_cor)
     doFuse = string.gsub(doFuse, 'SHADERID', shaderIDFuse)
+    doFuse = string.gsub(doFuse, 'FOLDER', PathToUse)
         
     InFuse:SetAttrs({ BTNCS_Execute = doFuse, })
  
@@ -1775,11 +1772,7 @@ print("Anzahl Entries: ",table.getn(Conversions))
 
     f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
 
-    if (InPathToUseCombo:GetValue(req).Value ~= "Root") then
-      -- print("Testpath",item.Path..InPathToUseCombo:GetValue(req).Value..'/')
-      --item.Path = item.Path..InPathToUseCombo:GetValue(req).Value..'/'
-    end
-    
+   
     file = io.open(item.Path .. item.Filename,"r")
 
     if file ~= nil then
@@ -2303,24 +2296,24 @@ function NotifyChanged(inp, param, time)
       end
     end
     
-		if (inp == InPathToUseCombo) then
-      print("\nPathToUse-Notify: ",param.Value)
-    end
-    
     if (inp == InPathToUseCombo) then
     
       --print("NotifyChanged-selected: "..param.Value)
       --InSemaphore:SetSource(Number(1),0,0)
       --file = InstallPath.."Test.txt"
       
-      print("AlterWert: ", readAll())
-      print("NeuerWert",param.Value)
+      --print("AlterWert: ", readAll())
+      --print("NeuerWert", param.Value)
       
-      writeAll(param.Value)
+      if (param.Value == "Root") then
+        writeAll("")
+      else
+        writeAll(param.Value)
+      end  
       
       InFileToUseCombo:SetSource(Number(0),0) -- Auf den Ersten Eintrag stellen, da sonst bei kleinerer Liste Fehler erzeugt wird
-
-      InInfoReload:SetAttrs({IC_Visible = true})
+      InShaderIDFuse:SetSource(Number(0),0)   -- dito
+      InInfoReload:SetAttrs({IC_Visible = true}) -- Info
 
       -- Verzweifelter Versuch - automatisch ein reload zu bewerkstelligen -> keine Chance - Scripte sind erst nach dem "Create" verfügbar!       
       --if not tool then

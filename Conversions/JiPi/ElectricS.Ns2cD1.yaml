@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: ElectricS
+  id: ElectricS
+  kernel: ElectricS
+  name: ElectricS
+shader:
+  author: N.N.
+  description: 'An android''s dream of fluffy-soft but stingy-sparky sheep.
+
+    I will be counting these tonight until I fall asleep.
+
+
+    (Now I''m thinking of adding Shawn-like heads and faces to these, but I should
+    definitely go to bed.)
+
+    '
+  id: Ns2cD1
+  name: Fork Electric S JiPi 576
+  parent:
+    id: sdBcDh
+    name: Electric Sheep
+    url: https://www.shadertoy.com/view/sdBcDh
+  tags:
+  - noise
+  - fluffy
+  - trippy
+  - sparks
+  - bladerunner
+  url: https://www.shadertoy.com/view/Ns2cD1

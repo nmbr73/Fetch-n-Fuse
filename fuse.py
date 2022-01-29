@@ -428,7 +428,7 @@ def check_controls(conversionCode):
 
 def fuse_it(id,force=False):
 
-  source_path=selfpath+'./Conversions/'
+  source_path=selfpath+'./Conversions/'+folder+'/'
   target_path=selfpath+'./Converted/'
 
   conversion_file = get_basefilename(source_path,id)
@@ -648,13 +648,16 @@ if (sys.argv[0] != "fuse.py" and sys.argv[0] != "./fuse.py" ):
  print(sys.argv, len(sys.argv))
  #print("##Argv2##",id,param,txt)
 
- CONVERSIONS_PATH = selfpath+"\Conversions\\"
+ print("Folder: ",folder)
+
+ CONVERSIONS_PATH = selfpath+"\Conversions\\"+folder+"\\"
 
  #VERBOSE   = verbose
  ID = id
  FORCE = pforce
 else:
  selfpath = ""
+ folder   = ""
 
  parser = argparse.ArgumentParser(description='Encapsulate conversion in a Fuse.')
  parser.add_argument('-f','--force',action='store_true',help='overwrite fuse and/or markdown file even if it already exists')
