@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: TextureStencilLibrary
+  id: TextureStencilLibrary
+  kernel: TextureStencilLibrary
+  name: TextureStencilLibrary
+shader:
+  author: davidar
+  description: Drop-in replacements for the texture function which automatically apply
+    filters to the image. This demo uses it to implement a concise version of cornusammonis'
+    Suture Fluid
+  id: ssBczm
+  name: Texture Stencil Library
+  tags:
+  - sobel
+  - blur
+  - texture
+  - gradient
+  - derivative
+  - field
+  - vector
+  - gaussian
+  - difference
+  - stencil
+  - library
+  - laplacian
+  - finite
+  url: https://www.shadertoy.com/view/ssBczm

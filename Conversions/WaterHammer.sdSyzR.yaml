@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: WaterHammer
+  id: WaterHammer
+  kernel: WaterHammer
+  name: WaterHammer
+shader:
+  author: wyatt
+  description: Solid and Liquids interacting
+  id: sdSyzR
+  name: Water Hammer
+  tags:
+  - jfa
+  url: https://www.shadertoy.com/view/sdSyzR

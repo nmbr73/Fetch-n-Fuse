@@ -446,11 +446,11 @@ __KERNEL__ void MacroscopiFuse(float4 fragColor, float2 fragCoord, float2 iResol
 {
 
   bool kViewMode = false;
-  bool kMouseInputType = false;
+  bool kMouseInputType = true;
   bool kResetSimulation = false;
   bool kToggleWater = false;
    
-  CONNECT_BUTTON0(Modi,0,ViewMode,InputType,ToggleWater) 
+  CONNECT_BUTTON0(Modi, 0, ViewMode, InputType, ToggleWater);
   Modi = Modi-1;
   
   if (Modi == 1) kViewMode = true;
@@ -474,7 +474,7 @@ __KERNEL__ void MacroscopiFuse(float4 fragColor, float2 fragCoord, float2 iResol
     }
     else
     {
-      float zzzzzzzzzzzzzzzzzzzzzzzzzz;
+      
         float2 eps = to_float2(0.1f, 0.0f);
     
         float2 st = fragCoord / iResolution;

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: BigBangSim
+  id: BigBangSim
+  kernel: BigBangSim
+  name: BigBangSim
+shader:
+  author: wyatt
+  description: inspired by ersh could be better but I like how it looks around 9 seconds
+  id: ssSczw
+  name: Big Bang sim
+  tags:
+  - bigbang
+  url: https://www.shadertoy.com/view/ssSczw

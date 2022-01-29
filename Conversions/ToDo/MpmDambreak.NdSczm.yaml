@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: MpmDambreak
+  id: MpmDambreak
+  kernel: MpmDambreak
+  name: MpmDambreak
+shader:
+  author: wyatt
+  description: every method has advantages and disadvantages... maybe I should just
+    go outside and play in a stream
+  id: NdSczm
+  name: MPM dambreak
+  tags:
+  - mpm
+  url: https://www.shadertoy.com/view/NdSczm

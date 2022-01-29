@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Sundown
+  id: Sundown
+  kernel: Sundown
+  name: Sundown
+shader:
+  author: wyatt
+  description: Repost, original broke
+  id: sdlcDj
+  name: ' Sundown'
+  tags:
+  - sunset
+  - fluid
+  url: https://www.shadertoy.com/view/sdlcDj

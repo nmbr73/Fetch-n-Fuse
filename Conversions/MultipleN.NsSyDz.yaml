@@ -1,0 +1,29 @@
+fuse:
+  author: JiPi
+  file: MultipleN
+  id: MultipleN
+  kernel: MultipleN
+  name: MultipleN
+shader:
+  author: N.N.
+  description: Continuous Multiple Neighborhood Cellular Automata
+  id: NsSyDz
+  name: Fork Multiple N JiPi 456
+  parent:
+    id: 7dByzw
+    name: Multiple Neighborhood CA 2
+    url: https://www.shadertoy.com/view/7dByzw
+  tags:
+  - 2d
+  - simulation
+  - diffusion
+  - automata
+  - life
+  - chaos
+  - cellular
+  - conway
+  - gameoflife
+  - cellularautomata
+  - cellularautomata
+  - cgol
+  url: https://www.shadertoy.com/view/NsSyDz

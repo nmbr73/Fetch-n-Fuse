@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: D3DFractalCubesBuggy
+  id: D3DFractalCubesBuggy
+  kernel: D3DFractalCubesBuggy
+  name: D3DFractalCubesBuggy
+shader:
+  author: SnoopethDuckDuck
+  description: 'Wanted the cubes to be bigger, but artifacts appear if 2 cubes dont
+    align along the abs() boundary
+
+
+    (n>=5. looks cool in GetDist, but very laggy)'
+  id: 7sfyW2
+  name: 3D Fractal Cubes (buggy)
+  tags:
+  - raymarching
+  - template
+  - artofcode
+  url: https://www.shadertoy.com/view/7sfyW2
