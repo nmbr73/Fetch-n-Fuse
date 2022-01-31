@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ForkPhysics
+  id: ForkPhysics
+  kernel: ForkPhysics
+  name: ForkPhysics
+shader:
+  author: N.N.
+  description: Nachbau, weil Fehler beim Konvertieren
+  id: NsjyWW
+  name: Fork Physics
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - physics
+  url: https://www.shadertoy.com/view/NsjyWW
