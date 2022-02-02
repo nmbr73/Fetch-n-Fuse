@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: Undulating
+  id: Undulating
+  kernel: Undulating
+  name: Undulating
+shader:
+  author: N.N.
+  description: Some columns formed by stacked toruses with alternating additive /
+    subtractive CSG.
+  id: fsBcR3
+  name: Fork Undulating JiPi 412
+  parent:
+    id: WlXXDH
+    name: Undulating Columns
+    url: https://www.shadertoy.com/view/WlXXDH
+  tags:
+  - torus
+  - columns
+  url: https://www.shadertoy.com/view/fsBcR3
