@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: BasicAudioVisualizer
+  id: BasicAudioVisualizer
+  kernel: BasicAudioVisualizer
+  name: BasicAudioVisualizer
+shader:
+  author: Lallis
+  description: Just a basic 2D audio visualizer. :)
+  id: 4lGSzy
+  name: Basic audio visualizer
+  tags:
+  - 2d
+  - visualizer
+  url: https://www.shadertoy.com/view/4lGSzy

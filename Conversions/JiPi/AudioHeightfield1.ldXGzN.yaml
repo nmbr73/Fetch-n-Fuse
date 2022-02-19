@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: AudioHeightfield1
+  id: AudioHeightfield1
+  kernel: AudioHeightfield1
+  name: AudioHeightfield1
+shader:
+  author: huttarl
+  description: 'Based on video heightfield by @simesgreen, https://www.shadertoy.com/view/Xss3zr
+
+    "The hills are alive..."'
+  id: ldXGzN
+  name: Audio heightfield 1
+  tags:
+  - heightfield
+  - audio
+  url: https://www.shadertoy.com/view/ldXGzN

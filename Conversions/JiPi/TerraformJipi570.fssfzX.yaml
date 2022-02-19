@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: TerraformJipi570
+  id: TerraformJipi570
+  kernel: TerraformJipi570
+  name: TerraformJipi570
+shader:
+  author: N.N.
+  description: Just a fun little animation
+  id: fssfzX
+  name: Terraform JiPi 570
+  parent:
+    id: NsdXDs
+    name: Terraform
+    url: https://www.shadertoy.com/view/NsdXDs
+  tags:
+  - animation
+  url: https://www.shadertoy.com/view/fssfzX

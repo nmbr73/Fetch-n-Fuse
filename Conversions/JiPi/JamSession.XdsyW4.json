@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7sffRs",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Jam Sessio JiPi 136",
+  "description": "based on: https://www.shadertoy.com/view/4lGSzy - Unrelated but here is a project I have been working on at: https://github.com/RezzaRect if anyone is interested, it's a c/c++ opengl project.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarch",
+   "metaballs",
+   "audio",
+   "smin"
+  ],
+  "hasliked": 0,
+  "parentid": "XdsyW4",
+  "parentname": "Jam Session"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdB3DV",
+     "filepath": "https://soundcloud.com/garth_knight/garth-knight-regardez-moi",
+     "type": "musicstream",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 0
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define NUM_STEPS 32\n#define EPS 0.001\n#define FAR_CLIP 15.0\n#define LEVELS_SCALAR 1.0\n\n#define time iTime\n\n// reference: https://www.shadertoy.com/view/4lGSzy\n// 2017 passion\n\nfloat noise3D(vec3 p)\n{\n\treturn fract(sin(dot(p ,vec3(12.9898,78.233,12.7378))) * 43758.5453)*2.0-1.0;\n}\n\nvec3 mixc(vec3 col1, vec3 col2, float v)\n{\n    v = clamp(v,0.0,1.0);\n    return col1+v*(col2-col1);\n}\n\n// polynomial smooth min (k = 0.1);\nfloat smin( float a, float b, float k )\n{\n    float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );\n    return mix( b, a, h ) - k*h*(1.0-h);\n}\n\nmat3 lookAt(vec3 origin, vec3 target, float roll) {\n  vec3 rr = vec3(sin(roll), cos(roll), 0.0);\n  vec3 ww = normalize(target - origin);\n  vec3 uu = normalize(cross(ww, rr));\n  vec3 vv = normalize(cross(uu, ww));\n\n  return mat3(uu, vv, ww);\n}\n\nfloat map(vec3 p){\n    float c = length(p) - 0.5;\n    \n    float c1 = length(p) - 0.20;\n    p.x += .75*sin(time*1.4);\n    p.y -= .75*cos(time/2.);\n    p.z += .75*cos(time+sin(time));\n    \n    float c2 = length(p) - 0.33;\n    p.x -= .75*sin(time/.4);\n    p.y += .75*cos(time/2.);\n    p.z -= .75*cos(time+sin(time*3.));\n    \n    float c3 = length(p) - 0.30;\n    p.x += .75*cos(time/2.4);\n    p.y -= .75*cos(time*1.2);\n    p.z += .75*sin(time+sin(time));\n    \n    float c4 = length(p) - 0.175;\n    p.x -= .75*sin(time*1.8);\n    p.y += .75*sin(time/2.);\n    p.z -= .75*cos(time+sin(time));\n    \n    float f = smin(c, c2, .3);\n    f = smin(f, c1, .2);\n    f = smin(f, c3, .33);\n    return smin(f, c4, .4);\n}\n\n\nfloat trace(vec3 r, vec3 o){\n    float t = 0.0;\n    for(int i = 0; i < NUM_STEPS; i++){\n        vec3 p = o+r * t;\n        float d = map(p);\n        if(abs(d) < EPS || t > FAR_CLIP)\n            break;\n        t += d;// * 0.75;\n    }\n    return t;\n}\n\nvec3 getNormal(vec3 p){\n    vec2 e = vec2(0.0, EPS);\n\treturn normalize((vec3(map(p + e.yxx),\n                           map(p + e.xyx), \n                           map(p + e.xxy)) - map(p)) / e.y);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    uv = uv * 2.0 - 1.0;\n    uv.x *= iResolution.x / iResolution.y;\n    \n    fragColor = vec4(0.0);\n    \n    //float time = iTime;\n    \n    vec3 l = normalize(vec3(0.3, 0.8, 0.2));\n    vec3 ray = normalize(vec3(uv, 1.0 - dot(uv, uv) * .25));\n    vec3 o = vec3(2.0*cos(time), -.5*.75+sin(time/2.)*.75, \n                  2.0*sin(time));\n    mat3 camMat = lookAt(o, vec3(0.0), sin(time*.13)*.25);\n\n    ray = camMat * ray;\n    \n    vec3 col = vec3(0.0);\n    vec3 ref = vec3(0.0);\n    \n    // https://www.shadertoy.com/view/4lGSzy\n    float nBands = 32.0;\n    float i = floor(ray.x*nBands);\n    float f = fract(ray.x*nBands);\n    float band = i/nBands;\n    band *= band*band;\n    band = band*0.995;\n    band += 0.005;\n    float s = texture( iChannel0, vec2(band,0.25) ).x;\n    \n    /* Gradient colors and amount here */\n    const int nColors = 4;\n    vec3 colors[nColors];  \n    colors[0] = vec3(0.0,0.0,1.0);\n    colors[1] = vec3(0.0,1.0,1.0);\n    colors[2] = vec3(1.0,1.0,0.0);\n    colors[3] = vec3(1.0,0.0,0.0);\n    \n    vec3 gradCol = colors[0];\n    float nc = float(nColors)-1.0;\n    for(int i = 1; i < nColors; i++)\n    {\n\t\tgradCol = mixc(gradCol,colors[i],(s-float(i-1)/nc)*nc);\n    }\n      \n    col += vec3(1.0-smoothstep(0.0,0.01,ray.y-s*LEVELS_SCALAR));\n    col *= gradCol;\n\n    ref += vec3(1.0-smoothstep(0.0,-0.01,ray.y+s*LEVELS_SCALAR));\n    ref*= gradCol*smoothstep(-0.5,0.5,ray.y);\n    \n    col = mix(ref,col,smoothstep(-0.01,0.01,ray.y));\n\n    col *= smoothstep(0.125,0.375,f);\n    col *= smoothstep(0.875,0.625,f);\n\n    col = clamp(col, 0.0, 1.0);\n\n    float dither = noise3D(vec3(ray.zy,time))*15.0/256.0;\n    col += dither;\n    \n    \n    float hit = trace(ray, o);\n    vec3 sp = o+ray * hit;\n    float d = map(sp);\n    vec3 n = getNormal(sp);\n    \n   \n    float diff = clamp(dot(n, l), 0.15, 1.0);\n    \n    if(abs(d) < 0.05)\n        fragColor = vec4(diff);\n    else\n        fragColor = vec4(col, 1.0);\n\t\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

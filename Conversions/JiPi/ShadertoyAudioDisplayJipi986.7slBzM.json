@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7slBzM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Shadertoy audio display JiPi 986",
+  "description": "test",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "music",
+   "audio",
+   "shadertoy",
+   "display"
+  ],
+  "hasliked": 0,
+  "parentid": "MtVfWh",
+  "parentname": "Shadertoy audio display"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdfGzn",
+     "filepath": "/media/a/894a09f482fb9b2822c093630fc37f0ce6cfec02b652e4e341323e4b6e4a4543.mp3",
+     "type": "music",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Not mine!!!\nvec3 hsv2rgb( in vec3 c ) {\n    vec3 rgb = clamp( abs(mod(c.x*6.+vec3(0.,4.,2.),6.)-3.)-1., 0., 1.);\n\trgb = rgb*rgb*(3.-2.*rgb); // cubic smoothing\n\treturn c.z * mix(vec3(1.), rgb, c.y);\n}\n\nvoid mainImage(out vec4 O, in vec2 u) {\n    vec2 U = u/iResolution.xy;\n\t\n    float N = 32.,\n        x = fract(U.x * N),\n        y = texture(iChannel0, vec2((floor(U.x * N)+0.5) / N, 0)).x;\n    \n    if(length(x*2.-1.) < .75)\n        O.rgb = clamp(1. - 90.*(U.y - y) ,0.,1.)\n        * hsv2rgb(vec3((1. - y)*.6, .5, .9));\n            }",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

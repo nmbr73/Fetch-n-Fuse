@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ssXfWM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Audio spectrum JiPi 313",
+  "description": "Enhanced version of audio spectrum.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fft",
+   "visualization",
+   "audio",
+   "audiospectrum"
+  ],
+  "hasliked": 0,
+  "parentid": "4sySDt",
+  "parentname": "Audio spectrum ( Enhanced )"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGRr",
+     "filepath": "/media/a/48e2d9ef22ca6673330b8c38a260c87694d2bbc94c19fec9dfa4a1222c364a99.mp3",
+     "type": "music",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "vec3 B2_spline(vec3 x) { // returns 3 B-spline functions of degree 2\n    vec3 t = 3.0 * x;\n    vec3 b0 = step(0.0, t)     * step(0.0, 1.0-t);\n\tvec3 b1 = step(0.0, t-1.0) * step(0.0, 2.0-t);\n\tvec3 b2 = step(0.0, t-2.0) * step(0.0, 3.0-t);\n\treturn 0.5 * (\n    \tb0 * pow(t, vec3(2.0)) +\n    \tb1 * (-2.0*pow(t, vec3(2.0)) + 6.0*t - 3.0) + \n    \tb2 * pow(3.0-t,vec3(2.0))\n    );\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // create pixel coordinates\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\n    float fVBars = 100.;\n    float fHSpacing = 1.00;\n    \n    \n    float x = floor(uv.x * fVBars)/fVBars;\n    float fSample = texture( iChannel0, vec2(abs(2.0 * x - 1.0), 0.25)).x;\n  \n    float squarewave = sign(mod(uv.x, 1.0/fVBars)-0.004);\n\tfloat fft = squarewave * fSample* 0.5;\n    \n    float fHBars = 100.0;\n    float fVSpacing = 0.180;\n    float fVFreq = (uv.y * 3.14);\n\tfVFreq = sign(sin(fVFreq * fHBars)+1.0-fVSpacing);\n\n    vec2 centered = vec2(1.0) * uv - vec2(1.0);\n    float t = iTime / 100.0;\n    float polychrome = 1.0;\n    vec3 spline_args = fract(vec3(polychrome*uv.x-t) + vec3(0.0, -1.0/3.0, -2.0/3.0));\n    vec3 spline = B2_spline(spline_args);\n    \n    float f = abs(centered.y);\n    vec3 base_color  = vec3(1.0, 1.0, 1.0) - f*spline;\n    vec3 flame_color = pow(base_color, vec3(3.0));\n    \n    float tt = 0.3 - uv.y;\n    float df = sign(tt);\n    df = (df + 1.0)/0.5;\n    vec3 col = flame_color * vec3(1.0 - step(fft, abs(0.3-uv.y))) * vec3(fVFreq);\n    col -= col * df * 0.180;\n    \n\t// output final color\n\tfragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: JamSession
+  id: JamSession
+  kernel: JamSession
+  name: JamSession
+shader:
+  author: iq
+  description: A remix of [url]https://www.shadertoy.com/view/MdfGRX[/url]
+  id: XdsyW4
+  name: Jam Session
+  tags:
+  - 3d
+  - raymarching
+  - cloud
+  - volumetric
+  url: https://www.shadertoy.com/view/XdsyW4

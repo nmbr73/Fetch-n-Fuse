@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: AudioSpectrumJipi313
+  id: AudioSpectrumJipi313
+  kernel: AudioSpectrumJipi313
+  name: AudioSpectrumJipi313
+shader:
+  author: N.N.
+  description: Enhanced version of audio spectrum.
+  id: ssXfWM
+  name: Audio spectrum JiPi 313
+  parent:
+    id: 4sySDt
+    name: Audio spectrum ( Enhanced )
+    url: https://www.shadertoy.com/view/4sySDt
+  tags:
+  - fft
+  - visualization
+  - audio
+  - audiospectrum
+  url: https://www.shadertoy.com/view/ssXfWM

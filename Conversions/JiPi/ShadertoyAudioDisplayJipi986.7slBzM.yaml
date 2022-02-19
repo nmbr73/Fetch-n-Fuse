@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: ShadertoyAudioDisplayJipi986
+  id: ShadertoyAudioDisplayJipi986
+  kernel: ShadertoyAudioDisplayJipi986
+  name: ShadertoyAudioDisplayJipi986
+shader:
+  author: N.N.
+  description: test
+  id: 7slBzM
+  name: Shadertoy audio display JiPi 986
+  parent:
+    id: MtVfWh
+    name: Shadertoy audio display
+    url: https://www.shadertoy.com/view/MtVfWh
+  tags:
+  - music
+  - audio
+  - shadertoy
+  - display
+  url: https://www.shadertoy.com/view/7slBzM

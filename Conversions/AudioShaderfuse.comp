@@ -1,0 +1,480 @@
+Composition {
+	CurrentTime = 215,
+	RenderRange = { 0, 1000 },
+	GlobalRange = { 0, 1000 },
+	CurrentID = 36,
+	HiQ = true,
+	PlaybackUpdateMode = 0,
+	Version = "Fusion Studio 17.2 build 29",
+	SavedOutputs = 2,
+	HeldTools = 0,
+	DisabledTools = 0,
+	LockedTools = 0,
+	AudioOffset = 0,
+	AutoRenderRange = true,
+	Resumable = true,
+	OutputClips = {
+	},
+	Tools = {
+		ST_JamSession1 = Fuse.ST_JamSession {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				iChannel0 = Input {
+					SourceOp = "AudioWaveform1",
+					Source = "Output2",
+				},
+			},
+			ViewInfo = OperatorInfo { Pos = { 1194, 41.9091 } },
+			Version = 1
+		},
+		AudioWaveform1 = Fuse.AudioWaveform {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				WaveFile = Input { Value = "D:\\Davinci Resolve\\Projekte\\01 JiPi Spielwiese\\11 Spielwiese4\\AudioWaveform\\Drumworks.wav", },
+				Proxy = Input { Value = 1, },
+				Zoom = Input { Value = 1, },
+				Resolution = Input { Value = 1, },
+				Filters = Input {
+					Value = Text {
+						Value = "NoFilter"
+					},
+				},
+				ShadertoyAudio = Input { Value = 1, },
+				Spectrum = Input { Value = 1, },
+				FFT = Input { Value = 1, },
+				Smoothfactor = Input { Value = 7, },
+				LogK = Input { Value = 1, },
+				Elongation = Input { Disabled = true, },
+				Hysterese = Input { Disabled = true, },
+				Font = Input { Value = "Open Sans", },
+				Style = Input { Value = "Regular", },
+			},
+			ViewInfo = OperatorInfo { Pos = { 1026.67, 88.5757 } },
+			Version = 18
+		},
+		ST_ShadertoyAudioDisplay1 = Fuse.ST_ShadertoyAudioDisplay {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				iChannel0 = Input {
+					SourceOp = "AudioWaveform1",
+					Source = "Output2",
+				},
+			},
+			ViewInfo = OperatorInfo { Pos = { 1196, 5.21212 } },
+			Version = 1
+		},
+		ST_ReactiveVoronoi1 = Fuse.ST_ReactiveVoronoi {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				iChannel0 = Input {
+					SourceOp = "AudioWaveform1",
+					Source = "Output2",
+				},
+				iMouseXY = Input { Value = { 0.519, 0.495 }, },
+				iMouseZW = Input {
+					Value = { 0.451999992132187, 0.5 },
+					Disabled = true,
+				},
+				iMouseClick = Input { Value = 1, },
+			},
+			ViewInfo = OperatorInfo { Pos = { 1195.33, 113.697 } },
+			Version = 1
+		},
+		ST_AudioHeightfield11 = Fuse.ST_AudioHeightfield1 {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				iChannel0 = Input {
+					SourceOp = "AudioWaveform1",
+					Source = "Output2",
+				},
+				iMouseZW = Input {
+					Value = { -1, -1 },
+					Disabled = true,
+				},
+			},
+			ViewInfo = OperatorInfo { Pos = { 1194.66, 74.9091 } },
+			Version = 1
+		},
+		ST_AudioWaveformVisualizer1 = Fuse.ST_AudioWaveformVisualizer {
+			Inputs = {
+				Width = Input { Value = 1920, },
+				Height = Input { Value = 1080, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				iChannel0 = Input {
+					SourceOp = "AudioWaveform1",
+					Source = "Output2",
+				},
+			},
+			ViewInfo = OperatorInfo { Pos = { 1196, 152.152 } },
+			Version = 1
+		},
+		Note1 = Note {
+			CtrlWZoom = false,
+			Inputs = {
+				Comments = Input { Value = "First you have to load a WAV-File in the AudioWaveform.fuse. You can render a mp3-File in Resolve to get a WAV-File. \n\nChoose the checkbox \"Shadertoy Audio\" in the Waveform, then the Waveform and the FFT is written to the Output2 ( a 512x2 Pixel Image) \n\nYou can change the behaviour of the FFT in the Page Spectrum of the AudioWaveform:\nFFT: 256-> small but fast, 2048-> detailed but slow\nSmoothfactor: Jumps can be slowed \nLogK: Logarithmic factor\n\nPS: If you disable the Spectrum, the Shadertoyaudio will end. Renew the Checkbox \"Shadertoy Audio\"  on the Controlpage. \n\nHave Fun playing", }
+			},
+			ViewInfo = StickyNoteInfo {
+				Pos = { 583.333, 4.9394 },
+				Flags = {
+					Expanded = true
+				},
+				Size = { 416, 181.364 }
+			},
+		}
+	},
+	Frames = {
+		{
+			FrameTypeID = "ChildFrame",
+			Mode = 3,
+			LayoutPreset = 0,
+			PresetName = "Default",
+			Left = 0,
+			Top = 27,
+			Width = 2560,
+			Height = 1344,
+			ZoneInfo = {
+				["!Right"] = {
+				},
+				["!Left"] = {
+				},
+				AuxLeft = { Expanded = true },
+				Right = { Expanded = true, },
+				Left = { Expanded = false, },
+				AuxRight = { Expanded = true }
+			},
+			ViewInfo = {
+				Viewer1 = { Show = true, RatioY = 0.01, RatioX = 1, },
+				InnerLeft = {
+				},
+				MainSplit = {
+					RatioX = 100,
+					RatioY = 1.00319233838787,
+				},
+				CenterSplit = {
+					RatioX = 1,
+					RatioY = 100,
+				},
+				Viewer2 = { Show = true, RatioY = 0.01, RatioX = 1, },
+				Comments = { Show = false },
+				Time = { Show = true, RatioX = 100, },
+				InnerColumns = {
+					RatioX = 100,
+					RatioY = 1.99680766161213,
+				},
+				Keyframes = { Show = false, },
+				LayoutStrip = { Show = true, RatioX = 100, },
+				Inspector = { Show = true, RatioY = 1, RatioX = 100, },
+				ActionStrip = { Show = true, RatioX = 100, },
+				InnerRight = {
+				},
+				OuterColumns = {
+					RatioX = 100,
+					RatioY = 1,
+				},
+				Effects = { Show = false, },
+				Clips = { Show = false, },
+				Metadata = { Show = false, },
+				OuterLeft = {
+				},
+				ViewerSplit = {
+					RatioX = 100,
+					RatioY = 1,
+				},
+				Nodes = { Show = true, RatioY = 100, RatioX = 1, },
+				OuterRight = {
+					RatioY = 100,
+					PixelX = 420,
+				},
+				MediaPool = { Show = false, },
+				Spline = { Show = false, }
+			},
+			Views = ordered() {
+				Effects = MultiView {
+					Active = "EffectView",
+					ViewList = ordered() {
+						EffectView = "EffectView"
+					},
+				},
+				Nodes = MultiView {
+					Active = "FlowView",
+					ViewList = ordered() {
+						FlowView = "FlowView"
+					},
+					Names = {
+						FlowView = "FlowView"
+					},
+					FlowView = FlowView {
+						Flags = {
+							AutoHideNavigator = true,
+							AutoSnap = true,
+							RemoveRouters = true
+						},
+						NavigatorSize = { 200, 140 },
+						Direction = "Horizontal",
+						PipeStyle = "Direct",
+						RootScale = 1,
+						RootOffset = { 26, 32.0303 }
+					}
+				},
+				Keyframes = MultiView {
+					Active = "TimelineView",
+					ViewList = ordered() {
+						TimelineView = "TimelineView"
+					},
+					Names = {
+						TimelineView = "TimelineView"
+					},
+					TimelineView = TimelineView {
+						TreeControlState = {
+						},
+						DisplayMode = "All Tools",
+						ShowCurrentTimeTools = false,
+						Filter = "Show All",
+						ShowSelectedTools = false,
+						ShowAnimatedToolsOnly = false,
+						ShowEditBoxes = false,
+						KeyFrameView = {
+							Position = { Left = 232, Bottom = 320 },
+							ScaleX = 2.14424951267057,
+							OffsetX = -51.4619883040936,
+							OffsetY = 0,
+							AutoScaling = "scroll",
+							AutoSnapTo = "frame",
+							AutoSnapToGuidelines = false,
+							GuidelinesGrabEnabled = true,
+							GuidelinesSnapTo = "frame"
+						},
+						Spreadsheet = { LeftPos = 232, Visible = false }
+					}
+				},
+				Spline = MultiView {
+					Active = "SplineView",
+					ViewList = ordered() {
+						SplineView = "SplineEditorView"
+					},
+					Names = {
+						SplineView = "SplineView"
+					},
+					SplineView = SplineEditorView {
+						LeftPos = 264,
+						ScaleX = 0.2,
+						ScaleY = 0.00338983050847458,
+						OffsetX = 181.2,
+						OffsetY = 0,
+						AutoScaling = "scroll",
+						AutoSnapTo = "frame",
+						AutoSnapToGuidelines = false,
+						GuidelinesSnapTo = "frame",
+						ShowKeyMarkers = false,
+						IndependentHandles = false,
+						ShowNonSplineModifiers = false,
+						GuidelinesGrabEnabled = true,
+						ShowOneToolOnly = false,
+						ShowSelectedTools = false,
+						ShowAllInputs = false,
+						Filter = "Show All"
+					}
+				},
+				Inspector = MultiView {
+					Active = "Tools",
+					ViewList = ordered() {
+						Tools = "ControlView",
+						Modifiers = "ModifierView"
+					},
+				},
+				Viewer1 = MultiView {
+					Active = "LeftView",
+					ViewList = ordered() {
+						LeftView = "PreviewContainer"
+					},
+					Names = {
+						LeftView = "LeftView"
+					},
+				},
+				Viewer2 = MultiView {
+					Active = "RightView",
+					ViewList = ordered() {
+						RightView = "PreviewContainer"
+					},
+					Names = {
+						RightView = "RightView"
+					},
+				},
+				Time = "TimeView",
+				ActionStrip = "ActionStripView",
+				LayoutStrip = "LayoutStripView"
+			},
+			Layout = {
+				{ ID = "LayoutStrip", FixedY = 36, Resolve = false, Flat = true },
+				{
+					{
+						{ ID = "MediaPool", Fusion = false, RatioX = 1 },
+						{ ID = "Effects", RatioX = 1 },
+						Zone = "Left",
+						Rows = 2,
+						PaneID = "OuterLeft",
+						PixelX = 420
+					},
+					{
+						{
+							{
+								{ ID = "MediaPool", Fusion = false, RatioX = 1 },
+								{ ID = "Effects", RatioX = 1 },
+								PaneID = "InnerLeft",
+								MaxViews = 1,
+								PixelX = 420,
+								Rows = 2,
+								Zone = "!Left"
+							},
+							{
+								{
+									{ ID = "Viewer1", RatioY = 0.01, RatioX = 1 },
+									{ ID = "Viewer2", RatioX = 1 },
+									RatioY = 1,
+									Columns = 2,
+									PaneID = "ViewerSplit"
+								},
+								{ ID = "Time", FixedY = 83, Flat = true },
+								RatioX = 1,
+								Rows = 2
+							},
+							{
+								{ ID = "Inspector", RatioY = 1 },
+								{ ID = "Metadata", RatioY = 1, Fusion = false },
+								PaneID = "InnerRight",
+								MaxViews = 1,
+								PixelX = 420,
+								Rows = 2,
+								Zone = "!Right"
+							},
+							RatioY = 2,
+							Columns = 3,
+							PaneID = "InnerColumns"
+						},
+						{ ID = "ActionStrip", FixedY = 50, Flat = true },
+						{
+							{ ID = "Nodes", RatioX = 1 },
+							{ ID = "Spline", RatioX = 1 },
+							{ ID = "Keyframes", RatioX = 1 },
+							RatioY = 1,
+							Columns = 3,
+							PaneID = "MainSplit"
+						},
+						{ Fusion = false, ID = "Clips", LARGE_FixedY = 160, MEDIUM_FixedY = 138, SMALL_FixedY = 110 },
+						RatioX = 1,
+						Rows = 4,
+						PaneID = "CenterSplit"
+					},
+					{
+						{ ID = "Inspector", RatioY = 1 },
+						{ ID = "Metadata", RatioY = 1, Fusion = false },
+						Zone = "Right",
+						Rows = 2,
+						PaneID = "OuterRight",
+						PixelX = 420
+					},
+					RatioY = 1,
+					Columns = 3,
+					PaneID = "OuterColumns"
+				},
+				RatioX = 1,
+				Rows = 2,
+				RatioY = 1
+			},
+			TopBar = {
+				Left = { "Left", "MediaPool", "Effects", "Clips", "Nodes", "Console" },
+				Right = { "Spline", "Keyframes", "Metadata", "Inspector", "Right" }
+			}
+		}
+	},
+	Prefs = {
+		Comp = {
+			Views = {
+				RightView = {
+					Viewer = {
+						ScaleMode = 1,
+					},
+					SideB = {
+						PrevCtrlInactiveColor = 4278255360,
+						PickW = 1,
+						PickH = 1,
+						PrevCtrlActiveColor = 4278190335,
+						Viewer = {
+							EnableLUTs = false,
+							LUTPlugin = "FusionViewLUT",
+							FitMarginY = 0,
+							FitMarginX = 0,
+							FitMarginType = 0,
+							FarZ = -1000,
+							NearZ = 0
+						}
+					},
+				},
+				LeftView = {
+					Viewer = {
+						ScaleMode = 1,
+					},
+					SideB = {
+						PrevCtrlInactiveColor = 4278255360,
+						PickW = 1,
+						PickH = 1,
+						PrevCtrlActiveColor = 4278190335,
+						Viewer = {
+							EnableLUTs = false,
+							LUTPlugin = "FusionViewLUT",
+							FitMarginY = 0,
+							FitMarginX = 0,
+							FitMarginType = 0,
+							FarZ = -1000,
+							NearZ = 0
+						}
+					},
+				},
+				View1 = {
+					PrevCtrlInactiveColor = 4278255360,
+					PickW = 1,
+					PickH = 1,
+					PrevCtrlActiveColor = 4278190335,
+					SideB = {
+						PrevCtrlInactiveColor = 4278255360,
+						PickW = 1,
+						PickH = 1,
+						PrevCtrlActiveColor = 4278190335,
+						Viewer = {
+							EnableLUTs = false,
+							LUTPlugin = "FusionViewLUT",
+							FitMarginY = 0,
+							FitMarginX = 0,
+							FitMarginType = 0,
+							FarZ = -1000,
+							NearZ = 0
+						}
+					}
+				},
+			},
+			FrameFormat = {
+				GuideRatio = 1.77777777777778,
+			},
+			LastFile = "D:\\Programme\\Lua Development Tools (LDT) 1.4.2\\workspace\\Equalizer\\src\\Fragmentshader-Dateien\\ArrayTest.frs",
+			Cluster = {
+				SlaveClasses = "all"
+			},
+			Paths = {
+				EnableReverseMapping = true,
+			},
+			QuickTime = {
+			},
+		}
+	},
+}
+

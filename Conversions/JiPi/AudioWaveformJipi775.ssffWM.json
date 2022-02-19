@@ -1,0 +1,51 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ssffWM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Audio Waveform JiPi 775",
+  "description": "I think this is a neat culmination of two projects. You can now switch between a view of the frequencies to the amplitudes. BEWARE! The amplitudes change FAST!",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "visualization",
+   "waveform",
+   "curvefitting"
+  ],
+  "hasliked": 0,
+  "parentid": "wd3Bzl",
+  "parentname": "Audio Waveform Visualizer v3"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdfGzn",
+     "filepath": "/media/a/894a09f482fb9b2822c093630fc37f0ce6cfec02b652e4e341323e4b6e4a4543.mp3",
+     "type": "music",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\nVersion three of my Audio Waveform Visualizer.\nI combined the sampling technique from version 2 (https://www.shadertoy.com/view/Wd3BRl)\nwith the curve fitting idea from my shader \"Sine Wave Curve Fitting\". The coloring was\npartially inspired by Dave_Hoskins shader \"Curve fitting\". The curve fitting idea didn't\nturn out to be too great for modelling characters but it was fun to experiment with and\nmaybe I'll use it again sometime. However, I decided it would work nicely in my Audio\nWaveform Visualizer so this is what I did with it.\n*/\n\n// 0 for frequency mode, 1 for amplitude mode:\n#define VIEW_MODE 0\n\nfloat samplePiecewiseSmooth(in float x, in float res) {\n    float xTimesRes = x * res;\n\n    // Left sample point:\n    float x1 = floor(xTimesRes) / res;\n    float y1 = texture(iChannel0, vec2(x1, VIEW_MODE)).x;\n\n    // Right sample point:\n    float x2 = ceil(xTimesRes) / res;\n    float y2 = texture(iChannel0, vec2(x2, VIEW_MODE)).x;\n\n    // Prevent small breaks in the line:\n    x2 += 0.001;    \n\n    // Fit half of a sine wave between sample points:\n    float sine = sin(((x - x1) / (x2 - x1) * 2.0 - 1.0) * 1.5707963267);\n    return y1 + (0.5 + 0.5 * sine) * (y2 - y1);\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord) {\n    vec2 uv = fragCoord / iResolution.xy;\n    float curSample = samplePiecewiseSmooth(uv.x, 20.0);\n    // Difference between the pixel position and the sample:\n    float smoothError = smoothstep(0.03, 0.0, abs(uv.y - curSample));\n    fragColor = vec4(0.0, 0.0, 0.0, 1.0);\n    // If the pixel is close to the line (I know, the naming isn't very intuitive):\n    if (smoothError > 0.0) {\n        // Mix red and yellow based on closeness:\n        fragColor = vec4(mix(vec3(1.0, 0.0, 0.0), vec3(1.0, 1.0, 0.0), smoothError), 1.0);\n    }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

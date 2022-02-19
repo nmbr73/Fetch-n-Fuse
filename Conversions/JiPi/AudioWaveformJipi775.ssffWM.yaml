@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: AudioWaveformJipi775
+  id: AudioWaveformJipi775
+  kernel: AudioWaveformJipi775
+  name: AudioWaveformJipi775
+shader:
+  author: N.N.
+  description: I think this is a neat culmination of two projects. You can now switch
+    between a view of the frequencies to the amplitudes. BEWARE! The amplitudes change
+    FAST!
+  id: ssffWM
+  name: Audio Waveform JiPi 775
+  parent:
+    id: wd3Bzl
+    name: Audio Waveform Visualizer v3
+    url: https://www.shadertoy.com/view/wd3Bzl
+  tags:
+  - visualization
+  - waveform
+  - curvefitting
+  url: https://www.shadertoy.com/view/ssffWM
