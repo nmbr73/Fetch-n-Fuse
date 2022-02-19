@@ -15,6 +15,10 @@
 #define D(U) _tex2DVecN(iChannel3,(U).x/R.x,(U).y/R.y,15)
 
 
+#define Ball1 to_float2_s(0.9f)
+#define Ball2 to_float2(0.1f, 0.5f)
+#define Ball3 to_float2(0.70f, 0.95f) 
+
 __DEVICE__ float building(float2 U, float2 R, __TEXTURE__ iChannel2) {
     
     if (U.y<10.0f)                     return 0.0f;
@@ -23,11 +27,11 @@ __DEVICE__ float building(float2 U, float2 R, __TEXTURE__ iChannel2) {
     #ifdef TEXT
     float ratio = 1.0f;//R.x/R.y;
     
-    if (length(U-to_float2_s(0.9f)*R)<0.02f*R.x) return 1.0f; // Wurfball oben rechts (0.9)
+    if (length(U-Ball1*R)<0.02f*R.x) return 1.0f; // Wurfball oben rechts (0.9)
     
-    if (length(U-to_float2(0.1f, 0.9f)*R)<0.02f*R.x) return 1.0f; // Zweiter Wurfball oben links ( 0.1,0.9 )
+    if (length(U-Ball2*R)<0.02f*R.x) return 1.0f; // Zweiter Wurfball oben links ( 0.1,0.9 )
       
-    if (length(U-to_float2(0.5f, 0.95f)*R)<0.03f*R.x) return 1.0f; // Dritter Wurfball Test außerhalb Sicht
+    if (length(U-Ball3*R)<0.03f*R.x) return 1.0f; // Dritter Wurfball Test außerhalb Sicht
     
     
     float tex = _tex2DVecN(iChannel2, U.x/R.x*ratio,U.y/R.y,15).w;
@@ -49,6 +53,20 @@ __DEVICE__ float building(float2 U, float2 R, __TEXTURE__ iChannel2) {
     else                               return 0.0f;
     #endif
 }
+
+__DEVICE__ void throwball(inout float4 *Q, int I, float2 U, float2 R)
+{
+  
+    if(I<1) {
+        *Q = to_float4(U.x,U.y,0,0);
+        if (length(U-Ball1*R)    <0.02f*R.x) (*Q).z = -2.5f, (*Q).w = -1.5f; //Erster Wurfball
+        if (length(U-Ball2*R)<0.02f*R.x)     (*Q).z = 3.5f,  (*Q).w = -1.2f; //Zweiter Wurfball       
+    }
+    if (I == 300) //Dritten Wurfball starten
+      if (length(U-Ball3*R)<0.03f*R.x)       (*Q).z = 0.0f, (*Q).w = -3.5f;
+}
+
+
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
@@ -99,15 +117,17 @@ __KERNEL__ void DisasterFuse__Buffer_A(float4 Q, float2 U, float iTime, float2 i
 
     if (M.z>0.0f) swi2S(Q,z,w, swi2(Q,z,w) + 3e-2*(swi2(M,x,y)-swi2(Q,x,y))/(1.0f+length((swi2(M,x,y)-swi2(Q,x,y)))));
 
+    throwball(&Q,I,U,R);
+/*
     if(I<1) {
     
         Q = to_float4(U.x,U.y,0,0);
-        if (length(U-to_float2_s(0.9f)*R)<0.02f*R.x)     Q.z = -2.5f, Q.w = -1.5f; //swi2(Q,z,w) = to_float2(-2.5f,-1.5f);
-        if (length(U-to_float2(0.1f, 0.9f)*R)<0.02f*R.x) Q.z = 2.5f, Q.w = -1.5f;
+        if (length(U-to_float2_s(0.9f)*R)    <0.02f*R.x) Q.z = -2.5f, Q.w = -1.5f; //Erster Wurfball
+        if (length(U-to_float2(0.1f, 0.5f)*R)<0.02f*R.x) Q.z = 3.5f,  Q.w = -1.2f; //Zweiter Wurfball
     }
-    if (I == 300)
+    if (I == 300) //Dritten Wurfball starten
       if (length(U-to_float2(0.5f, 0.95f)*R)<0.03f*R.x) Q.z = 0.0f, Q.w = -2.5f;
-    
+*/    
   //if (iFrame == 0) Q=to_float4_s(0.0f);  //!
     
   SetFragmentShaderComputedColor(Q);
@@ -203,14 +223,7 @@ __KERNEL__ void DisasterFuse__Buffer_C(float4 Q, float2 U, float iTime, float2 i
 
     if (M.z>0.0f) swi2S(Q,z,w, swi2(Q,z,w) + 3e-2*(swi2(M,x,y)-swi2(Q,x,y))/(1.0f+length((swi2(M,x,y)-swi2(Q,x,y)))));
 
-    if(I<1) {
-    
-        Q = to_float4(U.x,U.y,0,0);
-        if (length(U-to_float2_s(0.9f)*R)<0.02f*R.x) Q.z = -2.5f, Q.w = -1.5f; //swi2(Q,z,w) = to_float2(-2.5f,-1.5f);
-        if (length(U-to_float2(0.1f, 0.9f)*R)<0.02f*R.x) Q.z = 2.5f, Q.w = -1.5f;        
-    }
-    if (I == 300)
-      if (length(U-to_float2(0.5f, 0.95f)*R)<0.03f*R.x) Q.z = 0.0f, Q.w = -2.5f;
+    throwball(&Q, I, U, R);
 
   //if (iFrame == 0) Q=to_float4_s(0.0f);
 

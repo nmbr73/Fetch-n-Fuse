@@ -139,6 +139,11 @@ __KERNEL__ void FluidicBoidsIiFuse__Buffer_A(float4 fragColor, float2 fragCoord,
     CONNECT_CHECKBOX0(MouseDisplay, 1);
     CONNECT_SLIDER1(MouseSize, 0.0f, 2000.0f, 200.0f);
     
+    CONNECT_SLIDER2(Blend1, 0.0f, 1.0f, 0.0f);
+    CONNECT_SLIDER3(Factor, -10.0f, 10.0f, 2.0f);
+    CONNECT_SLIDER4(Offset, -10.0f, 10.0f, -1.0f);
+    CONNECT_BUTTON0(Modus, 1, Icks, Yps, Zet, Weh, PunchOut);
+    
     fragCoord += 0.5f;
     fragColor = to_float4_s(0);
     if(iFrame < 10) {
@@ -197,6 +202,24 @@ __KERNEL__ void FluidicBoidsIiFuse__Buffer_A(float4 fragColor, float2 fragCoord,
             mass     += d/1e3;
         }
     }
+    
+  // Texturblending  
+  if (Blend1>0.0f)
+  {
+    float4 tex = _tex2DVecN(iChannel2,fragCoord.x/iResolution.x,fragCoord.y/iResolution.y,15);
+    
+    if (tex.w != 0.0f)    
+    {
+      //tex.x = tex.x*2.0f-1.0f;
+      tex.x = tex.x*Factor-Offset;
+      if ((int)Modus & 2)  separation = _mix(separation,swi2(tex,x,y),Blend1);
+      if ((int)Modus & 4)  cohesion   = _mix(cohesion,swi2(tex,x,y),Blend1);
+      if ((int)Modus & 8)  mass = _mix(mass,tex.x,Blend1);
+      if ((int)Modus & 16) P.M  = _mix(P.M,tex.x,Blend1);
+      if ((int)Modus & 32) alignment  = _mix(alignment,swi2(tex,x,y),Blend1);
+    }
+  }  
+    
   
     
     cohesion = cohesion / mass - pos;
