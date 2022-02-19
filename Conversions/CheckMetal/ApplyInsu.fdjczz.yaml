@@ -1,0 +1,35 @@
+fuse:
+  author: JiPi
+  file: ApplyInsu
+  id: ApplyInsu
+  kernel: ApplyInsu
+  name: ApplyInsu
+shader:
+  author: N.N.
+  description: 'Fork of [url]https://www.shadertoy.com/view/sdscDs[/url].
+
+    Wrapping a 2d SDF around a torus. Even less exact than the plane version (which
+    was reasonably exact) so ray-marching-step must be halved.
+
+    '
+  id: fdjczz
+  name: Fork apply insu JiPi 582
+  parent:
+    id: ssBczR
+    name: apply insulate operator to torus
+    url: https://www.shadertoy.com/view/ssBczR
+  tags:
+  - 2d
+  - 3d
+  - sdf
+  - torus
+  - distance
+  - skeleton
+  - wrap
+  - core
+  - bound
+  - extrude
+  - 2dto3d
+  - extrusion
+  - insulate
+  url: https://www.shadertoy.com/view/fdjczz

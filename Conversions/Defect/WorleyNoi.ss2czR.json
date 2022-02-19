@@ -1,0 +1,49 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ss2czR",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork worley Noi JiPi 540",
+  "description": "no desc :)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d"
+  ],
+  "hasliked": 0,
+  "parentid": "Wdf3DH",
+  "parentname": "worley Noise Fractal"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "float modValue = 512.0f;\n\nfloat permuteX(float x)\n{\n    float t = ((x * 67.0) + 71.0) * x;\n\treturn mod(t, modValue);\n}\n\nfloat permuteY(float x)\n{\n    float t = ((x * 73.0) + 83.0) * x;\n\treturn mod(t, modValue);\n}\n\nfloat shiftX(float value)\n{\n    return fract(value * (1.0 / 73.0));\n}\n\nfloat shiftY(float value)\n{\n    return fract(value * (1.0 / 69.0));\n}\n\nvec2 rand(vec2 v)\n{\n    v = mod(v, modValue);\n    float rX = permuteX(permuteX(v.x) + v.y);\n    float rY = permuteY(permuteY(v.x) + v.y);\n    return vec2(shiftX(rX), shiftY(rY));\n}\n\nfloat worleyNoise(vec2 uv)\n{\n    vec2 p = floor(uv);\n    vec2 f = fract(uv);\n    float dis = 1e9f;\n    int range = 1;\n    \n    vec2 findPos, findJitPos;\n    for(int i = -range; i <= range; i++)\n    {\n        for(int j = -range; j <= range; j++)\n        {\n            vec2 b = vec2(i, j);\n            vec2 jitPos = b - f + rand(p + b);\n            float len = dot(jitPos, jitPos);\n            if (dis > len)\n            {\n\t\t\t\tdis = len;\n                findPos = b;\n                findJitPos = jitPos;\n            }\n        }\n    }\n    \n    dis = 1e9f;\n    range = 2;\n    for(int i = -range; i <= range; i++)\n    {\n        for(int j = -range; j <= range; j++)\n        {\n            vec2 b = findPos + vec2(i, j);\n            vec2 jitPos = b - f + rand(p + b);\n            float len = dot((findJitPos + jitPos) * 0.5f, normalize(jitPos - findJitPos));\n            \n            if (dis > len)\n            {\n                dis = len;\n            }\n        }\n    }\n    \n   \t//return smoothstep( 0.0, 0.5, dis );\n    return dis;\n}\n\nvec2 noise(vec2 uv)\n{\n    vec2 p = floor(uv);\n    vec2 f = fract(uv);\n    \n    vec2 v = f * f * (3.0 - 2.0 * f);\n    \n    vec2 result = mix(\n        mix(rand(p + vec2(0.0f, 0.0f)), rand(p + vec2(1.0f, 0.0f)), v.x), \n\t\tmix(rand(p + vec2(0.0f, 1.0f)), rand(p + vec2(1.0f, 1.0f)), v.x), \n    v.y);\n    \n    return result - 0.5f;\n}\n\nvec2 fbm(vec2 uv)\n{\n    vec2 res = vec2(0.0f);\n    float s = 0.25f;\n    for(int i = 0; i < 5; i++)\n    {\n\t\tuv *= 2.0f;\n        res += s * noise(uv);\n        s *= 0.5f;\n    }\n    return res;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.yy;\n    uv *= 4.0f;\n    uv += 1.0f;\n    \n    vec2 I = floor(uv/2.); \n    bool vert = mod(I.x+I.y,2.)==0.; \n    \n    float result;\n    for(float i = 0.0; i < 5.0; i += 01.50)\n    {\n        uv *= 1.5f;\n    \tvec2 jituv = fbm(uv * 1.5f);\n        float col = worleyNoise(uv + jituv);\n        \n        float ground = min(1.0, 1.8 * pow(col, 0.22f));\n        result += (1.0 - ground) / exp2(i);\n    }\n\n    //if (vert) result = 1.-result; \n    \n    vec4 tex = texture(iChannel0, fragCoord/iResolution.xy);\n    \n    fragColor = result + tex;\n    \n\n    //fragColor = vec4(vec3(result), 1.0f);\n} ",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

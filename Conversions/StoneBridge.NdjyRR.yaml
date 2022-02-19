@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: StoneBridge
+  id: StoneBridge
+  kernel: StoneBridge
+  name: StoneBridge
+shader:
+  author: wyatt
+  description: stone simulation
+  id: NdjyRR
+  name: Stone Bridge
+  tags:
+  - jfa
+  url: https://www.shadertoy.com/view/NdjyRR

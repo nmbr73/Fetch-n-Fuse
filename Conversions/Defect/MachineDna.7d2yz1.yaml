@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: MachineDna
+  id: MachineDna
+  kernel: MachineDna
+  name: MachineDna
+shader:
+  author: eiffie
+  description: When Ed got the maintenance job on Alpha station he thought how hard
+    can it be changing light bulbs?
+  id: 7d2yz1
+  name: Machine DNA
+  tags:
+  - soc
+  - del
+  url: https://www.shadertoy.com/view/7d2yz1

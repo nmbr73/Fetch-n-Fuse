@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: VerletInt
+  id: VerletInt
+  kernel: VerletInt
+  name: VerletInt
+shader:
+  author: N.N.
+  description: 'Not sure if it''s correctâ€¦
+
+    Totally unparallel but it seems to avoid compenetration and instability.
+
+    Change gravity direction with mouse.'
+  id: fdSyD1
+  name: Fork Verlet int JiPi 879
+  parent:
+    id: 7dSyWR
+    name: Verlet integration test
+    url: https://www.shadertoy.com/view/7dSyWR
+  tags:
+  - collision
+  - verletintegration
+  url: https://www.shadertoy.com/view/fdSyD1

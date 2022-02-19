@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Disaster
+  id: Disaster
+  kernel: Disaster
+  name: Disaster
+shader:
+  author: N.N.
+  description: A meteor strikes downtown...
+  id: ssscDX
+  name: Fork Disaster JiPi 311
+  parent:
+    id: fsscDX
+    name: Disaster
+    url: https://www.shadertoy.com/view/fsscDX
+  tags:
+  - jfa
+  url: https://www.shadertoy.com/view/ssscDX

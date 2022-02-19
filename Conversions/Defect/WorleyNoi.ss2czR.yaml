@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: WorleyNoi
+  id: WorleyNoi
+  kernel: WorleyNoi
+  name: WorleyNoi
+shader:
+  author: N.N.
+  description: no desc :)
+  id: ss2czR
+  name: Fork worley Noi JiPi 540
+  parent:
+    id: Wdf3DH
+    name: worley Noise Fractal
+    url: https://www.shadertoy.com/view/Wdf3DH
+  tags:
+  - 2d
+  url: https://www.shadertoy.com/view/ss2czR

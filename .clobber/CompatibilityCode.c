@@ -284,7 +284,7 @@
 /*| mul_f4_mat4   |*/    return C;
 /*| mul_f4_mat4   |*/  }
 /*|               |*/
-/*| mul_mat4_mat4 |*/__DEVICE__ inline mat4 mat4_multi_mat4( mat4 B, mat4 A)
+/*| mul_mat4_mat4 |*/__DEVICE__ inline mat4 mul_mat4_mat4( mat4 B, mat4 A)
 /*| mul_mat4_mat3 |*/{
 /*| mul_mat4_mat3 |*/
 /*| mul_mat4_mat4 |*/  float r[4][4];
@@ -314,7 +314,7 @@
 /*| mul_mat4_mat4 |*/                   r[3][0], r[3][1], r[3][2], r[3][3]);
 /*| mul_mat4_mat4 |*/  return R;
 /*| mul_mat4_mat4 |*/}
-/*| mat4          |*/#endif // end of mat3 implementation
+/*| mat4          |*/#endif // end of mat4 implementation
 
 
 
@@ -437,8 +437,8 @@
     /*| sign_f3       |*/ #define sign_f3(a) sign(a)
     /*| sign_f4       |*/ #define sign_f4(a) sign(a)
     /*| distance_f    |*/ #define distance_f ( p1, p2) distance(p1, p2)
-    /*| distance_f2   |*/ #define distance_f2(pt1,pt2) distance(p1, p2)
-    /*| distance_f3   |*/ #define distance_f3(pt1,pt2) distance(p1, p2)
+    /*| distance_f2   |*/ #define distance_f2( p1, p2) distance(p1, p2)
+    /*| distance_f3   |*/ #define distance_f3( p1, p2) distance(p1, p2)
     /*| pow_f2        |*/ #define pow_f2(a,b) pow(a,b)
     /*| pow_f3        |*/ #define pow_f3(a,b) pow(a,b)
     /*| pow_f4        |*/ #define pow_f4(a,b) pow(a,b)

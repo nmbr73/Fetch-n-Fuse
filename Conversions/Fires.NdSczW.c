@@ -11,8 +11,8 @@
 __DEVICE__ float2 hash( float2 p )
 {
   p = to_float2( dot(p,to_float2(127.1f,311.7f)),
-       dot(p,to_float2(269.5f,183.3f)) );
-  return -1.0f + 2.0f*fract(_sinf(p)*43758.5453123f);
+                 dot(p,to_float2(269.5f,183.3f)) );
+  return -1.0f + 2.0f*fract_f2(sin_f2(p)*43758.5453123f);
 }
 
 __DEVICE__ float noise( in float2 p )
@@ -27,9 +27,9 @@ __DEVICE__ float noise( in float2 p )
   float2 b = a - o + K2;
   float2 c = a - 1.0f + 2.0f*K2;
   
-  float3 h = _fmaxf( 0.5f-to_float3_aw(dot(a,a), dot(b,b), dot(c,c) ), 0.0f );
+  float3 h = _fmaxf( 0.5f-to_float3(dot(a,a), dot(b,b), dot(c,c) ), to_float3_s(0.0f) );
   
-  float3 n = h*h*h*h*to_float3_aw( dot(a,hash(i+0.0f)), dot(b,hash(i+o)), dot(c,hash(i+1.0f)));
+  float3 n = h*h*h*h*to_float3( dot(a,hash(i+0.0f)), dot(b,hash(i+o)), dot(c,hash(i+1.0f)));
   
   return dot( n, to_float3_s(70.0f) );
 }
@@ -37,11 +37,11 @@ __DEVICE__ float noise( in float2 p )
 __DEVICE__ float fbm(float2 uv)
 {
   float f;
-  mat2 m = mat2( 1.6f,  1.2f, -1.2f,  1.6f );
-  f  = 0.5000f*noise( uv ); uv = m*uv;
-  f += 0.2500f*noise( uv ); uv = m*uv;
-  f += 0.1250f*noise( uv ); uv = m*uv;
-  f += 0.0625f*noise( uv ); uv = m*uv;
+  mat2 m = to_mat2( 1.6f,  1.2f, -1.2f,  1.6f );
+  f  = 0.5000f*noise( uv ); uv = mul_mat2_f2(m,uv);
+  f += 0.2500f*noise( uv ); uv = mul_mat2_f2(m,uv);
+  f += 0.1250f*noise( uv ); uv = mul_mat2_f2(m,uv);
+  f += 0.0625f*noise( uv ); uv = mul_mat2_f2(m,uv);
   f = 0.5f + 0.5f*f;
   return f;
 }
@@ -77,8 +77,7 @@ __KERNEL__ void FiresFuse(float4 fragColor, float2 fragCoord, float iTime, float
 #endif
   
   float a = c * (1.0f-_powf(uv.y,3.0f));
-  fragColor = to_float4( _mix(to_float3_s(0.0f),col,a), 1.0f);
-
+  fragColor = to_float4_aw( _mix(to_float3_s(0.0f),col,a), 1.0f);
 
   SetFragmentShaderComputedColor(fragColor);
 }

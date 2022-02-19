@@ -756,8 +756,10 @@ if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
  print("#SELFPATH:",selfpath)
  print(sys.argv, len(sys.argv))
  #print("##Argv2##",id,param,txt)
+ 
+ print("Folder: ",folder)
 
- CONVERSIONS_PATH = selfpath+"\Conversions\\"
+ CONVERSIONS_PATH = selfpath+"\Conversions\\"+folder+"\\"
 
  NOASSETS  = False
  #VERBOSE   = verbose

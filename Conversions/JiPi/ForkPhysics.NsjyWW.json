@@ -1,0 +1,301 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NsjyWW",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Physics",
+  "description": "Nachbau, weil Fehler beim Konvertieren",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "physics"
+  ],
+  "hasliked": 0,
+  "parentid": "",
+  "parentname": ""
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGRn",
+     "filepath": "/media/a/95b90082f799f48677b4f206d856ad572f1d178c676269eac6347631d4447258.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\nHow it works:\n\nBuf A find collision points. World space edges of a cube are clamped with the planes of the \nother cube. Then the other way around, giving a wireframe of the intersecting parts.\nBoth line ends will count as a collision, this gives 48 possible collision points per cube pair.\n12x4 pixels are allocated for each pair (i>j)\n\nBuf A on the right side of it  stores a separating plane between each pair. While colliding, \nthere is no separating plane, but we need the plane with the least reach through. \nAs the best plane is usually a cross product of two edges colliding, or a plane of one of the cube,\nwhich collides with a vertex. That counts 30 posibilities per pair, these are stored in \nseparate pixels. The offset of the plane right in the middle of the intersection is stored into w. \nThe penetration level is stored as the length of the .xyz vector (defining a plane),\nwhich normally has a length of 1.0, but there is no more component left.\n\nBuf B then selects the best separating plane from Buf A by comparing the length(.xyz) of the \n30 texels, and stores it normalized in the right side of buf B\n\nBuf B in the left side stores updated velocity and rotational velocity after applying\nthe forces stored in Buf C from last frame. The idea is to use the forces from last frame\nas an initial guess for solving the constraints, if they already collided last frame. \nThis is verlet integration.\n\nBuf C calculates the forces that would relax the velocity difference at the collision points.\n(after having reduced those, by applying forces from last frame in buf B)\nIt clamps the forces into a friction cone including the force's component, that was already \nadded in Buf B. \n\nBuf D adds the forces stored in Buf C to the velocity and rotational velocity from last frame\n(not using the updated velocities in buf B, instead reading buf D) \nIt also adds a repulsive force to move the cubes out of penetration.\nBuf B has the best separating plane including it's offset, which is used to estimate \nthe penetration at a collision point.\nThen it updates the translation of the cubes.\nThe actual rotation is stored as a quaternion. It gets converted to 3 perpendicular\nvectors and then back to quaternion after rotating them by the angular velocity (called rotvel)\nVelocity is added to position. Gravity is added to velocity after the translation update.\n\nImage: No ray marching\n\n\n\n*/\n\n#define CUBECOUNT 16\n#define PI 3.141592653\n\nvec4 readTex3(int cx,int cy)\n{\n    return texture(iChannel3,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex2(int cx,int cy)\n{\n    return texture(iChannel2,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec4 readTex0(int cx,int cy)\n{\n    return texture(iChannel0,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec3 getCubePos(int ci)\n{\n    return readTex3(ci,0).xyz;\n}\nvec4 getCubeQuat(int ci)\n{\n    return readTex3(ci,1).xyzw;\n}\n\nvec3 getCollision(int ci,int cj,int k) // for debugging\n{\n    return readTex0(ci*12+k%12,cj*4+k/12).xyz;\n}\n\n\nvec3 rotate(vec4 quat,vec3 v)\n{\n    float sinsqr = (1.0-quat.w*quat.w);\n    if (sinsqr!=0.0)\n    {\n        v=v*quat.w + quat.xyz*((dot(v,quat.xyz)*(1.0-quat.w))*(1.0/sinsqr)) + cross(v,quat.xyz);\n        v=v*quat.w + quat.xyz*((dot(v,quat.xyz)*(1.0-quat.w))*(1.0/sinsqr)) + cross(v,quat.xyz);\n    }\n    return v;\n}\n\nvec3 rotateAxis(vec3 axis,vec3 v)\n{\n    float len = length(axis);\n    if (len!=0.0)\n    {\n        axis = normalize(axis);\n\t\tv = v*cos(len) + axis*((v*axis) * (1.0-cos(len))) + cross(v,axis)*sin(len);\n    }\n    return v;\n}\n\n\nvec4 getCubePlane(int ci,int k)\n{\n    vec3 norm = vec3( k/2%3==0?1.0:0.0, k/2%3==1?1.0:0.0, k/2%3==2?2.0:0.0)*float(k%2*2-1);\n    norm = rotate(getCubeQuat(ci),norm);\n    float offset = 1.0 + dot(getCubePos(ci),norm);\n    return vec4(norm,offset);\n}\n\n\nvec3 cubeTransform(int ci,vec3 lp)\n{\n    return getCubePos(ci) + rotate(getCubeQuat(ci),lp);\n}\n\nvec3 rayPos,rayDir;\nfloat minDist;\nvec3 minDistNormal;\nfloat minDistMaterial;\n\nvec3 sunDir = normalize(vec3(0.8,1.0,-0.3));\n\nvoid renderCube(int ci)\n{\n    float backMin = 1e30;\n    float frontMax = -1e30;\n    vec3 frontNormal = vec3(0.0,0.0,0.0);\n    \n    for(int side=0;side<6;side++)\n    {\n        vec4 plane = getCubePlane(ci,side);\n        \n        float rayTravel = -(dot(rayPos,plane.xyz)-plane.w)/dot(plane.xyz,rayDir);\n        if (  dot(plane.xyz,rayDir)<0.0)\n        {\n            if (frontMax < rayTravel)\n            {\n                frontMax = rayTravel;\n                frontNormal = plane.xyz;\n            }\n        }\n        else\n        {\n            if (backMin > rayTravel)\n            {\n                backMin = rayTravel;\n            }\n        }\n    }\n    if (frontMax<backMin) // cube hit\n    {\n        if (minDist>frontMax && frontMax>0.0) // chose closeset cube\n        {\n            minDist = frontMax;\n            minDistNormal = frontNormal;\n//            minDistMaterial = 1.0-fract(float(ci)/float(CUBECOUNT)*94.);\n            minDistMaterial = fract(float(ci)/3.0)+0.1;\n        }\n    }\n    \n}\n\n\nvec3 backGround(vec3 dir,vec3 pos)\n{\n\tfloat f = max(dir.y,0.0)*0.5+0.5;\n\tvec3 color = 1.0-vec3(1,0.85,0.7)*f;\n\tcolor *= dir.x*-0.3+1.0;\n\t\n\tif (dot(sunDir,dir)>0.0) // sun reflected on cubes\n\t{\n\t f = max(length(cross(sunDir,dir))*10.0,1.0);\n\t\t\n\t color += vec3(1,0.9,0.7)*40.0/(f*f*f*f);\n\t}\n\treturn color;\n}\n\nvec4 debugColor;\nfloat debugthickness = 0.02;\nvoid debugline(vec3 pa,vec3 pb)\n{\n    vec3 pl = normalize(cross(cross(pa-pb,rayDir),pa-pb));\n    float d = -dot(pl,rayPos-pa)/dot(pl,rayDir);\n    vec3 p = rayPos+rayDir*d;\n    if (dot(p-pb,pa-pb)>0.0 && dot(p-pb,pa-pb)<dot(pa-pb,pa-pb) && length(cross(p-pa,normalize(pa-pb)))<debugthickness )\n    {\n        debugColor = vec4(0.9,0.8,0.1,1.0);\n    }\n}\n\nvoid debugdot(vec3 p)\n{\n    float d = pow(length(cross(p-rayPos,rayDir))/debugthickness,4.0);\n    debugColor = mix(debugColor,vec4(0.9,0.8,0.1,1.0),max(1.0-d,0.0));\n}\n\n\nvoid debugCollision(int ci,int cj)\n{\n    vec4 sep = readTex0(ci+CUBECOUNT*12,cj);\n    for(int k=0;k<48;k++)\n    {\n        vec3 cpos = getCollision(ci,cj,k);\n        debugdot(cpos);\n    \tdebugline(cpos,cpos + readTex2(ci*12+k%12,cj*4+k/12).xyz*10.0 );\n    }\n}\n\nvoid renderScene()\n{\n    minDistMaterial = 0.0;\n    minDist = 1e30;\n    minDistNormal = vec3(0.0,1.0,0.0);\n    \n    if (rayDir.y<0.0)\n    {\n        minDist = rayPos.y/-rayDir.y;\n    }\n    \n    for(int i=1;i<(CUBECOUNT);i++)\n    {\n        if ( length(cross(getCubePos(i)-rayPos,rayDir))<3.0)\n        {\n    \t\trenderCube(i);\n        }\n    }\n}\n\nvec3 getDiffuse()\n{\n        vec3 difColor;\n        if (minDistMaterial==0.) difColor = texture(iChannel1,rayPos.zx/8.0).xyz; // floor\n        else\n        {\n            difColor = vec3(1.0,1.0-minDistMaterial,0.3-0.3*minDistMaterial); // cube colors\n        }\n    return difColor;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    debugColor = vec4(0.0,0.0,0.0,0.0);\n\tvec3 campos = vec3(0.0-fract(float(iFrame)/(60.*8.))*4.0,6.4-sin(iTime/4.0)*0.5,-17.0);\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tvec3 pdir = vec3(uv*2.0-1.0,2.);\n\tpdir.y /= iResolution.x/iResolution.y; // wide screen\n    pdir = normalize(pdir);\n    \n    pdir = rotateAxis( vec3(-0.27,0.,0.), pdir);\n\n    rayPos = campos;\n    rayDir = pdir;\n\n    renderScene();\n//        debugCubeEdges(i);\n//\t    debugdot(getCubePos(i));\n//        for(int j=0;j<8;j++) debugdot(getWCubeVert(i,j));\n    \n \n//  debugCollision(1,0);\n//    debugline(getCubePos(1),g    \n    \n    \n    \n    if (minDist<1e30)\n    {\n        minDistNormal = normalize(minDistNormal);\n        const vec3 sunColor = vec3(1.0,0.8,0.5)*1.0;\n        const vec3 skyColor = vec3(1.0,1.2,1.5)*0.6;\n        rayPos += rayDir*minDist;\n        vec3 firstHitPos = rayPos;\n        vec3 refdir = reflect(rayDir,minDistNormal);\n        float f = 1.-max(dot(minDistNormal,-rayDir),0.);\n        float fresnel = 0.65*f*f*f*f*f+0.05;\n\n        vec3 difColor =getDiffuse();\n        \n        fragColor = vec4(difColor*skyColor*((minDistNormal).y*0.5+0.5),0.);\n        float suncos = dot((minDistNormal),sunDir);\n        if (suncos>0.0)\n        {\n            // spot sun light pointing on the thrown cube.\n            vec3 v = cross(sunDir,rayPos-getCubePos(CUBECOUNT-1))/20.;\n            suncos *= max(0.,1.0-dot(v,v));\n            rayDir = sunDir;\n    \t    renderScene();\n\t        if (minDist==1e30) \n            {\n                fragColor.xyz += difColor * suncos * sunColor;\n            }\n        }\n        \n        rayPos = firstHitPos;\n        rayDir = refdir;\n        renderScene();\n        \n        vec3 refColor;\n        if (minDist<1e30)\n        {\n            rayPos += rayDir * minDist;\n            vec3 difColor = getDiffuse();\n            \n            refColor = difColor*(normalize(minDistNormal).y*0.5+0.5);\n        }\n        else\n        {\n            refColor = backGround(rayDir,rayPos);\n        }\n        fragColor.xyz = mix(fragColor.xyz,refColor,fresnel);\n    }\n    else\n    {\n\t\tfragColor = vec4(backGround(pdir,campos),0.0);\n    }\n    fragColor.xyz = mix(fragColor.xyz,debugColor.xyz,debugColor.w);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define CUBECOUNT 16u\n\n\nvec4 readTex3(uint cx,uint cy)\n{\n    return texture(iChannel3,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec3 getCubePos(uint ci)\n{\n    return readTex3(ci,0u).xyz;\n}\nvec4 getCubeQuat(uint ci)\n{\n    return readTex3(ci,1u).xyzw;\n}\nvec3 rotate(vec4 quat,vec3 v)\n{\n    float sinsqr = (1.0-quat.w*quat.w);\n    if (sinsqr!=0.0)\n    {\n        v=v*quat.w + quat.xyz*((dot(v,quat.xyz)*(1.0-quat.w))*(1.0/sinsqr)) + cross(v,quat.xyz);\n        v=v*quat.w + quat.xyz*((dot(v,quat.xyz)*(1.0-quat.w))*(1.0/sinsqr)) + cross(v,quat.xyz);\n    }\n    return v;\n}\nvec3 cubeTransform(uint ci,vec3 lp)\n{\n    lp.z*=0.5;\n    return getCubePos(ci) + rotate(getCubeQuat(ci),lp);\n}\n\nvec4 getCubePlane(uint ci,uint k)\n{\n    vec3 norm = vec3( k%3u==1u?1.0:0.0, k%3u==0u?1.0:0.0, k%3u==2u?2.0:0.0)*(float(k/3u)*-2.0+1.0);\n    norm = rotate(getCubeQuat(ci),norm);\n    float offset = 1.0 + dot(getCubePos(ci),norm);\n    return vec4(norm,offset);\n}\n\n\nvec3 getWCubeVert(uint ci,uint j)\n{\n    return cubeTransform(ci,vec3(float(j&1u),float((j&2u)/2u),float((j&4u)/4u))*2.0-1.0);\n}\nvec3 rotateAxisAngle(vec3 axis,float angle,vec3 v)\n{\n\tv = v*cos(angle) + axis*((v*axis) * (1.0-cos(angle))) + cross(v,axis)*sin(angle);\n    return v;\n}\n\nuint pixelx,pixely;\n\nvec4 findSeparatingPlane_planA()\n{\n\n    uint cia = pixelx/6u;\n    uint cib = pixely/5u;\n    \n    if (cia>=CUBECOUNT) discard;\n    if (cia<=cib) discard;\n    \n    \n    float bestoffset=-1e30;\n    vec3 bestplane;\n    float bestplaneoffset;\n    \n//    for(uint m=0;m<2;m++)\n//    for(uint k=0;k<30;k++)\n    uint k = (pixelx%6u)+(pixely%5u)*6u;\n    {\n        vec3 sep;\n        vec3 edgea = vec3( k%3u==0u?1.0:0.0, k%3u==1u?1.0:0.0, k%3u==2u?1.0:0.0);\n        edgea = rotate(getCubeQuat(cia),edgea);\n        vec3 edgeb = vec3( k/3u%3u==0u?1.0:0.0, k/3u%3u==1u?1.0:0.0, k/3u%3u==2u?1.0:0.0);\n        edgeb = rotate(getCubeQuat(cib),edgeb);\n        if (k%15u<9u)\n        { \n            // edge crossings\n            if (length(cross(edgea,edgeb))<0.001)\n                sep = vec3(0.,0.,0.);  // parallel edges fail\n            else\n            \tsep = normalize(cross(edgea,edgeb));\n        }\n        else\n        {  // normals\n            if (k<9u+3u)\n            {\n                sep = edgea;\n            }\n            else\n            {\n                sep =  vec3( k%3u==0u?1.0:0.0, k%3u==1u?1.0:0.0, k%3u==2u?1.0:0.0);\n                sep = rotate(getCubeQuat(cib),sep);\n            }\n        }\n        if (k>=15u) sep=-sep;\n        \n        if (cib==0u)\n        {\n            sep = vec3(0.,-1.,0.);\n        }\n        \n        float minoffset = -1e30;\n        for(uint j=0u;j<8u;j++)\n        {\n            vec3 v = getWCubeVert(cia,j);\n            if (dot(v,sep)>minoffset)\n            {\n                minoffset = dot(v,sep);\n            }\n        }\n\n        float maxoffset = 1e30;\n        for(uint j=0u;j<8u;j++)\n        {\n            vec3 v = getWCubeVert(cib,j);\n            if (dot(v,sep)<maxoffset)\n            {\n                maxoffset = dot(v,sep);\n            }\n        }\n        float offset = -minoffset+maxoffset;\n        \n//        if (offset>bestoffset && offset!=0.0) // no improvement\n        {\n            bestoffset = offset;\n            bestplaneoffset = (minoffset+maxoffset)*0.5;\n            bestplane = sep;\n        }\n    }\n    \n    if (bestoffset>=0.0)\n    {\n        return vec4(0.,9999.0,0.,0.);\n    }\n    \n    return vec4(-bestplane*(2.0-bestoffset),-bestplaneoffset);\n}\n\n// this alg isn't good, beacuse it finds some local maximum instead of the best solution, \n// but it works ok if the cubes are uintersecting, a separating plane cannot be put, \n// but the plane with the least overlap is found, which is needed in the solver.\nvec4 findSeparatingPlane_planB()  \n{\n    if (pixelx<=pixely) discard;\n    if (pixelx>=(CUBECOUNT)) discard;    \n\n    uint cia = pixelx;\n    uint cib = pixely;\n\n    if ((length(getCubePos(cia)-getCubePos(cib))>6.0 && cib!=0u)) discard;\n    \n    vec3 sep = normalize(getCubePos(cib)-getCubePos(cia));\n    float offset =0.0;\n    float dangle = 0.2;\n    float lastoffset=-1e30;\n    vec3 lastsep=sep;\n    vec3 diff = vec3(0.0,0.0,0.0);\n    \n    for(uint k=0u;k<64u;k++)\n    {\n        if (cib==0u)\n        {\n            sep = vec3(0.,-1.,0.);\n        }\n        \n        float minoffset = -1e30;\n        vec3 minvert=vec3(0.0,0.0,0.0);\n        for(uint j=0u;j<8u;j++)\n        {\n            vec3 v = getWCubeVert(cia,j);\n            if (dot(v,sep)>minoffset)\n            {\n                minoffset = dot(v,sep);\n                minvert = v;\n            }\n        }\n\n        float maxoffset = 1e30;\n        vec3 maxvert=vec3(0.0,0.0,0.0);\n        for(uint j=0u;j<8u;j++)\n        {\n            vec3 v = getWCubeVert(cib,j);\n            if (dot(v,sep)<maxoffset)\n            {\n                maxoffset = dot(v,sep);\n                maxvert = v;\n            }\n        }\n        offset = dot(maxvert-minvert,sep);\n        \n        dangle*=1.2;\n        if (offset<lastoffset) // no improvement\n        {\n            sep=lastsep;\n            dangle*=0.5/1.2;\n            offset = lastoffset;\n        }\n        else\n        {\n\t         diff = maxvert-minvert;\n        }\n        \n        vec3 axis = normalize(cross(diff,sep));\n        lastsep = sep;\n        lastoffset = offset;\n        sep = rotateAxisAngle(axis,dangle,sep);\n        offset = (maxoffset+minoffset)*0.5;\n\n    }\n    \n    return vec4(sep,offset);\n}\n\n\nvec3 edge(uint i,uint j)\n{\n    vec3 pa,pb;\n    if (i<8u)\n    {\n        pa.x = float(i%4u<2u?1:-1);\n        pa.y = float((i+1u)%4u<2u?1:-1);\n        pa.z = float(i/4u<1u?1:-1);\n\n        pb.x = float((i+1u)%4u<2u?1:-1);\n        pb.y = float((i+2u)%4u<2u?1:-1);\n        pb.z = float(i/4u<1u?1:-1);\n    }\n    else\n    {\n        pa.x = float(i%4u<2u?1:-1);\n        pa.y = float((i+1u)%4u<2u?1:-1);\n        pa.z = -1.0;\n        pb = vec3(pa.xy,1.0);\n                \n    }\n    \n    return j==0u?pa:pb;\n}\n\nvec4 findCollisionPouint()\n{\n    uint ci = pixelx/12u;\n    uint cj = pixely/4u;\n    if (cj>=ci) discard;\n    \n    if (length(getCubePos(ci)-getCubePos(cj))>6.0 && cj!=0u) // bounding check\n    {\n        return vec4(0.,0.,0.,0.);\n    }\n    \n    uint j = pixelx%12u;\n    \n    if (pixely%4u<2u) // swap the two cubes to check collision both ways\n    {\n        uint t = ci;\n        ci = cj;\n        cj = t;\n    }\n\n    vec3 pa = cubeTransform(cj,edge(j,0u)); // a world space edge of cube j\n    vec3 pb = cubeTransform(cj,edge(j,1u));\n    float ea=0.0;\n    float eb=1.0;\n    for(uint l=0u;l<((ci==0u)?1u:6u);l++) // clamp it with the 6 planes of cube i\n    {\n        vec4 pl = getCubePlane(ci,l);\n        pl/=length(pl.xyz);\n        if (abs(dot(pl.xyz,pb-pa))>0.0001)\n        {\n            float e = -(dot(pl.xyz,pa)-pl.w)/dot(pl.xyz,pb-pa);\n            if (dot(pb-pa,pl.xyz)>0.0)\n            {\n                eb=min(eb,e);\n            }\n            else\n            {\n                ea=max(ea,e);\n            }\n        }\n        else\n        {\n            ea=999999.0; // edge is parallel to plane\n        }\n    }\n    \n    vec3 coll = pa+(pb-pa)*((pixely%2u==0u)?ea:eb);\n    if (eb<=ea || cj==0u)\n    {\n        coll = vec3(0.,0.,0.);\n    }\n    \n    \n    return  vec4(coll,0.0);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    pixelx = uint(floor(fragCoord+0.01).x);\n    pixely = uint(floor(fragCoord+0.01).y);\n    \n    if (pixelx>=(CUBECOUNT*12u))\n    {\n        pixelx-=(CUBECOUNT*12u);\n        fragColor = findSeparatingPlane_planA();\n        return;\n    }\n    \n    fragColor = findCollisionPouint();   \n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define CUBECOUNT 16u\n#define STATIC_CUBE_COUNT 1u\n\nfloat gravity = -0.003;\n\nvec4 readTex3(uint cx,uint cy)\n{\n    return texture(iChannel3,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex2(uint cx,uint cy)\n{\n    return texture(iChannel2,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex0(uint cx,uint cy)\n{\n    return texture(iChannel0,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec3 getCubePos(uint ci)\n{\n    return readTex3(ci,0u).xyz;\n}\nvec4 getCubeQuat(uint ci)\n{\n    return readTex3(ci,1u).xyzw;\n}\nvec3 getCubeVel(uint ci)\n{\n    return readTex3(ci,2u).xyz;\n}\nvec3 getCubeRotVel(uint ci)\n{\n    return readTex3(ci,3u).xyz;\n}\n\nuint pixelx,pixely;\n\nvec3 pos;\nvec4 quat;\nvec3 vel;\nvec3 rotvel;\n\nvec4 findbestsepplane()\n{\n    pixelx-=CUBECOUNT;\n    uint cia = pixelx;\n    uint cib = pixely;\n    if (cia>=CUBECOUNT) discard;\n    if (cib>=cia) discard;\n    float best=1e30;\n    vec4 bestsep;\n    for(uint m=0u;m<30u;m++)\n    {\n        vec4 sep = readTex0(cia*6u+m%6u+CUBECOUNT*12u,cib*5u+m/6u);\n        if (length(sep.xyz)<best)\n        {\n            best = length(sep.xyz);\n            bestsep = sep;\n        }\n    }\n    return vec4(normalize(bestsep.xyz),bestsep.w);;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    pixelx = uint(floor(fragCoord+0.01).x);\n    pixely = uint(floor(fragCoord+0.01).y);\n    \n    fragColor = vec4(0.0,0.0,0.0,0.0);\n    \n    if (pixelx>=(CUBECOUNT)) \n    {\n        fragColor = findbestsepplane();\n        return;\n    }\n    if (pixely>=4u || pixely<2u) discard; // just output velocity and rotational velocity\n    uint cubei = pixelx;\n    \n    \n    pos = getCubePos(cubei);\n    quat = getCubeQuat(cubei);\n    vel = getCubeVel(cubei);\n    rotvel = getCubeRotVel(cubei);\n    \n    if (cubei>=STATIC_CUBE_COUNT)\n    {\n    // apply forces (just the changes)\n    for(uint i=0u;i<CUBECOUNT-1u;i++)\n    {\n        uint ci,cj;\n        float scaler;\n        if (i<cubei)\n        {\n\t        ci = cubei;\n            cj = i;\n            scaler  = 1.0;\n\t\t // if the other cube cannot be pushed away, because its's the floor or other unmovable, \n          // this one moves double amount\n            if (cj<STATIC_CUBE_COUNT) scaler = 2.0; \n        }\n        else\n        {\n           ci = i+1u;\n           cj = cubei;\n           scaler = -1.0; // applying the opposite forces on the cube pair\n        }\n        if (!(length(getCubePos(ci)-getCubePos(cj))>6.0 && cj!=0u)) // bounding check\n        for(uint j=0u;j<48u;j++)\n        {\n            vec3 forcepos = readTex0(ci*12u+j%12u,cj*4u+j/12u).xyz;\n            if (forcepos.x!=0.0)\n            {\n\t            vec3 force = readTex2(ci*12u+j%12u,cj*4u+j/12u).xyz;\n                \n                const float RotationalImmobilityTensor = 1.8;\n                force *= scaler;\n                vel += force;\n                rotvel -= cross(forcepos-pos,force)/RotationalImmobilityTensor;\n            }\n        }\n    }\n    \n\n    }\n    \n    fragColor = vec4(vel, 0.0);\n    if (pixely==3u) fragColor = vec4(rotvel, 0.0);\n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define CUBECOUNT 16\n\nvec4 readTex3(int cx,int cy)\n{\n    return texture(iChannel3,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex2(int cx,int cy)\n{\n    return texture(iChannel2,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex1(int cx,int cy)\n{\n    return texture(iChannel1,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec4 readTex0(int cx,int cy)\n{\n    return texture(iChannel0,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec3 getCubePos(int ci)\n{\n    return readTex3(ci,0).xyz;\n}\nvec4 getCubeQuat(int ci)\n{\n    return readTex3(ci,1).xyzw;\n}\nvec3 getCubeVel(int ci)\n{\n    return readTex1(ci,2).xyz;\n}\nvec3 getCubeRotVel(int ci)\n{\n    return readTex1(ci,3).xyz;\n}\nvec3 getCubeVelQP(int ci,vec3 querypos)\n{\n    return cross(querypos-getCubePos(ci),getCubeRotVel(ci))+getCubeVel(ci);\n}\n\n\n\nint pixelx,pixely;\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    pixelx = int(floor(fragCoord+0.01).x);\n    pixely = int(floor(fragCoord+0.01).y);\n    \n  \n    int ci = pixelx/12;\n    int cj = pixely/4;\n    if (cj>=ci) discard;\n    if (ci>=CUBECOUNT) discard;\n    \n    if ((length(getCubePos(ci)-getCubePos(cj))>6.0 && cj!=0))  // bounding check\n    {\n        fragColor = vec4(0.,0.,0.,0.);\n        return;\n    }\n    \n    int forceid = pixelx%12+pixely%4*12;\n    vec3 totalForce;\n  \n    int i = forceid;\n    int lpx = ci*12+i%12;\n    int lpy = cj*4+i/12;\n\n    totalForce = readTex2(lpx,lpy).xyz;\n    vec3 collpos = readTex0(lpx,lpy).xyz;\n\n    if (collpos.x!=0.0) // x==0 means no collision at the force denoted by this pixel\n    {\n        vec3 veldiff = getCubeVelQP(cj,collpos)-getCubeVelQP(ci,collpos);\n\n        vec3 collisNormal = readTex1(ci+CUBECOUNT,cj).xyz;\n\n        totalForce += veldiff*0.022;\n\n        float perpart = dot(collisNormal,totalForce);\n        vec3 tangentialpart = totalForce-collisNormal*perpart;\n\n        const float FrictionConstant = 0.7;\n\n        if (length(tangentialpart)>perpart*FrictionConstant)\n        {\n            tangentialpart *= (perpart*FrictionConstant)/length(tangentialpart);\n            totalForce = tangentialpart + collisNormal*perpart;\n        }\n\n\n        if (perpart<0.0)\n        {\n            totalForce = vec3(0.,0.,0.);\n        }\n\n    }\n    else\n    {\n        totalForce= vec3(0.,0.,0.);\n    }\n     \n    \n    if (iFrame==0) totalForce = vec3(0.,0.,0.);\n    fragColor = vec4(totalForce,1.0);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define CUBECOUNT 16\n#define STATIC_CUBE_COUNT 1\n\n#define BUFD\n\n#define PI (acos(0.)*2.0)\nfloat gravity = -0.0045;\n\nvec4 readTex3(int cx,int cy)\n{\n    return texture(iChannel3,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex2(int cx,int cy)\n{\n    return texture(iChannel2,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec4 readTex1(int cx,int cy)\n{\n    return texture(iChannel1,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\n\nvec4 readTex0(int cx,int cy)\n{\n    return texture(iChannel0,vec2((float(cx)+0.1)/iResolution.x,(float(cy)+0.1)/iResolution.y));\n}\nvec3 getCubePos(int ci)\n{\n    return readTex3(ci,0).xyz;\n}\nvec4 getCubeQuat(int ci)\n{\n    return readTex3(ci,1).xyzw;\n}\nvec3 getCubeVel(int ci)\n{\n    return readTex3(ci,2).xyz;\n}\nvec3 getCubeRotVel(int ci)\n{\n    return readTex3(ci,3).xyz;\n}\n\nvec3 rotate(vec4 quat,vec3 v)\n{\n    float sinsqr = (1.0-quat.w*quat.w);\n    if (sinsqr!=0.0)\n    {\n        v=v*quat.w + quat.xyz*((dot(v,quat.xyz)*(1.0-quat.w))*(1.0/sinsqr)) + cross(v,quat.xyz);\n        v=v*quat.w + quat.xyz*((dot(v,quat.xyz)*(1.0-quat.w))*(1.0/sinsqr)) + cross(v,quat.xyz);\n    }\n    return v;\n}\n\nint pixelx,pixely;\n\nvec3 rotateAxis(vec3 axis,vec3 v) // the length of the axis defines angle\n{\n    float len = length(axis);\n    if (len!=0.0)\n    {\n        axis = normalize(axis);\n\t\tv = v*cos(len) + axis*((v*axis) * (1.0-cos(len))) + cross(v,axis)*sin(len);\n    }\n    return v;\n}\n\n\nvec4 rotateRotation(vec4 q,vec3 axis) // Im sure, there is a simpler way to rotate a rotation :)\n{\n    vec3 x,y,z; // conversion to 3 perpendicular vectors, and rotation\n    x = rotateAxis(axis,rotate(q,vec3(1.0,0.0,0.0)));\n    y = rotateAxis(axis,rotate(q,vec3(0.0,1.0,0.0)));\n    z = rotateAxis(axis,rotate(q,vec3(0.0,0.0,1.0)));\n    \n    // convert back to quaternion\n\tfloat trace = x.x + y.y + z.z; \n\tif( trace > 0.0 ) {\n\t\tfloat s = 0.5 / sqrt(trace+ 1.0);\n\t\tq.w = 0.25 / s;\n\t\tq.x = ( z.y - y.z ) * s;\n\t\tq.y = ( x.z - z.x ) * s;\n\t\tq.z = ( y.x - x.y ) * s;\n\t} else {\n\t\tif ( x.x > y.y && x.x > z.z ) {\n\t\t\tfloat s = 2.0 * sqrt( 1.0 + x.x - y.y - z.z);\n\t\t\tq.w = (z.y - y.z ) / s;\n\t\t\tq.x = 0.25 * s;\n\t\t\tq.y = (x.y + y.x ) / s;\n\t\t\tq.z = (x.z + z.x ) / s;\n\t\t} else if (y.y > z.z) {\n\t\t\tfloat s = 2.0 * sqrt( 1.0 + y.y - x.x - z.z);\n\t\t\tq.w = (x.z - z.x ) / s;\n\t\t\tq.x = (x.y + y.x ) / s;\n\t\t\tq.y = 0.25 * s;\n\t\t\tq.z = (y.z + z.y ) / s;\n\t\t} else {\n\t\t\tfloat s = 2.0 * sqrt( 1.0 + z.z - x.x - y.y );\n\t\t\tq.w = (y.x - x.y ) / s;\n\t\t\tq.x = (x.z + z.x ) / s;\n\t\t\tq.y = (y.z + z.y ) / s;\n\t\t\tq.z = 0.25 * s;\n\t\t}\n\t}\n    \n    q=normalize(q); // no scaling :)\n    \n    \n\treturn q;    \n}\n\n\n\nvec3 pos;\nvec4 quat;\nvec3 vel;\nvec3 rotvel;\n\nvoid initScene(int cubei)\n{\n        if (cubei==0) // static floor\n        {\n            pos = vec3(0,-1,5);\n            vel = vec3(0.,0.,0.);\n            rotvel = vec3(0.,0.,0.);\n            quat = vec4(0.0,0.0,0.0,1.0);\n            return;\n        }\n    \n    \n    \tcubei--;\n        float cubeif = float(cubei);\n    \tint div = 5;\n    \tvec3 ro = vec3(0.,PI*(float(cubei)*2.0)/float(div),0.);\n    \tpos = rotateAxis(ro,   vec3(0.0,1.0+float(cubei/div)*2.0,2.5));\n    \n        quat = rotateRotation(normalize(vec4(0.0,0.0,0.0,1.0)),ro);\n    \n        vel = vec3(-0.00,0.0,0.00);\n        rotvel = vec3(cubeif*-0.001*cos(float(iFrame)),0.0,cubeif*-0.001); // randomize start setup\n    \n    \tif (cubei==CUBECOUNT-2) // thrown cube\n        {\n            pos = vec3(16.,2.0,-1.0+sin(float(iFrame)*1.2)); // randomize \n            vel = vec3(-0.37,0.14+sin(float(iFrame))*0.03,0.0);\n        }\n        \n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    pixelx = int(floor(fragCoord+0.01).x);\n    pixely = int(floor(fragCoord+0.01).y);\n    \n    fragColor = vec4(0.0,0.0,0.0,0.0);\n    \n    if (pixely>=4) discard;\n    if (pixelx>=(CUBECOUNT)) discard;\n    int cubei = pixelx;\n    \n    \n    pos = getCubePos(cubei);\n    quat = getCubeQuat(cubei);\n    vel = getCubeVel(cubei);\n    rotvel = getCubeRotVel(cubei);\n    \n    if (cubei>=STATIC_CUBE_COUNT)\n    {\n    // apply forces (just the changes)\n    for(int i=0;i<CUBECOUNT-1;i++)\n    {\n        int ci,cj;\n        float scaler;\n        if (i<cubei)\n        {\n\t        ci = cubei;\n            cj = i;\n            scaler  = 1.0;\n\t\t // if the other cube cannot be pushed away, because its's the floor or other unmovable, \n          // this one moves double amount\n            if (cj<STATIC_CUBE_COUNT) scaler = 2.0; \n        }\n        else\n        {\n           ci = i+1;\n           cj = cubei;\n           scaler = -1.0; // applying the opposite forces on the cube pair\n        }\n        \n       if (!(length(getCubePos(ci)-getCubePos(cj))>6.0 && cj!=0)) // bounding check\n        for(int j=0;j<48;j++)\n        {\n            vec3 forcepos = readTex0(ci*12+j%12,cj*4+j/12).xyz;\n            if (forcepos.x!=0.0)\n            {\n\t            vec3 force = readTex2(ci*12+j%12,cj*4+j/12).xyz;\n                \n#ifdef BUFD                \n                // add repulsive force\n                vec4 collisnormal = readTex1(ci+CUBECOUNT,cj);\n                collisnormal.xyz *= max(abs(dot(forcepos,collisnormal.xyz)-collisnormal.w)-0.01,0.0);\n                force += collisnormal.xyz*0.003;\n#endif\n                \n                const float RotationalImmobilityTensor = 1.8;\n                force *= scaler;\n                vel += force;\n                rotvel -= cross(forcepos-pos,force)/RotationalImmobilityTensor;\n            }\n        }\n    }\n    \n#ifdef BUFD\n    // move by adding velocity to position, and rotate\n    pos += vel;\n    quat = rotateRotation(quat,rotvel);\n    vel.y += gravity;\n#endif\n    }\n\n#ifdef BUFD    \n    if (iFrame%(60*8)==0)\n    {\n        initScene(cubei);\n    }\n\n    fragColor = vec4(pos, 0.0);\n    if (pixely==1) fragColor = quat;\n#endif\n    if (pixely==2) fragColor = vec4(vel, 0.0);\n    if (pixely==3) fragColor = vec4(rotvel, 0.0);\n    \n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

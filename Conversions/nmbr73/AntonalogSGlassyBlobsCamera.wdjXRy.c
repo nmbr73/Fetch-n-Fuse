@@ -106,7 +106,6 @@ __DEVICE__ float shlick(float3 N, float3 V)
 
 __DEVICE__ float3 Transmittance(float3 color, float T)
 {
-  float zzzzzzzzzzzzzzzzzzzzzzzzzzz;
   return -1.0f*log_f3(color)/T;
 }
 

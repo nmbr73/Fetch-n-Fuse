@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: TrippyTriangle
+  id: TrippyTriangle
+  kernel: TrippyTriangle
+  name: TrippyTriangle
+shader:
+  author: Tater
+  description: 'I left some camera controls as a define if you want to break the illusion
+    :) '
+  id: fslcDS
+  name: Trippy Triangle
+  tags:
+  - 3d
+  - raymarching
+  - penrose
+  - penrosetriangle
+  url: https://www.shadertoy.com/view/fslcDS

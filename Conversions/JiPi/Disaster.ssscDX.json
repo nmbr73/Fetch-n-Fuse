@@ -1,0 +1,239 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ssscDX",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Disaster JiPi 311",
+  "description": "A meteor strikes downtown...",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "jfa"
+  ],
+  "hasliked": 0,
+  "parentid": "fsscDX",
+  "parentname": "Disaster"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, vec2 U){\n\n    R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n    \n    vec4 b = B(U);\n    vec4 a = A(b.xy);\n    \n    Q = vec4(0)+step(length(U-a.xy),.75);\n\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "vec2 R; vec4 M; float T; int I;\n#define Main void mainImage(out vec4 Q, vec2 U){UNIS\n#define UNIS R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n#define A(U) texture(iChannel0,(U)/R)\n#define B(U) texture(iChannel1,(U)/R)\n#define C(U) texture(iChannel2,(U)/R)\n#define D(U) texture(iChannel3,(U)/R)\n\n\nfloat building(vec2 U) {\n    if (U.y<10.) return 0.;\n    if (length(U-vec2(.9)*R)<.02*R.x) return 1.;\n    float r = U.x/R.x*30.-15.;\n    float x = round(U.x/R.x*30.)-15.;\n    \n    float y = exp(-x*x/40.)*(1.5+sin(10.*x));\n    if (abs(r-x)>.3+.5*sin(x)) return 0.;\n    if (U.y/R.y < .4*y) return 1.;\n    else return 0.;\n\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, vec2 U){\n\n    R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n    \n    if (building(U)==0.) {Q = vec4(0); return;}\n\n    Q = A(U);\n\n    vec2 f = vec2(0,-4e-4);\n    \n    for (float x = -5.; x <= 5.; x ++) \n    for (float y = -5.; y <= 5.; y ++) {\n        vec4 b = B(Q.xy+vec2(x,y));\n        vec4 a = A(b.xy);\n        vec2 u = abs(Q.xy+vec2(x,y)-a.xy);\n        if (u.x>.5||u.y>.5)continue;\n        vec2 r = a.xy-Q.xy;\n        float l = length(r);\n        if (l<1.||l>6.) continue;\n        float L = length(U-b.xy);\n        if ((l-L)<.1*L||L>5.) \n            f += 3e-1*r*(l-L)/l/L/l;\n    }\n    \n    if (length(f)>1.) f = normalize(f);\n    \n    Q.zw += f;\n    Q.xy += .5*f+Q.zw*inversesqrt(1.+dot(Q.zw,Q.zw));\n    \n    if (Q.y<30.) Q.zw *= .8;\n    \n    if (Q.y<10.) Q.y=10., Q.zw *= 0.;\n\n    if (M.z>0.) Q.zw += 3e-2*(M.xy-Q.xy)/(1.+length((M.xy-Q.xy)));\n\n    if(I<1) {\n    \n        Q = vec4(U,0,0);\n         if (length(U-vec2(.9)*R)<.02*R.x) Q.zw = vec2(-2.5,-1.5);\n    }\n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void XY (vec2 U, inout vec4 Q, vec4 q) {\n    if (length(U-A(q.xy).xy)<length(U-A(Q.xy).xy)) Q.xy = q.xy;\n}\nvoid ZW (vec2 U, inout vec4 Q, vec4 q) {\n    if (length(U-A(q.zw).xy)<length(U-A(Q.zw).xy)) Q.zw = q.zw;\n}\n\nvoid mainImage(out vec4 Q, vec2 U){\n\n    R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n\n    Q = B(U);\n    for (int x=-1;x<=1;x++)\n    for (int y=-1;y<=1;y++) {\n        XY(U,Q,B(U+vec2(x,y)));\n        XY(U,Q,vec4(Q.xy+vec2(x,y),0,0));\n    }\n    \n    if (I%12==0) \n        Q.zw = U;\n    else\n    {\n        float k = exp2(float(11-(I%12)));\n        ZW(U,Q,B(U+vec2(0,k)));\n        ZW(U,Q,B(U+vec2(k,0)));\n        ZW(U,Q,B(U-vec2(0,k)));\n        ZW(U,Q,B(U-vec2(k,0)));\n    }\n    XY(U,Q,Q.zwxy);\n    \n    if (I<1) Q = vec4(U,U);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, vec2 U){\n\n    R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n    \n    if (building(U)==0.) {Q = vec4(0); return;}\n\n    Q = A(U);\n\n    vec2 f = vec2(0,-4e-4);\n    \n    for (float x = -5.; x <= 5.; x ++) \n    for (float y = -5.; y <= 5.; y ++) {\n        vec4 b = B(Q.xy+vec2(x,y));\n        vec4 a = A(b.xy);\n        vec2 u = abs(Q.xy+vec2(x,y)-a.xy);\n        if (u.x>.5||u.y>.5)continue;\n        vec2 r = a.xy-Q.xy;\n        float l = length(r);\n        if (l<1.||l>6.) continue;\n        float L = length(U-b.xy);\n        if ((l-L)<.1*L||L>5.) \n            f += 3e-1*r*(l-L)/l/L/l;\n    }\n    \n    if (length(f)>1.) f = normalize(f);\n    \n    Q.zw += f;\n    Q.xy += .5*f+Q.zw*inversesqrt(1.+dot(Q.zw,Q.zw));\n    \n    if (Q.y<30.) Q.zw *= .8;\n    \n    if (Q.y<10.) Q.y=10., Q.zw *= 0.;\n\n    if (M.z>0.) Q.zw += 3e-2*(M.xy-Q.xy)/(1.+length((M.xy-Q.xy)));\n\n    if(I<1) {\n    \n        Q = vec4(U,0,0);\n         if (length(U-vec2(.9)*R)<.02*R.x) Q.zw = vec2(-2.5,-1.5);\n    }\n    \n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void XY (vec2 U, inout vec4 Q, vec4 q) {\n    if (length(U-A(q.xy).xy)<length(U-A(Q.xy).xy)) Q.xy = q.xy;\n}\nvoid ZW (vec2 U, inout vec4 Q, vec4 q) {\n    if (length(U-A(q.zw).xy)<length(U-A(Q.zw).xy)) Q.zw = q.zw;\n}\n\n\nvoid mainImage(out vec4 Q, vec2 U){\n\n    R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n    Q = B(U);\n    for (int x=-2;x<=2;x++)\n    for (int y=-2;y<=2;y++) {\n        XY(U,Q,B(U+vec2(x,y)));\n        XY(U,Q,vec4(Q.xy+vec2(x,y),0,0));\n    }\n    \n    if (I%12==0) \n        Q.zw = U;\n    else\n    {\n        float k = exp2(float(11-(I%12)));\n        ZW(U,Q,B(U+vec2(0,k)));\n        ZW(U,Q,B(U+vec2(k,0)));\n        ZW(U,Q,B(U-vec2(0,k)));\n        ZW(U,Q,B(U-vec2(k,0)));\n    }\n    XY(U,Q,Q.zwxy);\n    \n    if (I<1) Q = vec4(U,U);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

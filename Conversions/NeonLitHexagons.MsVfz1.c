@@ -5,50 +5,6 @@
 // Connect 'Texture: Rusty Metal' to iChannel0
 
 
-/*
-  Neon Lit Hexagons
-  -----------------
-
-  I needed a break from a few technical shaders I've beem hacking away at, so I finished an old
-  geometric example that'd been sitting on the blocks for a while.
-
-  3D hexagon tech imagery is a bit of a cliche, but I've always been a fan. Most tend to be high
-  quality pathtraced renderings, but since this is a realtime raymarched example, I had to make
-  a lot of concessions. The glowing neon lights were inspired by some of Shau's examples, some
-  online imagery, and practically half the demos out there. :)
-
-  I tried to create the glowing effect without the use of a volumetric pass, but my eyes weren't
-  accepting the results, which meant the observant people on here -- pretty much everyone -- would
-  notice immediately, so I put a relatively cheap one in. The improvements were immediate, but it
-  was at the cost of rendering speed... I'm just hoping no one notices the lack of reflections from
-  the neon lights. :) I have a pretty quick laptop, but ever since the WebGL 2 update, it hasn't
-  enjoyed compiling extra passes, so reflections had to go. At a later stage, I might attempt to
-  fake them in some way.
-
-  There are a couple of surface detail defines below that I had to leave out. I also came pretty
-  close to greebling the surfaces, but figured that might be overkill. In the end, I took the
-  "less is more" approach. However, I intend to put together a greebled surface pretty soon.
-
-
-    // Other neon-looking examples:
-
-  // Shau has a heap of bright glowing examples, but here's a few.
-  OTT - shau
-  https://www.shadertoy.com/view/4sVyDd
-
-  43% Burnt - shau
-  https://www.shadertoy.com/view/XljBWW
-
-  Angle Grinder - shau
-  https://www.shadertoy.com/view/XtsfWX
-
-
-    // Great example.
-  Neon World - zguerrero
-    https://www.shadertoy.com/view/MlscDj
-
-*/
-
 
 
 // Hexagon: 0, Dodecahedron: 1, Circle: 2.
@@ -92,48 +48,15 @@ __DEVICE__ float hash31(float3 p){
 }
 
 
-// Commutative smooth maximum function. Provided by Tomkh, and taken
-// from Alex Evans's (aka Statix) talk:
-// http://media.lolrus.mediamolecule.com/AlexEvans_SIGGRAPH-2015.pdf
-// Credited to Dave Smith @media molecule.
 __DEVICE__ float smax(float a, float b, float k){
 
    float f = _fmaxf(0.0f, 1.0f - _fabs(b - a)/k);
    return _fmaxf(a, b) + k*0.25f*f*f;
 }
 
-/*
-// Commutative smooth minimum function. Provided by Tomkh, and taken
-// from Alex Evans's (aka Statix) talk:
-// http://media.lolrus.mediamolecule.com/AlexEvans_SIGGRAPH-2015.pdf
-// Credited to Dave Smith @media molecule.
-__DEVICE__ float smin(float a, float b, float k){
 
-   float f = _fmaxf(0.0f, 1.0f - _fabs(b - a)/k);
-   return _fminf(a, b) - k*0.25f*f*f;
-}
-
-*/
-
-/*
-// Tri-Planar blending function. Based on an old Nvidia tutorial.
-__DEVICE__ float3 tex3D( sampler2D tex, in float3 p, in float3 n ){
-
-    n = _fmaxf((_fabs(n) - 0.2f)*7.0f, 0.001f); // n = _fmaxf(_fabs(n), 0.001f), etc.
-    n /= (n.x + n.y + n.z );
-
-  float3 tx = (texture(tex, swi2(p,y,z))*n.x + texture(tex, swi2(p,z,x))*n.y + texture(tex, swi2(p,x,y))*n.z).xyz;
-
-    return tx*tx;
-}
-*/
-
-// Tri-Planar blending function. Based on an old Nvidia writeup:
-// GPU Gems 3 - Ryan Geiss: https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch01.html
 __DEVICE__ float3 tex3D(__TEXTURE2D__ t, in float3 p, in float3 n){
 
-    // We only want positive normal weightings. The normal is manipulated to suit
-    // your needs.
     n = _fmaxf(_fabs(n) - 0.2f, 0.001f); // n = _fmaxf(n*n - 0.1f, 0.001f), etc.
     //n /= dot(n, to_float3(1)); // Rough renormalization approximation.
     n /= length(n); // Renormalizing.
@@ -142,45 +65,28 @@ __DEVICE__ float3 tex3D(__TEXTURE2D__ t, in float3 p, in float3 n){
     float3 ty = _tex2DVecN(t, p.z, p.x, 15).xyz; // Top and bottom.
     float3 tz = _tex2DVecN(t, p.x, p.y, 15).xyz; // Front and back.
 
-    // Blending the surrounding textures with the normal weightings. If the surface is facing
-    // more up or down, then a larger "n.y" weighting would make sense, etc.
-    //
-    // Textures are stored in sRGB (I think), so you have to convert them to linear space
-    // (squaring is a rough approximation) prior to working with them... or something like that. :)
-    // Once the final color value is gamma corrected, you should see correct looking colors.
     return (tx*tx*n.x + ty*ty*n.y + tz*tz*n.z);
 
 }
 
-// More concise, self contained version of IQ's original 3D noise function.
 __DEVICE__ float noise3D(in float3 p){
 
-    // Just some random figures, analogous to stride. You can change this, if you want.
   const float3 s = to_float3(113.0f, 157.0f, 1.0f);
+  float3 ip = _floor(p);
 
-  float3 ip = _floor(p); // Unique unit cell ID.
+  float4 h = to_float4(0.0f, s.y,s.z, s.y + s.z) + dot(ip, s);
 
-    // Setting up the stride vector for randomization and interpolation, kind of.
-    // All kinds of shortcuts are taken here. Refer to IQ's original formula.
-    float4 h = to_float4(0.0f, s.y,s.z, s.y + s.z) + dot(ip, s);
+  p -= ip;
 
-  p -= ip; // Cell's fractional component.
+  p = p*p*(3.0f - 2.0f*p);
 
-    // A bit of cubic smoothing, to give the noise that rounded look.
-    p = p*p*(3.0f - 2.0f*p);
+  h = _mix(fract(_sinf(h)*43758.5453f), fract(_sinf(h + s.x)*43758.5453f), p.x);
 
-    // Standard 3D noise stuff. Retrieving 8 random scalar values for each cube corner,
-    // then interpolating along X. There are countless ways to randomize, but this is
-    // the way most are familar with: fract(_sinf(x)*largeNumber).
-    h = _mix(fract(_sinf(h)*43758.5453f), fract(_sinf(h + s.x)*43758.5453f), p.x);
+  float2 uv = _mix(swi2(h,x,z), swi2(h,y,w), p.y);
 
-    // Interpolating along Y.
-    swi2(h,x,y) = _mix(swi2(h,x,z), swi2(h,y,w), p.y);
+  float n = _mix(uv.x, uv.y, p.z); // Range: [0, 1].
 
-    // Interpolating along Z, and returning the 3D noise value.
-    float n = _mix(h.x, h.y, p.z); // Range: [0, 1].
-
-    return n;//_fabs(n - 0.5f)*2.0f;
+  return n;
 }
 
 // Simple fBm to produce some clouds.
@@ -226,74 +132,6 @@ __DEVICE__ float hex(in float2 p){
 
 }
 
-/*
-// More accurate formula, but involves more operations and didn't improve quality by any
-// significant amount, so I've used the estimation below.
-__DEVICE__ float hexPylon(float2 p2, float pz, float r, float ht){
-
-    float3 p = to_float3(p2.x, pz, p2.y);
-
-    // Note the "*1.5" You need to take the minimum of
-    // long-sided rectangles, not squares. Squares will give
-    // you a dodecahedron.
-    float3 b = to_float3(r*1.5f, ht, r);
-
-    //swi2(p,x,z) = _fabs(swi2(p,x,z));
-    //swi2(p,x,z) = to_float2(p.x*0.866025f + p.z*0.5f, p.z);
-
-    b -= 0.015f;
-    //swi2(p,x,z) = r2(-3.14159f/3.0f)*swi2(q,x,z);
-    float d1 = length(_fmaxf(_fabs(p) - b, 0.0f));
-    swi2(p,x,z) = r2(6.2831f/3.0f)*swi2(p,x,z);
-    float d2 = length(_fmaxf(_fabs(p) - b, 0.0f));
-
-    swi2(p,x,z) = r2(6.2831f/3.0f)*swi2(p,x,z);
-    float d3 = length(_fmaxf(_fabs(p) - b, 0.0f));
-    return _fmaxf(max(d1, d2), d3) - 0.015f;
-}
-*/
-
-/*
-// Signed distance to a regular hexagon -- using IQ's more exact method.
-__DEVICE__ float sdHexagon(in float2 p, in float r){
-
-  const float3 k = to_float3(-0.8660254f, 0.5f, 0.57735f); // pi/6: cos, sin, tan.
-
-  // X and Y reflection.
-  p = _fabs(p);
-  p -= 2.0f*_fminf(dot(swi2(k,x,y), p), 0.0f)*swi2(k,x,y);
-
-  // Polygon side.
-  return length(p - to_float2(clamp(p.x, -k.z*r, k.z*r), r))*sign(p.y - r);
-
-}
-
-// IQ's extrusion formula, with a bit of rounding (the 0.015f bit) thrown in.
-__DEVICE__ float opExtrusion(in float sdf, in float pz, in float h)
-{
-    float2 w = to_float2( sdf, _fabs(pz) - h );
-    return _fminf(max(w.x,w.y), 0.0f) + length(_fmaxf(w + 0.015f, 0.0f)) - 0.015f;
-}
-
-// A technically correct hexagonal pylon formual.
-__DEVICE__ float hexPylon(float2 p2, float pz, float r, float ht){
-
-    float hex = sdHexagon(p2, r);
-    return opExtrusion(hex, pz, ht);
-}
-*/
-
-// Normally, I'd say this is the hexagonal pylon distance function. However, I should
-// probably make the distinction between a fully bonafide distance function and something
-// that estimates it. This is a bound of sorts. There's not a great deal between it and
-// the real thing, but it does exhibit different behaviour away from the surface, which
-// can affect things like shadows, etc. However, as you can see, in this situation, you
-// can't really tell. I figured I'd mention this, because myself and others use a lot of
-// these kind of functions.
-//
-// By the way, a more exact formula is commented out above.
-//
-// Hexagonal pylon field. There's also defines for a dodecahedron and a cylinder.
 __DEVICE__ float hexPylon(float2 p2, float pz, float r, float ht){
 
     float3 p = to_float3(p2.x, pz, p2.y);
@@ -327,19 +165,6 @@ __DEVICE__ float hexPylon(float2 p2, float pz, float r, float ht){
 
 
 
-// IDs for the neon lights. Added at the last minute. Identifying things can be tiresome. Individual
-// objects need to be identified, and sometimes, objects within objects need identification too.
-// In this case, there are four pylon groupings. Each pylon object contains a neon light object that
-// is either on or off.
-//
-// If you're seting IDs withing the distance function, they can be lost when calling things like the
-// "normal" function, etc. Therefore, you need extra variables to save the IDs directly after calling
-// the trace function. Then there's the matter of ID sorting, which should be done outside the loop...
-// Even with a "struct," or something to that effect, it can still be messy. Having said that, I might
-// start trying to streamline and formalize the process.
-
-// The pylon and light distance field.
-// Variables in order: swi2(p,x,z), p.y, radius, height, ID, direction (unused).
 __DEVICE__ float objDist(float2 p, float pH, float r, float ht, inout float id, float dir){
 
     // Neon light height: Four levels, plus the height is divided by two.
@@ -350,7 +175,7 @@ __DEVICE__ float objDist(float2 p, float pH, float r, float ht, inout float id, 
 
     #ifdef ADD_DETAIL_GROOVE
     // I like this extra detail, but it was a little too expensive.
-  h1 = _fmaxf(h1, -hexPylon(p, pH + ht, r - 0.06f, s/4.0f)); // Extra detail.
+    h1 = _fmaxf(h1, -hexPylon(p, pH + ht, r - 0.06f, s/4.0f)); // Extra detail.
     #endif
 
     #ifdef ADD_DETAIL_BOLT
@@ -396,18 +221,9 @@ __DEVICE__ float hexHeight(float2 p){
 
 
 
-// This function returns the hexagonal grid coordinate for the grid cell, and the corresponding
-// hexagon cell ID - in the form of the central hexagonal point. That's basically all you need to
-// produce a hexagonal grid.
-//
-// When working with 2D, I guess it's not that important to streamline this particular function.
-// However, if you need to raymarch a hexagonal grid, the number of operations tend to matter.
-// This one has minimal setup, one "floor" call, a couple of "dot" calls, a ternary operator, etc.
-// To use it to raymarch, it's necessary to double up on everything -- in order to deal with
-// overlapping fields from neighboring cells, so the fewer operations the better.
 __DEVICE__ float4 getHex(float2 p, float pH){
 
-float4 litID=to_float4_s(0.0f); // ??!?!?!?
+    float4 litID=to_float4_s(0.0f); // ??!?!?!?
 
 
     // Helper vector. If you're doing anything that involves regular triangles or hexagons, the
@@ -557,63 +373,6 @@ __DEVICE__ float trace(float3 ro, float3 rd){
 
 
 
-/*
-__DEVICE__ void getGlow(float3 ro, float3 rd, float t){
-
-   glow = to_float3(0);
-   float t2 = hash31(ro + rd)*0.25f, d, ad;
-   t2 = _fmaxf(t2 - 3.0f, 0.0f);
-
-   for (int i = 0; i<30; i++){
-
-    d = map(ro + rd*t2);
-        ad = _fabs(d);
-
-        if(ad<0.001f*(t2*0.125f + 1.0f) || t2>FAR) break;
-
-        const float gd = 0.1f;
-        float rnd = getRndID(vRnd);
-        if(rnd>0.0f && gLitID == 1.0f && ad<gd) { // && ad<.05
-      float gl = 0.2f*(gd - ad)/gd/(1.0f + ad*ad/gd/gd*8.0f);
-            glow += gl;
-        }
-
-    t2 += d;
-
-    }
-
-
-
-}
-*/
-
-/*
-// Second pass, which is the first, and only, reflected bounce.
-// Virtually the same as above, but with fewer iterations and less
-// accuracy.
-//
-// The reason for a second, virtually identical equation is that
-// raymarching is usually a pretty expensive exercise, so since the
-// reflected ray doesn't require as much detail, you can relax things
-// a bit - in the hope of speeding things up a little.
-__DEVICE__ float traceRef(float3 ro, float3 rd){
-
-    float t = 0.0f, d;
-
-    for (int i = 0; i<32; i++){
-
-        d = map(ro + rd*t);
-
-        if(_fabs(d)<0.002f*(t*0.25f + 1.0f) || t>FAR) break;
-
-        t += d;
-    }
-
-    return _fminf(t, FAR);
-}
-*/
-
-
 // Cheap shadows are hard. In fact, I'd almost say, shadowing repeat objects - in a setting like this - with limited
 // iterations is impossible... However, I'd be very grateful if someone could prove me wrong. :)
 __DEVICE__ float softShadow(float3 ro, float3 lp, float k){
@@ -658,56 +417,6 @@ __DEVICE__ float3 getNormal(in float3 p) {
   return normalize(to_float3(map(p + swi3(e,x,y,y)) - map(p - swi3(e,x,y,y)), map(p + swi3(e,y,x,y)) - map(p - swi3(e,y,x,y)),  map(p + swi3(e,y,y,x)) - map(p - swi3(e,y,y,x))));
 }
 
-
-
-/*
-// Tetrahedral normal, to save a couple of "map" calls. Courtesy of IQ.
-__DEVICE__ float3 getNormal( in float3 p ){
-
-    // Note the slightly increased sampling distance, to alleviate
-    // artifacts due to hit point inaccuracies.
-    float2 e = to_float2(0.0025f, -0.0025f);
-    return normalize(
-        swi3(e,x,y,y) * map(p + swi3(e,x,y,y)) +
-        swi3(e,y,y,x) * map(p + swi3(e,y,y,x)) +
-        swi3(e,y,x,y) * map(p + swi3(e,y,x,y)) +
-        swi3(e,x,x,x) * map(p + swi3(e,x,x,x)));
-}
-*/
-
-/*
-// Normal calculation, with some edging and curvature bundled in.
-__DEVICE__ float3 getNormal(float3 p, inout float edge, inout float crv, float ef) {
-
-    // Roughly two pixel edge spread, but increased slightly with larger resolution.
-    float2 e = to_float2(ef/_mix(450.0f, iResolution.y, 0.5f), 0);
-
-  float d1 = map(p + swi3(e,x,y,y)), d2 = map(p - swi3(e,x,y,y));
-  float d3 = map(p + swi3(e,y,x,y)), d4 = map(p - swi3(e,y,x,y));
-  float d5 = map(p + swi3(e,y,y,x)), d6 = map(p - swi3(e,y,y,x));
-  float d = map(p)*2.0f;
-
-    edge = _fabs(d1 + d2 - d) + _fabs(d3 + d4 - d) + _fabs(d5 + d6 - d);
-    //edge = _fabs(d1 + d2 + d3 + d4 + d5 + d6 - d*3.0f);
-    edge = smoothstep(0.0f, 1.0f, _sqrtf(edge/e.x*2.0f));
-
-
-    // Wider sample spread for the curvature.
-    //e = to_float2(12.0f/450.0f, 0);
-  //d1 = map(p + swi3(e,x,y,y)), d2 = map(p - swi3(e,x,y,y));
-  //d3 = map(p + swi3(e,y,x,y)), d4 = map(p - swi3(e,y,x,y));
-  //d5 = map(p + swi3(e,y,y,x)), d6 = map(p - swi3(e,y,y,x));
-    //crv = clamp((d1 + d2 + d3 + d4 + d5 + d6 - d*3.0f)*32.0f + 0.5f, 0.0f, 1.0f);
-
-
-    e = to_float2(0.0025f, 0); //iResolution.y - Depending how you want different resolutions to look.
-  d1 = map(p + swi3(e,x,y,y)), d2 = map(p - swi3(e,x,y,y));
-  d3 = map(p + swi3(e,y,x,y)), d4 = map(p - swi3(e,y,x,y));
-  d5 = map(p + swi3(e,y,y,x)), d6 = map(p - swi3(e,y,y,x));
-
-    return normalize(to_float3(d1 - d2, d3 - d4, d5 - d6));
-}
-*/
 
 // Ambient occlusion, for that self shadowed look.
 // Based on the original by IQ.

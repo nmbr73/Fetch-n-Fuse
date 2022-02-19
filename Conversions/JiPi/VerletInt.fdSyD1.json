@@ -1,0 +1,86 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fdSyD1",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Verlet int JiPi 879",
+  "description": "Not sure if it's correct…\nTotally unparallel but it seems to avoid compenetration and instability.\nChange gravity direction with mouse.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "collision",
+   "verletintegration"
+  ],
+  "hasliked": 0,
+  "parentid": "7dSyWR",
+  "parentname": "Verlet integration test"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//Verlet integration test by Kastorp\n//---------------------------------------\n\nvoid mainImage(out vec4 Q, vec2 U)  {\n    \n    vec2 R=iResolution.xy;vec4 M=iMouse;float T=iTime;int I=iFrame;\n    Q=vec4(0.8,0.95,0.95,0);  \n    for(int i=0;i<N;i++){\n        vec2 p = A(vec2(i,0)).xy;  \n        Q=mix(Q, (.6+.4*cos(vec4(0,2,4,0)+ vec4(i)/float(N)*6.28))* smoothstep(L,.0,length(U/R.y-p-L*.2)-L*.5), smoothstep(0.002,.0,length(U/R.y-p)-L));  \n    } \n    Q*= pow((1. - U.y / R.y) *U.x / R.x*(1. - U.x / R.x) *U.y / R.y * 10.0, 0.15);   \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 Q, vec2 U)  {\n\n    vec2 R=iResolution.xy;vec4 M=iMouse;float T=iTime;int I=iFrame;\n    if(U.y>1. || U.x>float(N)) discard;\n    \n    vec4[N] a;\n    for(int i =0;i<N;i++){\n         a[i] = A(vec2(i,0));\n        vec2 po=a[i].zw, p = a[i].xy;\n        //verlet integration \n        vec2 pn= 2.* p - po + .5*DT*DT *2.*( M.z>0.?G*( M.xy/R.y-R.xy/R.y*.5):vec2(0,-G));  \n        a[i]=vec4(pn,p);          \n    }\n    \n    //iterate constraint\n    for(int k=0;k<VI;k++){\n    \n    \n        //solve collision\n        for(int i =0;i<N;i++)for(int j =i+1;j<N;j++){  \n            float d = length(a[i].xy -a[j].xy);\n            if(d<2.*L ){\n                vec2 m=(a[i].xy+ a[j].xy)*.5,\n                     d0= (1.005- d/2./L)*(m-a[i].xy),\n                     d1= (1.005- d/2./L)*(m-a[j].xy),\n                     v0= a[i].xy-a[i].zw,\n                     v1= a[j].xy-a[j].zw,\n                     n= normalize(a[i].xy -a[j].xy),\n                     vm= (v0+v1)*.5,\n                     vn= n* min(dot(n,v0-v1),0.)*.5;\n                //if(k==0) \n                v0= vm-vn;v1=vm+ vn;\n\n                a[i]=vec4(a[i].xy- d0,a[i].xy- d0- v0);\n                a[j]=vec4(a[j].xy- d1,a[j].xy- d1- v1 );\n\n            }\n        }\n        \n        //TODO: sticks for ragdoll or ropes\n        \n        //solve wall\n        for(int i =0;i<N;i++){        \n            vec2 p=a[i].zw, pn = a[i].xy;\n            if(pn.y<L) { p.y= 2.*L-p.y; pn.y=2.*L-pn.y;  }\n            if(pn.x<L) { p.x= 2.*L-p.x; pn.x=2.*L-pn.x; }\n            if(pn.x>-L+R.x/R.y) { p.x= -2.*L+2.*R.x/R.y-p.x; pn.x=-2.*L+2.*R.x/R.y-pn.x; }\n            if(pn.y>-L+1.) { p.y= -2.*L+2.-p.y; pn.y=-2.*L+2.-pn.y; }\n            a[i]=vec4(pn,p);        \n        }\n    }\n    Q=a[int(U.x)];\n    if(I<1) {    \n         Q = vec4(.01+U.x/float(N),.2 +U.x,U.x/float(N),.2+U.x);   \n    }    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "//vec2 R; vec4 M; float T; int I;\n//#define Main void mainImage(out vec4 Q, vec2 U) \n//#define UNISET R=iResolution.xy;M=iMouse;T=iTime;I=iFrame;\n//#define A(U) texelFetch(iChannel0,ivec2(U),0)\n#define A(U) texture(iChannel0,(vec2(ivec2(U))+0.5)/iResolution.xy)\n\n\n#define L  0.08 //spehere radius\n#define G 10.0  //gravitiy foce\n#define DT 0.02 //time interval\n#define N 40    //number of spheres\n#define VI 8    // number of iterations\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

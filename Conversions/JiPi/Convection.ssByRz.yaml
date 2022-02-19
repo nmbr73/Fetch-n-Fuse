@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Convection
+  id: Convection
+  kernel: Convection
+  name: Convection
+shader:
+  author: wyatt
+  description: 'Material point method (uses gaussian interpolation to go between grid
+    and particles) '
+  id: ssByRz
+  name: Convection
+  tags:
+  - mpm
+  url: https://www.shadertoy.com/view/ssByRz

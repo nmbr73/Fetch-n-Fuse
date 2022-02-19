@@ -124,7 +124,10 @@ __KERNEL__ void ControllableMachineryFuse__Buffer_A(float4 fragColor, float2 fra
       el = _mix (el, -0.12f * pi, 0.003f + 0.05f * step (_fabs (el + 0.12f * pi), 0.15f));
     }
   }
-  spd = 2.0f * cnPos + Speed;
+  if (Speed != 0.0f) 
+    spd = 2.0f * cnPos + Speed;
+  else
+    spd = 0.0f; 
   if      (pxId == 0) stDat = to_float4 (tMov, cnPos, spd, 0.0f);
   else if (pxId == 1) stDat = to_float4 (az, el, mPtr.z, (float)(wgSel));
   Savev4 (pxId, stDat, &fragColor, fragCoord, txRow);
@@ -277,7 +280,7 @@ __DEVICE__ float3 HsvToRgb (float3 c)
 //const float pi = 3.1415927f;
 
 //const float nBlk = 13.0f;
-#define nBlk  13.0f
+//#define nBlk  13.0f
 
 #define DMIN(id) if (d < dMin) { dMin = d;  *idObj = id; }
 
@@ -478,7 +481,7 @@ __DEVICE__ float3 ObjNf (float3 p, int *idObj, float dstFar, float angRot, float
   return normalize (2.0f * swi3(v,y,z,w) - dot (v, to_float4_s (1.0f)));
 }
 
-__DEVICE__ float BlkHit (float3 ro, float3 rd, float tCyc, float dstFar, float bEdge, float tMov, float *hitBlk, float3 *vnBlk, float2 *qBlk)
+__DEVICE__ float BlkHit (float3 ro, float3 rd, float tCyc, float dstFar, float bEdge, float tMov, float *hitBlk, float3 *vnBlk, float2 *qBlk, int nBlk)
 {
   float4 a4;
   float3 rm, rdm, u, v, tm, tp;
@@ -508,7 +511,7 @@ __DEVICE__ float BlkHit (float3 ro, float3 rd, float tCyc, float dstFar, float b
   return dMin;
 }
 
-__DEVICE__ float BlkHitSh (float3 ro, float3 rd, float rng, float tCyc, float bEdge, float dstFar, float tMov)
+__DEVICE__ float BlkHitSh (float3 ro, float3 rd, float rng, float tCyc, float bEdge, float dstFar, float tMov, int nBlk)
 {
   float4 a4;
   float3 rm, rdm, v, tm, tp;
@@ -559,7 +562,7 @@ __DEVICE__ float GearSShadow (float3 ro, float3 rd, float dstFar, float angRot, 
   return sh;
 }
 
-__DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, float tMov, float tCur, float3 ltDir, __TEXTURE2D__ iChannel1)
+__DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, float tMov, float tCur, float3 ltDir, __TEXTURE2D__ iChannel1, int nBlk)
 {
   float3 vnBlk;
   float2 qBlk;
@@ -582,7 +585,7 @@ __DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, f
     dstObj = dstGear;
     idObj = idGr;
   } else idObj = idObjT;
-  dstBlk = BlkHit (ro, rd, tCyc,dstFar,bEdge,tMov, &hitBlk, &vnBlk, &qBlk);
+  dstBlk = BlkHit (ro, rd, tCyc,dstFar,bEdge,tMov, &hitBlk, &vnBlk, &qBlk, nBlk);
   if (_fminf (dstBlk, dstObj) < dstFar) {
     if (dstBlk < dstObj) {
       dstObj = dstBlk;
@@ -648,7 +651,7 @@ __DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, f
       }
     }
     sh = _fminf (ObjSShadow (ro, ltDir,&idObj,dstFar,angRot,bEdge,wgObj), GearSShadow (ro, ltDir,dstFar,angRot,bEdge));
-    sh = 0.6f + 0.4f * _fminf (sh, BlkHitSh (ro + 0.01f * ltDir, ltDir, 6.0f,tCyc,bEdge,dstFar,tMov)); //, float dstFar, float tMov
+    sh = 0.6f + 0.4f * _fminf (sh, BlkHitSh (ro + 0.01f * ltDir, ltDir, 6.0f,tCyc,bEdge,dstFar,tMov,nBlk)); //, float dstFar, float tMov
     nDotL = _fmaxf (dot (vn, ltDir), 0.0f);
     if (isMet) nDotL *= nDotL;
     col = swi3(col4,x,y,z) * (0.1f + 0.1f * _fmaxf (- dot (vn, ltDir), 0.0f) + 0.9f * sh * nDotL) +
@@ -664,9 +667,11 @@ __DEVICE__ float3 ShowScene (float3 ro, float3 rd, float dstFar, float4 wgObj, f
 //**************************************************************************************************************************************************************************
 __KERNEL__ void ControllableMachineryFuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
-  const float txRow = 128.0f;
   
-
+  CONNECT_INTSLIDER0(nBlk, 1, 25, 13);
+  
+  const float txRow = 128.0f;  
+  
   mat3 vuMat;
   float4 stDat;
   float3 ro, rd, col;
@@ -700,7 +705,7 @@ __KERNEL__ void ControllableMachineryFuse(float4 fragColor, float2 fragCoord, fl
   for (float a = (float)(VAR_ZERO); a < naa; a ++) {
     rd = mul_mat3_f3(vuMat , normalize (to_float3_aw (uv + step (1.5f, naa) * Rot2D (to_float2 (0.5f / canvas.y, 0.0f),
                                         sr * (0.667f * a + 0.5f) * pi), zmFac)));
-    col += (1.0f / naa) * ShowScene (ro, rd, dstFar,wgObj, tMov, tCur, ltDir, iChannel1);
+    col += (1.0f / naa) * ShowScene (ro, rd, dstFar,wgObj, tMov, tCur, ltDir, iChannel1, nBlk);
   }
   fragColor = to_float4_aw (col, 1.0f);
   

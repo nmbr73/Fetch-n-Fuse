@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: CausticLbm
+  id: CausticLbm
+  kernel: CausticLbm
+  name: CausticLbm
+shader:
+  author: davidar
+  description: Rendering ndel's lattice Boltzmann implementation with approximate
+    caustics
+  id: fslyWs
+  name: Caustic LBM
+  tags:
+  - refraction
+  - water
+  - light
+  - fluid
+  - caustics
+  - laplacian
+  - lbm
+  - shallow
+  url: https://www.shadertoy.com/view/fslyWs

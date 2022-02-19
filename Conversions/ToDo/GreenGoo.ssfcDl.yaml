@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: GreenGoo
+  id: GreenGoo
+  kernel: GreenGoo
+  name: GreenGoo
+shader:
+  author: N.N.
+  description: The bump mapping is a shameless fake taking several brutal shortcuts
+    for this simple 2-D demo, but doing it properly in 3-D would not be a lot more
+    work. A procedural bump function with an analytical derivative makes it quite
+    easy.
+  id: ssfcDl
+  name: Fork Green goo JiPi 226
+  parent:
+    id: NdfyDs
+    name: Green goo
+    url: https://www.shadertoy.com/view/NdfyDs
+  tags:
+  - noise
+  - bump
+  - flownoise
+  url: https://www.shadertoy.com/view/ssfcDl
