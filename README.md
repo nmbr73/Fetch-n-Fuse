@@ -100,3 +100,17 @@ What this looks like ...
 ![Fusion Screenshot](Fusion-Screenshot.png)
 
 *Worth to mention that the [rosace 3c](https://www.shadertoy.com/view/Ms3SzB) in the screenshot was created by [Fabrice Neyret](https://www.shadertoy.com/user/FabriceNeyret2) who not only developed some gorgeous fragment shaders, but also is the creator of [SHADERTOY – UNOFFICIAL](https://shadertoyunofficial.wordpress.com), a very helpful source of information!*
+
+
+# AudioShaderfuse
+
+Shadertoy provides an interface consisting of an image (512*2 pixels). One line contains 512 sampled waveform values belonging to the current frame and the second line contains the FFT values.
+This interface can also be implemented in Resolve/Fusion. For this you need the [AudioWaveform.fuse](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Fuses/AudioWaveform.fuse). This generates the corresponding image from a loaded WAV file. (You can use the Renderstage of Resolve to convert a mp3-File to a Wav-File) The AudioWaveform has a second output for this. This is connected to an AudioShaderfuse.
+The following AudioShaderfuses are present in the repo:
+- [ShadertoyAudioDisplay](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Converted/ShadertoyAudioDisplay.fuse)
+- [JamSession](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Converted/JamSession.fuse)
+- [ReactiveVoronoi](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Converted/ReactiveVoronoi.fuse)
+- [AudioHeightfield1](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Converted/AudioHeightfield1.fuse)
+- [AudioWaveformVisualizer](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Converted/AudioWaveformVisualizer.fuse)
+
+An example comp file is here: [AudioShaderfuse.comp](https://github.com/nmbr73/Fetch-n-Fuse/blob/main/Conversions/AudioShaderfuse.comp)
