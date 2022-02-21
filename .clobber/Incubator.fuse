@@ -1041,10 +1041,14 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 end
 
 
-InstallPath = [[c:\Users\Zumsel\AppData\Roaming\Blackmagic Design\Fusion\Fuses\]]
+--InstallPath = [[c:\Users\Zumsel\AppData\Roaming\Blackmagic Design\Fusion\Fuses\]]
+InstallPath = PathToRepository -- Alternative
 ---------------------------------- Helperfunctions PathToUse---------------------------------------
 function readAll()
  
+ --print("Path:   ",PathToRepository,InstallPath, REPOSITORYPATH)
+ 
+ InstallPath = PathToRepository
  
   file = InstallPath.."PathToUse.txt"
   
@@ -1053,9 +1057,10 @@ function readAll()
     print("File-Error-Reading: ",f)
     return "root"
   end
-  --print("READING*************************************\n ",content)
+  
   local content = f:read("*all")
   local size = f:seek("end")
+  print("READING*************************************\n ",file,content)
   
   f:close()
   return content
@@ -1064,15 +1069,19 @@ end
 
 function writeAll(content)
   --file = self.Comp:MapPath(file)
+  
+  InstallPath = PathToRepository
+  
   file = InstallPath.."PathToUse.txt"
   local f = io.open(file, "w")
   if not f then
     print("File-Error-Writing: ",f)
     return
   end
-  --print("WRITING*************************************\n ", content)
+  
   f:write(content)
   local size = f:seek("end")
+  print("WRITING*************************************\n ", content)
   
   f:close()
   return 0
@@ -1568,7 +1577,7 @@ function RebuildParameters()
       end
     end
 
-    --CONNECT_POINT0(NAME,SDEFAULT)
+    --CONNECT_POINT0(NAME,SDEFAULTX,SDEFAULTY)
     for i=0,NUM_POINT_CONTROLS-1 do
 
       -- local name, sdefx, sdefy = ConversionSourcecode:match("%s+ CONNECT_POINT"..i.."%(([%a*_*%d*]*)%s*,%s*(%-?%d*%.%d*)f%s*,%s*(%-?%d*%.%d*)f%s*.*$") -- geht
@@ -2302,8 +2311,8 @@ function NotifyChanged(inp, param, time)
       --InSemaphore:SetSource(Number(1),0,0)
       --file = InstallPath.."Test.txt"
       
-      --print("AlterWert: ", readAll())
-      --print("NeuerWert", param.Value)
+      print("AlterWert: ", readAll())
+      print("NeuerWert", param.Value)
       
       if (param.Value == "Root") then
         writeAll("")
