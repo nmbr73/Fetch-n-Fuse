@@ -69,19 +69,19 @@ def verbose(msg):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def patchForDCTL(code,fuse_name,buffer_name):
+def patch_webgl(code,fuse_name,buffer_name):
   """
-  Do some text replacememt to make some WebGL to DCTL conversions.
+  Do simple text replacement to make some WebGL to DCTL conversions.
   """
 
   code = code.replace("\t", "  ")
 
+
+  # --- dimensions
+
   code=re.sub(r'([^\w])(fragCoord)\.xy([^\w])',r'\1\2\3', code)
   code=re.sub(r'([^\w])(iResolution)\.xy([^\w])',r'\1\2\3', code)
 
-
-
-#---- Dimensionen ----
   #rgba noch verbesserbar ").rgb"
   code=re.sub(r'(\w+\.)(rgba)',r'\1xyzw', code)
   code=re.sub(r'(\w+\.)(rgb)',r'\1xyz', code)
@@ -92,24 +92,26 @@ def patchForDCTL(code,fuse_name,buffer_name):
   code=re.sub(r'(\w+\.)(b)([\s\)\,\;\*\\\-\+/])',r'\1z\3', code)
   code=re.sub(r'(\w+\.)(a)([\s\)\,\;\*\\\-\+/])',r'\1w\3', code)
 
-#  code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
+  #code=re.sub(r'(\w+)\.([xyzw]{2,4})',r'swi\2(\1)', code)
   code=re.sub(r'(\w+)\.([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi2(\1,\2,\3)\4', code)
   code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi3(\1,\2,\3,\4)\5', code)
   code=re.sub(r'(\w+)\.([xyzw])([xyzw])([xyzw])([xyzw])([\s\)\,\;\*\\\-\+])',r'swi4(\1,\2,\3,\4,\5)\6', code)
 
 
-#--- Arrays ---
+  # --- arrays
+
   code=re.sub(r'(^\s?)(\w+)(\[\s?\])\s*(\w+)',r'\1\2 \4\3', code) #Deklaration
 
-#  code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
+  #code=re.sub(r'(^\w+)texture(\s*)\(',r'\g<1>_tex2DVecN\2(',code)
   code=re.sub(r'(.*)texture(\s*\(\s*)(\w+)\s*\,\s*(\w+)\s*\)','\g<1>_tex2DVecN\g<2>\g<3>,\g<4>.x,\g<4>.y,15)',code)
-#  code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geaendert werden
+  #code=re.sub(r'(sampler2D)(\s*\w+)','__Texture2D__\2',code) #kollidiert noch mit Kernelaufruf - muss dort dann geaendert werden
 
 
+  # --- math functions
 
   for s in [
-      # prefix, suffix, fuctions
-      [ '' ,   '_f', 'mod'], # '_f' dahinter, um auf eigene Implementierung umzubiegen
+      # prefix, suffix, functions
+      [ '' ,   '_f', 'mod'], # '_f' suffix to redirect to own implementation
       [ '_',   'f' , 'pow|log2|log10|log|copysign|saturate|sqrt|trunc|hypot|cos|sin|cospi|sinpi|tan|acos|asinh|atanh|cosh|sinh|tanh|cbrt|lgamma|tgamma|rsqrt|exp|exp2'],
       [ '_',   '2f', 'atan'],
       [ '_f',  'f' , 'max|min|dim'],
@@ -119,12 +121,17 @@ def patchForDCTL(code,fuse_name,buffer_name):
     code=re.sub(r'([^\w])('+s[2]+r')(\s*)\(',r'\g<1>'+s[0]+r'\g<2>'+s[1]+r'\3(', code)
 
 
+  # --- float literals
+
   code=re.sub(r'([ \(,\+\-\*=/<>]+)(\.[0-9]+f{0,1})([ \),\+\-\*=;/<>]+)',r'\g<1>0\2\3', code)
   code=re.sub(r'([ \(,\+\-\*=/<>]+)(\.[0-9]+f{0,1})([ \),\+\-\*=;/<>]+)',r'\g<1>0\2\3', code)
   code=re.sub(r'([ \(,\+\-\*=/<>]+)([0-9]+\.)([ \),\+\-\*=;/<>]+)',r'\1\g<2>0\3', code)
   code=re.sub(r'([ \(,\+\-\*=/<>]+)([0-9]+\.)([ \),\+\-\*=;/<>]+)',r'\1\g<2>0\3', code)
   code=re.sub(r'([ \(,\+\-\*=/<>]+)([0-9]+\.[0-9]+)([ \),\+\-\*=;/<>]+)',r'\1\2f\3', code)
   code=re.sub(r'([ \(,\+\-\*=/<>]+)([0-9]+\.[0-9]+)([ \),\+\-\*=;/<>]+)',r'\1\2f\3', code)
+
+
+  # --- vector types
 
   # vecN ... =  -> floatN ... =
   code=re.sub(r'\n(\s*)vec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1float\2\3', code)
@@ -133,8 +140,6 @@ def patchForDCTL(code,fuse_name,buffer_name):
   # ivecN ... =  -> intN ... =
   code=re.sub(r'\n(\s*)ivec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1int\2\3', code)
   code=re.sub(r'\n(\s*)const(\s+)ivec([234])(\s+[_A-Za-z][_A-Za-z0-9]*\s*=)',r'\n\1const\2int\3\4', code)
-
-
 
   # vecN(float) -> to_floatN_s(float)
   code=re.sub(r'vec([234])(\s*\(\s*[0-9]+\.[0-9]+f\s*\))',r'to_float\1_s\2', code)
@@ -148,6 +153,9 @@ def patchForDCTL(code,fuse_name,buffer_name):
   # am Schluss alle verbleibenden 'vecN' weghauen:
   code=re.sub(r'([\s\(\)\*\+\-;,=])ivec([234])(\s)',r'\1int\2\3', code)
   code=re.sub(r'([\s\(\)\*\+\-;,=])vec([234])(\s)',r'\1float\2\3', code)
+
+
+  # --- kernel function
 
   kernel_name=fuse_name+'Fuse'
 
@@ -219,13 +227,9 @@ def patchForDCTL(code,fuse_name,buffer_name):
 
   return code
 
-
-
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 
-def asFuseID(shader_name,shader_id):
+def as_fuse_id(shader_name,shader_id):
   """
   Derive an identifier from shader_name.
 
@@ -254,7 +258,7 @@ def asFuseID(shader_name,shader_id):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def asFusename(shader_name,shader_id):
+def as_fuse_name(shader_name,shader_id):
   """
   Derive a fuse name from shader_name.
 
@@ -267,20 +271,20 @@ def asFusename(shader_name,shader_id):
   or export it to settings files) by elimiating whitespace and leading digits.
   """
 
-  return asFuseID(shader_name,shader_id)
+  return as_fuse_id(shader_name,shader_id)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def asKernelname(shader_name,shader_id):
+def as_kernel_name(shader_name,shader_id):
   """
   Derive a kernel function name from shader_name.
   """
 
-  return asFuseID(shader_name,shader_id)
+  return as_fuse_id(shader_name,shader_id)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def asFilename(shader_name,shader_id):
+def as_file_name(shader_name,shader_id):
   """
   Derive a filename (without suffix) from shader_name.
 
@@ -289,7 +293,7 @@ def asFilename(shader_name,shader_id):
   file created by `fuse`.
   """
 
-  return asFuseID(shader_name,shader_id)
+  return as_fuse_id(shader_name,shader_id)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -386,7 +390,7 @@ def create_json(shader_id):
 
   shader_name = json_data['info']['name']
 
-  conv_name = asFilename(shader_name,shader_id)
+  conv_name = as_file_name(shader_name,shader_id)
 
 
   # write file
@@ -491,10 +495,10 @@ def create_yaml(conv_name, shader_id, json_data):
           'tags'        : info['tags'],
         },
         'fuse':{
-          'id'      : asFuseID(shader_name,shader_id),
-          'name'    : asFusename(shader_name,shader_id),
-          'file'    : asFilename(shader_name,shader_id),
-          'kernel'  : asKernelname(shader_name,shader_id),
+          'id'      : as_fuse_id(shader_name,shader_id),
+          'name'    : as_fuse_name(shader_name,shader_id),
+          'file'    : as_file_name(shader_name,shader_id),
+          'kernel'  : as_kernel_name(shader_name,shader_id),
           'author'  : os.getenv('AUTHOR'),
         }
       }
@@ -539,7 +543,7 @@ def create_yaml(conv_name, shader_id, json_data):
 #   # for old yaml files - can be removed later:
 #   if not 'kernel' in yaml_data['fuse']:
 #     shader_name=yaml_data['shader']['name']
-#     yaml_data['fuse']['kernel'] = asKernelname(shader_name,shader_id)
+#     yaml_data['fuse']['kernel'] = as_kernel_name(shader_name,shader_id)
 
 #   return yaml_data
 
@@ -621,8 +625,6 @@ def read_glsl(conv_name, shader_id):
 
 def create_assets(json_data):
 
-  # do nothing assets should not be downloaded
-
   if NOASSETS:
     return
 
@@ -679,7 +681,7 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
     return
 
   shader_name = json_data['info']['name']
-  kernel_name = asKernelname(shader_name,shader_id)
+  kernel_name = as_kernel_name(shader_name,shader_id)
 
   known_code_parts=['Common','Buffer A','Buffer B','Buffer C','Buffer D','Image','Sound']
 
@@ -721,7 +723,7 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
           #header=header + "// Connect '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
           header=header + "// Connect "+name+" '"+input['name']+"' to iChannel"+str(input['channel'])+"\n"
 
-    code_parts[name]['code'] = header + "\n\n" + patchForDCTL(code,kernel_name,name)
+    code_parts[name]['code'] = header + "\n\n" + patch_webgl(code,kernel_name,name)
 
 
   code=""
@@ -735,7 +737,7 @@ def create_dctl(conv_name, shader_id, json_data, glsl_data):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-def doFetch(shader_id):
+def do_fetch(shader_id):
 
   conv_name   = create_json(shader_id)
   json_data   = read_json(conv_name, shader_id)
@@ -756,7 +758,7 @@ if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
  print("#SELFPATH:",selfpath)
  print(sys.argv, len(sys.argv))
  #print("##Argv2##",id,param,txt)
- 
+
  print("Folder: ",folder)
 
  CONVERSIONS_PATH = selfpath+"\Conversions\\"+folder+"\\"
@@ -803,8 +805,8 @@ print("\nENVIRIONMENT ",os.getenv('APIKEY'))
 
 
 #try:
-#  doFetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
+#  do_fetch(args.id,force=args.force,nocache=args.no_cache,noassets=args.no_assets,nopatch=args.no_patch)
 #except Exception as e:
 #  print("ERROR: "+str(e))
-doFetch(ID)
-#doFetch(id)
+do_fetch(ID)
+#do_fetch(id)
