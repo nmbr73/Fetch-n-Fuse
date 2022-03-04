@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: VelocityConservation
+  id: VelocityConservation
+  kernel: VelocityConservation
+  name: VelocityConservation
+shader:
+  author: lomateron
+  description: 'click to add mass
+
+    trying to make a fluid only using convolutions, no particles
+
+    this is close but not quite there
+
+    velocity here never dies, never cancels out, its going to move faster and faster'
+  id: fld3z2
+  name: velocity conservation
+  tags:
+  - fluid
+  - convolution
+  - kernels
+  url: https://www.shadertoy.com/view/fld3z2

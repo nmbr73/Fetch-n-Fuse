@@ -185,7 +185,7 @@
 /*| mul_f3_mat3   |*/    return C;
 /*| mul_f3_mat3   |*/  }
 /*|               |*/
-/*| mul_mat3_mat3 |*/__DEVICE__ mat3 mul_mat3_mat3( mat3 A, mat3 B)
+/*| mul_mat3_mat3 |*/__DEVICE__ mat3 mul_mat3_mat3( mat3 B, mat3 A)
 /*| mul_mat3_mat3 |*/{
 /*| mul_mat3_mat3 |*/   float r[3][3];
 /*| mul_mat3_mat3 |*/   float a[3][3] = {{A.r0.x, A.r0.y, A.r0.z},
@@ -285,8 +285,8 @@
 /*| mul_f4_mat4   |*/  }
 /*|               |*/
 /*| mul_mat4_mat4 |*/__DEVICE__ inline mat4 mul_mat4_mat4( mat4 B, mat4 A)
-/*| mul_mat4_mat3 |*/{
-/*| mul_mat4_mat3 |*/
+/*| mul_mat4_mat4 |*/{
+/*| mul_mat4_mat4 |*/
 /*| mul_mat4_mat4 |*/  float r[4][4];
 /*| mul_mat4_mat4 |*/  float a[4][4] = {{A.r0.x, A.r0.y, A.r0.z, A.r0.w},
 /*| mul_mat4_mat4 |*/                   {A.r1.x, A.r1.y, A.r1.z, A.r1.w},
@@ -498,7 +498,7 @@
     /*| cos_f4        |*/ #define cos_f4(i) to_float4( _cosf((i).x), _cosf((i).y), _cosf((i).z), _cosf((i).w))
     /*| acos_f3       |*/ #define acos_f3(i) to_float3( _acosf((i).x), _acosf((i).y), _acosf((i).z))
     /*| tan_f3        |*/ #define tan_f3(i) to_float3(_tanf((i).x), _tanf((i).y), _tanf((i).z))
-    /*| tanh_f3       |*/ #define tanh_f3(i) to_float3(_tanhf(i.x), _tanhf((i).y), _tanhf((i).z))
+    /*| tanh_f3       |*/ #define tanh_f3(i) to_float3(_tanhf((i).x), _tanhf((i).y), _tanhf((i).z))
     /*| atan_f2       |*/ #define atan_f2(i, j) to_float2( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y))
     /*| atan_f3       |*/ #define atan_f3(i, j) to_float3( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z))
     /*| atan_f4       |*/ #define atan_f4(i, j) to_float4( _atan2f((i).x,(j).x), _atan2f((i).y,(j).y), _atan2f((i).z,(j).z), _atan2f((i).w,(j).w))
