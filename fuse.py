@@ -405,6 +405,44 @@ def check_controls(conversionCode):
             In{ctrlVar}ColorA = self:AddInput("Alpha", "{ctrlVar}Alpha", {{ INP_Default  = {a}, IC_ControlID = 3, attrs}})
 
           self:EndControlNest()"""
+    
+    elif ctrlType == 'BUTTON':
+      #print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
+      
+      m=ctrlParams.split(",")
+      
+      if m == None:
+        raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
+      
+      #print("m",m, m[0])
+      
+      if (m[0] == "0"): 
+        _type = ""
+      if (m[0] == "1"): 
+        _type = f""" MBTNC_Type         = "Toggle", """
+
+      buttons = ""
+      m.pop(0)
+      for i in m:
+        buttons += f""" {{ MBTNC_AddButton  = "{i}", }}, """
+      
+      codeParams  = f"float  {ctrlVar};"
+      codeKernel  = f"float  {ctrlVar} = params->{ctrlVar};"
+      codeProcess = f"params.{ctrlVar} = In{ctrlVar}Button:GetValue(req).Value"
+      codeCreate  = f"""
+          In{ctrlVar}Button = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+              LINKID_DataType    = "Number",
+              INPID_InputControl = "MultiButtonControl",
+              MBTNC_ForceButtons = true,
+        {_type}
+              MBTNC_ShowName     = false,
+        {buttons}
+		      MBTNC_StretchToFit = true,
+              IC_NoLabel         = true,
+		      INP_Default        = 0,
+              IC_Visible         = true,
+          }})"""
+ 
 
     else:
       raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")

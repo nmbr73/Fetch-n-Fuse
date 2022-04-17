@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: AbstractNoise
+  id: AbstractNoise
+  kernel: AbstractNoise
+  name: AbstractNoise
+shader:
+  author: wildniklin
+  description: 'abstract art
+
+
+    I was actually expecting the SDF to look terrible, but it turned out to look pretty
+    decent. It''s definitely not exact, but it''s not terrible either.'
+  id: st2czd
+  name: Abstract Noise
+  tags:
+  - noise
+  url: https://www.shadertoy.com/view/st2czd

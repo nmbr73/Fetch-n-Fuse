@@ -41,6 +41,7 @@ __DEVICE__ float4 T (float2 U, float2 iResolution, __TEXTURE2D__ iChannel0 ) {re
 __KERNEL__ void BiologicalParticlesFuse__Buffer_A(float4 Q, float2 U, float iTime, float2 iResolution, int iFrame, sampler2D iChannel0, sampler2D iChannel1)
 {
   CONNECT_SLIDER0(Blend1, 0.0f, 1.0f, 0.0f);
+  CONNECT_SLIDER1(Strength, -10.0f, 10.0f, 2.0f);
   //CONNECT_BUTTON0(Modus, 1, Icks, Yps, Zet, Weh, Erase);
   CONNECT_BUTTON0(Modus, 1, Icks, Yps, Zet, Weh, Erase);
     
@@ -92,7 +93,8 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_A(float4 Q, float2 U, float iTim
     float4 tex = E(U);
     if (tex.w != 0.0f)    
     {
-      tex = tex*2.0 - 1.0f;
+      //tex = tex*2.0 - 1.0f;
+      tex = tex * Strength - Strength/2.0f;
       if ((int)Modus & 2) Q.x = _mix(Q.x,tex.x,Blend1);
       if ((int)Modus & 4) Q.y = _mix(Q.y,tex.y,Blend1);
       if ((int)Modus & 8) Q.z = _mix(Q.z,tex.z,Blend1);
@@ -100,7 +102,7 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_A(float4 Q, float2 U, float iTim
       if ((int)Modus & 32) Q = to_float4(0.0f,0.0f,1.0f,1.0f);
     }  
   } 
-
+//Q = E(U);
 
   SetFragmentShaderComputedColor(Q);
 }
@@ -200,7 +202,7 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_D(float4 Q, float2 U, float2 iRe
       float4 c = C(U+to_float2(0,i));
       Q += c*M*exp_f4(-O*i*i);
     }
-    if(iFrame<1) Q = to_float4_s(0);
+    //if(iFrame<1) Q = to_float4_s(0);
 
 /*
   if (Blend1>0.0f)
@@ -238,19 +240,23 @@ __KERNEL__ void BiologicalParticlesFuse__Buffer_D(float4 Q, float2 U, float2 iRe
 */
 __KERNEL__ void BiologicalParticlesFuse(float4 Q, float2 U, float2 iResolution, sampler2D iChannel1, sampler2D iChannel3)
 {
+    CONNECT_CHECKBOX0(TexturBlend, 0);
     CONNECT_SLIDER0(Blend1, 0.0f, 1.0f, 0.0f);
+    CONNECT_COLOR0(Color, 0.5f, 0.5f, 0.5f, 1.0f);
 
     float4 b = B(U);
     float4 h = (hash(b.w));
     Q = smoothstep(2.0f,0.0f,length(swi2(b,x,y)-U))*(0.5f+2.0f*h);
   //Q = _fabs(D(U));
 
-  if (Blend1>0.0f)
+  if (Blend1>0.0f&&TexturBlend)
   {
     float4 tex = E(U);
     if (tex.w != 0.0f)    
       Q = _mix(Q,tex,Blend1);
   } 
+
+  Q = to_float4_aw( swi3(Q,x,y,z)+swi3(Color,x,y,z)-0.5f ,Color.w);
 
   SetFragmentShaderComputedColor(Q);
 }

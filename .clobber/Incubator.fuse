@@ -253,7 +253,7 @@ function Create()
 
   for i=0,NUM_INTSLIDER_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_INTSLIDER"..i.."(NAME,SMIN,SMAX,SDEFAULT) "..
-    "const int NAME = ( "..
+    "int NAME = ( "..
     "_shaderParameters->ctrlIntSlider["..i.."] < SMIN ? SMIN : ("..
     "_shaderParameters->ctrlIntSlider["..i.."] > SMAX ? SMAX : _shaderParameters->ctrlIntSlider["..i.."]) )\n"
   end

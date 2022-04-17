@@ -1,3 +1,9 @@
+// ----------------------------------------------------------------------------------
+// - Common                                                                         -
+// ----------------------------------------------------------------------------------
+#define texture(ch,uv) _tex2DVecN(ch, (uv).x, (uv).y, 15)
+#define R iResolution
+
 
 // ----------------------------------------------------------------------------------
 // - Buffer A                                                                       -
@@ -55,58 +61,83 @@ __DEVICE__ uint ub[64] =  {  4086443839u, 803560891u, 3521573439u, 155586747u,
 
 __DEVICE__ uint u32_upk(uint u32, uint bts, uint off) { return (u32 >> off) & ((1u << bts)-1u); }
 
-__DEVICE__ float lmap(float2 fragCoord, float2 R, __TEXTURE2D__ iChannel0) { return (fragCoord.x / R.x); }
-__DEVICE__ float vmap(float2 fragCoord, float2 R, __TEXTURE2D__ iChannel0) { return (fragCoord.y / R.y); }
-__DEVICE__ float cmap(float2 fragCoord, float2 R, __TEXTURE2D__ iChannel0) { return _sqrtf  ( ((fragCoord.x - R.x)*0.5f) / R.x)*0.5f)
-                                         * ((fragCoord.x - R.x)*0.5f) / R.x)*0.5f)
-                                         + ((fragCoord.y - R.y)*0.5f) / R.y)*0.5f)
-                                         * ((fragCoord.y - R.y)*0.5f) / R.y)*0.5f) ); }
-__DEVICE__ float vwm() {
-  float   scale_raw = uintBitsToFloat(ub[62]);
-  float   zoom      = uintBitsToFloat(ub[61]);
+__DEVICE__ float lmap(float2 fragCoord, float2 R) { return (fragCoord.x / R.x); }
+__DEVICE__ float vmap(float2 fragCoord, float2 R) { return (fragCoord.y / R.y); }
+__DEVICE__ float cmap(float2 fragCoord, float2 R) { return _sqrtf  ( ((fragCoord.x - R.x*0.5f) / R.x*0.5f)
+                                                                   * ((fragCoord.x - R.x*0.5f) / R.x*0.5f)
+                                                                   + ((fragCoord.y - R.y*0.5f) / R.y*0.5f)
+                                                                   * ((fragCoord.y - R.y*0.5f) / R.y*0.5f) ); }
+                                                                                            
+                                         
+union Zahl
+ {
+   float  _Float; //32bit float
+   uint   _Uint;  //32bit unsigend integer
+ };                                         
+                                         
+__DEVICE__ float vwm(float2 fragCoord, float2 R) 
+{
+  
+  Zahl z;
+  
+  //float   scale_raw = uintBitsToFloat(ub[62]);
+  z._Uint = ub[62];
+  float   scale_raw = z._Float;
+  
+  //float   zoom      = uintBitsToFloat(ub[61]);
+  z._Uint = ub[61];
+  float   zoom = z._Float;
+
   float  scale_new  = scale_raw;
   uint   mode       = u32_upk(ub[59], 2u, 0u);
   if( mode == 1u ) { //  Linear Parameter Map
-    scale_new = ((lmap() + zoom) * (scale_raw / (1.0f + zoom * 2.0f))) * 2.0f; }
+    scale_new = ((lmap(fragCoord,R) + zoom) * (scale_raw / (1.0f + zoom * 2.0f))) * 2.0f; }
   if( mode == 2u ) { //  Circular Parameter Map
-    scale_new = ((_sqrtf(cmap()) + zoom) * (scale_raw / (1.0f + zoom * 2.0f))) * 2.0f; }
-  return scale_new; }
+    scale_new = ((_sqrtf(cmap(fragCoord,R)) + zoom) * (scale_raw / (1.0f + zoom * 2.0f))) * 2.0f; }
+  return scale_new; 
+}
     
 __DEVICE__ float  tp(uint n, float s)       { return ((float)(n+1u)/256.0f) * ((s*0.5f)/128.0f); }
-__DEVICE__ float utp(uint v, uint  w, uint o)   { return tp(u32_upk(v,w,w*o), vwm()); }
+__DEVICE__ float utp(uint v, uint  w, uint o, float2 fragCoord, float2 R)   { return tp(u32_upk(v,w,w*o), vwm(fragCoord,R)); }
 __DEVICE__ float bsn(uint v, uint  o)       { return (float)(u32_upk(v,1u,o)*2u)-1.0f; }
     
-__DEVICE__ float4 sigm(float4  x, float w) { return 1.0f / ( 1.0f + _expf( (-w*2.0f * x * (PI/2.0f)) + w * (PI/2.0f) ) ); }
+__DEVICE__ float4 sigm(float4  x, float w) { return 1.0f / ( 1.0f + exp_f4( (-w*2.0f * x * (PI/2.0f)) + w * (PI/2.0f) ) ); }
 __DEVICE__ float hmp2(float x, float w) { return 3.0f*((x-0.5f)*(x-0.5f))+0.25f; }
 
-__DEVICE__ float4  gdv( int2 of, sampler2D tx ) {
-  of     = to_int2(gl_FragCoord) + of;
-  of[0]   = (of[0] + textureSize(tx,0)[0]) % (textureSize(tx,0)[0]);
-  of[1]   = (of[1] + textureSize(tx,0)[1]) % (textureSize(tx,0)[1]);
-  return   texelFetch( tx, of, 0); }
+__DEVICE__ float4  gdv( int2 of, __TEXTURE2D__ tx, float2 fragCoord, float2 R ) 
+{
+  of     = to_int2_cfloat(fragCoord) + of;
+  of.x   = (of.x + (int)R.x) % (int)(R.x);
+  of.y   = (of.y + (int)R.y) % (int)(R.y);
+  return   texture( tx, (make_float2(of)+0.5)/R); 
+}
     
-__DEVICE__ float4 nbhd( float2 r, sampler2D tx ) {
+__DEVICE__ float4 nbhd( float2 r, __TEXTURE2D__ tx, float2 fragCoord, float2 R ) 
+{
 //  Precision limit of signed float32 for [n] neighbors in a 16 bit texture (symmetry preservation)
   uint  chk = 2147483648u /
       (  (   uint( r.x*r.x*PI + r.x*PI + PI  )
            - uint( r.y*r.y*PI + r.y*PI    ) ) * 128u );
+float vvvvvvvvvvvvvvvvvvvv;             
   float  psn = (chk >= 65536u) ? 65536.0f : (float)(chk);
   float4  a = to_float4(0.0f,0.0f,0.0f,0.0f);
   float   w = 1.0f;  // Weighting, unused
-  if(r.x == 0.0f) { return ( gdv( to_int2(0,0), tx )*w*psn ); }
+  if(r.x == 0.0f) { return ( gdv( to_int2(0,0), tx, fragCoord, R )*w*psn ); }
   else       {
-    for(float i = 0.0f; i <= r[0]; i+=1.0f) {
-      for(float j = 1.0f; j <= r[0]; j+=1.0f) {
+    for(float i = 0.0f; i <= r.x; i+=1.0f) {
+      for(float j = 1.0f; j <= r.x; j+=1.0f) {
         float  d = round(_sqrtf(i*i+j*j));
         w = 1.0f;  //  Per-Neighbor Weighting, unused
-        if( d <= r[0] && d > r[1] ) {
-          float4 t0  = gdv( to_int2( i, j), tx ) * w * psn; a += t0 - fract_4(t0);
-          float4 t1  = gdv( to_int2( j,-i), tx ) * w * psn; a += t1 - fract_4(t1);
-          float4 t2  = gdv( to_int2(-i,-j), tx ) * w * psn; a += t2 - fract_4(t2);
-          float4 t3  = gdv( to_int2(-j, i), tx ) * w * psn; a += t3 - fract_4(t3); } } }
-    return a; } }
+        if( d <= r.x && d > r.y ) {
+          float4 t0  = gdv( to_int2( i, j), tx, fragCoord, R ) * w * psn; a += t0 - fract_f4(t0);
+          float4 t1  = gdv( to_int2( j,-i), tx, fragCoord, R ) * w * psn; a += t1 - fract_f4(t1);
+          float4 t2  = gdv( to_int2(-i,-j), tx, fragCoord, R ) * w * psn; a += t2 - fract_f4(t2);
+          float4 t3  = gdv( to_int2(-j, i), tx, fragCoord, R ) * w * psn; a += t3 - fract_f4(t3); } } }
+    return a; } 
+}
 
-__DEVICE__ float4 totl( float2 r, sampler2D tx ) {
+__DEVICE__ float4 totl( float2 r, __TEXTURE2D__ tx ) 
+{
 //  Precision limit of signed float32 for [n] neighbors in a 16 bit texture (symmetry preservation)
   uint  chk = 2147483648u /
       (  (   uint( r.x*r.x*PI + r.x*PI + PI  )
@@ -116,12 +147,13 @@ __DEVICE__ float4 totl( float2 r, sampler2D tx ) {
   float  w = 1.0f;  // Weighting, unused
   if(r.x == 0.0f) { return to_float4( psn * w, psn * w, psn * w, psn * w ); }
   else       {
-    for(float i = 0.0f; i <= r[0]; i+=1.0f) {
-      for(float j = 1.0f; j <= r[0]; j+=1.0f) {
+    for(float i = 0.0f; i <= r.x; i+=1.0f) {
+      for(float j = 1.0f; j <= r.x; j+=1.0f) {
         float  d = round(_sqrtf(i*i+j*j));
             w = 1.0f;  //  Per-Neighbor Weighting, unused
         if( d <= r.x && d > r.y ) { b += psn * w * 4.0f; } } }
-    return b; } }
+    return b; } 
+}
 
 __DEVICE__ float4 bitring( float4 rings_a[MAX_RADIUS], float4 rings_b[MAX_RADIUS], uint bits, uint of) {
   float4 sum = to_float4(0.0f,0.0f,0.0f,0.0f);
@@ -130,8 +162,8 @@ __DEVICE__ float4 bitring( float4 rings_a[MAX_RADIUS], float4 rings_b[MAX_RADIUS
     if(u32_upk(bits, 1u, i+of) == 1u) { sum += rings_a[i]; tot += rings_b[i]; } }
   return sigm( (sum / tot), LN ); } // TODO
     
-__DEVICE__ float4 conv(float2 r, sampler2D tx) {
-  float4 nha = nbhd(r, tx);
+__DEVICE__ float4 conv1(float2 r, __TEXTURE2D__ tx, float2 fragCoord, float2 R) {
+  float4 nha = nbhd(r, tx, fragCoord, R);
   float4 nhb = totl(r, tx);
   return   nha / nhb; }
     
@@ -166,7 +198,7 @@ __DEVICE__ float get_lump(float x, float y, float nhsz, float xm0, float xm1) {
   return xcaf; }
 
 __DEVICE__ float reseed(uint seed, float scl, float amp, float2 fragCoord) {
-  float   fx = fragCoord,x;
+  float   fx = fragCoord.x;
   float   fy = fragCoord.y;
   float   r0 = get_lump(fx, fy, round( 6.0f  * scl), 19.0f + mod_f((float)(u32_upk(ub[63], 24u, 0u)+seed),17.0f), 23.0f + mod_f((float)(u32_upk(ub[63], 24u, 0u)+seed),43.0f));
   float   r1 = get_lump(fx, fy, round( 22.0f * scl), 13.0f + mod_f((float)(u32_upk(ub[63], 24u, 0u)+seed),29.0f), 17.0f + mod_f((float)(u32_upk(ub[63], 24u, 0u)+seed),31.0f));
@@ -180,7 +212,7 @@ struct ConvData {
 };
 
 
-__DEVICE__ ConvData ring( float r ) {
+__DEVICE__ ConvData ring( float r, float2 fragCoord, float2 R, __TEXTURE2D__ txdata ) {
 
   const float psn = 32768.0f;
 
@@ -209,26 +241,27 @@ __DEVICE__ ConvData ring( float r ) {
 
     float j_0 = _sqrtf( o_0*o_0 - (i+0.0f)*(i+0.0f) );
     float j_1 = _sqrtf( i_0*i_0 - (i+0.0f)*(i+0.0f) );
-    float j_2 = ( 1.0f - _fabs( sign ( (_floor( i_2 ) + 1.0f) - i ) ) );
+    float j_2 = ( 1.0f - _fabs( sign_f ( (_floor( i_2 ) + 1.0f) - i ) ) );
 
     for(float j = _floor( j_1 ) + j_2; j < _floor( j_0 ); j+=1.0f) {
-      val += _floor(gdv(to_int2( i, ((int)(j)+1)), txdata) * psn);
-      val += _floor(gdv(to_int2( i,-((int)(j)+1)), txdata) * psn);
-      val += _floor(gdv(to_int2(-i,-((int)(j)+1)), txdata) * psn);
-      val += _floor(gdv(to_int2(-i, ((int)(j)+1)), txdata) * psn);
-      val += _floor(gdv(to_int2( ((int)(j)+1), i), txdata) * psn);
-      val += _floor(gdv(to_int2( ((int)(j)+1),-i), txdata) * psn);
-      val += _floor(gdv(to_int2(-((int)(j)+1),-i), txdata) * psn);
-      val += _floor(gdv(to_int2(-((int)(j)+1), i), txdata) * psn);
+      val += _floor(gdv(to_int2( i, ((int)(j)+1)), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2( i,-((int)(j)+1)), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2(-i,-((int)(j)+1)), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2(-i, ((int)(j)+1)), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2( ((int)(j)+1), i), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2( ((int)(j)+1),-i), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2(-((int)(j)+1),-i), txdata, fragCoord, R) * psn);
+      val += _floor(gdv(to_int2(-((int)(j)+1), i), txdata, fragCoord, R) * psn);
       tot += 8.0f * psn; } }
 
 //  Orthagonal
-  val += _floor(gdv(to_int2_cfloat( r, 0), txdata) * psn);
-  val += _floor(gdv(to_int2_cfloat( 0,-r), txdata) * psn);
-  val += _floor(gdv(to_int2_cfloat(-r,-0), txdata) * psn);
-  val += _floor(gdv(to_int2_cfloat(-0, r), txdata) * psn);
+float mmmmmmmmmmmmmmmmmmmmmmmmmmmm;
+  val += _floor(gdv(make_int2( r, 0), txdata, fragCoord, R) * psn);
+  val += _floor(gdv(to_int2( 0,-r), txdata, fragCoord, R) * psn);
+  val += _floor(gdv(to_int2(-r,-0), txdata, fragCoord, R) * psn);
+  val += _floor(gdv(to_int2(-0, r), txdata, fragCoord, R) * psn);
   tot += 4.0f * psn;
-
+float aaaaaaaaaaaaaaaaaaaaaaaa;
 //  Diagonal
 //  TODO This is not quite perfect
   float k_0 = r;
@@ -240,22 +273,24 @@ __DEVICE__ ConvData ring( float r ) {
 
   float dist = round(k_2);
 
-  if( sign( o_4 ) == -1.0f ) {
+  if( sign_f( o_4 ) == -1.0f ) {
   //  val += gdv(to_int2( (_floor(o_5)+1), _floor(o_5)+1), txdata);
-    val += _floor(gdv(to_int2( (_floor(o_5)+1.0f), (_floor(o_5)+1.0f)), txdata) * psn);
-    val += _floor(gdv(to_int2( (_floor(o_5)+1.0f),-(_floor(o_5)+1.0f)), txdata) * psn);
-    val += _floor(gdv(to_int2(-(_floor(o_5)+1.0f),-(_floor(o_5)+1.0f)), txdata) * psn);
-    val += _floor(gdv(to_int2(-(_floor(o_5)+1.0f), (_floor(o_5)+1.0f)), txdata) * psn);
+    val += _floor(gdv(to_int2( (_floor(o_5)+1.0f), (_floor(o_5)+1.0f)), txdata, fragCoord, R) * psn);
+    val += _floor(gdv(to_int2( (_floor(o_5)+1.0f),-(_floor(o_5)+1.0f)), txdata, fragCoord, R) * psn);
+    val += _floor(gdv(to_int2(-(_floor(o_5)+1.0f),-(_floor(o_5)+1.0f)), txdata, fragCoord, R) * psn);
+    val += _floor(gdv(to_int2(-(_floor(o_5)+1.0f), (_floor(o_5)+1.0f)), txdata, fragCoord, R) * psn);
     tot += 4.0f * psn; }
+ 
+  ConvData ret = { val, tot };
+  //return ConvData( val, tot ); }
+  return ret;
+}
 
-  return ConvData( val, tot ); }
-
-
-__DEVICE__ float4 conv( float r ) {
-  ConvData nh = ring( r );
+__DEVICE__ float4 conv2( float r, float2 fragCoord, float2 R, __TEXTURE2D__ txdata ) {
+  ConvData nh = ring( r , fragCoord, R, txdata);
   return   nh.value / nh.total; }
     
-__DEVICE__ float4 bitmake(ConvData[MAX_RADIUS] rings, uint bits, uint of) {
+__DEVICE__ float4 bitmake(ConvData rings[MAX_RADIUS], uint bits, uint of) {
   float4  sum = to_float4(0.0f,0.0f,0.0f,0.0f);
   float tot = 0.0f;
   for(uint i = 0u; i < MAX_RADIUS; i++) {
@@ -263,9 +298,17 @@ __DEVICE__ float4 bitmake(ConvData[MAX_RADIUS] rings, uint bits, uint of) {
   return sum / tot; }
 
 
-__KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, float4 iMouse, int iFrame, sampler2D iChannel0)
-{
+union A2F
+ {
+   float4  F;    // float4
+   float  A[4];  // float [4]
+ };
 
+
+//*************************************************************************************************************************
+__KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, float2 iResolution, float4 iMouse, int iFrame, sampler2D iChannel0)
+{
+    fragCoord+=0.5f;
 
 //  ----    ----    ----    ----    ----    ----    ----    ----
 //  Rule Initilisation
@@ -273,7 +316,7 @@ __KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
 
 //  NH Rings
   ConvData nh_rings_m[MAX_RADIUS];
-  for(uint i = 0u; i < MAX_RADIUS; i++) { nh_rings_m[i] = ring((float)(i+1u)); }
+  for(uint i = 0u; i < MAX_RADIUS; i++) { nh_rings_m[i] = ring((float)(i+1u), fragCoord, R, txdata); }
 
 //  Parameters
   const  float   mnp   = 1.0f / 65536.0f;      //  Minimum value of a precise step for 16-bit channel
@@ -281,10 +324,15 @@ __KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
   const  float   n      = mnp *  80.0f *   2.0f;
 
 //  Output Values
-  float4 res_c = gdv( to_int2(0, 0), txdata );
+  //float4 res_c = gdv( to_int2(0, 0), txdata, fragCoord, R );
+  A2F res_c;
+  res_c.F  = gdv( to_int2(0, 0), txdata, fragCoord, R );
 
 //  Result Values
-  float4 res_v = res_c;
+  //float4 res_v = res_c;
+  //float res_v[4] = {res_c.x,res_c.y,res_c.z,res_c.w};
+  float res_v[4] = { res_c.A[0],res_c.A[1],res_c.A[2],res_c.A[3]}; // = {res_c.A};
+  //res_v = res_c.A; //{res_c.x,res_c.y,res_c.z,res_c.w};
 
 //  ----    ----    ----    ----    ----    ----    ----    ----
 //  Update Functions
@@ -310,9 +358,13 @@ __KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
 //  Update Sign
   uint us[ 2] = { ub[36], ub[37] };
 
-  float4 smnca_res[12] = {res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c};
+float AAAAAAAAAAAAAAAAAAAAA; 
+  //float4 smnca_res[12] = {res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c};
+  A2F smnca_res[12];
+  smnca_res[0].F = smnca_res[1].F = smnca_res[2].F = smnca_res[3].F = smnca_res[4].F = smnca_res[5].F = smnca_res[6].F = smnca_res[7].F = smnca_res[8].F = smnca_res[9].F = smnca_res[10].F = smnca_res[11].F = res_c.F;
 
-  float4 conv1 = conv(1.0f);
+
+  float4 _conv1 = conv2(1.0f, fragCoord, R, txdata);
 
   for(uint i = 0u; i < 24u; i++) {
     uint    cho = u32_upk( ch[i/8u], 2u, (i*4u+0u) & 31u );
@@ -322,45 +374,52 @@ __KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
     uint    chm = u32_upk( ch3[i/8u], 2u, (i*4u+2u) & 31u );
             chm = (chm == 3u) ? u32_upk( ch[i/8u], 2u, (i*4u+2u) & 31u ) : chm;
                 
-    float4 nhv = bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u );
+    float nhv[4] = { bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).x,
+                     bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).y,
+                     bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).z,
+                     bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).w };
+float ttttttttttttt;
+smnca_res[i/4u].A[chi] = 0.5f;
 
-    if( nhv[cho] >= utp( ur[i], 8u, 0u) && nhv[cho] <= utp( ur[i], 8u, 1u)) {
-      smnca_res[i/4u][chi] += bsn(us[i/16u], ((i*2u+0u) & 31u)) * s * res_c[chm]; }
 
-    if( nhv[cho] >= utp( ur[i], 8u, 2u) && nhv[cho] <= utp( ur[i], 8u, 3u)) {
-      smnca_res[i/4u][chi] += bsn(us[i/16u], ((i*2u+1u) & 31u)) * s * res_c[chm]; } }
+    if( nhv[cho] >= utp( ur[i], 8u, 0u,fragCoord,R) && nhv[cho] <= utp( ur[i], 8u, 1u,fragCoord,R)) {
+      (smnca_res[i/4u]).A[chi] += bsn(us[i/16u], ((i*2u+0u) & 31u)) * s * res_c.A[chm]; }
 
-  uint4 dev_idx = uto_float4(0u,0u,0u,0u);
-    
-  float4 dev = to_float4(0.0f,0.0f,0.0f,0.0f);
+    if( nhv[cho] >= utp( ur[i], 8u, 2u,fragCoord,R) && nhv[cho] <= utp( ur[i], 8u, 3u,fragCoord,R)) {
+      (smnca_res[i/4u]).A[chi] += bsn(us[i/16u], ((i*2u+1u) & 31u)) * s * res_c.A[chm]; } 
+  }
+
+  uint dev_idx[4] = {0u,0u,0u,0u};
+
+  float dev[4] = {0.0f,0.0f,0.0f,0.0f};
   for(uint i = 0u; i < 6u; i++) {
-    float4 smnca_res_temp = abs_f4(res_c - smnca_res[i]);
+    float4 smnca_res_temp = abs_f4(res_c.F - smnca_res[i].F);
     if(smnca_res_temp.x > dev[0]) { dev_idx[0] = i; dev[0] = smnca_res_temp.x; }
     if(smnca_res_temp.y > dev[1]) { dev_idx[1] = i; dev[1] = smnca_res_temp.y; }
     if(smnca_res_temp.z > dev[2]) { dev_idx[2] = i; dev[2] = smnca_res_temp.z; }
     if(smnca_res_temp.w > dev[3]) { dev_idx[3] = i; dev[3] = smnca_res_temp.w; } }
 
-  res_v[0] = smnca_res[dev_idx[0]][0];
-  res_v[1] = smnca_res[dev_idx[1]][1];
-  res_v[2] = smnca_res[dev_idx[2]][2];
-  res_v[3] = smnca_res[dev_idx[3]][3];
+  res_v[0] = smnca_res[dev_idx[0]].A[0];
+  res_v[1] = smnca_res[dev_idx[1]].A[1];
+  res_v[2] = smnca_res[dev_idx[2]].A[2];
+  res_v[3] = smnca_res[dev_idx[3]].A[3];
 
-    res_c = ((res_v + (conv1 * (s*2.13333f))) / (1.0f + (s*2.13333f)))- 0.01f * s;
+  res_c.F = ((to_float4(res_v[0],res_v[1],res_v[2],res_v[3]) + (_conv1 * (s*2.13333f))) / (1.0f + (s*2.13333f)))- 0.01f * s;
     
 //  ----    ----    ----    ----    ----    ----    ----    ----
 //  Shader Output
 //  ----    ----    ----    ----    ----    ----    ----    ----
 
 
-    if (iMouse.z > 0.0f && length(swi2(iMouse,x,y) - fragCoord) < 14.0f) {
-        res_c[0] = round(mod_f((float)(iFrame),2.0f));
-        res_c[1] = round(mod_f((float)(iFrame),3.0f));
-        res_c[2] = round(mod_f((float)(iFrame),5.0f)); }
-    if (iFrame == 0) { res_c[0] = reseed(0u, 1.0f, 0.4f); res_c[1] = reseed(1u, 1.0f, 0.4f); res_c[2] = reseed(2u, 1.0f, 0.4f); }
-
-//  Force alpha to 1.0
-  res_c[3]   = 1.0f;
-    fragColor=clamp(res_c,0.0f,1.0f);
+  if (iMouse.z > 0.0f && length(swi2(iMouse,x,y) - fragCoord) < 14.0f) {
+        res_c.A[0] = round(mod_f((float)(iFrame),2.0f));
+        res_c.A[1] = round(mod_f((float)(iFrame),3.0f));
+        res_c.A[2] = round(mod_f((float)(iFrame),5.0f)); }
+  if (iFrame == 0) { res_c.A[0] = reseed(0u, 1.0f, 0.4f, fragCoord); res_c.A[1] = reseed(1u, 1.0f, 0.4f, fragCoord); res_c.A[2] = reseed(2u, 1.0f, 0.4f, fragCoord); }
+float sssssssssssssssss;    
+  //  Force alpha to 1.0
+  res_c.A[3]   = 1.0f;
+  fragColor=clamp(res_c.F,0.0f,1.0f);
 
 
   SetFragmentShaderComputedColor(fragColor);
@@ -394,6 +453,8 @@ __KERNEL__ void MultipleNFuse__Buffer_A(float4 fragColor, float2 fragCoord, floa
 //  ﻿ - Emergence: https://discord.com/invite/J3phjtD
 //  ﻿ - ConwayLifeLounge: https://discord.gg/BCuYCEn
 //  ----    ----    ----    ----    ----    ----    ----    ----
+
+#ifdef XXX
 
 #define txdata (iChannel0)
 #define PI 3.14159265359
@@ -445,13 +506,13 @@ __DEVICE__ float bsn(uint v, uint  o)       { return float(u32_upk(v,1u,o)*2u)-1
 __DEVICE__ float4  sigm(float4  x, float w) { return 1.0f / ( 1.0f + _expf( (-w*2.0f * x * (PI/2.0f)) + w * (PI/2.0f) ) ); }
 __DEVICE__ float hmp2(float x, float w) { return 3.0f*((x-0.5f)*(x-0.5f))+0.25f; }
 
-__DEVICE__ float4  gdv( int2 of, sampler2D tx ) {
+__DEVICE__ float4  gdv( int2 of, __TEXTURE2D__ tx ) {
   of     = to_int2(gl_FragCoord) + of;
   of[0]   = (of[0] + textureSize(tx,0)[0]) % (textureSize(tx,0)[0]);
   of[1]   = (of[1] + textureSize(tx,0)[1]) % (textureSize(tx,0)[1]);
   return   texelFetch( tx, of, 0); }
     
-__DEVICE__ float4 nbhd( float2 r, sampler2D tx ) {
+__DEVICE__ float4 nbhd( float2 r, __TEXTURE2D__ tx ) {
 //  Precision limit of signed float32 for [n] neighbors in a 16 bit texture (symmetry preservation)
   uint  chk = 2147483648u /
       (  (   uint( r[0]*r[0]*PI + r[0]*PI + PI  )
@@ -472,7 +533,7 @@ __DEVICE__ float4 nbhd( float2 r, sampler2D tx ) {
           float4 t3  = gdv( to_int2(-j, i), tx ) * w * psn; a += t3 - fract(t3); } } }
     return a; } }
 
-__DEVICE__ float4 totl( float2 r, sampler2D tx ) {
+__DEVICE__ float4 totl( float2 r, __TEXTURE2D__ tx ) {
 //  Precision limit of signed float32 for [n] neighbors in a 16 bit texture (symmetry preservation)
   uint  chk = 2147483648u /
       (  (   uint( r[0]*r[0]*PI + r[0]*PI + PI  )
@@ -496,7 +557,7 @@ __DEVICE__ float4 bitring(vec4[MAX_RADIUS] rings_a, vec4[MAX_RADIUS] rings_b, ui
     if(u32_upk(bits, 1u, i+of) == 1u) { sum += rings_a[i]; tot += rings_b[i]; } }
   return sigm( (sum / tot), LN ); } // TODO
     
-__DEVICE__ float4 conv(float2 r, sampler2D tx) {
+__DEVICE__ float4 conv(float2 r, __TEXTURE2D__ tx) {
   float4 nha = nbhd(r, tx);
   float4 nhb = totl(r, tx);
   return   nha / nhb; }
@@ -545,7 +606,7 @@ struct ConvData {
 ConvData ring( float r ) {
 
   const float psn = 32768.0f;
-
+float rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrring;
   float tot = 0.0f;
   float4  val = to_float4(0.0f,0.0f,0.0f,0.0f);
 
@@ -571,8 +632,8 @@ ConvData ring( float r ) {
 
     float j_0 = _sqrtf( o_0*o_0 - (i+0.0f)*(i+0.0f) );
     float j_1 = _sqrtf( i_0*i_0 - (i+0.0f)*(i+0.0f) );
-    float j_2 = ( 1.0f - _fabs( sign ( (_floor( i_2 ) + 1.0f) - i ) ) );
-
+    float j_2 = ( 1.0f - _fabs( sign_f ( (_floor( i_2 ) + 1.0f) - i ) ) );
+float xxxxxxxxxxxxxxxx;
     for(float j = _floor( j_1 ) + j_2; j < _floor( j_0 ); j++) {
       val += _floor(gdv(to_int2( i, (int(j)+1)), txdata) * psn);
       val += _floor(gdv(to_int2( i,-(int(j)+1)), txdata) * psn);
@@ -624,56 +685,65 @@ __DEVICE__ float4 bitmake(ConvData[MAX_RADIUS] rings, uint bits, uint of) {
     if(u32_upk(bits, 1u, i+of) == 1u) { sum += rings[i].value; tot += rings[i].total; } }
   return sum / tot; }
 
-__KERNEL__ void MultipleNFuse__Buffer_B(float4 fragColor, float2 fragCoord, float4 iMouse, int iFrame, sampler2D iChannel0)
-{
+#endif
 
+
+__KERNEL__ void MultipleNFuse__Buffer_B(float4 fragColor, float2 fragCoord, float2 iResolution,  float4 iMouse, int iFrame, sampler2D iChannel0)
+{
+    fragCoord+=0.5f;
 
 //  ----    ----    ----    ----    ----    ----    ----    ----
 //  Rule Initilisation
 //  ----    ----    ----    ----    ----    ----    ----    ----
 
 //  NH Rings
-  ConvData[MAX_RADIUS] nh_rings_m;
-  for(uint i = 0u; i < MAX_RADIUS; i++) { nh_rings_m[i] = ring(float(i+1u)); }
+  ConvData nh_rings_m[MAX_RADIUS];
+  for(uint i = 0u; i < MAX_RADIUS; i++) { nh_rings_m[i] = ring((float)(i+1u), fragCoord, R, txdata); }
 
 //  Parameters
   const  float   mnp   = 1.0f / 65536.0f;      //  Minimum value of a precise step for 16-bit channel
-  const  float   s      = mnp *  80.0f *  128.0f;
-  const  float   n      = mnp *  80.0f *   2.0f;
+  const  float   s     = mnp *  80.0f *  128.0f;
+  const  float   n     = mnp *  80.0f *   2.0f;
 
 //  Output Values
-  float4 res_c = gdv( to_int2(0, 0), txdata );
+  //float4 res_c = gdv( to_int2(0, 0), txdata, fragCoord, R );
+  A2F res_c;
+  res_c.F  = gdv( to_int2(0, 0), txdata, fragCoord, R );
 
 //  Result Values
-  float4 res_v = res_c;
+  //float res_v[4] = {res_c.x,res_c.y,res_c.z,res_c.w};
+  float res_v[4] = { res_c.A[0],res_c.A[1],res_c.A[2],res_c.A[3]}; // = {res_c.A};
 
 //  ----    ----    ----    ----    ----    ----    ----    ----
 //  Update Functions
 //  ----    ----    ----    ----    ----    ----    ----    ----
 
-  uint[12] nb = uint[12] (
+  uint nb[12] = {
     ub[0],  ub[1],  ub[2],  ub[3],
     ub[4],  ub[5],  ub[6],  ub[7],
-    ub[8],  ub[9],  ub[10], ub[11] );
+    ub[8],  ub[9],  ub[10], ub[11] };
 
-  uint[24] ur = uint[24] (
+  uint ur[24] = {
     ub[12], ub[13], ub[14], ub[15], 
     ub[16], ub[17], ub[18], ub[19],  
     ub[20], ub[21], ub[22], ub[23],
     ub[24], ub[25], ub[26], ub[27],  
     ub[28], ub[29], ub[30], ub[31], 
-    ub[32], ub[33], ub[34], ub[35]  );
+    ub[32], ub[33], ub[34], ub[35]  };
 
-  uint[ 3] ch2 = uint[ 3] ( 2286157824u, 295261525u, 1713547946u );
-  uint[ 3] ch  = uint[ 3] ( ub[38], ub[39], ub[40] );
-  uint[ 3] ch3 = uint[ 3] ( ub[41], ub[42], ub[43] );
+  uint ch2[ 3] = { ( 2286157824u, 295261525u, 1713547946u )};
+  uint ch [ 3] = {  ub[38], ub[39], ub[40] };
+  uint ch3[ 3] = {  ub[41], ub[42], ub[43] };
 
 //  Update Sign
-  uint[ 2] us = uint[ 2] ( ub[36], ub[37] );
+  uint us[ 2] = { ub[36], ub[37] };
+float BBBBBBBBBBBBBBBBBBBBBBBBBBBBB;
+  //float4 smnca_res[12] = {res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c};
+  A2F smnca_res[12];
+  smnca_res[0].F = smnca_res[1].F = smnca_res[2].F = smnca_res[3].F = smnca_res[4].F = smnca_res[5].F = smnca_res[6].F = smnca_res[7].F = smnca_res[8].F = smnca_res[9].F = smnca_res[10].F = smnca_res[11].F = res_c.F;
 
-  vec4[12] smnca_res = vec4[12](res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c,res_c);
 
-  float4 conv1 = conv(1.0f);
+  float4 _conv1 = conv2(1.0f, fragCoord, R, txdata);
 
   for(uint i = 0u; i < 24u; i++) {
     uint    cho = u32_upk( ch[i/8u], 2u, (i*4u+0u) & 31u );
@@ -683,30 +753,35 @@ __KERNEL__ void MultipleNFuse__Buffer_B(float4 fragColor, float2 fragCoord, floa
     uint    chm = u32_upk( ch3[i/8u], 2u, (i*4u+2u) & 31u );
         chm = (chm == 3u) ? u32_upk( ch[i/8u], 2u, (i*4u+2u) & 31u ) : chm;
                 
-    float4 nhv = bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u );
-
-    if( nhv[cho] >= utp( ur[i], 8u, 0u) && nhv[cho] <= utp( ur[i], 8u, 1u)) {
-      smnca_res[i/4u][chi] += bsn(us[i/16u], ((i*2u+0u) & 31u)) * s * res_c[chm]; }
-
-    if( nhv[cho] >= utp( ur[i], 8u, 2u) && nhv[cho] <= utp( ur[i], 8u, 3u)) {
-      smnca_res[i/4u][chi] += bsn(us[i/16u], ((i*2u+1u) & 31u)) * s * res_c[chm]; } }
-
-  uvec4 dev_idx = uto_float4(0u,0u,0u,0u);
+    //float4 nhv = bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u );
     
-  float4 dev = to_float4(0.0f,0.0f,0.0f,0.0f);
+    float nhv[4] = { bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).x,
+                     bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).y,
+                     bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).z,
+                     bitmake( nh_rings_m, nb[i/2u], (i & 1u) * 16u ).w };
+
+    if( nhv[cho] >= utp( ur[i], 8u, 0u,fragCoord,R) && nhv[cho] <= utp( ur[i], 8u, 1u,fragCoord,R)) {
+      smnca_res[i/4u].A[chi] += bsn(us[i/16u], ((i*2u+0u) & 31u)) * s * res_c.A[chm]; }
+
+    if( nhv[cho] >= utp( ur[i], 8u, 2u,fragCoord,R) && nhv[cho] <= utp( ur[i], 8u, 3u,fragCoord,R)) {
+      smnca_res[i/4u].A[chi] += bsn(us[i/16u], ((i*2u+1u) & 31u)) * s * res_c.A[chm]; } }
+
+  uint dev_idx[4] = {0u,0u,0u,0u};
+    
+  float dev[4] = {0.0f,0.0f,0.0f,0.0f};
   for(uint i = 0u; i < 6u; i++) {
-    float4 smnca_res_temp = _fabs(res_c - smnca_res[i]);
-    if(smnca_res_temp[0] > dev[0]) { dev_idx[0] = i; dev[0] = smnca_res_temp[0]; }
-    if(smnca_res_temp[1] > dev[1]) { dev_idx[1] = i; dev[1] = smnca_res_temp[1]; }
-    if(smnca_res_temp[2] > dev[2]) { dev_idx[2] = i; dev[2] = smnca_res_temp[2]; }
-    if(smnca_res_temp[3] > dev[3]) { dev_idx[3] = i; dev[3] = smnca_res_temp[3]; } }
+    float4 smnca_res_temp = abs_f4(res_c.F - smnca_res[i].F);
+    if(smnca_res_temp.x > dev[0]) { dev_idx[0] = i; dev[0] = smnca_res_temp.x; }
+    if(smnca_res_temp.y > dev[1]) { dev_idx[1] = i; dev[1] = smnca_res_temp.y; }
+    if(smnca_res_temp.z > dev[2]) { dev_idx[2] = i; dev[2] = smnca_res_temp.z; }
+    if(smnca_res_temp.w > dev[3]) { dev_idx[3] = i; dev[3] = smnca_res_temp.w; } }
 
-  res_v[0] = smnca_res[dev_idx[0]][0];
-  res_v[1] = smnca_res[dev_idx[1]][1];
-  res_v[2] = smnca_res[dev_idx[2]][2];
-  res_v[3] = smnca_res[dev_idx[3]][3];
+  res_v[0] = smnca_res[dev_idx[0]].A[0];
+  res_v[1] = smnca_res[dev_idx[1]].A[1];
+  res_v[2] = smnca_res[dev_idx[2]].A[2];
+  res_v[3] = smnca_res[dev_idx[3]].A[3];
 
-    res_c = ((res_v + (conv1 * (s*2.13333f))) / (1.0f + (s*2.13333f)))- 0.01f * s;
+    res_c.F = ((to_float4(res_v[0],res_v[1],res_v[2],res_v[3]) + (_conv1 * (s*2.13333f))) / (1.0f + (s*2.13333f)))- 0.01f * s;
     
 //  ----    ----    ----    ----    ----    ----    ----    ----
 //  Shader Output
@@ -714,14 +789,14 @@ __KERNEL__ void MultipleNFuse__Buffer_B(float4 fragColor, float2 fragCoord, floa
 
 
     if (iMouse.z > 0.0f && length(swi2(iMouse,x,y) - fragCoord) < 14.0f) {
-        res_c[0] = round(mod_f(float(iFrame),2.0f));
-        res_c[1] = round(mod_f(float(iFrame),3.0f));
-        res_c[2] = round(mod_f(float(iFrame),5.0f)); }
-    if (iFrame == 0) { res_c[0] = reseed(0u, 1.0f, 0.4f); res_c[1] = reseed(1u, 1.0f, 0.4f); res_c[2] = reseed(2u, 1.0f, 0.4f); }
+        res_c.A[0] = round(mod_f(float(iFrame),2.0f));
+        res_c.A[1] = round(mod_f(float(iFrame),3.0f));
+        res_c.A[2] = round(mod_f(float(iFrame),5.0f)); }
+    if (iFrame == 0) { res_c.A[0] = reseed(0u, 1.0f, 0.4f,fragCoord); res_c.A[1] = reseed(1u, 1.0f, 0.4f,fragCoord); res_c.A[2] = reseed(2u, 1.0f, 0.4f,fragCoord); }
 
 //  Force alpha to 1.0
-  res_c[3]   = 1.0f;
-    fragColor=clamp(res_c,0.0f,1.0f);
+    res_c.A[3]   = 1.0f;
+    fragColor=clamp(res_c.F,0.0f,1.0f);
 
 
   SetFragmentShaderComputedColor(fragColor);
@@ -756,10 +831,11 @@ __KERNEL__ void MultipleNFuse__Buffer_B(float4 fragColor, float2 fragCoord, floa
 //  ﻿ - ConwayLifeLounge: https://discord.gg/BCuYCEn
 //  ----    ----    ----    ----    ----    ----    ----    ----
 
-__KERNEL__ void MultipleNFuse(float4 fragColor, float2 fragCoord, sampler2D iChannel0)
+__KERNEL__ void MultipleNFuse(float4 fragColor, float2 fragCoord, float2 iResolution, sampler2D iChannel0)
 {
+    fragCoord+=0.5f;
 
-    fragColor = texelFetch( iChannel0, to_int2(gl_FragCoord[0], gl_FragCoord[1]), 0); 
+    fragColor = texture( iChannel0, (make_float2(to_int2_cfloat(fragCoord))+0.5f)/R); 
 
   SetFragmentShaderComputedColor(fragColor);
 }
