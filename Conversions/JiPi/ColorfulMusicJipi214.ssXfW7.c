@@ -86,10 +86,10 @@ __DEVICE__ float2 uv_to_polar(float2 uv, float2 p) {
     
     // Get polar coordinates
     float2 polar = to_float2(_atan2f(translated_uv.x, translated_uv.y), length(translated_uv));
-    
+
     // Scale to a range of 0 to 1
-    polar.s /= TWO_PI;
-    polar.s += 0.5f;
+    polar.x /= TWO_PI;
+    polar.x += 0.5f;
     
     return polar;
 }
@@ -118,7 +118,7 @@ __DEVICE__ float cut_lower(float v, float low) {
 // - Buffer A                                                                       -
 // ----------------------------------------------------------------------------------
 // Connect Buffer A 'Previsualization: Buffer A' to iChannel1
-// Connect Buffer A 'https://soundcloud.com/bossfightswe/elevatia' to iChannel0
+// Connect Buffer A '/media/a/894a09f482fb9b2822c093630fc37f0ce6cfec02b652e4e341323e4b6e4a4543.mp3' to iChannel0
 
 
 /*
@@ -147,15 +147,16 @@ __DEVICE__ float cut_lower(float v, float low) {
 
 
 
-#define get_fft(x) texture(iChannel0, to_float2(x, 0.0f)).x
+#define get_fft(_x) texture(iChannel0, make_float2((_x), 0.0f)).x
 
 __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_A(float4 fragColor, float2 fragCoord, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1)
 {
+    fragCoord+=0.5f;
 
     int2 fc = to_int2_cfloat(_floor(fragCoord));
     
     // Bass
-    if (fc == to_int2(0, 0)) {
+    if (fc.x == 0 && fc.y == 0) {
         float step_size = BASS_MAX / BASS_STEPS;
         
         float med = 0.0f;
@@ -177,7 +178,7 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_A(float4 fragColor, float2 frag
     }
     
     // Value used for circle shake and background color cycle
-    if (fc.x == 1 &&fc.y ==  0) {
+    if (fc.x == 1 && fc.y ==  0) {
         //float bass = texelFetch(iChannel1, to_int2(0, 0), 0).x;
         float bass = texture(iChannel1, (make_float2(to_int2(0, 0))+0.5)/R).x;
         //float old_value = texelFetch(iChannel1, fc, 0).r;
@@ -185,10 +186,11 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_A(float4 fragColor, float2 frag
         
         // This value will get very high but buffers are Float32, so it doesn't really matter.
         fragColor = to_float4(old_value + bass, 0.0f, 0.0f, 1.0f);
+        
         SetFragmentShaderComputedColor(fragColor);
         return;
     }
-    
+
     // Scaled and smoothed out spectrum
     if (fc.y == 1) {
         float2 uv = fragCoord / iResolution;
@@ -211,17 +213,19 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_A(float4 fragColor, float2 frag
         med /= 2.0f;
         
         fragColor = to_float4(med, 0.0f, 0.0f, 1.0f);
+        
         SetFragmentShaderComputedColor(fragColor);
         return;
     }
-    
+
     // Slide previous values one row down
     //fragColor = texelFetch(iChannel1, fc + to_int2(0, -1), 0);
-    fragColor = texelFetch(iChannel1, (make_float2(fc + to_int2(0, -1))+0.5f)/R);
+    fragColor = texture(iChannel1, (make_float2(fc + to_int2(0, -1))+0.5f)/R);
 
 
   SetFragmentShaderComputedColor(fragColor);
 }
+
 // ----------------------------------------------------------------------------------
 // - Buffer B                                                                       -
 // ----------------------------------------------------------------------------------
@@ -252,19 +256,10 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_A(float4 fragColor, float2 frag
 //  z = z coordinate
 //  w = speed
 
-#if PARTICLES == 0
-
-__KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_B(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1)
-{
-
-    fragColor = to_float4_s(0.0f);
-}
-
-#else
 
 // Move a particle
 // uv is also passed, used as a parameter for noise3D
-__DEVICE__ float4 get_next_particle(float4 old, float2 uv, float iTime, float2 R, __TEXTURE2D__ iChannel0) {
+__DEVICE__ float4 get_next_particle(float4 old, float2 uv, float iTime, float2 R, __TEXTURE2D__ iChannel1) {
     float x = old.x;
     float y = old.y;
     float z = old.z;
@@ -272,8 +267,8 @@ __DEVICE__ float4 get_next_particle(float4 old, float2 uv, float iTime, float2 R
     
     // Get bass value
     //float bass = texelFetch(iChannel1, to_int2(0, 0), 0).r;
-    float bass = texture(iChannel1, (make_float2(to_int2(0, 0))+0.5f/R).x;
-    
+    float bass = texture(iChannel1, (make_float2(to_int2(0, 0))+0.5f)/R).x;
+   
     z -= 0.02f * (speed + bass*BASS_IMPACT_ON_PARTICLES);
     
     // Out of screen, load new particle
@@ -290,33 +285,37 @@ __DEVICE__ float4 get_next_particle(float4 old, float2 uv, float iTime, float2 R
 
 __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_B(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1)
 {
+    fragCoord+=0.5f;
 
-    int2 fc = to_int2(_floor(fragCoord));
-    int2 rs = to_int2(iResolution);
+    int2 fc = to_int2_cfloat(_floor(fragCoord));
+    int2 rs = to_int2_cfloat(iResolution);
     
     // Particles can be stored in multiple rows
-    int num = int(rs.x * fc.y + fc.x);
+    int num = (int)(rs.x * fc.y + fc.x);
     if (num > PARTICLES) {
+        fragColor = to_float4_s(0.0f);
+        SetFragmentShaderComputedColor(fragColor);
         return;
     }
-    
+  
     float2 uv = fragCoord / iResolution;
     
     //float4 old = texelFetch(iChannel0, fc, 0);
     float4 old = texture(iChannel0, (make_float2(fc)+0.5f)/R);
     
     // Output new particle
-    fragColor = get_next_particle(old, uv, iTime, R, iChannel0);
-
+    fragColor = get_next_particle(old, uv, iTime, R, iChannel1);
 
   SetFragmentShaderComputedColor(fragColor);
 }
+
+
 // ----------------------------------------------------------------------------------
-// - Buffer C                                                                       -
+// - Buffer C  -> Image                                                                     -
 // ----------------------------------------------------------------------------------
-// Connect Buffer C 'Previsualization: Buffer A' to iChannel0
-// Connect Buffer C 'Previsualization: Buffer B' to iChannel1
-// Connect Buffer C 'Previsualization: Buffer C' to iChannel2
+// Connect Image 'Previsualization: Buffer A' to iChannel0
+// Connect Image 'Previsualization: Buffer B' to iChannel1
+// Connect Image 'Previsualization: Buffer C' to iChannel2
 
 
 /*
@@ -354,15 +353,15 @@ __DEVICE__ float3 background(float2 uv, float extra, float iTime) {
 __DEVICE__ float2 rotate(float2 uv, float angle) {
     float s = _sinf(angle);
     float c = _cosf(angle);
-    float2 new = uv * mat2(c, s, -s, c);
-    return new;
+    float2 _new = mul_f2_mat2(uv , to_mat2(c, s, -s, c));
+    return _new;
 }
 
 // Draw the inner circle
-__DEVICE__ float3 inner_circle(float2 uvmtp) {
+__DEVICE__ float3 inner_circle(float2 uvmtp, float iTime) {
     // Rotate
     float2 rotated = rotate(uvmtp, PI * 2.0f * (1.0f - smoothstep(0.0f, 1.0f, cut_lower(fract(iTime * 0.06f), 0.8f))));
-    
+   
     // Gradient
     float3 color = _mix(to_float3_s(0.0f), to_float3_s(0.15f), rotated.y * 0.5f + 0.5f) + 0.1f;
     
@@ -373,13 +372,13 @@ __DEVICE__ float3 inner_circle(float2 uvmtp) {
     // Draw the triangle
     float a = _atan2f(rotated.x, rotated.y) + PI * 0.5f;
     float b = TWO_PI / 3.0f;
-    color = _mix(color, to_float3(rotated.y * 0.5f + 0.8f)*0.5f + ((_sinf(iTime * 2.0f) + 1.0f) * 0.5f)*0.2f, 1.0f - smoothstep(0.5f, 0.52f, _cosf(_floor(0.5f + a/b) * b - a) * length(rotated)));
+    color = _mix(color, to_float3_s(rotated.y * 0.5f + 0.8f)*0.5f + ((_sinf(iTime * 2.0f) + 1.0f) * 0.5f)*0.2f, 1.0f - smoothstep(0.5f, 0.52f, _cosf(_floor(0.5f + a/b) * b - a) * length(rotated)));
     
     return color;
 }
 
 // Get a particle
-__DEVICE__ float4 get_particle(int i, float2 R) {
+__DEVICE__ float4 get_particle(int i, float2 R, __TEXTURE2D__ iChannel1) {
     int x = i;
     int y = 0;
     
@@ -393,15 +392,16 @@ __DEVICE__ float4 get_particle(int i, float2 R) {
             break;
         }
     }
-    
-    return texelFetch(iChannel1, to_int2(x, y), 0);
+
+    //return texelFetch(iChannel1, to_int2(x, y), 0);
+    return texture(iChannel1, (make_float2(to_int2(x, y))+0.5f)/R);
 }
 
 // Draw particles
-__DEVICE__ void particles(float2 uvmtp, inout float3 color, float2 R) {
+__DEVICE__ void particles(float2 uvmtp, inout float3 *color, float2 R, __TEXTURE2D__ iChannel1) {
     for (int i = 0; i < PARTICLES; i++) {
         // Get particle
-        float4 particle = get_particle(i,R);
+        float4 particle = get_particle(i,R, iChannel1);
         
         float2 projected;
         float size;
@@ -419,13 +419,13 @@ __DEVICE__ void particles(float2 uvmtp, inout float3 color, float2 R) {
             }
             
             size = (PARTICLE_SPAWN_Z - particle.z) / PARTICLE_SPAWN_Z;
-            color = _mix(color, color + to_float3(size * 0.6f), smooth_circle(uvmtp - projected, size * 0.007f, 0.005f + 0.008f * (particle.z / PARTICLE_SPAWN_Z)));
+            *color = _mix(*color, *color + to_float3_s(size * 0.6f), smooth_circle(uvmtp - projected, size * 0.007f, 0.005f + 0.008f * (particle.z / PARTICLE_SPAWN_Z)));
         }
     }
 }
 
 // Calculate radius
-__DEVICE__ float get_draw_radius(float _x, float r, int fft_y, float2 R) {
+__DEVICE__ float get_draw_radius(float _x, float r, int fft_y, float2 R, __TEXTURE2D__ iChannel0) {
     // Get FFT value
     //float fft = texelFetch(iChannel0, to_int2(x * iResolution.x, fft_y), 0).r;
     float fft = texture(iChannel0, (make_float2(to_int2(_x * iResolution.x, fft_y))+0.5f)/R).x;
@@ -439,19 +439,23 @@ __DEVICE__ float get_draw_radius(float _x, float r, int fft_y, float2 R) {
     return radius;
 }
 
-__KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1, sampler2D iChannel2)
+__KERNEL__ void ColorfulMusicJipi214Fuse(float4 fragColor, float2 fragCoord, float iTime, float2 iResolution, sampler2D iChannel0, sampler2D iChannel1, sampler2D iChannel2)
 {
+    CONNECT_SLIDER0(ExtraBKG, 0.0f, 50.0f, 1.0f);
+    fragCoord+=0.5f;
 
     int2 fc = to_int2_cfloat(_floor(fragCoord));
     float2 uv = fragCoord / iResolution;
     float2 uvmtp = (fragCoord - 0.5f * iResolution) / iResolution.y;
-    
+ 
     // Debug buffer A
 #if DEBUG_BUFFER_A
     if (uv.y < 0.8f) {
         // Everything on the left side of the white line is considered bass
         if (uv.x > BASS_MAX/SPECTRUM_SCALE - 0.002f && uv.x < BASS_MAX/SPECTRUM_SCALE + 0.002f) {
             fragColor = to_float4_s(1.0f);
+            
+            SetFragmentShaderComputedColor(fragColor);
             return;
         }
         
@@ -465,6 +469,8 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 frag
     // Bass value
     //fragColor = texelFetch(iChannel0, to_int2(0, 0), 0);
     fragColor = texture(iChannel0, (make_float2(to_int2(0, 0))+0.5)/R);
+    
+    SetFragmentShaderComputedColor(fragColor);
     return;
 #endif
     
@@ -474,6 +480,8 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 frag
     //fragColor = texelFetch(iChannel1, fc, 0);
     //fragColor = texture(iChannel1, (make_float2(fc)+0.5)/R).x;
     fragColor = texture(iChannel1, (make_float2(fc)+0.5)/R).x;
+    
+    SetFragmentShaderComputedColor(fragColor);
     return;
 #endif
     
@@ -490,13 +498,16 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 frag
     //float extra = texelFetch(iChannel0, to_int2(1, 0), 0).r;
     float extra = texture(iChannel0, (make_float2(to_int2(1, 0))+0.5)/R).x;
     
+    extra *= ExtraBKG;
+    
     // Draw the background
     float3 color = background(uv, extra, iTime);
     
     // Draw particles
 #if PARTICLES != 0
-    particles(uvmtp, color,R);
+    particles(uvmtp, &color,R, iChannel1);
 #endif
+    
     
     // Rotate the circle a bit
     uvmtp = rotate(uvmtp, _sinf(iTime * 1.5f + extra) * 0.005f);
@@ -509,7 +520,7 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 frag
     float2 polar = uv_to_polar(uvmtp, to_float2(0.0f, 0.0f));
     
     // Mirror
-    float fft_x = polar.s;
+    float fft_x = polar.x;
     fft_x *= 2.0f;
     if (fft_x > 1.0f) {
         fft_x = 2.0f - fft_x;
@@ -523,18 +534,18 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 frag
     
     // Draw spectrum
     float radius;
-    color = _mix(color, swi3(SPECTRUM_COLOR_9,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 9,R), 0.006f) * SPECTRUM_COLOR_8.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_8,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 8,R), 0.00575f) * SPECTRUM_COLOR_7.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_7,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 7,R), 0.0055f) * SPECTRUM_COLOR_6.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_6,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 6,R), 0.00525f) * SPECTRUM_COLOR_5.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_5,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 5,R), 0.005f) * SPECTRUM_COLOR_4.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_4,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 4,R), 0.00475f) * SPECTRUM_COLOR_3.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_3,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 3,R), 0.0045f) * SPECTRUM_COLOR_2.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_2,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 2,R), 0.00425f) * SPECTRUM_COLOR_2.w);
-    color = _mix(color, swi3(SPECTRUM_COLOR_1,x,y,z), smooth_circle_polar(polar.t, get_draw_radius(fft_x, r, 1,R), 0.004f) * SPECTRUM_COLOR_1.w);
-    
+    color = _mix(color, swi3(SPECTRUM_COLOR_9,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 9,R,iChannel0), 0.006f) * SPECTRUM_COLOR_8.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_8,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 8,R,iChannel0), 0.00575f) * SPECTRUM_COLOR_7.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_7,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 7,R,iChannel0), 0.0055f) * SPECTRUM_COLOR_6.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_6,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 6,R,iChannel0), 0.00525f) * SPECTRUM_COLOR_5.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_5,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 5,R,iChannel0), 0.005f) * SPECTRUM_COLOR_4.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_4,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 4,R,iChannel0), 0.00475f) * SPECTRUM_COLOR_3.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_3,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 3,R,iChannel0), 0.0045f) * SPECTRUM_COLOR_2.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_2,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 2,R,iChannel0), 0.00425f) * SPECTRUM_COLOR_2.w);
+    color = _mix(color, swi3(SPECTRUM_COLOR_1,x,y,z), smooth_circle_polar(polar.y, get_draw_radius(fft_x, r, 1,R,iChannel0), 0.004f) * SPECTRUM_COLOR_1.w);
+
     // Draw inner circle
-    color = _mix(color, inner_circle(uvmtp / (CIRCLE_RADIUS + r - CIRCLE_BORDER_SIZE)), circle_polar(polar.t, CIRCLE_RADIUS + r - CIRCLE_BORDER_SIZE));
+    color = _mix(color, inner_circle(uvmtp / (CIRCLE_RADIUS + r - CIRCLE_BORDER_SIZE),iTime), circle_polar(polar.y, CIRCLE_RADIUS + r - CIRCLE_BORDER_SIZE));
     
     // Lighten the screen when there is a lot of bass
     color += bass * 0.05f;
@@ -544,48 +555,8 @@ __KERNEL__ void ColorfulMusicJipi214Fuse__Buffer_C(float4 fragColor, float2 frag
     
     // Output the final color, mixed with the previous color to create some sort of motion blur
     // (to make the movement look a little better)
-    float3 previous_color = swi3(_tex2DVecN(iChannel2,uv.x,uv.y,15)x,y,z);
-    fragColor = to_float4(_mix(previous_color, color, 0.8f), 1.0f);
-
-
-  SetFragmentShaderComputedColor(fragColor);
-}
-// ----------------------------------------------------------------------------------
-// - Image                                                                          -
-// ----------------------------------------------------------------------------------
-// Connect Image 'Previsualization: Buffer C' to iChannel0
-
-
-/*
-  Free Public License 1.0.0
-
-  Copyright (C) 2018 by tikveel <steven@tikveel.nl>
-
-  Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
-
-  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING
-  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL,
-  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
-  USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-
-// An audio visualizer inspired by the one used by Trap Nation (https://www.youtube.com/user/AllTrapNation)
-// If you have a fast GPU, I recommend changing the amount of particles in the common pass
-// This song is Bossfight - Elevatia (https://soundcloud.com/bossfightswe/elevatia)
-// Other songs you should try (change in buffer A):
-//  Yeah Yeah Yeahs - Heads Will Roll (Jaydon Lewis Remix) (https://soundcloud.com/itsjaydonlewis/headswillroll)
-//  Pendulum - Tarantula (https://soundcloud.com/elijahpaul/tarantula-pendulum)
-//  Dr. Dre - The Next Episode (San Holo Remix) (https://soundcloud.com/electricspark/dr-dre-the-next-episode-san-holo-remix)
-//  Imagine Dragons - Believer (Kid Comet Nebula Remix) (https://soundcloud.com/kidcometmusic/imagine-dragons-believer-kid-comet-nebula-remix)
-//  Axel Thesleff - Bad Karma (https://soundcloud.com/axelthesleff/bad-karma)
-//  Flowrian - Banani Code (https://soundcloud.com/quantumsaturnus/flowrian-banani-code)
-
-__KERNEL__ void ColorfulMusicJipi214Fuse(float4 fragColor, float2 fragCoord, float2 iResolution, sampler2D iChannel0)
-{
-
-    float2 uv = fragCoord / iResolution;
-    fragColor = _tex2DVecN(iChannel0,uv.x,uv.y,15);
+    float3 previous_color = swi3(_tex2DVecN(iChannel2,uv.x,uv.y,15),x,y,z);
+    fragColor = to_float4_aw(_mix(previous_color, color, 0.8f), 1.0f);
 
 
   SetFragmentShaderComputedColor(fragColor);
