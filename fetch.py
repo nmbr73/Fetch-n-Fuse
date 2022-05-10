@@ -362,7 +362,9 @@ def create_json(shader_id):
   if json_text == None:
 
     print("fetch JSON from shadertoy.com")
-    response = requests.get("https://www.shadertoy.com/api/v1/shaders/" +shader_id+"?key="+os.getenv('APIKEY'))
+    response = requests.get("https://www.shadertoy.com/api/v1/shaders/" +shader_id+"?key="+os.getenv('APIKEY'),
+      headers={"user-agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0"}
+      )
 
     if response.status_code != 200:
       raise Exception("HTTP Error "+str(response.status_code))
