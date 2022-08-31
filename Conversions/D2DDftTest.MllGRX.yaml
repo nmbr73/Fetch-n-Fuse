@@ -1,0 +1,20 @@
+fuse:
+  author: nmbr73
+  file: D2DDftTest
+  id: D2DDftTest
+  kernel: D2DDftTest
+  name: D2DDftTest
+shader:
+  author: Flyguy
+  description: 'Testing a basic 2d fft function, probably not the optimal way of doing
+    it.
+
+    Increase FFT_SIZE to get a higher quality image.'
+  id: MllGRX
+  name: 2D DFT Test
+  tags:
+  - 2d
+  - fft
+  - fouriertransform
+  - dft
+  url: https://www.shadertoy.com/view/MllGRX
