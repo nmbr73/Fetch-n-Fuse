@@ -789,9 +789,8 @@ else:
  ID        = args.id
 
 print("\n##PATH##",CONVERSIONS_PATH)
-
-#if not(os.path.isfile(".env")):
-if not(selfpath+".env"):
+if not(os.path.isfile(selfpath+".env")):
+#if not(selfpath+".env"):
   with open(".env", 'w') as f:
      f.write( "AUTHOR=\"\"\n"
               "APIKEY=\"\"\n"
