@@ -36,8 +36,10 @@ The `fetch` command does work only for shaders that had been marked by their aut
 
 Then `cd` into your working copy of the repository and do a ...
 ```
+python3 -m venv .venv
+source .venv/bin/activate
 python3 -m pip install -r requirements.txt
-chmod a+x fetch fuse
+chmod a+x fetch.py fuse.py
 ./fetch
 ```
 ... or something that does the equivalent on your OS.
