@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import os
 import sys
@@ -772,6 +772,18 @@ if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
 else:
  selfpath = ""
 
+
+ if not(os.path.isfile(selfpath+".env")):
+    with open(".env", 'w') as f:
+      f.write( "AUTHOR=\"\"\n"
+                "APIKEY=\"\"\n"
+                "DOWNLOADS=\"\"\n"
+                "FUSEPATH=\"\"\n"
+                "REPOPATH=\"\"\n"
+              )
+    print(".env file created - please enter your credentials to use")
+
+
  parser = argparse.ArgumentParser(description='Fetch fuse source code.')
  #parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
  #parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
@@ -789,16 +801,6 @@ else:
  ID        = args.id
 
 print("\n##PATH##",CONVERSIONS_PATH)
-if not(os.path.isfile(selfpath+".env")):
-#if not(selfpath+".env"):
-  with open(".env", 'w') as f:
-     f.write( "AUTHOR=\"\"\n"
-              "APIKEY=\"\"\n"
-              "DOWNLOADS=\"\"\n"
-              "FUSEPATH=\"\"\n"
-              "REPOPATH=\"\"\n"
-            )
-  print(".env file created - please enter your credentials to use")
 
 load_dotenv(selfpath+".env")
 
