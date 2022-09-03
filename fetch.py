@@ -12,9 +12,9 @@ import argparse
 from dotenv import load_dotenv
 
 
-CONVERSIONS_PATH = './Conversions/'
-VERBOSE = False
-NOASSETS = False
+CONVERSIONS_PATH  = './Conversions/'
+VERBOSE           = False
+NOASSETS          = False
 
 
 MEDIAMAP = {
@@ -751,60 +751,72 @@ def do_fetch(shader_id):
   #yaml_data   = read_yaml(conv_name, shader_id)
 
 # =====================================================================================================================
-print("\n#################### Fetch Script ###################")
-#print("Aufruf :",sys.argv[0]) #ok
+
+selfpath = ""
+folder = ""
 
 if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
- selfpath = os.path.dirname(sys.argv[0])+"\\"
 
- print("#SELFPATH:",selfpath)
- print(sys.argv, len(sys.argv))
- #print("##Argv2##",id,param,txt)
+    # I guess this is where we get if started from within Fusion?
+    # print("##Argv2##",id,param,txt)
+    # id, folder, etc. are passed in by the incubator Fuse?!?
 
- print("Folder: ",folder)
+    print("\n#################### Fetch Script ###################")
 
- CONVERSIONS_PATH = selfpath+"\Conversions\\"+folder+"\\"
+    selfpath = os.path.dirname(sys.argv[0])+os.sep
 
- NOASSETS  = False
- #VERBOSE   = verbose
- ID = id
+    print("# SELFPATH: ",selfpath)
+    print("# ARGV:     ",sys.argv, len(sys.argv))
+    print("# Folder:  ",folder)
+    print("# ID:      ",id)
+
+    CONVERSIONS_PATH = selfpath + "Conversions"+os.sep
+      
+
+    NOASSETS  = False
+    VERBOSE   = False # verbose
+    ID        = id
+
 
 else:
- selfpath = ""
 
+    #parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
+    #parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
+    #parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
+    #parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
 
- if not(os.path.isfile(selfpath+".env")):
-    with open(".env", 'w') as f:
-      f.write( "AUTHOR=\"\"\n"
-                "APIKEY=\"\"\n"
-                "DOWNLOADS=\"\"\n"
-                "FUSEPATH=\"\"\n"
-                "REPOPATH=\"\"\n"
-              )
-    print(".env file created - please enter your credentials to use")
+    parser = argparse.ArgumentParser(description='Fetch fuse source code.')
+    parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
+    parser.add_argument('-f','--folder', help='subfolder for conversions', required=False)
+    parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
+    parser.add_argument('-v','--verbose',action='store_true',help='verbose output')
+    args = parser.parse_args()
 
+    NOASSETS  = args.no_assets
+    VERBOSE   = args.verbose
+    ID        = args.id
+    folder    = args.folder
 
- parser = argparse.ArgumentParser(description='Fetch fuse source code.')
- #parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
- #parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
- parser.add_argument('-i','--id', help='shadertoy id as used in the URL', required=True)
- #parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
- parser.add_argument('-na','--no-assets',action='store_true',help='do not try to download the assets, even if they are not yet existing')
- #parser.add_argument('-np','--no-patch',action='store_true',help='do not patch the code for DCTÖL - see normal WebGL in the .c file')
- parser.add_argument('-v','--verbose',action='store_true',help='verbose output')
- args = parser.parse_args()
+if not(os.path.isfile(selfpath+".env")):
+  with open(".env", 'w') as f:
+    f.write(  "AUTHOR=\"\"\n"
+              "APIKEY=\"\"\n"
+              "DOWNLOADS=\"\"\n"
+              "FUSEPATH=\"\"\n"
+              "REPOPATH=\"\"\n"
+            )
+  print(".env file created - please enter your credentials to use")
 
- #print(args.echo)
-
- NOASSETS  = args.no_assets
- VERBOSE   = args.verbose
- ID        = args.id
-
-print("\n##PATH##",CONVERSIONS_PATH)
 
 load_dotenv(selfpath+".env")
 
-print("\nENVIRIONMENT ",os.getenv('APIKEY'))
+if folder:
+  CONVERSIONS_PATH = CONVERSIONS_PATH + folder + os.sep
+
+# print("\n##PATH##",CONVERSIONS_PATH)
+# print("\nENVIRIONMENT ",os.getenv('APIKEY'))
+
+
 
 
 #try:
