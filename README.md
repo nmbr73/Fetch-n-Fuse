@@ -37,23 +37,41 @@ The `fetch` command does work only for shaders that had been marked by their aut
 Then `cd` into your working copy of the repository and do a ...
 ```
 python3 -m venv .venv
-source .venv/bin/activate # .venv/Scripts/activate.bat in 'Git Bash' on Windows
+source .venv/bin/activate
 python3 -m pip install -r requirements.txt
 chmod a+x fetch.py fuse.py
 ./fetch
 ```
-... or something that does the equivalent on your OS.
+... on Windows the following could work in a PowerShell:
+```
+python.exe -m venv .venv
+.venv/Scripts/activate.bat
+python.exe -m pip install -r requirements.txt
+python.exe .\fetch.py
+```
+
 
 Now edit the `.env` file to add you credentials (you need to log in to shadertoys.com and create an APP on https://www.shadertoy.com/myapps to retrieve your own API-Key).
 
-It should look something like this afterwards:
-```
+It should look something like this afterwards (Fusion on macOS):
+```ini
 AUTHOR="nmbr73"
 APIKEY="******"
 DOWNLOADS="/Users/nmbr73/Downloads/"
 FUSEPATH="/Users/nmbr73/Library/Application Support/Blackmagic Design/Fusion/Fuses/"
 REPOPATH="/Users/nmbr73/Projects/Fetch-n-Fuse/"
 ```
+
+... or this (DaVinci Resolve on Windows):
+```ini
+AUTHOR=nmbr73
+USER=peterlustig # windows user folder name 
+APIKEY=****** # your shadertoys.com API key
+DOWNLOADS=C:\\Users\\${USER}\\Downloads\\
+FUSEPATH=C:\\Users\\${USER}\\AppData\\Roaming\\Blackmagic Design\\DaVinci Resolve\\Support\\Fusion\\Fuses\\
+REPOPATH=C:\\Users\\${USER}\\Projects\\Fetch-n-Fuse\\
+```
+
 ... `DOWNLOADS` is optional, but it's recommended to set it to your browsers download folder (do not forget the trailing slash!). If set, then the downloads folder is used to search for shaders - otherwise you have to copy such downloads into the `Conversions/` folder before calling `fetch`.
 
 You should consider to add a new *'Fusion Studio' → 'Preferences...' → 'Global and Default Settings' → 'Path Map'* named '`Fetch-n-Fuse:`' pointing to your working copy of the repository (in the above example that would be '`/Users/nmbr73/Projects/Fetch-n-Fuse/`'). This should help in particular to make sharing compositions easier.
