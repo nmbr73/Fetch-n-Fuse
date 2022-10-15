@@ -914,7 +914,7 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 
   --Will be customized in Process()
   doFetch_tpl =  [==[ 
-    comp:RunScript("PFADfetch.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
+    comp:RunScript("PFADfetch-from-ui.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
                  ]==]  
 
  	InFetch = self:AddInput('Fetch Shadertoy', 'InFetch', {
