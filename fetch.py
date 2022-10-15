@@ -753,7 +753,7 @@ def do_fetch(shader_id):
 # =====================================================================================================================
 
 selfpath = ""
-folder = ""
+# folder = ""
 
 if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
 
@@ -779,7 +779,7 @@ if sys.argv[0] != "fetch.py" and sys.argv[0] != "./fetch.py":
 
 
 else:
-
+ 
     #parser.add_argument('-f','--force',action='store_true',help='overwrite code if it already exists')
     #parser.add_argument('-a','--assets',action='store_true',help='fetch assets (even if they exist)') # TODO
     #parser.add_argument('-nc','--no-cache',action='store_true',help='re-fetch the .json file (assets are not fetched if they exist localy)')
