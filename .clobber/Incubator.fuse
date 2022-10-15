@@ -225,7 +225,7 @@ end
 --
 function Create()
 
-  local REPOSITORYPATH=[[D:\Zumsel\Dokumente\Github\Fetch-n-Fuse\]]
+  local REPOSITORYPATH=[[]]
 
   PathToRepository=REPOSITORYPATH
 
@@ -336,7 +336,7 @@ function Create()
   pathToConversions = REPOSITORYPATH..'Conversions/'
 
 
-  PathToUse = readAll()
+  PathToUse = readPathToUse()
   --print("PathToUse - Create",pathToConversions..PathToUse) --pathToConversions..InPathToUseCombo:GetSource(0).Value..'/')
   
   if (PathToUse ~= "Root") then
@@ -1064,50 +1064,40 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 end
 
 
---InstallPath = [[c:\Users\Zumsel\AppData\Roaming\Blackmagic Design\Fusion\Fuses\]]
-InstallPath = PathToRepository -- Alternative
 ---------------------------------- Helperfunctions PathToUse---------------------------------------
-function readAll()
+function readPathToUse()
  
- --print("Path:   ",PathToRepository,InstallPath, REPOSITORYPATH)
- 
- InstallPath = PathToRepository
- 
-  file = InstallPath.."PathToUse.txt"
+  file = PathToRepository.."PathToUse.txt"
   
   local f = io.open(file, "r")
   if not f then
-    print("File-Error-Reading: ",f)
-    return "root"
+    print("Error reading file '" .. file .. "'")
+    return "Root"
   end
   
   local content = f:read("*all")
-  local size = f:seek("end")
-  print("READING*************************************\n ",file,content)
-  
   f:close()
+
+  verbose("readPathToUse() is '"..content.."'")
+
   return content
 end
 
 
-function writeAll(content)
-  --file = self.Comp:MapPath(file)
+function writePathToUse(content)
   
-  InstallPath = PathToRepository
-  
-  file = InstallPath.."PathToUse.txt"
+  file = PathToRepository.."PathToUse.txt"
   local f = io.open(file, "w")
   if not f then
-    print("File-Error-Writing: ",f)
-    return
+    print("Error writing file '" .. file .. "'")
+    return false
   end
   
   f:write(content)
-  local size = f:seek("end")
-  print("WRITING*************************************\n ", content)
-  
   f:close()
-  return 0
+
+  verbose("writePathToUse() is now '"..content.."'") 
+  return true
 end
 
 
@@ -2409,18 +2399,20 @@ function NotifyChanged(inp, param, time)
       --InSemaphore:SetSource(Number(1),0,0)
       --file = InstallPath.."Test.txt"
       
-      print("AlterWert: ", readAll())
+      print("AlterWert: ", readPathToUse())
       print("NeuerWert", param.Value)
       
       if (param.Value == "Root") then
-        writeAll("")
+        writePathToUse("")
       else
-        writeAll(param.Value)
+        writePathToUse(param.Value)
       end  
       
       InFileToUseCombo:SetSource(Number(0),0) -- Auf den Ersten Eintrag stellen, da sonst bei kleinerer Liste Fehler erzeugt wird
       InShaderIDFuse:SetSource(Number(0),0)   -- dito
       InInfoReload:SetAttrs({IC_Visible = true}) -- Info
+
+
 
       -- Verzweifelter Versuch - automatisch ein reload zu bewerkstelligen -> keine Chance - Scripte sind erst nach dem "Create" verfügbar!       
       --if not tool then
