@@ -130,7 +130,7 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 -- @param[type=string] msg The message to output in DaFusions console window.
 --
 function verbose(msg)
-   --print(msg)
+   print(msg)
 end
 
 function verbose_MB(msg,...)
@@ -145,14 +145,15 @@ end
 -- repositorie's *'Conversions/'* folder. It is used to proviede these sources i.e. in a ComboBox for
 -- selection.
 --
--- @table Conversions
+-- @table GLOBAL_Conversions
 -- @field Name Fusename of the conversion.
 -- @field Path Full path of the folder the conversion can be found in.
 -- @field Filename Full filename (indcluding the ID and '.c' suffix).
 -- @field ShadertoyID The ID of the Shadertoy the code originally came from.
 -- @field Label Name in human readable form identifying the converson to show in messages, the ComboBox, etc. .
 --
-Conversions={}
+GLOBAL_Conversions = {}
+GLOBAL_CurrentFolderIndex = 1
 
 
 
@@ -162,9 +163,8 @@ Conversions={}
 -- @param[type=string] path Path to where the conversions reside.
 -- @return[type=table] conversion information; `{}` if no conversions found
 --
-function Conversions_resetData(path)
 
-  Conversions={}
+function Conversions_resetData_readFolder(path)
 
   local files={}
 
@@ -182,11 +182,12 @@ function Conversions_resetData(path)
 
   table.sort(files) -- grrr, it's case sensitive :-(
 
-
   local entries={}
 
   for k, filename in pairs(files) do
     local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
+
+    -- print("k '"..k.."' -> "..path)
 
     entries[k]={
       Name=fusename,
@@ -197,7 +198,27 @@ function Conversions_resetData(path)
     }
   end
 
-  Conversions=entries
+  return entries
+end
+
+function Conversions_resetData(path)
+
+  GLOBAL_Conversions={}
+
+  folders = { "", "JiPi/", "nmbr73/"}
+
+  for k,folder in ipairs(folders) do
+
+    GLOBAL_Conversions[k]={
+      Folder=folder,
+      Label=folder,
+      Entries=Conversions_resetData_readFolder(path .. folder)
+    }
+ end
+
+
+
+  
 end
 
 
@@ -218,6 +239,9 @@ function CompatibilityCode_loadFile()
     end
   end
 end
+
+
+
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -300,24 +324,24 @@ function Create()
   local next_ctrl_group = 1   -- increment every time you used it for a new control group
   local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
 
-  -- Choose the Path
-  InPathToUseCombo = self:AddInput("Path", "PathConversion", {
-    IC_ControlPage      = control_page ,
-    LINKID_DataType     = "Number",
-    INPID_InputControl  = "ComboIDControl",
-	  INP_DoNotifyChanged = false,
-    INP_InitialNotify   = false,
-    INP_Default         = 0,
-    INP_Integer         = true,
-    {CCS_AddString       = "Root",},
-    {CCS_AddString       = "nmbr73",},
-    {CCS_AddString       = "JiPi",},
-    {CCS_AddString       = "ToDo",},
-    {CCS_AddString       = "Defect",},
-    {CCS_AddString       = "CheckMetal",},
-    {CCS_AddString       = "CheckCuda",},
-    {CCS_AddString       = "Archive",},
-    })
+  -- -- Choose the Path
+  -- InFolderToUseCombo = self:AddInput("Path", "PathConversion", {
+  --   IC_ControlPage      = control_page ,
+  --   LINKID_DataType     = "Number",
+  --   INPID_InputControl  = "ComboIDControl",
+	--   INP_DoNotifyChanged = false,
+  --   INP_InitialNotify   = false,
+  --   INP_Default         = 0,
+  --   INP_Integer         = true,
+  --   {CCS_AddString       = "Root",},
+  --   {CCS_AddString       = "nmbr73",},
+  --   {CCS_AddString       = "JiPi",},
+  --   {CCS_AddString       = "ToDo",},
+  --   {CCS_AddString       = "Defect",},
+  --   {CCS_AddString       = "CheckMetal",},
+  --   {CCS_AddString       = "CheckCuda",},
+  --   {CCS_AddString       = "Archive",},
+  --   })
 
   InInfoReload = self:AddInput( "------ Path has changed ! ------\n------      Push Reload      ------","InfoReload", {
       LINKID_DataType    = "Text",
@@ -336,13 +360,13 @@ function Create()
   pathToConversions = REPOSITORYPATH..'Conversions/'
 
 
-  PathToUse = readPathToUse()
-  --print("PathToUse - Create",pathToConversions..PathToUse) --pathToConversions..InPathToUseCombo:GetSource(0).Value..'/')
+  -- PathToUse = readPathToUse()
+  -- --print("PathToUse - Create",pathToConversions..PathToUse) --pathToConversions..InFolderToUseCombo:GetSource(0).Value..'/')
   
-  if (PathToUse ~= "Root") then
-      --print("Create - NeuerPath: ",pathToConversions..PathToUse..'/')
-      pathToConversions = pathToConversions..PathToUse..'/'
-  end
+  -- if (PathToUse ~= "Root") then
+  --     --print("Create - NeuerPath: ",pathToConversions..PathToUse..'/')
+  --     pathToConversions = pathToConversions..PathToUse..'/'
+  -- end
 
   Conversions_resetData(pathToConversions)
 
@@ -377,36 +401,79 @@ function Create()
   ]]
 
 
+  -- dump(GLOBAL_Conversions)
 
 
-  -- combo box with all the conversions + a reload button
+  -- ComboControl to select the folder cointaining the conversions
 
-  local attrs, attrs2
+  local attrsFolders = {}
 
-  attrs={}
-
-  for k,v in pairs(Conversions) do
-    verbose("Create: conversion '"..v.Label.."'")
-    table.insert(attrs,{ CCS_AddString = v.Label })
+  for k,folder in pairs(GLOBAL_Conversions) do
+    print("Create InFolderToUseCombo ...")
+    print(" k='".. k .."'") 
+    print(" folder.Label='".. folder.Label .."'") 
+    table.insert(attrsFolders,{ CCS_AddString = folder.Label })
   end
 
-  InFileToUseCombo = self:AddInput("Code", "conversion", {
-    IC_ControlPage = control_page ,
-    LINKID_DataType = "Number",
-    INPID_InputControl = "ComboControl",
-	  INP_DoNotifyChanged = true,
-    INP_Default = 0,
-    INP_Integer = true,
-    attrs
+  InFolderToUseCombo = self:AddInput("Folder", "PathConversion", {
+    IC_ControlPage      = control_page ,
+    LINKID_DataType     = "Number",
+    -- INPID_InputControl  = "ComboIDControl",
+    INPID_InputControl  = "ComboControl",
+    INP_DoNotifyChanged = true,
+    INP_InitialNotify   = false,
+    INP_Default         = 0,
+    INP_Integer         = true,
+    attrsFolders
     })
 
 
+  -- ComboControls to select the conversion per folder
+
+  InFileToUseCombo = {}
+
+
+  for idxFolder,dataFolder in pairs(GLOBAL_Conversions) do
+
+    print("Create InFileToUseCombo[] ...")
+    print(" idxFolder='".. idxFolder .."'") 
+    print(" dataFolder.Label='".. dataFolder.Label .."'") 
+
+
+    local attrs = {}
+
+    for idxConversion, entry in pairs(dataFolder.Entries) do
+      print(" idxConversion='".. idxConversion .."'") 
+      print(" entry.Label='".. entry.Label .."'") 
+      table.insert(attrs,{ CCS_AddString = entry.Label })
+    end
+
+  
+    InFileToUseCombo[idxFolder] = self:AddInput("Code", "conversion" .. idxFolder, {
+      IC_ControlPage = control_page ,
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ComboControl",
+      INP_DoNotifyChanged = true,
+      INP_Default = 0,
+      INP_Integer = true,
+      IC_Visible  =  true, -- (idxFolder == 1),
+      attrs
+      })
+      
+  end
+
+
+  --InFileToUseCombo[1].SetAttrs({ IC_Visible = true })
+
+  
+    -- ComboControl to select the Kernel
+
   ShaderKernels_resetData()
 
-  attrs2={}
+  local attrsKernels={}
 
   for i,e in pairs(ShaderKernels.Entries) do
-    table.insert(attrs2,{ CCS_AddString = e.ComboName })
+    table.insert(attrsKernels,{ CCS_AddString = e.ComboName })
   end
 
   ShaderKernels_ComboControl = self:AddInput("Kernel", "kernel", {
@@ -416,7 +483,7 @@ function Create()
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      attrs2
+      attrsKernels
   })
 
   ShaderKernels_LabelControl = self:AddInput(
@@ -888,15 +955,51 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
      IC_Visible = false,
    })
 
-Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
+
+
+self:AddInput("In this section you find some controlls to call the fetch and fuse python scripts. If it works (it probably does not), then currently it only does so on Windows."
+    
+    , "FnF_InfoText", {
     LINKID_DataType = "Text",
-    INPID_InputControl = "LabelControl",
-    INP_External = false,
-    INP_Passive = true,
+    INPID_InputControl = "LabelControl",    
+    LBLC_MultiLine=true,
+    IC_NoLabel=true,
+    IC_NoReset=true,
+    INP_External=false,
+    INP_Passive=true
   })
 
 
-		InShaderID = self:AddInput("ShaderID to Fetch", "ShaderID", {
+self:BeginControlNest("Fetch", "FnF_Fetch", true, {}) 
+
+-- Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
+--     LINKID_DataType = "Text",
+--     INPID_InputControl = "LabelControl",
+--     INP_External = false,
+--     INP_Passive = true,
+--   })
+
+
+  InFetchFolder = self:AddInput("Folder to Fetch to", "FetchFolder", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "TextEditControl",
+    INP_External = false,
+    IC_NoLabel = false,
+    ICD_Width = 1.0,
+    INPS_DefaultText = "-",
+    TEC_Lines = 1,
+    TEC_Wrap = false,
+    TEC_ReadOnly = true,
+    TEC_CharLimit = 0,
+    TEC_DeferSetInputs = false,
+    INP_DoNotifyChanged  = false,
+    INP_Disabled = true,
+    INP_Passive = true,
+  })	
+
+
+
+		InFetchShaderID = self:AddInput("ShaderID to Fetch", "ShaderID", {
 			LINKID_DataType      = "Text",
 			INPID_InputControl   = "TextEditControl",
 			INP_DoNotifyChanged  = true,
@@ -911,38 +1014,43 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 			TEC_CharLimit        = 6,	           -- maximum number of allowed characters (default is 0, no limit)
 			TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
 			})	
+  
+      InFetchButton = self:AddInput('Fetch Shadertoy', 'InFetchButton', {
+        LINKID_DataType        = 'Number',
+        INPID_InputControl     = 'ButtonControl',
+        INP_DoNotifyChanged    = false,
+        INP_Disabled           = true, --will be enabled in the NotifyChanged 
+        INP_External           = false,
+        INP_Default            = 0.0,
+        ICD_Width              = 1,
+        BTNCS_Execute          = [[print("BTNCS_Execute for a doFetch has not been set yet")]],
+        IC_Visible             = true,
+        }) 
+    
+      InFetchButtonClickedFlag = self:AddInput( "FetchButtonClickedFlag","FetchButtonClickedFlag", {
+        LINKID_DataType     = "Number",
+        INPID_InputControl  = "CheckboxControl",
+        INP_Integer         = true,
+        INP_Default         = 0,
+        IC_Visible          = false,
+      })
+    
+    
 
-  --Will be customized in Process()
-  doFetch_tpl =  [==[ 
-    comp:RunScript("PFADfetch-from-ui.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
-                 ]==]  
-
- 	InFetch = self:AddInput('Fetch Shadertoy', 'InFetch', {
-		LINKID_DataType        = 'Number',
-		INPID_InputControl     = 'ButtonControl',
-		INP_DoNotifyChanged    = false,
-    INP_Disabled           = true, --will be enabled in the NotifyChanged 
-		INP_External           = false,
-		INP_Default            = 0.0,
-		ICD_Width              = 1,
-		BTNCS_Execute          = doFetch_tpl,
-		IC_Visible             = true,
-		}) 
-  InSemaphoreFetch = self:AddInput( "SemaphoreFetch","SemaphoreFetch", {
-    LINKID_DataType     = "Number",
-    INPID_InputControl  = "CheckboxControl",
-    INP_Integer         = true,
-    INP_Default         = 0,
-    IC_Visible          = false,
-  })
+  self:EndControlNest()
 
 
-  Sep2 = self:AddInput("_________________FUSE__________________", "Separator2", {
-    LINKID_DataType = "Text",
-    INPID_InputControl = "LabelControl",
-    INP_External = false,
-    INP_Passive = true,
-  })
+
+  self:BeginControlNest("Fuse", "FnF_Fuse", true, {}) 
+
+
+
+  -- Sep2 = self:AddInput("_________________FUSE__________________", "Separator2", {
+  --   LINKID_DataType = "Text",
+  --   INPID_InputControl = "LabelControl",
+  --   INP_External = false,
+  --   INP_Passive = true,
+  -- })
 
       
 	InManualID = self:AddInput("Manual ID", "ManualID", {
@@ -954,24 +1062,56 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
       IC_Visible         = false,
 		})	
 
-	InShaderIDFuse = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
-    IC_ControlPage      = control_page ,
-    LINKID_DataType     = "Number",
-    INPID_InputControl  = "ComboControl",
-	  INP_DoNotifyChanged = true,
-    INP_InitialNotify   = false,
-    INP_Default         = 0,
-    INP_Integer         = true,
-    attrs
-    })	
-
-  --Will be customized in Process()
-  doFuse_tpl =  [==[ 
-    comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false, folder="FOLDER"}) 
-                ]==]  
+	-- InFuseShaderID = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
+  --   IC_ControlPage      = control_page ,
+  --   LINKID_DataType     = "Number",
+  --   INPID_InputControl  = "ComboControl",
+	--   INP_DoNotifyChanged = true,
+  --   INP_InitialNotify   = false,
+  --   INP_Default         = 0,
+  --   INP_Integer         = true,
+  --   attrs
+  --   })	
 
 
-	InFuse = self:AddInput('Fuse a Shadertoy', 'InFuse', {
+  InFuseFolder = self:AddInput("Folder to Fuse from", "FuseFolder", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "TextEditControl",
+    INP_External = false,
+    IC_NoLabel = false,
+    ICD_Width = 1.0,
+    INPS_DefaultText = "-",
+    TEC_Lines = 1,
+    TEC_Wrap = false,
+    TEC_ReadOnly = true,
+    TEC_CharLimit = 0,
+    TEC_DeferSetInputs = false,
+    INP_DoNotifyChanged  = false,
+    INP_Disabled = true,
+    INP_Passive = true,
+  })	
+
+  
+  InFuseShaderID = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
+    LINKID_DataType = "Text",
+    INPID_InputControl = "TextEditControl",
+    INP_External = false,
+    IC_NoLabel = false,
+    ICD_Width = 1.0,
+    INPS_DefaultText = "-",
+    TEC_Lines = 1,
+    TEC_Wrap = false,
+    TEC_ReadOnly = true,
+    TEC_CharLimit = 0,
+    TEC_DeferSetInputs = false,
+    INP_DoNotifyChanged  = false,
+    INP_Disabled = true,
+    INP_Passive = true,
+  })	
+
+  
+
+	InFuseButton = self:AddInput('Fuse a Shadertoy', 'InFuseButton', {
 		LINKID_DataType        = 'Number',
 		INPID_InputControl     = 'ButtonControl',
 		INP_DoNotifyChanged    = false,
@@ -979,16 +1119,23 @@ Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
 		INP_External           = false,
 		INP_Default            = 0.0,
 		ICD_Width              = 1,
-		BTNCS_Execute          = doFuse,
+		BTNCS_Execute          = [[print("BTNCS_Execute for a doFuse has not been set yet")]],
 		IC_Visible             = true,
 		}) 
-  InSemaphoreFuse = self:AddInput( "SemaphoreFuse","SemaphoreFuse", {
+
+
+  InFuseButtonClickedFlag = self:AddInput( "FuseButtonClickedFlag","FuseButtonClickedFlag", {
       LINKID_DataType     = "Number",
       INPID_InputControl  = "CheckboxControl",
       INP_Integer         = true,
       INP_Default         = 0,
       IC_Visible          = false,
     })
+
+
+    self:EndControlNest()
+
+
 
 
   InSize = self:AddInput("Size", "Size_Fuse", {
@@ -1725,39 +1872,57 @@ function Process(req)
         --cmp = fusion:GetCurrentComp()
         --print("VERSUCH1: ",cmp.ActiveTool.Name)
   
-  InPathToUseCombo:SetAttrs({INP_DoNotifyChanged = true,}) -- INP_InitialNotify ? funktioniert wohl nicht
+  -- InFolderToUseCombo:SetAttrs({INP_DoNotifyChanged = true,}) -- INP_InitialNotify ? funktioniert wohl nicht
 
 
-  if (InSemaphoreFetch:GetValue(req).Value == 1) then
-    shaderID = InShaderID:GetValue(req).Value
+  if (InFetchButtonClickedFlag:GetValue(req).Value == 1) then
     
+    local shaderID = InFetchShaderID:GetValue(req).Value
+    local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
+    local folder = GLOBAL_Conversions[selectedFolder].Folder
+    
+    doFetch = 
+      [[comp:RunScript("]]..PathToRepository..
+      [[fetch-from-ui.py", { id = "]]..shaderID..
+      [[, verbose=false, noassets=false, folder="]]..folder..
+      [["})]]
+
+    InFetchButton:SetAttrs({ BTNCS_Execute = doFetch, })
+
     --Warum auch immer - verstehe wer will    
-    PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
-         
-    doFetch = string.gsub(doFetch_tpl, 'PFAD', PathToRepository_cor)
-    doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
-    doFetch = string.gsub(doFetch, 'FOLDER', PathToUse)
+    --PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
+
+    -- local doFetch =  [==[ 
+    --   comp:RunScript("PFADfetch-from-ui.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
+    --                ]==]  
+
+    -- doFetch = string.gsub(doFetch, 'PFAD', PathToRepository_cor)
+    -- doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
+    -- doFetch = string.gsub(doFetch, 'FOLDER', PathToUse)
         
-    InFetch:SetAttrs({ BTNCS_Execute = doFetch, }) --Zuweisung notwendig !! Ändern des Strings funktioniert nicht
-    verbose("TestFetch",doFetch)
 
     --print("----------------\n DoFetch-String-Process",doFetch,"\n----------------" )    
 
     
-    InSemaphoreFetch:SetSource(Number(0),0,0) --nur einmal ändern
+    InFetchButtonClickedFlag:SetSource(Number(0),0,0) --nur einmal ändern
   end
 
-  if (InSemaphoreFuse:GetValue(req).Value == 1 and table.getn(Conversions) > 0) then
-    shaderIDFuse = Conversions[InShaderIDFuse:GetValue(req).Value + 1].ShadertoyID
-        
+  if (false and InFuseButtonClickedFlag:GetValue(req).Value == 1 and table.getn(GLOBAL_Conversions) > 0) then
+
+    shaderIDFuse = GLOBAL_Conversions[InFuseShaderID:GetValue(req).Value + 1].ShadertoyID
+
+
     --Warum auch immer - verstehe wer will    
     PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
          
-    doFuse = string.gsub(doFuse_tpl, 'PFAD', PathToRepository_cor)
+    doFuse =[==[ 
+      comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false, folder="FOLDER"}) 
+                  ]==]  
+    doFuse = string.gsub(doFuse, 'PFAD', PathToRepository_cor)
     doFuse = string.gsub(doFuse, 'SHADERID', shaderIDFuse)
     doFuse = string.gsub(doFuse, 'FOLDER', PathToUse)
         
-    InFuse:SetAttrs({ BTNCS_Execute = doFuse, })
+    InFuseButton:SetAttrs({ BTNCS_Execute = doFuse, })
  
     --print("----------------\n DoFuse-String-Process",doFuse,"\n----------------" )
     
@@ -1778,9 +1943,40 @@ function Process(req)
   end
 
 
-  if (rebuild and table.getn(Conversions) > 0) then
+
+  if (rebuild and table.getn(GLOBAL_Conversions) > 0) then
+
+    local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
+    local selectedFile = InFileToUseCombo[selectedFolder]:GetValue(req).Value + 1
+
+    print("Process() ... rebuild")
+    print("  selectedFolder = '"..selectedFolder.."' ('".. GLOBAL_Conversions[selectedFolder].Label .."')")
+    print("  selectedFile = '"..selectedFile.."' ('".. GLOBAL_Conversions[selectedFolder].Entries[selectedFile].Label .."')")
+
+
+    local item   = GLOBAL_Conversions[selectedFolder].Entries[selectedFile]
+
+    if InFuseShaderID:GetValue(req).Value ~= item.ShadertoyID then
+      InFuseShaderID:SetAttrs({INP_Disabled=false})
+      InFuseShaderID:SetSource(Text( item.ShadertoyID ),0,0)
+      InFuseShaderID:SetAttrs({INP_Disabled=true})
+    end
+  
+    if InFetchFolder:GetValue(req).Value ~= item.Folder then
+      InFetchFolder:SetAttrs({INP_Disabled=false})
+      InFetchFolder:SetSource(Text( item.Folder ),0,0)
+      InFetchFolder:SetAttrs({INP_Disabled=true})
+    end
+
+    if InFuseFolder:GetValue(req).Value ~= item.Folder then
+      InFuseFolder:SetAttrs({INP_Disabled=false})
+      InFuseFolder:SetSource(Text( item.Folder ),0,0)
+      InFuseFolder:SetAttrs({INP_Disabled=true})
+    end
+
+
+
     ConversionSourcecode  = ""
-    local item   = Conversions[InFileToUseCombo:GetValue(req).Value + 1]
     ConversionFusename    = item.Name
     ConversionShaderID    = item.ShadertoyID
 
@@ -2383,89 +2579,69 @@ end
 -- Callback to handle UI control events.
 --
 function NotifyChanged(inp, param, time)
-	if inp ~= nil and param ~= nil then
+	
+  if inp == nil or param == nil then
+    return
+  end
 
-		if (inp == InReloadCodeButton) then
-			if (param.Value == 1) then
-        verbose("NotifyChanged: reload button pressend")
-        InRebuildCheckBox:SetSource(Number(1),0)
-        return
-      end
-    end
+  if inp == InReloadCodeButton and param.Value == 1 then
+    verbose("NotifyChanged: reload button pressend")
+    InRebuildCheckBox:SetSource(Number(1),0)
+    return
+  end
     
-    if (inp == InPathToUseCombo) then
-    
-      --print("NotifyChanged-selected: "..param.Value)
-      --InSemaphore:SetSource(Number(1),0,0)
-      --file = InstallPath.."Test.txt"
-      
-      print("AlterWert: ", readPathToUse())
-      print("NeuerWert", param.Value)
-      
-      if (param.Value == "Root") then
-        writePathToUse("")
-      else
-        writePathToUse(param.Value)
-      end  
-      
-      InFileToUseCombo:SetSource(Number(0),0) -- Auf den Ersten Eintrag stellen, da sonst bei kleinerer Liste Fehler erzeugt wird
-      InShaderIDFuse:SetSource(Number(0),0)   -- dito
-      InInfoReload:SetAttrs({IC_Visible = true}) -- Info
 
-
-
-      -- Verzweifelter Versuch - automatisch ein reload zu bewerkstelligen -> keine Chance - Scripte sind erst nach dem "Create" verfügbar!       
-      --if not tool then
-        --fusion = eyeon.scriptapp('Fusion', 'localhost')
-        --cmp = fusion:GetCurrentComp()
-        --print("VERSUCH1: ",fusion.ActiveTool.Name)
+  if inp == InFolderToUseCombo then
+    verbose("NotifyChanged: folder to use changed")
         
---	      tool = fusion.ActiveTool
-      --end 
-        
---      tool.ScriptReload[fu.TIME_UNDEFINED] = 1
---	    print("Fuse Reloaded")
---	    tool.ScriptReload[fu.TIME_UNDEFINED] = 0
-        
-        
-      --InInfoReload:SetAttrs({IC_Visible = true})
-    end
-    
-    
-    
-    
+    InFileToUseCombo[GLOBAL_CurrentFolderIndex]:SetAttrs({IC_Visible = false})
+    GLOBAL_CurrentFolderIndex = param.Value + 1
+    InFileToUseCombo[GLOBAL_CurrentFolderIndex]:SetAttrs({IC_Visible = true})
 
+    verbose("  set flag for a rebuild")
+    InRebuildCheckBox:SetSource(Number(1),0)
 
-		if (inp == InFileToUseCombo) then
+    -- InFuseButton:SetAttrs({INP_Disabled = false})
+    -- InFuseButton:SetAttrs({LINKS_Name = "Fuse Shadertoy ID "..GLOBAL_CurrentFolderIndex})
+
+    
+    -- InFileToUseCombo:SetSource(Number(0),0) -- Auf den Ersten Eintrag stellen, da sonst bei kleinerer Liste Fehler erzeugt wird
+    -- InFuseShaderID:SetSource(Number(0),0)   -- dito
+    -- InInfoReload:SetAttrs({IC_Visible = true}) -- Info
+  
+    return
+  end
+    
+    
+    
+		if (inp == InFileToUseCombo[GLOBAL_CurrentFolderIndex]) then
       verbose("NotifyChanged: file to use changed - set flag for a rebuild")
       InRebuildCheckBox:SetSource(Number(1),0)
       return
     end
 
-    --JiPi
-		if (inp == InReloadParameterNames) then
-			if (param.Value == 1) then
-        verbose("NotifyChanged: reload Parameter Names")
-        InRebuildParameterNames:SetSource(Number(1),0)
-        return
-      end
+		if inp == InReloadParameterNames and param.Value == 1 then
+      verbose("NotifyChanged: reload Parameter Names")
+      InRebuildParameterNames:SetSource(Number(1),0)
+      return
     end
 
-		if (inp == InShaderID) then
+		if (inp == InFetchShaderID) then
 			if (string.len(param.Value) == 6) then 
-        InFetch:SetAttrs({INP_Disabled = false})
-        InFetch:SetAttrs({LINKS_Name = "Fetch Shadertoy ID "..param.Value})
+        InFetchButton:SetAttrs({INP_Disabled = false})
+        InFetchButton:SetAttrs({LINKS_Name = "Fetch Shadertoy ID "..param.Value})
       else
-        InFetch:SetAttrs({INP_Disabled = true})
-        InFetch:SetAttrs({LINKS_Name = "Please Enter ID (6 Characters) "})
+        InFetchButton:SetAttrs({INP_Disabled = true})
+        InFetchButton:SetAttrs({LINKS_Name = "Please Enter ID (6 Characters) "})
       end
       
       --print("\n\nNotify ",param.Value,string.len(param.Value), "\n\n")
-       InSemaphoreFetch:SetSource(Number(1),0,0)
+       InFetchButtonClickedFlag:SetSource(Number(1),0,0)
+       return
   	end
     
-    if (inp == InShaderIDFuse) then  -- ev Button noch modifizieren
-      InSemaphoreFuse:SetSource(Number(1),0,0)
+    if (inp == InFuseShaderID) then  -- ev Button noch modifizieren
+      InFuseButtonClickedFlag:SetSource(Number(1),0,0)
     end  
 
 		if inp == InSize then
@@ -2495,5 +2671,4 @@ function NotifyChanged(inp, param, time)
 		  end
 		end 
 
-	end
 end
