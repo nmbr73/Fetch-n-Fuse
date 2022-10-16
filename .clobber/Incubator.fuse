@@ -456,7 +456,7 @@ function Create()
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      IC_Visible  =  true, -- (idxFolder == 1),
+      IC_Visible  =  (idxFolder == 1),
       attrs
       })
       
