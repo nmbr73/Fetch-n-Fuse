@@ -10,7 +10,7 @@ load_dotenv()
 fusePath=os.getenv('FUSEPATH')
 repoPath=os.getenv('REPOPATH')
 
-if True or not fusePath or not repoPath:
+if not fusePath or not repoPath:
   print("""
     make sure run a 'fetch' first to have the '.env' file created.
     then set FUSEPATH and REPOPATH accordingly.
