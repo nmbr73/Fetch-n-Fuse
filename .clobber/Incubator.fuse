@@ -4,18 +4,20 @@
 -- JiPi (https://youtu.be/dbrPWRldmbs), Igor Riđanović (https://youtu.be/p6IeeWr3FOc), and many others.
 --
 
--- Reload Parameter from ConversionSourcecode and Change Name, Min-,Max-,Defaultvalues - unused Parameter will be unvisible
--- 5 Checkboxen und 3 Pointparameter hinzugefügt
-
-PathToRepository = ""
-
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
-ShaderKernels = nil
+GLOBAL_REPOSITORYPATH=[[]]
 
+
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+-- S H A D E R K E R N E L S
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+ShaderKernels_table = nil
 
 function ShaderKernels_resetData()
-  ShaderKernels = {
+  ShaderKernels_table = {
     Current       = 0,
     Main          = 5,
     Quantity      = 0,
@@ -38,13 +40,13 @@ function ShaderKernels_getLabelText()
 
   local htm = {}
 
-  for i,e in pairs(ShaderKernels.Entries) do
+  for i,e in pairs(ShaderKernels_table.Entries) do
     if e.KernelName ~= nil then
       if e.KernelName ~= "" then
         -- has kernel
-        if i == ShaderKernels.Current then
+        if i == ShaderKernels_table.Current then
           -- is currently selected kernel
-          if not ShaderKernels.RenderErrors then
+          if not ShaderKernels_table.RenderErrors then
             -- did successfully render
             table.insert(htm,'<font style="color:#00ff00; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
           else
@@ -57,7 +59,7 @@ function ShaderKernels_getLabelText()
         end
       else
         -- has no kernel
-        if i == ShaderKernels.Current then
+        if i == ShaderKernels_table.Current then
           -- is currently selected
           table.insert(htm,'<font style="color:#909090; background-color:#900000; ">&nbsp;'.. e.InfoName ..'&nbsp;</font>')
         else
@@ -71,6 +73,82 @@ function ShaderKernels_getLabelText()
   return '<center>'..table.concat(htm,'&nbsp;')..'</center>'
 
 end
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+-- C O N V E R S I O N S
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+Conversions_table = nil
+Conversions_currentFolderIndex = nil
+
+function Conversions_resetData(path)
+
+  -- print("Conversions_resetData('"..path.."')")
+
+  Conversions_table = {}
+  Conversions_currentFolderIndex = 1
+  
+  local handle	= bmd.readdir(path.."*")
+
+  folders = { "" }
+
+  for k, v in pairs(handle) do
+    if v.Name and v.IsDir then
+      table.insert(folders, v.Name)
+    end
+  end
+
+  table.sort(folders, function (a, b) return a:upper() < b:upper() end);
+
+
+  for folderIndex,folder in ipairs(folders) do
+
+    local folderpath = path .. folder .. (folder ~= "" and "/" or "")
+      
+    local files={}
+
+    local handle	= bmd.readdir(folderpath .. "*.*.c")
+  
+    for k, v in pairs(handle) do
+      if v.Name and not(v.IsDir) then
+        files[k] = v.Name
+      end
+    end
+  
+    table.sort(files, function (a, b) return a:upper() < b:upper() end);
+    local entries={}
+  
+    for k, filename in pairs(files) do
+      local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
+  
+      entries[k]={
+        Name=fusename,
+        Path=folderpath,
+        Filename=filename,
+        ShadertoyID=shadertoyid,
+        Label=fusename.." ("..shadertoyid..")",
+      }
+    end
+  
+    
+    Conversions_table[folderIndex]={
+      Folder=folder,
+      --Label= "Conversions/" .. folder,
+      Label= folder ~= "" and folder or "/",
+      Entries=entries
+    }
+  end
+
+  -- dump(Conversions_table)
+
+end
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
 
 
 
@@ -122,112 +200,26 @@ FuRegisterClass("ShadertoysIncubator", CT_SourceTool, {
 
 
 
--------------------------------------------------------------------------------------------------------------------------------------------
--- Print verbose message.
---
--- Use verbose() to print any non-error message just meant to help developing the Incubator.fuse itself.
---
--- @param[type=string] msg The message to output in DaFusions console window.
---
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
 function verbose(msg)
-   print(msg)
+   -- print(msg)
 end
 
 function verbose_MB(msg,...)
-   --print(msg,...)
+   -- print(msg,...)
 end   
 
 
--------------------------------------------------------------------------------------------------------------------------------------------
--- Local structure to manage vaialable source code.
---
--- This table is initialized by Conversions_resetData() with filenames, IDs, etc. of the sources found in the
--- repositorie's *'Conversions/'* folder. It is used to proviede these sources i.e. in a ComboBox for
--- selection.
---
--- @table GLOBAL_Conversions
--- @field Name Fusename of the conversion.
--- @field Path Full path of the folder the conversion can be found in.
--- @field Filename Full filename (indcluding the ID and '.c' suffix).
--- @field ShadertoyID The ID of the Shadertoy the code originally came from.
--- @field Label Name in human readable form identifying the converson to show in messages, the ComboBox, etc. .
---
-GLOBAL_Conversions = {}
-GLOBAL_CurrentFolderIndex = 1
-
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------
--- Create a table to initializie in particular `Conversions` with.
---
--- @param[type=string] path Path to where the conversions reside.
--- @return[type=table] conversion information; `{}` if no conversions found
---
 
-function Conversions_resetData_readFolder(path)
-
-  local files={}
-
-  local handle	= bmd.readdir(path.."*.*.c")
-
-  for k, v in pairs(handle) do
-    -- print(k.." "..v.Name)
-
-    if v.Name and not(v.IsDir) then
-
-      files[k] = v.Name
-
-    end
-  end
-
-  table.sort(files) -- grrr, it's case sensitive :-(
-
-  local entries={}
-
-  for k, filename in pairs(files) do
-    local fusename, shadertoyid = filename:match('^(.+)%.([^%.]+)%.c$')
-
-    -- print("k '"..k.."' -> "..path)
-
-    entries[k]={
-      Name=fusename,
-      Path=path,
-      Filename=filename,
-      ShadertoyID=shadertoyid,
-      Label=fusename.." ("..shadertoyid..")",
-    }
-  end
-
-  return entries
-end
-
-function Conversions_resetData(path)
-
-  GLOBAL_Conversions={}
-
-  folders = { "", "JiPi/", "nmbr73/"}
-
-  for k,folder in ipairs(folders) do
-
-    GLOBAL_Conversions[k]={
-      Folder=folder,
-      Label=folder,
-      Entries=Conversions_resetData_readFolder(path .. folder)
-    }
- end
-
-
-
-  
-end
-
-
--------------------------------------------------------------------------------------------------------------------------------------------
 function CompatibilityCode_loadFile()
 
   CompatibilityCode = ""
 
-  f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
+  f = io.open(GLOBAL_REPOSITORYPATH..'.clobber/CompatibilityCode.c', "r")
   if not f then
     print("failed to read compatibility code")
   else
@@ -249,14 +241,11 @@ end
 --
 function Create()
 
-  local REPOSITORYPATH=[[]]
 
-  PathToRepository=REPOSITORYPATH
-
-  verbose("Create: repository used is "..REPOSITORYPATH)
+  verbose("Create: repository used is "..GLOBAL_REPOSITORYPATH)
 
 
-  -- create defined to connect input contols to kernel
+  -- create defines to connect input contols to kernel
 
   KernelInputCtrlDefines =""
 
@@ -299,7 +288,6 @@ function Create()
   end
 
 
---NUM_POINT_CONTROLS
   for i=0,NUM_POINT_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = to_float2(_shaderParameters->ctrlPoint["..i.."][0],_shaderParameters->ctrlPoint["..i.."][1]) \n"
   end
@@ -324,52 +312,9 @@ function Create()
   local next_ctrl_group = 1   -- increment every time you used it for a new control group
   local control_page    = nil -- you may want to put a -1 here later to have some main ctrls on the top
 
-  -- -- Choose the Path
-  -- InFolderToUseCombo = self:AddInput("Path", "PathConversion", {
-  --   IC_ControlPage      = control_page ,
-  --   LINKID_DataType     = "Number",
-  --   INPID_InputControl  = "ComboIDControl",
-	--   INP_DoNotifyChanged = false,
-  --   INP_InitialNotify   = false,
-  --   INP_Default         = 0,
-  --   INP_Integer         = true,
-  --   {CCS_AddString       = "Root",},
-  --   {CCS_AddString       = "nmbr73",},
-  --   {CCS_AddString       = "JiPi",},
-  --   {CCS_AddString       = "ToDo",},
-  --   {CCS_AddString       = "Defect",},
-  --   {CCS_AddString       = "CheckMetal",},
-  --   {CCS_AddString       = "CheckCuda",},
-  --   {CCS_AddString       = "Archive",},
-  --   })
 
-  InInfoReload = self:AddInput( "------ Path has changed ! ------\n------      Push Reload      ------","InfoReload", {
-      LINKID_DataType    = "Text",
-      INPID_InputControl = "LabelControl",
-      LBLC_MultiLine     = true,
-      LBLC_LabelColor    = 2,
-      IC_NoReset         = false,
-      INP_External       = false,
-      INP_Passive        = true,
-      --IC_NoLabel       = true,
-      ICD_Width          = 1.0,
-      IC_Visible         = false,
-  })
 
   
-  pathToConversions = REPOSITORYPATH..'Conversions/'
-
-
-  -- PathToUse = readPathToUse()
-  -- --print("PathToUse - Create",pathToConversions..PathToUse) --pathToConversions..InFolderToUseCombo:GetSource(0).Value..'/')
-  
-  -- if (PathToUse ~= "Root") then
-  --     --print("Create - NeuerPath: ",pathToConversions..PathToUse..'/')
-  --     pathToConversions = pathToConversions..PathToUse..'/'
-  -- end
-
-  Conversions_resetData(pathToConversions)
-
   CompatibilityCode_loadFile()
 
   ShaderParameters=[[
@@ -401,17 +346,20 @@ function Create()
   ]]
 
 
-  -- dump(GLOBAL_Conversions)
+
+  Conversions_resetData(GLOBAL_REPOSITORYPATH..'Conversions/')
+
+  -- dump(Conversions_table)
 
 
   -- ComboControl to select the folder cointaining the conversions
 
   local attrsFolders = {}
 
-  for k,folder in pairs(GLOBAL_Conversions) do
-    print("Create InFolderToUseCombo ...")
-    print(" k='".. k .."'") 
-    print(" folder.Label='".. folder.Label .."'") 
+  for k,folder in pairs(Conversions_table) do
+    -- print("Create InFolderToUseCombo ...")
+    -- print(" k='".. k .."'") 
+    -- print(" folder.Label='".. folder.Label .."'") 
     table.insert(attrsFolders,{ CCS_AddString = folder.Label })
   end
 
@@ -430,40 +378,37 @@ function Create()
 
   -- ComboControls to select the conversion per folder
 
+
   InFileToUseCombo = {}
 
 
-  for idxFolder,dataFolder in pairs(GLOBAL_Conversions) do
+  for folderIndex,folderData in pairs(Conversions_table) do
 
-    print("Create InFileToUseCombo[] ...")
-    print(" idxFolder='".. idxFolder .."'") 
-    print(" dataFolder.Label='".. dataFolder.Label .."'") 
-
+    -- print("Create InFileToUseCombo[] ...")
+    -- print("   folderIndex='".. folderIndex .."'") 
+    -- print("   folderData.Label='".. folderData.Label .."'") 
 
     local attrs = {}
 
-    for idxConversion, entry in pairs(dataFolder.Entries) do
-      print(" idxConversion='".. idxConversion .."'") 
-      print(" entry.Label='".. entry.Label .."'") 
-      table.insert(attrs,{ CCS_AddString = entry.Label })
+    for entryIndex, entryData in pairs(folderData.Entries) do
+      -- print("   entryIndex='".. entryIndex .."'") 
+      -- print("   entryData.Label='".. entryData.Label .."'") 
+      table.insert(attrs,{ CCS_AddString = entryData.Label })
     end
-
   
-    InFileToUseCombo[idxFolder] = self:AddInput("Code", "conversion" .. idxFolder, {
+    InFileToUseCombo[folderIndex] = self:AddInput("Code", "conversion" .. folderIndex, {
       IC_ControlPage = control_page ,
       LINKID_DataType = "Number",
       INPID_InputControl = "ComboControl",
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      IC_Visible  =  (idxFolder == 1),
+      IC_Visible  =  (folderIndex == Conversions_currentFolderIndex),
       attrs
       })
       
   end
 
-
-  --InFileToUseCombo[1].SetAttrs({ IC_Visible = true })
 
   
     -- ComboControl to select the Kernel
@@ -472,7 +417,7 @@ function Create()
 
   local attrsKernels={}
 
-  for i,e in pairs(ShaderKernels.Entries) do
+  for i,e in pairs(ShaderKernels_table.Entries) do
     table.insert(attrsKernels,{ CCS_AddString = e.ComboName })
   end
 
@@ -943,8 +888,9 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
 
 
 
--- Fetch-n-Fuse
- self:AddControlPage("F-n-F")
+  -- ------------- Fetch-n-Fuse
+
+  self:AddControlPage("F-n-F")
 
   InSpawnError = self:AddInput("SpawnError", "InSpawnError", {
      LINKID_DataType = "Number",
@@ -956,10 +902,7 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
    })
 
 
-
-self:AddInput("In this section you find some controlls to call the fetch and fuse python scripts. If it works (it probably does not), then currently it only does so on Windows."
-    
-    , "FnF_InfoText", {
+  self:AddInput("In this section you find some controlls to call the fetch and fuse python scripts. If it works (it probably does not), then currently it only does so on Windows.", "FnF_InfoText", {
     LINKID_DataType = "Text",
     INPID_InputControl = "LabelControl",    
     LBLC_MultiLine=true,
@@ -970,161 +913,123 @@ self:AddInput("In this section you find some controlls to call the fetch and fus
   })
 
 
-self:BeginControlNest("Fetch", "FnF_Fetch", true, {}) 
+  self:BeginControlNest("Fetch", "FnF_Fetch", true, {}) 
 
--- Sep1 = self:AddInput("________________FETCH__________________", "Separator1", {
---     LINKID_DataType = "Text",
---     INPID_InputControl = "LabelControl",
---     INP_External = false,
---     INP_Passive = true,
---   })
+    InFetchFolder = self:AddInput("Folder to Fetch to", "FetchFolder", {
+      LINKID_DataType = "Text",
+      INPID_InputControl = "TextEditControl",
+      INP_External = false,
+      IC_NoLabel = false,
+      ICD_Width = 1.0,
+      INPS_DefaultText = "-",
+      TEC_Lines = 1,
+      TEC_Wrap = false,
+      TEC_ReadOnly = true,
+      TEC_CharLimit = 0,
+      TEC_DeferSetInputs = false,
+      INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+    })	
 
-
-  InFetchFolder = self:AddInput("Folder to Fetch to", "FetchFolder", {
-    LINKID_DataType = "Text",
-    INPID_InputControl = "TextEditControl",
-    INP_External = false,
-    IC_NoLabel = false,
-    ICD_Width = 1.0,
-    INPS_DefaultText = "-",
-    TEC_Lines = 1,
-    TEC_Wrap = false,
-    TEC_ReadOnly = true,
-    TEC_CharLimit = 0,
-    TEC_DeferSetInputs = false,
-    INP_DoNotifyChanged  = false,
-    INP_Disabled = true,
-    INP_Passive = true,
-  })	
-
-
-
-		InFetchShaderID = self:AddInput("ShaderID to Fetch", "ShaderID", {
-			LINKID_DataType      = "Text",
-			INPID_InputControl   = "TextEditControl",
-			INP_DoNotifyChanged  = true,
+    InFetchShaderID = self:AddInput("ShaderID to Fetch", "ShaderID", {
+      LINKID_DataType      = "Text",
+      INPID_InputControl   = "TextEditControl",
+      INP_DoNotifyChanged  = true,
       INP_InitialNotify    = false,
-			INP_External         = false,
-			--IC_NoLabel         = true,
-			ICD_Width            = 1.0,
-			--INPS_DefaultText     = devshader,
+      INP_External         = false,
+      --IC_NoLabel         = true,
+      ICD_Width            = 1.0,
+      --INPS_DefaultText     = devshader,
       TEC_Lines            = 1,            -- height of text entry (default is 8)
-			TEC_Wrap             = false,        -- automatic word-wrapping (default is false)
-			TEC_ReadOnly         = false,        -- default is false (you should also set INP_External = false)
-			TEC_CharLimit        = 6,	           -- maximum number of allowed characters (default is 0, no limit)
-			TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
-			})	
-  
-      InFetchButton = self:AddInput('Fetch Shadertoy', 'InFetchButton', {
-        LINKID_DataType        = 'Number',
-        INPID_InputControl     = 'ButtonControl',
-        INP_DoNotifyChanged    = false,
-        INP_Disabled           = true, --will be enabled in the NotifyChanged 
-        INP_External           = false,
-        INP_Default            = 0.0,
-        ICD_Width              = 1,
-        BTNCS_Execute          = [[print("BTNCS_Execute for a doFetch has not been set yet")]],
-        IC_Visible             = true,
-        }) 
+      TEC_Wrap             = false,        -- automatic word-wrapping (default is false)
+      TEC_ReadOnly         = false,        -- default is false (you should also set INP_External = false)
+      TEC_CharLimit        = 6,	           -- maximum number of allowed characters (default is 0, no limit)
+      TEC_DeferSetInputs   = true,      -- call NotifyChanged when focus is lost (default is false, call on every key stroke)
+    })	
     
-      InFetchButtonClickedFlag = self:AddInput( "FetchButtonClickedFlag","FetchButtonClickedFlag", {
-        LINKID_DataType     = "Number",
-        INPID_InputControl  = "CheckboxControl",
-        INP_Integer         = true,
-        INP_Default         = 0,
-        IC_Visible          = false,
-      })
-    
-    
-
+    InFetchButton = self:AddInput('Fetch Shadertoy', 'InFetchButton', {
+      LINKID_DataType        = 'Number',
+      INPID_InputControl     = 'ButtonControl',
+      INP_DoNotifyChanged    = false,
+      INP_Disabled           = true, --will be enabled in the NotifyChanged 
+      INP_External           = false,
+      INP_Default            = 0.0,
+      ICD_Width              = 1,
+      BTNCS_Execute          = [[print("BTNCS_Execute for a doFetch has not been set yet")]],
+      IC_Visible             = true,
+    }) 
+      
+    InFetchButtonRebuildFlag = self:AddInput( "FetchButtonRebuildFlag","FetchButtonRebuildFlag", {
+      LINKID_DataType     = "Number",
+      INPID_InputControl  = "CheckboxControl",
+      INP_Integer         = true,
+      INP_Default         = 0,
+      IC_Visible          = false,
+    })
+      
   self:EndControlNest()
 
 
-
   self:BeginControlNest("Fuse", "FnF_Fuse", true, {}) 
-
-
-
-  -- Sep2 = self:AddInput("_________________FUSE__________________", "Separator2", {
-  --   LINKID_DataType = "Text",
-  --   INPID_InputControl = "LabelControl",
-  --   INP_External = false,
-  --   INP_Passive = true,
-  -- })
-
       
-	InManualID = self:AddInput("Manual ID", "ManualID", {
-			LINKID_DataType    = "Number",
-			INPID_InputControl = "CheckboxControl",
-			INP_Default        = 0,
-			INP_MinScale       = 0,
-			INP_MaxScale       = 1,
+    InManualID = self:AddInput("Manual ID", "ManualID", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "CheckboxControl",
+      INP_Default        = 0,
+      INP_MinScale       = 0,
+      INP_MaxScale       = 1,
       IC_Visible         = false,
-		})	
+    })	
 
-	-- InFuseShaderID = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
-  --   IC_ControlPage      = control_page ,
-  --   LINKID_DataType     = "Number",
-  --   INPID_InputControl  = "ComboControl",
-	--   INP_DoNotifyChanged = true,
-  --   INP_InitialNotify   = false,
-  --   INP_Default         = 0,
-  --   INP_Integer         = true,
-  --   attrs
-  --   })	
-
-
-  InFuseFolder = self:AddInput("Folder to Fuse from", "FuseFolder", {
-    LINKID_DataType = "Text",
-    INPID_InputControl = "TextEditControl",
-    INP_External = false,
-    IC_NoLabel = false,
-    ICD_Width = 1.0,
-    INPS_DefaultText = "-",
-    TEC_Lines = 1,
-    TEC_Wrap = false,
-    TEC_ReadOnly = true,
-    TEC_CharLimit = 0,
-    TEC_DeferSetInputs = false,
-    INP_DoNotifyChanged  = false,
-    INP_Disabled = true,
-    INP_Passive = true,
-  })	
-
+    InFuseFolder = self:AddInput("Folder to Fuse from", "FuseFolder", {
+      LINKID_DataType = "Text",
+      INPID_InputControl = "TextEditControl",
+      INP_External = false,
+      IC_NoLabel = false,
+      ICD_Width = 1.0,
+      INPS_DefaultText = "-",
+      TEC_Lines = 1,
+      TEC_Wrap = false,
+      TEC_ReadOnly = true,
+      TEC_CharLimit = 0,
+      TEC_DeferSetInputs = false,
+      INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+    })	
   
-  InFuseShaderID = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
-    LINKID_DataType = "Text",
-    INPID_InputControl = "TextEditControl",
-    INP_External = false,
-    IC_NoLabel = false,
-    ICD_Width = 1.0,
-    INPS_DefaultText = "-",
-    TEC_Lines = 1,
-    TEC_Wrap = false,
-    TEC_ReadOnly = true,
-    TEC_CharLimit = 0,
-    TEC_DeferSetInputs = false,
-    INP_DoNotifyChanged  = false,
-    INP_Disabled = true,
-    INP_Passive = true,
-  })	
+    InFuseShaderID = self:AddInput("ShaderID to Fuse", "ShaderIDFuse", {
+      LINKID_DataType = "Text",
+      INPID_InputControl = "TextEditControl",
+      INP_External = false,
+      IC_NoLabel = false,
+      ICD_Width = 1.0,
+      INPS_DefaultText = "-",
+      TEC_Lines = 1,
+      TEC_Wrap = false,
+      TEC_ReadOnly = true,
+      TEC_CharLimit = 0,
+      TEC_DeferSetInputs = false,
+      INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+    })	
 
-  
-
-	InFuseButton = self:AddInput('Fuse a Shadertoy', 'InFuseButton', {
-		LINKID_DataType        = 'Number',
-		INPID_InputControl     = 'ButtonControl',
-		INP_DoNotifyChanged    = false,
-    --INP_Disabled         = true, --will be enabled in the NotifyChanged 
-		INP_External           = false,
-		INP_Default            = 0.0,
-		ICD_Width              = 1,
-		BTNCS_Execute          = [[print("BTNCS_Execute for a doFuse has not been set yet")]],
-		IC_Visible             = true,
-		}) 
+    InFuseButton = self:AddInput('Fuse a Shadertoy', 'InFuseButton', {
+      LINKID_DataType        = 'Number',
+      INPID_InputControl     = 'ButtonControl',
+      INP_DoNotifyChanged    = false,
+      --INP_Disabled         = true, --will be enabled in the NotifyChanged 
+      INP_External           = false,
+      INP_Default            = 0.0,
+      ICD_Width              = 1,
+      BTNCS_Execute          = [[print("BTNCS_Execute for a doFuse has not been set yet")]],
+      IC_Visible             = true,
+    }) 
 
 
-  InFuseButtonClickedFlag = self:AddInput( "FuseButtonClickedFlag","FuseButtonClickedFlag", {
+    InFuseButtonRebuildFlag = self:AddInput( "FuseButtonRebuildFlag","FuseButtonRebuildFlag", {
       LINKID_DataType     = "Number",
       INPID_InputControl  = "CheckboxControl",
       INP_Integer         = true,
@@ -1132,8 +1037,7 @@ self:BeginControlNest("Fetch", "FnF_Fetch", true, {})
       IC_Visible          = false,
     })
 
-
-    self:EndControlNest()
+  self:EndControlNest()
 
 
 
@@ -1155,7 +1059,8 @@ self:BeginControlNest("Fetch", "FnF_Fetch", true, {})
     CC_LabelPosition = "Horizontal",
 	  ICS_ControlPage  = "Image",
   })
-	InWidth = self:AddInput("Width", "_Width", {
+
+  InWidth = self:AddInput("Width", "_Width", {
 		LINKID_DataType 	= "Number",
 		INPID_InputControl 	= "SliderControl",
 		INP_Default 		= 1920,
@@ -1163,7 +1068,8 @@ self:BeginControlNest("Fetch", "FnF_Fetch", true, {})
 		INP_MinScale 		= 0,
 		INP_MaxScale 		= 4096,
 	})
-	InHeight = self:AddInput("Height", "_Height", {
+
+  InHeight = self:AddInput("Height", "_Height", {
 		LINKID_DataType 	= "Number",
 		INPID_InputControl 	= "SliderControl",
 		INP_Default 		= 1080,
@@ -1171,6 +1077,7 @@ self:BeginControlNest("Fetch", "FnF_Fetch", true, {})
 		INP_MinScale 		= 0,
 		INP_MaxScale 		= 4096,
 	})
+
   InDepth = self:AddInput("Depth_Fuse", "Depth_Fuse", {
     LINKID_DataType  = "Number",
     INPID_InputControl = "ComboControl",
@@ -1210,42 +1117,6 @@ self:BeginControlNest("Fetch", "FnF_Fetch", true, {})
   })
 end
 
-
----------------------------------- Helperfunctions PathToUse---------------------------------------
-function readPathToUse()
- 
-  file = PathToRepository.."PathToUse.txt"
-  
-  local f = io.open(file, "r")
-  if not f then
-    print("Error reading file '" .. file .. "'")
-    return "Root"
-  end
-  
-  local content = f:read("*all")
-  f:close()
-
-  verbose("readPathToUse() is '"..content.."'")
-
-  return content
-end
-
-
-function writePathToUse(content)
-  
-  file = PathToRepository.."PathToUse.txt"
-  local f = io.open(file, "w")
-  if not f then
-    print("Error writing file '" .. file .. "'")
-    return false
-  end
-  
-  f:write(content)
-  f:close()
-
-  verbose("writePathToUse() is now '"..content.."'") 
-  return true
-end
 
 
 --------------------------------------------------------------------------------------
@@ -1512,7 +1383,7 @@ function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
  
  --print("#################### Multibuffertest ########################\n")
 
-  for i,e in pairs(ShaderKernels.Entries) do
+  for i,e in pairs(ShaderKernels_table.Entries) do
     if e.InputName ~= "" then
       --print("\n-------------------------GetChannelsaufruf: ",i,e.InputName,e.Channel[1])
       GetChannels(ConversionSourcecode,e.InputName,e.Channel)  
@@ -1522,12 +1393,12 @@ function InitializeKernels(ConversionSourcecode,ConversionFusename,NodeName)
   i=0
   local kn
 
-  for i,e in pairs(ShaderKernels.Entries) do
+  for i,e in pairs(ShaderKernels_table.Entries) do
     if e.InputName ~= "" then
       ConversionSourcecode,kn =  PatchKernel(ConversionSourcecode,ConversionFusename,e.InputName,NodeName)
       if kn ~= nil then
         e.KernelName=kn
-        ShaderKernels.Quantity=ShaderKernels.Quantity+1
+        ShaderKernels_table.Quantity=ShaderKernels_table.Quantity+1
       end
     end
   end
@@ -1836,10 +1707,15 @@ Image_Buff_GlobalC = Image(ImgAttrs_Global)
 Image_Buff_GlobalD = Image(ImgAttrs_Global)
 
 
+
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+-- P R O C E S S
+-- ----------------------------------------------------------------------------------------------------------------------------------------
+
 function Process(req)
 
 
-	-- Imagesize and Depth
+	-- image size
   if (InSize:GetValue(req).Value >= 1) then
 		if (InSize:GetValue(req).Value == 2) then
 			if (InChannel[0]:GetValue(req) ~= nil) then
@@ -1850,7 +1726,9 @@ function Process(req)
 			Width = InWidth:GetValue(req).Value
 			Height = InHeight:GetValue(req).Value 
 		end
-	end	
+	end
+
+  -- image depth
 	if (InDepth:GetValue(req).Value > 0) then
 	  if InDepth:GetValue(req).Value == 1 then 
 	    SourceDepth = 5 
@@ -1867,58 +1745,58 @@ function Process(req)
 	  end
 	end
   
-        --fusion = eyeon.scriptapp('Fusion', 'localhost')
-        --if (fusion) then print("Fusion funktioniert",fusion:GetCurrentComp()) end
-        --cmp = fusion:GetCurrentComp()
-        --print("VERSUCH1: ",cmp.ActiveTool.Name)
-  
-  -- InFolderToUseCombo:SetAttrs({INP_DoNotifyChanged = true,}) -- INP_InitialNotify ? funktioniert wohl nicht
 
 
-  if (InFetchButtonClickedFlag:GetValue(req).Value == 1) then
+
+  if (InFetchButtonRebuildFlag:GetValue(req).Value == 1) then
     
     local shaderID = InFetchShaderID:GetValue(req).Value
     local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
-    local folder = GLOBAL_Conversions[selectedFolder].Folder
+    local folder = Conversions_table[selectedFolder].Folder
     
     doFetch = 
-      [[comp:RunScript("]]..PathToRepository..
+      [[comp:RunScript("]]..GLOBAL_REPOSITORYPATH..
       [[fetch-from-ui.py", { id = "]]..shaderID..
-      [[, verbose=false, noassets=false, folder="]]..folder..
+      [[", verbose=false, noassets=false, folder="]]..folder..
       [["})]]
 
-    InFetchButton:SetAttrs({ BTNCS_Execute = doFetch, })
+      --print("Ändere FetchButton!")
+      --print(doFetch)
+
+      InFetchButton:SetAttrs({ BTNCS_Execute = doFetch, })
+
+
+
 
     --Warum auch immer - verstehe wer will    
-    --PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
+    --GLOBAL_REPOSITORYPATH_cor =  string.gsub(GLOBAL_REPOSITORYPATH, '\\', '\\\\')
 
     -- local doFetch =  [==[ 
     --   comp:RunScript("PFADfetch-from-ui.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
     --                ]==]  
 
-    -- doFetch = string.gsub(doFetch, 'PFAD', PathToRepository_cor)
+    -- doFetch = string.gsub(doFetch, 'PFAD', GLOBAL_REPOSITORYPATH_cor)
     -- doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
     -- doFetch = string.gsub(doFetch, 'FOLDER', PathToUse)
         
 
     --print("----------------\n DoFetch-String-Process",doFetch,"\n----------------" )    
-
     
-    InFetchButtonClickedFlag:SetSource(Number(0),0,0) --nur einmal ändern
+    InFetchButtonRebuildFlag:SetSource(Number(0),0,0) --nur einmal ändern
   end
 
-  if (false and InFuseButtonClickedFlag:GetValue(req).Value == 1 and table.getn(GLOBAL_Conversions) > 0) then
+  if (false and InFuseButtonRebuildFlag:GetValue(req).Value == 1 and table.getn(Conversions_table) > 0) then
 
-    shaderIDFuse = GLOBAL_Conversions[InFuseShaderID:GetValue(req).Value + 1].ShadertoyID
+    shaderIDFuse = Conversions_table[InFuseShaderID:GetValue(req).Value + 1].ShadertoyID
 
 
     --Warum auch immer - verstehe wer will    
-    PathToRepository_cor =  string.gsub(PathToRepository, '\\', '\\\\')
+    GLOBAL_REPOSITORYPATH_cor =  string.gsub(GLOBAL_REPOSITORYPATH, '\\', '\\\\')
          
     doFuse =[==[ 
       comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false, folder="FOLDER"}) 
                   ]==]  
-    doFuse = string.gsub(doFuse, 'PFAD', PathToRepository_cor)
+    doFuse = string.gsub(doFuse, 'PFAD', GLOBAL_REPOSITORYPATH_cor)
     doFuse = string.gsub(doFuse, 'SHADERID', shaderIDFuse)
     doFuse = string.gsub(doFuse, 'FOLDER', PathToUse)
         
@@ -1932,8 +1810,8 @@ function Process(req)
 
   local rebuild = false
 
-  ShaderKernels.RenderErrors = false
-  ShaderKernels.Current      = ShaderKernels_ComboControl:GetValue(req).Value
+  ShaderKernels_table.RenderErrors = false
+  ShaderKernels_table.Current      = ShaderKernels_ComboControl:GetValue(req).Value
 
 
   if InRebuildCheckBox:GetValue(req).Value == 1 then
@@ -1944,17 +1822,17 @@ function Process(req)
 
 
 
-  if (rebuild and table.getn(GLOBAL_Conversions) > 0) then
+  if (rebuild and table.getn(Conversions_table) > 0) then
 
     local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
     local selectedFile = InFileToUseCombo[selectedFolder]:GetValue(req).Value + 1
 
-    print("Process() ... rebuild")
-    print("  selectedFolder = '"..selectedFolder.."' ('".. GLOBAL_Conversions[selectedFolder].Label .."')")
-    print("  selectedFile = '"..selectedFile.."' ('".. GLOBAL_Conversions[selectedFolder].Entries[selectedFile].Label .."')")
+    -- print("Process() ... rebuild")
+    -- print("  selectedFolder = '"..selectedFolder.."' ('".. Conversions_table[selectedFolder].Label .."')")
+    -- print("  selectedFile = '"..selectedFile.."' ('".. Conversions_table[selectedFolder].Entries[selectedFile].Label .."')")
 
-
-    local item   = GLOBAL_Conversions[selectedFolder].Entries[selectedFile]
+    local folderData = Conversions_table[selectedFolder]
+    local item   = folderData.Entries[selectedFile]
 
     if InFuseShaderID:GetValue(req).Value ~= item.ShadertoyID then
       InFuseShaderID:SetAttrs({INP_Disabled=false})
@@ -1962,15 +1840,16 @@ function Process(req)
       InFuseShaderID:SetAttrs({INP_Disabled=true})
     end
   
-    if InFetchFolder:GetValue(req).Value ~= item.Folder then
+    if InFetchFolder:GetValue(req).Value ~= folderData.Folder then
+      print("InFetchFolder '".. folderData.Folder .."'")
       InFetchFolder:SetAttrs({INP_Disabled=false})
-      InFetchFolder:SetSource(Text( item.Folder ),0,0)
+      InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
       InFetchFolder:SetAttrs({INP_Disabled=true})
     end
 
-    if InFuseFolder:GetValue(req).Value ~= item.Folder then
+    if InFuseFolder:GetValue(req).Value ~= folderData.Folder then
       InFuseFolder:SetAttrs({INP_Disabled=false})
-      InFuseFolder:SetSource(Text( item.Folder ),0,0)
+      InFuseFolder:SetSource(Text( folderData.Folder ),0,0)
       InFuseFolder:SetAttrs({INP_Disabled=true})
     end
 
@@ -1988,7 +1867,7 @@ function Process(req)
     verbose("Process: rebuild code for conversion '"..ConversionFusename.."' ("..ConversionShaderID..")")
 
 
-    f = io.open(PathToRepository..'.clobber/CompatibilityCode.c', "r")
+    f = io.open(GLOBAL_REPOSITORYPATH..'.clobber/CompatibilityCode.c', "r")
 
    
     file = io.open(item.Path .. item.Filename,"r")
@@ -2012,7 +1891,7 @@ function Process(req)
 
 
     ShaderKernels_resetData()
-    ShaderKernels.Current = ShaderKernels_ComboControl:GetValue(req).Value
+    ShaderKernels_table.Current = ShaderKernels_ComboControl:GetValue(req).Value
     CompatibilityCode_loadFile()
 
     ConversionSourcecode = CompatibilityCode..InitializeKernels(ConversionSourcecode,ConversionFusename,self.Name)
@@ -2066,17 +1945,17 @@ function Process(req)
   dst:Fill(p)
 
 
-  local ConversionKernelname = ShaderKernels.Entries[ShaderKernels.Current].KernelName
+  local ConversionKernelname = ShaderKernels_table.Entries[ShaderKernels_table.Current].KernelName
 
   if ConversionKernelname==nil or ConversionKernelname=="" then
-    ShaderKernels.RenderErrors = true
+    ShaderKernels_table.RenderErrors = true
     ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
 
     if ConversionKernelname==nil then
       verbose("<none> selected for kernel")
       dst:Fill(Pixel({R=0,G=0,B=0,A=0}))
     else
-      print("no kernel for "..ShaderKernels.Entries[ShaderKernels.Current].ComboName)
+      print("no kernel for "..ShaderKernels_table.Entries[ShaderKernels_table.Current].ComboName)
       print("NAME: ",ConversionKernelname, "\nCODE\n", ConversionSourcecode)
       dst:Fill(Pixel({R=0.5,G=0,B=0,A=0}))
     end
@@ -2093,7 +1972,7 @@ function Process(req)
 
   if ConversionSourcecode == "" or ConversionKernelname == "" or ShaderParameters == nil then
     print("whoops - something went terribly wrong?!?!!")
-    ShaderKernels.RenderErrors = true
+    ShaderKernels_table.RenderErrors = true
     ShaderKernels_LabelControl:SetAttrs({LINKS_Name = ShaderKernels_getLabelText()})
     OutImage:Set(req,nil)
     OutImage:Set(req,dst)
@@ -2116,11 +1995,11 @@ function Process(req)
 --print("\n###### ConversionCode ######\n",ConversionSourcecode,"\n########################\n")
 
 
-  if(ShaderKernels.Current == 6) then                            -- "=final=" ? 
-    if(ShaderKernels.Quantity > 1) then                          -- und Multibuffer ? dann   
-      ConversionKernelname = ShaderKernels.Entries[1].KernelName -- Buffer A zuerst
+  if(ShaderKernels_table.Current == 6) then                            -- "=final=" ? 
+    if(ShaderKernels_table.Quantity > 1) then                          -- und Multibuffer ? dann   
+      ConversionKernelname = ShaderKernels_table.Entries[1].KernelName -- Buffer A zuerst
     else
-      ConversionKernelname = ShaderKernels.Entries[5].KernelName -- Nur Image vorhanden
+      ConversionKernelname = ShaderKernels_table.Entries[5].KernelName -- Nur Image vorhanden
     end  
   end
   
@@ -2313,12 +2192,12 @@ function Process(req)
   ImageCnt = 0 -- Textureingänge des Shaders forlaufend mitzählen ! Achtung mehr als 5 insgesamt nicht möglich 
   
   -- Multibuffer Buffer A ?
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 1) then   -- "=final=" und Multibuffer 
+  if(ShaderKernels_table.Current == 6 and ShaderKernels_table.Quantity > 1) then   -- "=final=" und Multibuffer 
 
     verbose_MB("\n------Multibuffer Buffer A:",ConversionKernelname)
 
 
-    Add_Inputs(node, iChannel, ImageCnt, ShaderKernels.Entries[1], InChBufferA )
+    Add_Inputs(node, iChannel, ImageCnt, ShaderKernels_table.Entries[1], InChBufferA )
         
     node:AddOutput("dst", dstA)
     Image_Buff_GlobalA = dstA
@@ -2335,16 +2214,16 @@ function Process(req)
 
   local ok = node:RunSession(req)
 	if (not ok) then
-    ShaderKernels.RenderErrors = true
+    ShaderKernels_table.RenderErrors = true
 		dst = nil
     dump(node:GetErrorLog())
 	end
 
   
   -- Multibuffer Next Buffer: B
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 2) then   -- "=final=" und Multibuffer AB? dann
+  if(ShaderKernels_table.Current == 6 and ShaderKernels_table.Quantity > 2) then   -- "=final=" und Multibuffer AB? dann
 
-    ConversionKernelname = ShaderKernels.Entries[2].KernelName --Buffer B starten
+    ConversionKernelname = ShaderKernels_table.Entries[2].KernelName --Buffer B starten
  
     verbose_MB("------Multibuffer Buffer B:",ConversionKernelname)
     
@@ -2375,7 +2254,7 @@ function Process(req)
 
 
     
-    Add_Inputs(nodeB, iChannel, ImageCnt, ShaderKernels.Entries[2], InChBufferB)
+    Add_Inputs(nodeB, iChannel, ImageCnt, ShaderKernels_table.Entries[2], InChBufferB)
       
     nodeB:AddOutput("dst", dstB)
     Image_Buff_GlobalB = dstB
@@ -2387,16 +2266,16 @@ function Process(req)
 
     local ok = nodeB:RunSession(req)
     if (not ok) then
-      ShaderKernels.RenderErrors = true
+      ShaderKernels_table.RenderErrors = true
       dstB = nil
       dump(nodeB:GetErrorLog())
     end
   end
 
   -- Multibuffer Next Buffer: C
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 3) then   -- "=final=" und Multibuffer AB? dann
+  if(ShaderKernels_table.Current == 6 and ShaderKernels_table.Quantity > 3) then   -- "=final=" und Multibuffer AB? dann
 
-    ConversionKernelname = ShaderKernels.Entries[3].KernelName --Buffer C starten
+    ConversionKernelname = ShaderKernels_table.Entries[3].KernelName --Buffer C starten
  
     verbose_MB("------Multibuffer Buffer C:",ConversionKernelname)
     
@@ -2427,7 +2306,7 @@ function Process(req)
     
     
     
-    Add_Inputs(nodeC, iChannel, ImageCnt, ShaderKernels.Entries[3], InChBufferC)
+    Add_Inputs(nodeC, iChannel, ImageCnt, ShaderKernels_table.Entries[3], InChBufferC)
       
     nodeC:AddOutput("dst", dstC)
     Image_Buff_GlobalC = dstC
@@ -2439,16 +2318,16 @@ function Process(req)
 
     local ok = nodeC:RunSession(req)
     if (not ok) then
-      ShaderKernels.RenderErrors = true
+      ShaderKernels_table.RenderErrors = true
       dstC = nil
       dump(nodeC:GetErrorLog())
     end
   end
 
   -- Multibuffer Next Buffer: D
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity == 5) then   -- "=final=" und Multibuffer AB? dann
+  if(ShaderKernels_table.Current == 6 and ShaderKernels_table.Quantity == 5) then   -- "=final=" und Multibuffer AB? dann
 
-    ConversionKernelname = ShaderKernels.Entries[4].KernelName --Buffer B starten
+    ConversionKernelname = ShaderKernels_table.Entries[4].KernelName --Buffer B starten
  
     verbose_MB("------Multibuffer Buffer D:",ConversionKernelname)
     
@@ -2479,7 +2358,7 @@ function Process(req)
     
   
     
-    Add_Inputs(nodeD, iChannel, ImageCnt, ShaderKernels.Entries[4], InChBufferD)
+    Add_Inputs(nodeD, iChannel, ImageCnt, ShaderKernels_table.Entries[4], InChBufferD)
       
     nodeD:AddOutput("dst", dstD)
     Image_Buff_GlobalD = dstD
@@ -2491,7 +2370,7 @@ function Process(req)
 
     local ok = nodeD:RunSession(req)
     if (not ok) then
-      ShaderKernels.RenderErrors = true
+      ShaderKernels_table.RenderErrors = true
       dstD = nil
       dump(nodeD:GetErrorLog())
     end
@@ -2503,9 +2382,9 @@ function Process(req)
 
 
 -- Multibuffer Final: Image
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 1 ) then   -- "=final=" und Multibuffer? dann
+  if(ShaderKernels_table.Current == 6 and ShaderKernels_table.Quantity > 1 ) then   -- "=final=" und Multibuffer? dann
 
-    ConversionKernelname = ShaderKernels.Entries[5].KernelName --Image zum Schluß starten
+    ConversionKernelname = ShaderKernels_table.Entries[5].KernelName --Image zum Schluß starten
  
     verbose_MB("------Multibuffer Image:",ConversionKernelname)
     
@@ -2535,7 +2414,7 @@ function Process(req)
     end
 
     
-    Add_Inputs(nodeI, iChannel, ImageCnt, ShaderKernels.Entries[5], InChImage)
+    Add_Inputs(nodeI, iChannel, ImageCnt, ShaderKernels_table.Entries[5], InChImage)
       
     nodeI:AddOutput("dst", dst)
     
@@ -2545,7 +2424,7 @@ function Process(req)
 
     local ok = nodeI:RunSession(req)
     if (not ok) then
-      ShaderKernels.RenderErrors = true
+      ShaderKernels_table.RenderErrors = true
       dst = nil
       dump(nodeI:GetErrorLog())
     end
@@ -2558,7 +2437,7 @@ function Process(req)
 
   --Debugging Image
   OutImage2:Set(req, Image_Buff_GlobalA)
-  if(ShaderKernels.Current == 6 and ShaderKernels.Quantity > 1) then 
+  if(ShaderKernels_table.Current == 6 and ShaderKernels_table.Quantity > 1) then 
     InDebugImage:SetAttrs({ IC_Visible = true })
     if (InDebugImage:GetValue(req).Value == 1) then OutImage2:Set(req, Image_Buff_GlobalB) end
     if (InDebugImage:GetValue(req).Value == 2) then OutImage2:Set(req, Image_Buff_GlobalC) end
@@ -2594,29 +2473,26 @@ function NotifyChanged(inp, param, time)
   if inp == InFolderToUseCombo then
     verbose("NotifyChanged: folder to use changed")
         
-    InFileToUseCombo[GLOBAL_CurrentFolderIndex]:SetAttrs({IC_Visible = false})
-    GLOBAL_CurrentFolderIndex = param.Value + 1
-    InFileToUseCombo[GLOBAL_CurrentFolderIndex]:SetAttrs({IC_Visible = true})
+    InFileToUseCombo[Conversions_currentFolderIndex]:SetAttrs({IC_Visible = false})
+    Conversions_currentFolderIndex = param.Value + 1
+    InFileToUseCombo[Conversions_currentFolderIndex]:SetAttrs({IC_Visible = true})
 
     verbose("  set flag for a rebuild")
     InRebuildCheckBox:SetSource(Number(1),0)
+    InFetchButtonRebuildFlag:SetSource(Number(1),0,0)
+    InFuseButtonRebuildFlag:SetSource(Number(1),0,0)
 
-    -- InFuseButton:SetAttrs({INP_Disabled = false})
-    -- InFuseButton:SetAttrs({LINKS_Name = "Fuse Shadertoy ID "..GLOBAL_CurrentFolderIndex})
-
-    
-    -- InFileToUseCombo:SetSource(Number(0),0) -- Auf den Ersten Eintrag stellen, da sonst bei kleinerer Liste Fehler erzeugt wird
-    -- InFuseShaderID:SetSource(Number(0),0)   -- dito
-    -- InInfoReload:SetAttrs({IC_Visible = true}) -- Info
-  
     return
   end
     
     
     
-		if (inp == InFileToUseCombo[GLOBAL_CurrentFolderIndex]) then
+		if (inp == InFileToUseCombo[Conversions_currentFolderIndex]) then
       verbose("NotifyChanged: file to use changed - set flag for a rebuild")
       InRebuildCheckBox:SetSource(Number(1),0)
+      -- InFetchButtonRebuildFlag:SetSource(Number(1),0,0)
+      InFuseButtonRebuildFlag:SetSource(Number(1),0,0)
+
       return
     end
 
@@ -2627,6 +2503,8 @@ function NotifyChanged(inp, param, time)
     end
 
 		if (inp == InFetchShaderID) then
+
+      dump(Conversions_currentFolderIndex)
 			if (string.len(param.Value) == 6) then 
         InFetchButton:SetAttrs({INP_Disabled = false})
         InFetchButton:SetAttrs({LINKS_Name = "Fetch Shadertoy ID "..param.Value})
@@ -2635,13 +2513,13 @@ function NotifyChanged(inp, param, time)
         InFetchButton:SetAttrs({LINKS_Name = "Please Enter ID (6 Characters) "})
       end
       
-      --print("\n\nNotify ",param.Value,string.len(param.Value), "\n\n")
-       InFetchButtonClickedFlag:SetSource(Number(1),0,0)
-       return
+      InFetchButtonRebuildFlag:SetSource(Number(1),0,0)
+       
+      return
   	end
     
     if (inp == InFuseShaderID) then  -- ev Button noch modifizieren
-      InFuseButtonClickedFlag:SetSource(Number(1),0,0)
+      InFuseButtonRebuildFlag:SetSource(Number(1),0,0)
     end  
 
 		if inp == InSize then

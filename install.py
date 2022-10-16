@@ -21,7 +21,7 @@ else:
   with open(repoPath+".clobber/Incubator.fuse", "r") as f:
     incubatorFuse=f.read()
 
-  incubatorFuse=re.sub(r'\s+local\s+REPOSITORYPATH\s*=\s*\[\[[^\]]*\]\]', '\n\n  local REPOSITORYPATH=[['+repoPath+']]',incubatorFuse)
+  incubatorFuse=re.sub(r'\nGLOBAL_REPOSITORYPATH\s*=\s*\[\[[^\]]*\]\]', '\nGLOBAL_REPOSITORYPATH=[['+repoPath+']]',incubatorFuse)
 
   with open(fusePath+"Incubator_temp.fuse", "w") as f:
     f.write(incubatorFuse)
