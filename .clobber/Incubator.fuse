@@ -9,7 +9,6 @@
 GLOBAL_REPOSITORYPATH=[[]]
 
 
-
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 -- S H A D E R K E R N E L S
 -- ----------------------------------------------------------------------------------------------------------------------------------------
@@ -139,8 +138,8 @@ function Conversions_resetData(path)
       Folder=folder,
       --Label= "Conversions/" .. folder,
       Label= folder ~= "" and folder or "/",
-      CurrentEntry = 1,
-      Entries=entries
+      CurrentFile = 1,
+      Files=entries
     }
   end
 
@@ -395,10 +394,10 @@ function Create()
 
     local attrs = {}
 
-    for entryIndex, entryData in pairs(folderData.Entries) do
-      -- print("   entryIndex='".. entryIndex .."'") 
-      -- print("   entryData.Label='".. entryData.Label .."'") 
-      table.insert(attrs,{ CCS_AddString = entryData.Label })
+    for fileIndex, fileData in pairs(folderData.Files) do
+      -- print("   fileIndex='".. fileIndex .."'") 
+      -- print("   fileData.Label='".. fileData.Label .."'") 
+      table.insert(attrs,{ CCS_AddString = fileData.Label })
     end
   
     InFileToUseCombo[folderIndex] = self:AddInput("Code", "conversion" .. folderIndex, {
@@ -1771,15 +1770,15 @@ function Process(req)
     
     -- print("Process() ... rebuild")
     -- print("  selectedFolder = '"..selectedFolder.."' ('".. Conversions_table.Folders[selectedFolder].Label .."')")
-    -- print("  selectedFile = '"..selectedFile.."' ('".. Conversions_table.Folders[selectedFolder].Entries[selectedFile].Label .."')")
+    -- print("  selectedFile = '"..selectedFile.."' ('".. Conversions_table.Folders[selectedFolder].Files[selectedFile].Label .."')")
 
     local folderData = Conversions_table.Folders[selectedFolder]
-    local item   = folderData.Entries[selectedFile]
+    local fileData   = folderData.Files[selectedFile]
 
 
     ConversionSourcecode  = ""
-    ConversionFusename    = item.Name
-    ConversionShaderID    = item.ShadertoyID
+    ConversionFusename    = fileData.Name
+    ConversionShaderID    = fileData.ShadertoyID
 
     InShadertoyButton:SetAttrs({
       BTNCS_Execute = 'bmd.openurl("https://www.shadertoy.com/view/' .. ConversionShaderID ..'")',
@@ -1792,7 +1791,7 @@ function Process(req)
     f = io.open(GLOBAL_REPOSITORYPATH..'.clobber/CompatibilityCode.c', "r")
 
    
-    file = io.open(item.Path .. item.Filename,"r")
+    file = io.open(fileData.Path .. fileData.Filename,"r")
 
     if file ~= nil then
       ConversionSourcecode = "\n" .. file:read("*all")
@@ -2430,20 +2429,20 @@ function NotifyChanged(inp, param, time)
     InFuseFolder:SetSource(Text( folderData.Folder ),0,0)
     InFuseFolder:SetAttrs({INP_Disabled=true})
     
-    currentEntry =  Conversions_table.Folders[Conversions_table.CurrentFolder].CurrentEntry
-    entry = folderData.Entries[folderData.CurrentEntry]
+    -- currentFile =  Conversions_table.Folders[Conversions_table.CurrentFolder].CurrentFile
+    fileData = folderData.Files[folderData.CurrentFile]
 
     InFuseShaderID:SetAttrs({INP_Disabled=false})
-    InFuseShaderID:SetSource(Text( entry.ShadertoyID ),0,0)
+    InFuseShaderID:SetSource(Text( fileData.ShadertoyID ),0,0)
     InFuseShaderID:SetAttrs({INP_Disabled=true})
 
     InFuseName:SetAttrs({INP_Disabled=false})
-    InFuseName:SetSource(Text( entry.Name ),0,0)
+    InFuseName:SetSource(Text( fileData.Name ),0,0)
     InFuseName:SetAttrs({INP_Disabled=true})
 
     
     InFetchButton:SetAttrs({ BTNCS_Execute = command_doFetch(Conversions_table.FetchShaderID,folderData.Folder) , })
-    InFuseButton:SetAttrs({ BTNCS_Execute = command_doFuse(entry.ShadertoyID,folderData.Folder) , })
+    InFuseButton:SetAttrs({ BTNCS_Execute = command_doFuse(fileData.ShadertoyID,folderData.Folder) , })
 
 
     -- InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
@@ -2459,23 +2458,22 @@ function NotifyChanged(inp, param, time)
 		if (inp == InFileToUseCombo[Conversions_table.CurrentFolder]) then
       -- print("NotifyChanged: file to use changed - set flag for a rebuild")
 
-      local currentEntry = param.Value + 1
+      local currentFile = param.Value + 1
 
-      Conversions_table.Folders[Conversions_table.CurrentFolder].CurrentEntry
-        = currentEntry
+      Conversions_table.Folders[Conversions_table.CurrentFolder].CurrentFile = currentFile
 
-      local entry = Conversions_table.Folders[Conversions_table.CurrentFolder].Entries[currentEntry]
+      local fileData = Conversions_table.Folders[Conversions_table.CurrentFolder].Files[currentFile]
       
       InFuseShaderID:SetAttrs({INP_Disabled=false})
-      InFuseShaderID:SetSource(Text( entry.ShadertoyID ),0,0)
+      InFuseShaderID:SetSource(Text( fileData.ShadertoyID ),0,0)
       InFuseShaderID:SetAttrs({INP_Disabled=true})
 
       InFuseName:SetAttrs({INP_Disabled=false})
-      InFuseName:SetSource(Text( entry.Name ),0,0)
+      InFuseName:SetSource(Text( fileData.Name ),0,0)
       InFuseName:SetAttrs({INP_Disabled=true})
 
       -- InFetchButton:SetAttrs({ BTNCS_Execute = command_doFetch(Conversions_table.FetchShaderID,Conversions_table.Folders[Conversions_table.CurrentFolder].Folder) , })
-      InFuseButton:SetAttrs({ BTNCS_Execute = command_doFuse(entry.ShadertoyID,Conversions_table.Folders[Conversions_table.CurrentFolder].Folder) , })
+      InFuseButton:SetAttrs({ BTNCS_Execute = command_doFuse(fileData.ShadertoyID,Conversions_table.Folders[Conversions_table.CurrentFolder].Folder) , })
 
 
       InRebuildCheckBox:SetSource(Number(1),0)
