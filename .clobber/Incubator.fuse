@@ -1768,32 +1768,13 @@ function Process(req)
 
     local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
     local selectedFile = InFileToUseCombo[selectedFolder]:GetValue(req).Value + 1
-
+    
     -- print("Process() ... rebuild")
     -- print("  selectedFolder = '"..selectedFolder.."' ('".. Conversions_table.Folders[selectedFolder].Label .."')")
     -- print("  selectedFile = '"..selectedFile.."' ('".. Conversions_table.Folders[selectedFolder].Entries[selectedFile].Label .."')")
 
-    -- local folderData = Conversions_table.Folders[selectedFolder]
-    -- local item   = folderData.Entries[selectedFile]
-
-    -- if InFuseShaderID:GetValue(req).Value ~= item.ShadertoyID then
-    --   InFuseShaderID:SetAttrs({INP_Disabled=false})
-    --   InFuseShaderID:SetSource(Text( item.ShadertoyID ),0,0)
-    --   InFuseShaderID:SetAttrs({INP_Disabled=true})
-    -- end
-  
-    -- if InFetchFolder:GetValue(req).Value ~= folderData.Folder then
-    --   InFetchFolder:SetAttrs({INP_Disabled=false})
-    --   InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
-    --   InFetchFolder:SetAttrs({INP_Disabled=true})
-    -- end
-
-    -- if InFuseFolder:GetValue(req).Value ~= folderData.Folder then
-    --   InFuseFolder:SetAttrs({INP_Disabled=false})
-    --   InFuseFolder:SetSource(Text( folderData.Folder ),0,0)
-    --   InFuseFolder:SetAttrs({INP_Disabled=true})
-    -- end
-
+    local folderData = Conversions_table.Folders[selectedFolder]
+    local item   = folderData.Entries[selectedFile]
 
 
     ConversionSourcecode  = ""
