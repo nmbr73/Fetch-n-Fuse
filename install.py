@@ -21,7 +21,8 @@ else:
   with open(repoPath+".clobber/Incubator.fuse", "r") as f:
     incubatorFuse=f.read()
 
-  repoPath=re.sub(r'\\\\','/',repoPath) # Lua works with '/' ... maybe
+  repoPath = re.sub("\\\\", '/', repoPath)
+  repoPath = re.sub(r"\\",   '/', repoPath)
   incubatorFuse=re.sub(r'\nGLOBAL_REPOSITORYPATH\s*=\s*\[\[[^\]]*\]\]', '\nGLOBAL_REPOSITORYPATH=[['+repoPath+']]',incubatorFuse)
 
   with open(fusePath+"Incubator_temp.fuse", "w") as f:
