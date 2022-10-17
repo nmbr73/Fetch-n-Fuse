@@ -66,7 +66,7 @@ REPOPATH="/Users/nmbr73/Projects/Fetch-n-Fuse/"
 ```ini
 AUTHOR=nmbr73
 USER=peterlustig # windows user folder name 
-APIKEY=Bd8KM8 # your shadertoys.com API key
+APIKEY=****** # your shadertoys.com API key
 DOWNLOADS=C:\\Users\\${USER}\\Downloads\\
 FUSEPATH=C:\\Users\\${USER}\\AppData\\Roaming\\Blackmagic Design\\DaVinci Resolve\\Support\\Fusion\\Fuses\\
 REPOPATH=C:\\Users\\${USER}\\Projects\\Fetch-n-Fuse\\
