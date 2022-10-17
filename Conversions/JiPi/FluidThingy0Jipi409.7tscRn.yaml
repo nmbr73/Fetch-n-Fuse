@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: FluidThingy0Jipi409
+  id: FluidThingy0Jipi409
+  kernel: FluidThingy0Jipi409
+  name: FluidThingy0Jipi409
+shader:
+  author: N.N.
+  description: "Mouse click draw, space reset. \nMade from a tuto : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n\
+    Apparently require linear interpolation at minimum for bufferA. "
+  id: 7tscRn
+  name: fluid_thingy_0 JiPi 409
+  parent:
+    id: wdByWd
+    name: fluid_thingy_0
+    url: https://www.shadertoy.com/view/wdByWd
+  tags:
+  - 2d
+  - fluid
+  url: https://www.shadertoy.com/view/7tscRn

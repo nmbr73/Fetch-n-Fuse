@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: PillarWaveJipi
+  id: PillarWaveJipi
+  kernel: PillarWaveJipi
+  name: PillarWaveJipi
+shader:
+  author: N.N.
+  description: 'Pillar Wave
+
+    SDF from IQ
+
+    AA Option from FN'
+  id: ftjfDh
+  name: Pillar Wave JiPi
+  parent:
+    id: slSfW1
+    name: Pillar Wave
+    url: https://www.shadertoy.com/view/slSfW1
+  tags:
+  - loop
+  - learning
+  url: https://www.shadertoy.com/view/ftjfDh

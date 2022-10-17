@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: CyborgSignature
+  id: CyborgSignature
+  kernel: CyborgSignature
+  name: CyborgSignature
+shader:
+  author: leon
+  description: virtual artificial intelligence signing generated algorithm certificates
+  id: 7lcfz7
+  name: Cyborg Signature
+  tags:
+  - tag
+  - graffiti
+  - cyborg
+  url: https://www.shadertoy.com/view/7lcfz7

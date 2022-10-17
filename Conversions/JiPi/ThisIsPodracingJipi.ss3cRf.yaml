@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: ThisIsPodracingJipi
+  id: ThisIsPodracingJipi
+  kernel: ThisIsPodracingJipi
+  name: ThisIsPodracingJipi
+shader:
+  author: N.N.
+  description: "Inspired from Star Wars I podracing scene.\n "
+  id: ss3cRf
+  name: This is podracing JiPi
+  parent:
+    id: NljBWt
+    name: This is podracing!
+    url: https://www.shadertoy.com/view/NljBWt
+  tags:
+  - raytracing
+  - race
+  - starwars
+  - spaceship
+  - desert
+  - ship
+  url: https://www.shadertoy.com/view/ss3cRf

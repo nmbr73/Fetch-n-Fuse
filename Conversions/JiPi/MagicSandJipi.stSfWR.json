@@ -1,0 +1,93 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stSfWR",
+  "date": "0",
+  "viewed": 0,
+  "name": "Magic sand JiPi",
+  "description": "Trying out some psuedo fluid stuff. You can control the dot with your mouse",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "liquid",
+   "buffer",
+   "sand"
+  ],
+  "hasliked": 0,
+  "parentid": "4ljyzK",
+  "parentname": "Magic sand"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tfragColor = texture(iChannel0, uv);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sf3Rr",
+     "filepath": "/media/a/ad56fba948dfba9ae698198c109e71f118a54d209c0ea50d77ea546abad89c57.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "mat2 rotate(float a) {\n\treturn mat2(-sin(a), cos(a),\n                 cos(a), sin(a));\n}\n\nfloat rand(vec2 p) {\n\treturn texture(iChannel1, p).r;\n}\n\nvoid mainImage( out vec4 o, in vec2 q ) {\n    q /= iResolution.xy;   \n    \n    vec2 sand = q * rotate(0.) + 0.000001;\n    sand *= rotate(rand(q) * 0.02);\n\n    o = texture(iChannel0, sand) * (0.99 - rand(q) * 0.1);\n    \n    vec2 p = q - 0.5;\n    p.x *= iResolution.x / iResolution.y;\n    \n    if (iMouse.z > 0.) {\n        vec2 m = iMouse.xy;\n        \n        m /= iResolution.xy;\n        m -= 0.5;\n        m.x *= iResolution.x / iResolution.y;\n        \n    \tp -= m;\n    }\n\telse {\n        p += (vec2(cos(iTime * 2.), sin(iTime * 1.15)) + rand(p) * 0.2) * 0.2;\n    }\n    \n    if (length(p + sin(atan(p.x, p.y) * 3.) * 0.005) - 0.05 - abs(sin(iTime * 2.)) * 0.025 < 0.) {\n    \to = vec4(0.8 + sin(iTime * 5.) * 0.2, 0.25 + cos(iTime * 5.), 1. - tan(iTime * 100.) * 0.025, 1.);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

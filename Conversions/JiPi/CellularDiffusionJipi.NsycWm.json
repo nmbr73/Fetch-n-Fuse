@@ -1,0 +1,145 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NsycWm",
+  "date": "0",
+  "viewed": 0,
+  "name": "Cellular Diffusion JiPi",
+  "description": "Tried to make a simple diffusion reaction that i saw without looking anything up or referencing.\nSlightly different to other cellular automata diffusion reactions I think because there's no randomness to get the smooth pattern. ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "crt",
+   "diffusion",
+   "automata",
+   "cellular",
+   "reaction"
+  ],
+  "hasliked": 0,
+  "parentid": "NsKcD1",
+  "parentname": "Cellular Diffusion"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 draw = texture(iChannel0,uv);\n    // normal draw\n    fragColor = draw;\n    \n    \n    // for the flashing image, rotate colour by frame num\n    int col = colourr(draw.rgb);\n    int rot = int(texture(iChannel1,vec2(0,0)).x);\n    fragColor = vec4(get_col((col-rot+2) % 3), 1.);\n}\n\n\n/*\nDoing some reading now to see how i was meant to do it\nhttps://www.youtube.com/watch?v=TORwMc2AaRE\nhttps://softologyblog.wordpress.com/2018/03/23/rock-paper-scissors-cellular-automata/\nmy result is very similar to the one with a random variable.\nAdded the random variable, works well.\nInteresting how the flashing version looks almost the same on a larger scale.\n*/",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float time = iTime;\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    vec3 oldcol = texture(iChannel0,uv).rgb;\n    int uvcol = colourr(oldcol);\n    // slower to get all but whatever\n    // get neighbouring colours\n    int Ncol = colourr(texture(iChannel0,(fragCoord+vec2(0,1))/iResolution.xy).rgb);\n    int Scol = colourr(texture(iChannel0,(fragCoord-vec2(0,1))/iResolution.xy).rgb);\n    int Ecol = colourr(texture(iChannel0,(fragCoord+vec2(1,0))/iResolution.xy).rgb);\n    int Wcol = colourr(texture(iChannel0,(fragCoord-vec2(1,0))/iResolution.xy).rgb);\n    \n    \n    int NEcol = colourr(texture(iChannel0,(fragCoord+vec2(1,1))/iResolution.xy).rgb);\n    int SEcol = colourr(texture(iChannel0,(fragCoord+vec2(1,-1))/iResolution.xy).rgb);\n    int NWcol = colourr(texture(iChannel0,(fragCoord+vec2(-1,1))/iResolution.xy).rgb);\n    int SWcol = colourr(texture(iChannel0,(fragCoord+vec2(-1,-1))/iResolution.xy).rgb);\n    \n    \n    int prey = (uvcol+1)%3;\n    int pred = (uvcol+2)%3;\n    \n\n    // sum neighbours\n    int preyN = int(Ncol==prey) + int(Scol==prey) + int(Ecol==prey) + int(Wcol==prey);\n    int predN = int(Ncol==pred) + int(Scol==pred) + int(Ecol==pred) + int(Wcol==pred);\n    \n    int predN2 = int(NEcol==pred) + int(SEcol==pred) + int(NWcol==pred) + int(SWcol==pred);\n    \n    \n    vec3 newcol;\n    \n    /*\n    // another method, stable without rotating colours\n    // but doesnt look good.\n    // need to turn off rgb rotation in Image main\n    float thresh = 2.5;\n    float kernal_diag = 1.;\n    \n    //if (time > 2.) {thresh = 3.;}\n    if (float(predN) + kernal_diag*float(predN2) > thresh + randf(uv,time)*2.) {\n      newcol = get_col(pred);\n      //newcol = get_col(uvcol);\n    } else {\n\n      newcol = oldcol;\n    }\n    */\n    \n    \n    \n    // this code block almost behaves how i want, but it flashes\n    // this is fixed by switching rgb order every other frame when printing\n    // also has a weird miniture pattern that gives it a crt tv look.\n    int thresh = 4;\n    if ((predN2 + predN) < thresh) {\n      newcol = get_col(pred);\n    } else {\n      newcol = oldcol;\n    }\n    \n    \n    \n    \n    // initialise to randomness\n    if(int(texture(iChannel1,vec2(0,0)).y)==0) {\n      float x = randf(uv,time)*3.;\n      newcol = get_col(int(x));\n      //newcol = get_col(int(uv*3.));\n    }\n\n    // Output to screen\n    fragColor = vec4(newcol,1.);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// store an iteration number for switching frames\n// store init flag\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 draw = texture(iChannel1,uv);\n    if (fragCoord.x < 1. && fragCoord.y < 1.){\n      draw.x = float(int(draw.x + 1.) % 3);\n      draw.y = 1.;\n    }\n    \n    \n    fragColor = draw;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\nfloat rand(float co) { return fract(sin(co*(91.3458)) * 47453.5453); }\nfloat rand(vec2 co){ return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }\n\nfloat randf(vec2 uv, float t) {\n  return rand(uv*(t+1.0));\n}\n\nint colourr(vec3 col) {\n  //return int(dot(col, vec3(0,1,2)));\n  if (col.x > 0.5) {\n    return 0;\n  } else if (col.y > 0.5) {\n    return 1;\n  }\n  return 2; \n}\n\nvec3 get_col(int k) {\n  //k = k%3;\n  if (k == 0) {\n      return vec3(1.,0.,0.);\n  } else if (k == 1) {\n      return vec3(0.,1.,0.);\n  } else {\n      return vec3(0.,0.,1.);\n  }\n  \n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

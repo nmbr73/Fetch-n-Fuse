@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: JellyGateways
+  id: JellyGateways
+  kernel: JellyGateways
+  name: JellyGateways
+shader:
+  author: Tater
+  description: sss looks nice
+  id: NdKXDm
+  name: Jelly Gateways
+  tags:
+  - 3d
+  - raymarching
+  - sss
+  - bounce
+  url: https://www.shadertoy.com/view/NdKXDm

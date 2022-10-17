@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Timewarp
+  id: Timewarp
+  kernel: Timewarp
+  name: Timewarp
+shader:
+  author: P_Malin
+  description: "A raymarching shader with a Dali theme. \nUse the mouse to rotate."
+  id: ldl3zn
+  name: Timewarp
+  tags:
+  - raymarching
+  url: https://www.shadertoy.com/view/ldl3zn

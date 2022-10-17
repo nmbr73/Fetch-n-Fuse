@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: Gravitationfield3DJipi
+  id: Gravitationfield3DJipi
+  kernel: Gravitationfield3DJipi
+  name: Gravitationfield3DJipi
+shader:
+  author: N.N.
+  description: 'BufA: physics,  BufB: camera.
+
+    Camera automaticlly tracks the most powerful position.
+
+    Keyboard: WASD: rotate camera orbit, QE: go back/forward.'
+  id: NltBDl
+  name: GravitationField3D JiPi
+  parent:
+    id: 4dVfWy
+    name: Gravitation Field 3D
+    url: https://www.shadertoy.com/view/4dVfWy
+  tags:
+  - 3d
+  - star
+  - field
+  - gravity
+  - gravitation
+  url: https://www.shadertoy.com/view/NltBDl

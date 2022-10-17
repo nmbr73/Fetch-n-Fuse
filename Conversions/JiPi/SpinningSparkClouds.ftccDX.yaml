@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: SpinningSparkClouds
+  id: SpinningSparkClouds
+  kernel: SpinningSparkClouds
+  name: SpinningSparkClouds
+shader:
+  author: fenix
+  description: '*drag with mouse* *space to reset* Just goofing around with an old
+    shader and thought this was interesting enough to share.'
+  id: ftccDX
+  name: Spinning Spark Clouds
+  tags:
+  - 2d
+  - voronoi
+  - simulation
+  - particles
+  - flow
+  - liquid
+  - sph
+  url: https://www.shadertoy.com/view/ftccDX

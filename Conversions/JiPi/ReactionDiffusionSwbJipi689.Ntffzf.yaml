@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: ReactionDiffusionSwbJipi689
+  id: ReactionDiffusionSwbJipi689
+  kernel: ReactionDiffusionSwbJipi689
+  name: ReactionDiffusionSwbJipi689
+shader:
+  author: N.N.
+  description: "click to erase\nbunch of extra crap left over from the fork, buffer\
+    \ A is where the meat is\nbunnies terminology from\nhttps://www.youtube.com/watch?v=LMzYrsfTiEw&t=920s\
+    \ \nand \nhttps://www.youtube.com/watch?v=BV9ny785UNc"
+  id: Ntffzf
+  name: Reaction Diffusion swb JiPi689
+  parent:
+    id: stXBzj
+    name: reaction diffusion swb
+    url: https://www.shadertoy.com/view/stXBzj
+  tags:
+  - feedback
+  url: https://www.shadertoy.com/view/Ntffzf

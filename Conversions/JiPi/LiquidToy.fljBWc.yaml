@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: LiquidToy
+  id: LiquidToy
+  kernel: LiquidToy
+  name: LiquidToy
+shader:
+  author: leon
+  description: Another liquid blob
+  id: fljBWc
+  name: Liquid Toy
+  tags:
+  - abstract
+  - paint
+  url: https://www.shadertoy.com/view/fljBWc

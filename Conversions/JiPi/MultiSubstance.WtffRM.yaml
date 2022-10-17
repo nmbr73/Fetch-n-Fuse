@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MultiSubstance
+  id: MultiSubstance
+  kernel: MultiSubstance
+  name: MultiSubstance
+shader:
+  author: wyatt
+  description: Forward advected compressible fluid simulation with two repulsive substances.
+  id: WtffRM
+  name: Multi-Substance
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/WtffRM

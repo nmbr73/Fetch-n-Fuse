@@ -1,0 +1,197 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7ssczS",
+  "date": "0",
+  "viewed": 0,
+  "name": "text Ink JiPi 751",
+  "description": "adapted from https://www.shadertoy.com/view/wsKfWG",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "carwash"
+  ],
+  "hasliked": 0,
+  "parentid": "fty3zW",
+  "parentname": "text Ink"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "Main {\n    vec4 a = A(U), b = B(U);\n    Q = a+b;\n    float n = hash(U+vec2(0,1));\n    float e = hash(U+vec2(1,0));\n    float s = hash(U-vec2(0,1));\n    float w = hash(U-vec2(1,0));\n    vec3 no = normalize(vec3(e-s,n-s,1));\n    \n    Q = .9+.05*no.y-sqrt(Q);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define PI 3.1415926\n#define R iResolution.xy\n#define A(U) texture(iChannel0,(U)/R)\n#define B(U) texture(iChannel1,(U)/R)\n#define C(U) texture(iChannel2,(U)/R)\n#define D(U) texture(iChannel3,(U)/R)\n#define Main void mainImage(out vec4 Q, in vec2 U)\nfloat ln (vec2 p, vec2 a, vec2 b) { // returns distance to line segment for mouse input\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nfloat ln (vec3 p, vec3 a, vec3 b) { // returns distance to line segment for mouse input\n    return length(p-a-(b-a)*dot(p-a,b-a)/dot(b-a,b-a));\n}\nfloat hash (vec2 p) // Dave H\n{\n\tvec3 p3  = fract(vec3(p.xyx) * .1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGzr",
+     "filepath": "/media/a/08b42b43ae9d3c0605da11d0eac86618ea888e62cdd9518ee8b9097488b31560.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec4 char(vec2 p, int c) \n{\n    if (p.x<.0|| p.x>1. || p.y<0.|| p.y>1.) return vec4(0,0,0,1e5);\n\treturn textureGrad( iChannel1, p/16. + fract( vec2(c, 15-c/16) / 16. ), dFdx(p/16.),dFdy(p/16.) );\n}\n\n#define P(c) T.x-=.5; tV += char(T,64+c).x*mouseDown;\n\nMain {\n\n    //the two Qs here are responsibile for the dye pooling downwards\n    float visc = 0.05; //viscosity or thickness or how runny it is\n    \n    vec2 dir = vec2(sin(U.y/R.y*10.+iTime*5.) ,sin(U.x/R.x*10.+iTime*5.)+1.0);\n    dir = vec2(0.,1.);\n    //dir = vec2(hash(vec2(iTime,U.x*10.)),hash(vec2(U.y*10.,iTime))) - 0.5;\n    //dir *= 2.;\n    Q = A(U+vec2(0,0));\n    float xmove = sin((U.x/R.x-0.5)*10. + iTime/1.)/30.;\n    //xmove = 0.;\n    Q = A(U+vec2(xmove*1000.,visc*Q.w*0.));\n    \n    \n    Q = A(U+dir);\n    Q = A(U+vec2(visc*Q.w)*dir);\n    //Q = A(U+vec2(0,0.));\n    //Q.w is set to 1 when color is added\n    vec4 q = vec4(0);\n    for (int x = -1; x<= 1; x++)\n    for (int y = -1; y<= 1; y++)\n    if (x!=0||y!=0)\n    {\n        \n        vec2 u = vec2(x,y); //corner diff\n        vec4 a = A(U+u); //corner sample\n        float h = hash(U+0.5*u); //corner random\n        float m = (length(a.xyz)); //length of color of corner sample\n        m = min(m,1.); //cap length at 1\n        //m = pow(m,1.2)+visc;\n        q += pow(h,6.)*(a-Q)/2.;\n    }\n    Q += 0.125*q;\n    \n    \n    vec2 uv = U/R;\n    uv.x *= R.x/R.y;\n    \n    float mouseDown = step(0.,iMouse.z);\n    \n    float FontSize = 32.;\n    vec2 position = vec2(0.5)*vec2(R.x/R.y,1.) - vec2(FontSize/64.*3./2.,FontSize/64./2.);\n    vec2 T = ( uv - position)*64.0/FontSize;\n    \n    float tV = char(T,64 + 16).x*mouseDown;\n    \n    P(1);P(9);P(14);P(20);\n    //tV += char(T - vec2(0.5,0.),64 + 2).x*mouseDown;\n    //tV += tV2;\n    \n    vec3 textCol = 1.-vec3(0.3,0.9,0.5);\n    \n    float textBool = step(0.5,tV);\n    \n    Q.w = mix(Q.w,1.,textBool);\n    Q.xyz = mix(Q.xyz,textCol,textBool);\n    \n    //vec4 d = D(U);\n    vec2 c = vec2(hash(vec2(iTime/450.,460.)*1000.)*R.x,hash(vec2(iTime/100.,0.)*2000.)*R.y);\n    vec4 d = vec4(c,c);\n    \n    if (ln(U,d.xy,d.zw)<.025*R.y){\n        //Q = 0.5+0.5*sin(iTime+vec4(3.+ iTime/100.,0.+ iTime/1131.,1.,4));\n        //Q = 0.5+0.5*sin(iTime+vec4(0,5./4.,5./8.,4));\n        //Q *= 0.2;\n       // Q.w = 1.;\n    }\n    //if (iFrame < 1) Q = 1.-B(U);\n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Mouse\nvoid mainImage( out vec4 C, in vec2 U )\n{\n    vec4 p = texture(iChannel0,U/iResolution.xy);\n   \tif (iMouse.z>0.) {\n      if (p.z>0.) C =  vec4(iMouse.xy,p.xy);\n    else C =  vec4(iMouse.xy,iMouse.xy);\n   }\n    else C = vec4(-iResolution.xy,-iResolution.xy);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "Main {\n\n    Q = B(U);\n    Q += 5e-4*A(U);\n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: Lbm2DFluidJipi528
+  id: Lbm2DFluidJipi528
+  kernel: Lbm2DFluidJipi528
+  name: Lbm2DFluidJipi528
+shader:
+  author: N.N.
+  description: 'press the left mouse button to draw the wall,
+
+    press the space bar and the left mouse button to erase'
+  id: 7ljcRz
+  name: lbm_2d_fluid JiPi 528
+  parent:
+    id: Nl2cRR
+    name: lbm_2d_fluid
+    url: https://www.shadertoy.com/view/Nl2cRR
+  tags:
+  - 2d
+  - simulation
+  - fluid
+  - lbm
+  - freesurface
+  url: https://www.shadertoy.com/view/7ljcRz

@@ -1,0 +1,259 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flVczc",
+  "date": "0",
+  "viewed": 0,
+  "name": "PerceptualDepthPoissonSolverJiP ",
+  "description": "Rebuild",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "perceptual"
+  ],
+  "hasliked": 0,
+  "parentid": "",
+  "parentname": ""
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGRn",
+     "filepath": "/media/a/95b90082f799f48677b4f206d856ad572f1d178c676269eac6347631d4447258.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n\tThis shader adds perceived depth to a vector map by running the map through a Poisson solver.\n\tA vector map is supplied by a dynamical system in Buf A (see: https://www.shadertoy.com/view/Mtc3Dj),\n    the Laplacian of the map is computed in Buf B, and the depth of the map is computed using a\n    Poisson solver in Buf C and Buf D. The Poisson solver uses a technique conceptually similar to \n    the standard Jacobi method, but with a larger kernel and faster convergence times.\n\n\tComment out \"#define POISSON\" below to render using the original vector map without using the\n    Poisson solver.\n*/\n\n// displacement\n#define DISP 0.01\n\n// contrast\n#define SIGMOID_CONTRAST 20.0\n\n// mip level\n#define MIP 0.0\n\n// comment to use the original vector field without running through the Poisson solver\n#define POISSON\n\n\nvec3 contrast(vec3 x) {\n\treturn 1.0 / (1.0 + exp(-SIGMOID_CONTRAST * (x - 0.5)));    \n}\n\nvec3 normz(vec3 x) {\n\treturn x == vec3(0) ? vec3(0) : normalize(x);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n    vec2 texel = 1. / iResolution.xy;\n    vec2 uv = fragCoord.xy / iResolution.xy;\n\n    vec2 n  = vec2(0.0, texel.y);\n    vec2 e  = vec2(texel.x, 0.0);\n    vec2 s  = vec2(0.0, -texel.y);\n    vec2 w  = vec2(-texel.x, 0.0);\n\n    #ifdef POISSON\n        float d   = texture(iChannel0, uv).x;\n        float d_n = texture(iChannel0, fract(uv+n)).x;\n        float d_e = texture(iChannel0, fract(uv+e)).x;\n        float d_s = texture(iChannel0, fract(uv+s)).x;\n        float d_w = texture(iChannel0, fract(uv+w)).x; \n\n        float d_ne = texture(iChannel0, fract(uv+n+e)).x;\n        float d_se = texture(iChannel0, fract(uv+s+e)).x;\n        float d_sw = texture(iChannel0, fract(uv+s+w)).x;\n        float d_nw = texture(iChannel0, fract(uv+n+w)).x; \n\n        float dxn[3];\n        float dyn[3];\n\n        dyn[0] = d_nw - d_sw;\n        dyn[1] = d_n  - d_s; \n        dyn[2] = d_ne - d_se;\n\n        dxn[0] = d_ne - d_nw; \n        dxn[1] = d_e  - d_w; \n        dxn[2] = d_se - d_sw; \n    #else\n        vec2 d   = texture(iChannel2, uv).xy;\n        vec2 d_n = texture(iChannel2, fract(uv+n)).xy;\n        vec2 d_e = texture(iChannel2, fract(uv+e)).xy;\n        vec2 d_s = texture(iChannel2, fract(uv+s)).xy;\n        vec2 d_w = texture(iChannel2, fract(uv+w)).xy; \n\n        vec2 d_ne = texture(iChannel2, fract(uv+n+e)).xy;\n        vec2 d_se = texture(iChannel2, fract(uv+s+e)).xy;\n        vec2 d_sw = texture(iChannel2, fract(uv+s+w)).xy;\n        vec2 d_nw = texture(iChannel2, fract(uv+n+w)).xy; \n\n        float dxn[3];\n        float dyn[3];\n\n        dyn[0] = d_n.y;\n        dyn[1] = d.y; \n        dyn[2] = d_s.y;\n\n        dxn[0] = d_e.x; \n        dxn[1] = d.x; \n        dxn[2] = d_w.x; \n    #endif\n\n    vec3 i   = texture(iChannel1, fract(vec2(0.5) + DISP * vec2(dxn[0],dyn[0])), MIP).xyz;\n    vec3 i_n = texture(iChannel1, fract(vec2(0.5) + DISP * vec2(dxn[1],dyn[1])), MIP).xyz;\n    vec3 i_e = texture(iChannel1, fract(vec2(0.5) + DISP * vec2(dxn[2],dyn[2])), MIP).xyz;\n    vec3 i_s = texture(iChannel1, fract(vec2(0.5) + DISP * vec2(dxn[1],dyn[2])), MIP).xyz;\n    vec3 i_w = texture(iChannel1, fract(vec2(0.5) + DISP * vec2(dxn[2],dyn[0])), MIP).xyz;\n\n    // The section below is an antialiased version of \n    // Shane's Bumped Sinusoidal Warp shadertoy here:\n    // https://www.shadertoy.com/view/4l2XWK\n\n    vec3 sp = vec3(uv, 0);\n    vec3 light = vec3(cos(iTime/2.0)*0.5, sin(iTime/2.0)*0.5, -1.);\n    vec3 ld = light - sp;\n    float lDist = max(length(ld), 0.001);\n    ld /= lDist;  \n    float atten = min(1./(0.25 + lDist*0.5 + lDist*lDist*0.05), 1.);\n    vec3 rd = normalize(vec3(uv - 1.0, 1.));\n\n    float bump = 2.0;\n\n\n\n    float spec = 0.0;\n    for(int i = 0; i < 3; i++) {\n        for(int j = 0; j < 3; j++) {\n            vec2 dxy = vec2(dxn[i], dyn[j]);\n            vec3 bn = normalize(vec3(dxy * bump, -1.0));\n            spec += pow(max(dot( reflect(-ld, bn), -rd), 0.), 8.) / 9.0;                 \n        }\n    }\n\n    // end bumpmapping section\n\n    vec3 ib = 0.4 * i + 0.15 * (i_n+i_e+i_s+i_w);\n\n    vec3 texCol = 0.9*contrast(0.9*ib);\n\n    fragColor = vec4((texCol + vec3(0.9, 0.85, 0.8)*spec) * atten,1.0);\n\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define STEPS 40  // advection steps\n\n#define ts 0.2    // advection curl\n#define cs -2.0   // curl scale\n#define ls 0.05   // laplacian scale\n#define ps -2.0   // laplacian of divergence scale\n#define ds -0.4   // divergence scale\n#define dp -0.03  // divergence update scale\n#define pl 0.3    // divergence smoothing\n#define amp 1.0   // self-amplification\n#define upd 0.4   // update smoothing\n\n#define _D 0.6    // diagonal weight\n\n#define _K0 -20.0/6.0 // laplacian center weight\n#define _K1 4.0/6.0   // laplacian edge-neighbors\n#define _K2 1.0/6.0   // laplacian vertex-neighbors\n\n#define _G0 0.25      // gaussian center weight\n#define _G1 0.125     // gaussian edge-neighbors\n#define _G2 0.0625    // gaussian vertex-neighbors\n\nbool reset() {\n    return texture(iChannel3, vec2(32.5/256.0, 0.5) ).x > 0.5;\n}\n\nvec2 normz(vec2 x) {\n\treturn x == vec2(0.0) ? vec2(0.0) : normalize(x);\n}\n\n#define T(d) texture(iChannel0, fract(aUv+d)).xyz\n\nvec3 advect(vec2 ab, vec2 vUv, vec2 texel, out float curl, out float div, out vec3 lapl, out vec3 blur) {\n    \n    vec2 aUv = vUv - ab * texel;\n    vec4 t = vec4(texel, -texel.y, 0.0);\n\n    vec3 uv =    T( t.ww); vec3 uv_n =  T( t.wy); vec3 uv_e =  T( t.xw);\n    vec3 uv_s =  T( t.wz); vec3 uv_w =  T(-t.xw); vec3 uv_nw = T(-t.xz);\n    vec3 uv_sw = T(-t.xy); vec3 uv_ne = T( t.xy); vec3 uv_se = T( t.xz);\n    \n    curl = uv_n.x - uv_s.x - uv_e.y + uv_w.y + _D * (uv_nw.x + uv_nw.y + uv_ne.x - uv_ne.y + uv_sw.y - uv_sw.x - uv_se.y - uv_se.x);\n    div  = uv_s.y - uv_n.y - uv_e.x + uv_w.x + _D * (uv_nw.x - uv_nw.y - uv_ne.x - uv_ne.y + uv_sw.x + uv_sw.y + uv_se.y - uv_se.x);\n    lapl = _K0*uv + _K1*(uv_n + uv_e + uv_w + uv_s) + _K2*(uv_nw + uv_sw + uv_ne + uv_se);\n    blur = _G0*uv + _G1*(uv_n + uv_e + uv_w + uv_s) + _G2*(uv_nw + uv_sw + uv_ne + uv_se);\n    \n    return uv;\n}\n\nvec2 rot(vec2 v, float th) {\n\treturn vec2(dot(v, vec2(cos(th), -sin(th))), dot(v, vec2(sin(th), cos(th)))); \n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    vec2 vUv = fragCoord.xy / iResolution.xy;\n    vec2 texel = 1. / iResolution.xy;\n    \n    vec3 lapl, blur;\n    float curl, div;\n    \n    vec3 uv = advect(vec2(0), vUv, texel, curl, div, lapl, blur);\n\n    float sp = ps * lapl.z;\n    float sc = cs * curl;\n\tfloat sd = uv.z + dp * div + pl * lapl.z;\n    vec2 norm = normz(uv.xy);\n\n    vec2 off = uv.xy;\n    vec2 offd = off;\n    vec3 ab = vec3(0);\n\n    for(int i = 0; i < STEPS; i++) {\n        advect(off, vUv, texel, curl, div, lapl, blur);\n        offd = rot(offd,ts*curl);\n        off += offd;\n    \tab += blur / float(STEPS);  \n    }\n    \n    vec2 tab = amp * ab.xy + ls * lapl.xy + norm * sp + uv.xy * ds * sd;    \n    vec2 rab = rot(tab,sc);\n    \n    vec3 abd = mix(vec3(rab,sd), uv, upd);\n    \n    if (iMouse.z > 0.0) {\n    \tvec2 d = (fragCoord.xy - iMouse.xy) / iResolution.x;\n        vec2 m = 0.1 * normz(d) * exp(-length(d) / 0.02);\n        abd.xy += m;\n        uv.xy += m;\n    }\n    \n    // initialize with noise\n    vec3 init = texture(iChannel1, vUv, 5.0).xyz;\n    if(uv == vec3(0) && init != vec3(0) || reset()) {\n        fragColor = 1.0 * vec4(-0.5 + init, 1);\n    } else {\n        abd.z = clamp(abd.z, -1.0, 1.0);\n        abd.xy = clamp(length(abd.xy) > 1.0 ? normz(abd.xy) : abd.xy, -1.0, 1.0);\n        fragColor = vec4(abd, 0.0);\n    }\n\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// This computes the laplacian of the input\n\n\nfloat laplacian(sampler2D sampler, vec2 fragCoord) {\n    vec2 vUv = fragCoord.xy / iResolution.xy;\n    vec2 texel = 1. / iResolution.xy;\n    \n    // 3x3 neighborhood coordinates\n    float step_x = texel.x;\n    float step_y = texel.y;\n    vec2 n  = vec2(0.0, step_y);\n    vec2 ne = vec2(step_x, step_y);\n    vec2 e  = vec2(step_x, 0.0);\n    vec2 se = vec2(step_x, -step_y);\n    vec2 s  = vec2(0.0, -step_y);\n    vec2 sw = vec2(-step_x, -step_y);\n    vec2 w  = vec2(-step_x, 0.0);\n    vec2 nw = vec2(-step_x, step_y);\n\n    vec4 uv =    texture(iChannel0, fract(vUv));\n    vec4 uv_n =  texture(iChannel0, fract(vUv+n));\n    vec4 uv_e =  texture(iChannel0, fract(vUv+e));\n    vec4 uv_s =  texture(iChannel0, fract(vUv+s));\n    vec4 uv_w =  texture(iChannel0, fract(vUv+w));\n    vec4 uv_nw = texture(iChannel0, fract(vUv+nw));\n    vec4 uv_sw = texture(iChannel0, fract(vUv+sw));\n    vec4 uv_ne = texture(iChannel0, fract(vUv+ne));\n    vec4 uv_se = texture(iChannel0, fract(vUv+se));\n    \n    vec2 diff = vec2(\n        0.5 * (uv_e.x - uv_w.x) + 0.25 * (uv_ne.x - uv_nw.x + uv_se.x - uv_sw.x),\n        0.5 * (uv_n.y - uv_s.y) + 0.25 * (uv_ne.y + uv_nw.y - uv_se.y - uv_sw.y)\n    );\n    \n    return diff.x + diff.y;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = vec4(laplacian(iChannel0, fragCoord),0,0,0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n\tThis convolves the Laplacian values from Buf A with a specially-designed Poisson solver kernel.\n*/\n\n/* \n\tOptionally, blend the result of the large-kernel solver and a Jacobi method solver,\n\twith the value 0.0 being only the fast solver, and 1.0 being only the Jacobi solver.\n\tCuriously, using a negative value here may result in faster convergence.\n*/\n#define SOLVER_BLEND 0.0\n\n// If enabled, use a function that approximates the kernel. Otherwise, use the kernel.\n//#define USE_FUNCTION\n\n#define AMP 0.4375792\n#define OMEGA -1.007177\n#define OFFSET 0.002751625\n\nfloat neg_exp(float w) {\n    return OFFSET + AMP*exp(OMEGA*w);\n}\n\nvec4 neighbor_avg(sampler2D sampler, vec2 uv, vec2 tx) {\n\n    const float _K1 = 4.0/6.0;   // edge-neighbors\n    const float _K2 = 1.0/6.0;   // vertex-neighbors\n    \n    // 3x3 neighborhood coordinates\n    float step_x = tx.x;\n    float step_y = tx.y;\n    vec2 n  = vec2(0.0, step_y);\n    vec2 ne = vec2(step_x, step_y);\n    vec2 e  = vec2(step_x, 0.0);\n    vec2 se = vec2(step_x, -step_y);\n    vec2 s  = vec2(0.0, -step_y);\n    vec2 sw = vec2(-step_x, -step_y);\n    vec2 w  = vec2(-step_x, 0.0);\n    vec2 nw = vec2(-step_x, step_y);\n\n    vec4 p_n =  texture(sampler, fract(uv+n) );\n    vec4 p_e =  texture(sampler, fract(uv+e) );\n    vec4 p_s =  texture(sampler, fract(uv+s) );\n    vec4 p_w =  texture(sampler, fract(uv+w) );\n    vec4 p_nw = texture(sampler, fract(uv+nw));\n    vec4 p_sw = texture(sampler, fract(uv+sw));\n    vec4 p_ne = texture(sampler, fract(uv+ne));\n    vec4 p_se = texture(sampler, fract(uv+se));\n    \n    return _K1*(p_n + p_e + p_w + p_s) + _K2*(p_nw + p_sw + p_ne + p_se);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    const float _K0 = 20.0/6.0; // center weight\n\n    vec2 uv = fragCoord / iResolution.xy;\n    vec2 tx = 1.0 / iResolution.xy;\n    \n    /* \n\t\tPoisson solver kernel, computed using a custom tool. The curve ended up being very close\n    \tto exp(-x) times a constant (0.43757*exp(-1.0072*x), R^2 = 0.9997).\n    \tThe size of the kernel is truncated such that 99% of the summed kernel weight is accounted for. \n\t*/\n    float a[121] = float[](\n        1.2882849374994847E-4, 3.9883638750009155E-4, 9.515166750018973E-4, 0.0017727328875003466, 0.0025830133546736567, 0.002936729756271805, 0.00258301335467621, 0.0017727328875031007, 9.515166750027364E-4, 3.988363875000509E-4, 1.2882849374998886E-4,\n        3.988363875000656E-4, 0.00122005053750234, 0.0029276701875229076, 0.005558204850002636, 0.008287002243739282, 0.009488002668845403, 0.008287002243717386, 0.005558204850002533, 0.002927670187515983, 0.0012200505375028058, 3.988363875001047E-4,\n        9.515166750033415E-4, 0.0029276701875211478, 0.007226947743770152, 0.014378101312275642, 0.02243013709214819, 0.026345595431380788, 0.02243013709216395, 0.014378101312311218, 0.007226947743759695, 0.0029276701875111384, 9.515166750008558E-4,\n        0.0017727328875040689, 0.005558204850002899, 0.014378101312235814, 0.030803252137257802, 0.052905271651623786, 0.06562027788638072, 0.052905271651324026, 0.03080325213733769, 0.014378101312364885, 0.005558204849979354, 0.0017727328874979902,\n        0.0025830133546704635, 0.008287002243679713, 0.02243013709210261, 0.052905271651950365, 0.10825670746239457, 0.15882720544362505, 0.10825670746187367, 0.05290527165080182, 0.02243013709242713, 0.008287002243769156, 0.0025830133546869602,\n        0.00293672975627608, 0.009488002668872716, 0.026345595431503218, 0.06562027788603421, 0.15882720544151602, 0.44102631192030745, 0.15882720544590473, 0.06562027788637015, 0.026345595431065568, 0.009488002668778417, 0.0029367297562566848,\n        0.0025830133546700966, 0.008287002243704267, 0.022430137092024266, 0.05290527165218751, 0.10825670746234733, 0.1588272054402839, 0.1082567074615041, 0.052905271651381314, 0.022430137092484193, 0.00828700224375486, 0.002583013354686416,\n        0.0017727328875014527, 0.005558204850013428, 0.01437810131221156, 0.03080325213737849, 0.05290527165234342, 0.06562027788535467, 0.05290527165227899, 0.03080325213731504, 0.01437810131229074, 0.005558204849973625, 0.0017727328874977803,\n        9.515166750022218E-4, 0.002927670187526038, 0.0072269477437592895, 0.014378101312185454, 0.02243013709218059, 0.02634559543148722, 0.0224301370922164, 0.014378101312200022, 0.007226947743773282, 0.0029276701875125123, 9.515166750016471E-4,\n        3.988363875000695E-4, 0.0012200505375021846, 0.002927670187525898, 0.005558204849999022, 0.008287002243689638, 0.009488002668901728, 0.008287002243695645, 0.0055582048500028335, 0.002927670187519828, 0.0012200505375025872, 3.988363874999818E-4,\n        1.2882849374993535E-4, 3.9883638750004726E-4, 9.515166750034058E-4, 0.0017727328875029819, 0.0025830133546718525, 0.002936729756279661, 0.002583013354672541, 0.0017727328875033709, 9.515166750023861E-4, 3.988363874999023E-4, 1.2882849374998856E-4\n    );\n    \n    vec4 accum = vec4(0);\n    for (int i = -5; i <= 5; i++) {\n        for (int j = -5; j <= 5; j++) {\n            int index = (j + 5) * 11 + (i + 5);\n            \n            #ifdef USE_FUNCTION\n                float w = -neg_exp(sqrt(float(i*i+j*j)));\n            #else\n            \tfloat w = -a[index];\n            #endif\n\n            accum += w * texture(iChannel0, fract(uv + tx * vec2(i,j)));\n        }\n    }\n    \n    vec4 fast = texture(iChannel1, uv) + accum;\n    vec4 slow = (neighbor_avg(iChannel2, uv, tx) - texture(iChannel0, uv)) / _K0;\n\tfragColor = mix(fast, slow, SOLVER_BLEND);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/* \n    This uses a blur kernel to iteratively blur the poisson solver output from Buf B\n    in order to fill in areas with small laplacian values.\n*/\n\n/* \n\tUsing normalized convolution to throw out negative values from the solver.\n\tThis speeds up convergence but is less accurate overall\n*/\n//#define NORMALIZED_CONVOLUTION\n\n// If enabled, use a function that approximates the kernel. Otherwise, use the kernel.\n//#define USE_FUNCTION\n\n/* \n\tThe standard deviation was determined by fitting a gaussian to the kernel below.\n\tThis can be changed in order to control the contrast of the resulting solution \n    if desired. Higher values result in less contrast, lower values in higher contrast.\n*/\n#define STDEV 15.4866382262\nfloat gaussian(float w) {\n    return exp(-(w*w) / STDEV);\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    vec2 texel = 1.0 / iResolution.xy;\n\n    /*\n\t\tThis is a Gaussian kernel, computed in a similar fashion to the Poisson solver kernel\n\t\tin Buf B, by performing several iterations of blurring with a 3x3 uniform kernel.\n\t\tI'm not sure this is an optimal blur kernel, but it has the best convergence properties\n        of the kernels I have tried.        \n\t*/    \n    \n    float a[121] = float[](\n\t\t79.19345413844742, 186.95982256696507, 355.7725142792509, 557.2478169468127, 728.3177627480716, 792.5919289564812, 728.3177627476995, 557.2478169408488, 355.77251427912773, 186.95982256592688, 79.19345413873424,\n\t\t186.959822566632, 425.7969440744425, 791.9803669283782, 1224.530847511507, 1577.426364172433, 1725.1209704031874, 1577.4263641420696, 1224.5308475559118, 791.9803669376721, 425.79694407230176, 186.95982256563883,\n\t\t355.7725142799761, 791.9803669291889, 1452.3604097140878, 2209.3999629613313, 2852.94106149519, 3081.611616324168, 2852.941061533745, 2209.399962949136, 1452.3604097512411, 791.9803669249508, 355.77251427710723,\n\t\t557.2478169431769, 1224.5308475304664, 2209.399962931118, 3366.385791159061, 4279.72008889292, 4678.378018687814, 4279.720088892726, 3366.3857911950213, 2209.3999629391506, 1224.5308475541954, 557.2478169376274,\n\t\t728.3177627458676, 1577.4263641493967, 2852.9410614801927, 4279.720088978485, 5506.183369574301, 5920.756793177247, 5506.1833697747215, 4279.720088900363, 2852.941061422592, 1577.4263641763532, 728.3177627380724,\n\t\t792.591928959736, 1725.1209703621885, 3081.6116163468955, 4678.3780186709955, 5920.7567931890435, 6475.16792876658, 5920.756793140686, 4678.378018700188, 3081.611616243516, 1725.1209704374526, 792.5919289262789,\n\t\t728.3177627503185, 1577.4263641343025, 2852.941061521645, 4279.720088879328, 5506.1833695725, 5920.756793175392, 5506.183369768556, 4279.72008893864, 2852.941061394854, 1577.4263641878938, 728.3177627378943,\n\t\t557.2478169473138, 1224.5308475281577, 2209.3999629803902, 3366.385791173652, 4279.720088896571, 4678.378018637779, 4279.720088907292, 3366.3857911422515, 2209.399962952415, 1224.5308475544125, 557.2478169412809,\n\t\t355.7725142789757, 791.9803669328146, 1452.3604096970955, 2209.399962979159, 2852.9410614343005, 3081.611616339055, 2852.941061433329, 2209.3999629672044, 1452.360409748826, 791.9803669233293, 355.77251427842157,\n\t\t186.9598225669598, 425.7969440755401, 791.9803669309789, 1224.5308475353752, 1577.426364179527, 1725.120970397883, 1577.4263641778723, 1224.5308475497768, 791.980366930886, 425.79694407371545, 186.95982256558094,\n\t\t79.19345413823653, 186.9598225671716, 355.7725142808836, 557.2478169336465, 728.317762748316, 792.5919289394396, 728.3177627443532, 557.2478169373627, 355.7725142796133, 186.95982256574436, 79.19345413875728\n\t);\n     \n    vec4 accum = vec4(0);\n    vec4 accumw = vec4(0);\n\n    for (int i = -5; i <= 5; i++) {\n        for (int j = -5; j <= 5; j++) {\n            int index = (j + 5) * 11 + (i + 5);\n\t\t\t\n            #ifdef USE_FUNCTION\n                float w = gaussian(sqrt(float(i*i+j*j)));\n            #else\n            \tfloat w =  a[index];\n            #endif\n           \n            vec4 tx = texture(iChannel0, fract(uv + texel * vec2(i,j)));\n\n            #ifdef NORMALIZED_CONVOLUTION\n                accumw += step(0.0,tx) * w;\n                accum  += step(0.0,tx) * w * tx;\n            #else\n                accumw += w;\n                accum  += w * tx;\n            #endif\n            \n        }\n    }\n    \n\tfragColor = accum / accumw;\n\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

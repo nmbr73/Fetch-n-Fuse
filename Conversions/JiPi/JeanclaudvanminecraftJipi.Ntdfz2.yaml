@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: JeanclaudvanminecraftJipi
+  id: JeanclaudvanminecraftJipi
+  kernel: JeanclaudvanminecraftJipi
+  name: JeanclaudvanminecraftJipi
+shader:
+  author: N.N.
+  description: Jean Claude in the Minecraft remake of 'Double Impact' :)
+  id: Ntdfz2
+  name: JeanClaudVanMinecraft JiPi
+  parent:
+    id: ldKXRR
+    name: Jean Claude van Minecraft
+    url: https://www.shadertoy.com/view/ldKXRR
+  tags:
+  - voxel
+  url: https://www.shadertoy.com/view/Ntdfz2

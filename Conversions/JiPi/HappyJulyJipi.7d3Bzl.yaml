@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: HappyJulyJipi
+  id: HappyJulyJipi
+  kernel: HappyJulyJipi
+  name: HappyJulyJipi
+shader:
+  author: N.N.
+  description: A random firework generator. Repeats every 110 seconds currently.
+  id: 7d3Bzl
+  name: Happy July JiPi
+  parent:
+    id: 7sdfzX
+    name: 'Happy July 4th '
+    url: https://www.shadertoy.com/view/7sdfzX
+  tags:
+  - noise
+  - fireworks
+  - 2dphysics
+  url: https://www.shadertoy.com/view/7d3Bzl

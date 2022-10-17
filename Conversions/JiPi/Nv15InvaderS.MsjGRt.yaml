@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: Nv15InvaderS
+  id: Nv15InvaderS
+  kernel: Nv15InvaderS
+  name: Nv15InvaderS
+shader:
+  author: iapafoto
+  description: 'Try to make a short animation with various sequences, objects, effects,
+    movements, materials and textures
+
+    [Mouse] Control camera angle
+
+    (code is not cleaned for the moment)'
+  id: MsjGRt
+  name: '[NV15] Invader''s'
+  tags:
+  - texture
+  - space
+  - planet
+  - animation
+  - spaceinvaders
+  - invaders
+  url: https://www.shadertoy.com/view/MsjGRt

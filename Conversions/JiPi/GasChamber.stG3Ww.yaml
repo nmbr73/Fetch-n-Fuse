@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: GasChamber
+  id: GasChamber
+  kernel: GasChamber
+  name: GasChamber
+shader:
+  author: michael0884
+  description: Makes pretty good vortecies arguably
+  id: stG3Ww
+  name: Gas chamber
+  tags:
+  - fluid
+  - particles
+  - reintegration
+  - mpm
+  - apic
+  url: https://www.shadertoy.com/view/stG3Ww

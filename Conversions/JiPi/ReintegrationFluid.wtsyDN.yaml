@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ReintegrationFluid
+  id: ReintegrationFluid
+  kernel: ReintegrationFluid
+  name: ReintegrationFluid
+shader:
+  author: michael0884
+  description: 'Cellular automaton particle tracking with full conservation of mass/energy
+    and approximately particle number
+
+    You need 8x-16x acceleration to see anything!'
+  id: wtsyDN
+  name: Reintegration fluid
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/wtsyDN

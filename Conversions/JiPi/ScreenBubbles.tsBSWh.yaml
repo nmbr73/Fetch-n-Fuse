@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: ScreenBubbles
+  id: ScreenBubbles
+  kernel: ScreenBubbles
+  name: ScreenBubbles
+shader:
+  author: wyatt
+  description: "Taking a page out of rory's book and doing comparisons based on distance\
+    \ functions. \n"
+  id: tsBSWh
+  name: Screen Bubbles
+  tags:
+  - fluid
+  - bubbles
+  url: https://www.shadertoy.com/view/tsBSWh

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SchroOnaFlu
+  id: SchroOnaFlu
+  kernel: SchroOnaFlu
+  name: SchroOnaFlu
+shader:
+  author: wyatt
+  description: Schrodinger equation on a fluid medium. just cuz
+  id: tlsGRn
+  name: Schro ona Flu
+  tags:
+  - physics
+  url: https://www.shadertoy.com/view/tlsGRn

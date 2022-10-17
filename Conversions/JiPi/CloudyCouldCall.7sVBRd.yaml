@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: CloudyCouldCall
+  id: CloudyCouldCall
+  kernel: CloudyCouldCall
+  name: CloudyCouldCall
+shader:
+  author: leon
+  description: 'atmospherically unbreathable '
+  id: 7sVBRd
+  name: Cloudy Could Call
+  tags:
+  - noise
+  - tunnel
+  - cloud
+  url: https://www.shadertoy.com/view/7sVBRd

@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "Nd3BRB",
+  "date": "0",
+  "viewed": 0,
+  "name": "Continuous Cellular AutomataJiPi",
+  "description": "A very squiggly boy",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "squiggle"
+  ],
+  "hasliked": 0,
+  "parentid": "sdXXRj",
+  "parentname": "Continuous Cellular Automata"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Code forked from Inigo Quilez's game of life shader\n// https://www.shadertoy.com/view/XstGRf\n// Reset code stolen from somewhere else - sorry!\n// (Press R to reset shader)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \nvec3 col =  vec3(1.2 * texelFetch( iChannel0, ivec2(fragCoord), 0 ).x);\n\nfragColor = vec4( col, 1.0 );\n\n\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define KEYBOARD iChannel1\n#define KEY_RESET 82\n\n\nfloat Cell( in ivec2 p )\n{\n    // do wrapping\n    ivec2 r = ivec2(textureSize(iChannel0, 0));\n    p = (p+r) % r;\n    \n    // fetch texel\n   // return (texelFetch(iChannel0, p, 0 ).x > 0.5 ) ? 1 : 0;\n   return texelFetch(iChannel0, p, 0 ).x;\n}\n\nfloat hash1( float n )\n{\n    return fract(sin(n)*138.5453123);\n}\n\nbool key_down(int key) {\n    return int(texelFetch(KEYBOARD, ivec2(key, 0), 0).x) == 1;\n}\n\n\n// goes through 0.5,0.5, 0 derivative at 0,0  and 1,1\n// not in use\nfloat p(float x)\n{\nreturn (1. / 9.) * (-4. * x * x + 8. * x + 5.) * x * x * (2.-x) * (2.-x);\n}\n\n// not in use\nfloat gain(float x, float k)\n{\n  float a = 0.5*pow(2.0*((x<0.5)?x:1.0-x), k);\n  return (x<0.5)?a:1.0-a;\n}\n\n// not in use\nfloat p4(float x)\n{\nreturn (0.9 + 0.1 * cos( 2. * 3.14159 * x)) * x;\n}\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    ivec2 px = ivec2( fragCoord );\n    \n    if (key_down(KEY_RESET)) {\n    // if you want a random reset, uncomment\n    /*\n     float f = hash1(fragCoord.x*13.0+ 10.131 * iTime + hash1(fragCoord.y*73.1));\n    if (f > 0.1)\n    f = 0.;\n    */\n    float x= fragCoord.x / iResolution.y - 0.375;\n    float y = fragCoord.y / iResolution.y;\n    vec2 dir = vec2(x,y) - 0.5;\n    float d = length(dir);\n    float f =(1. - 1./ 0.15 * d) * step(d,0.15);\n       \n    fragColor = vec4( f, 0.0, 0.0, 0.0 );\n        return;\n    }\n    \n  // center cell\n  float e = Cell(px); \n\n  // neighbour cells\n  float t = Cell(px + ivec2(0,-1));\n  float b = Cell(px + ivec2(0,1));\n  float l = Cell(px + ivec2(-1,0));\n  float r = Cell(px + ivec2(1,0));   \n\n  float h = 0.5 * (l+r);\n  float v = 0.5 * (t + b);  \n  float k = max(h,v); // \"average\" of neighbours\n//float k = 0.5 *(h+v);\n\n // difference between center and average\n float j = abs(e - k);\n\n// if center is below average, increase\n// if center is above average, decrease\nif (e < k)\n e += 0.18 * k;\nelse if (e > k)\n e -= 0.1 * k;\n\nfloat c = 0.01; //0.02, 0.03 look cool too\nif (j < c)\ne = k - c * sign(e-k) ; // keep center and average seperated if they're close\nelse\ne = 0.9 * e + 0.1 * k; // lerp center to average if not close (usually true)\n\n\nif (e <= 0.05 && k > 0.05) // expand black bits into white bits (really important)\ne = k + 0.1; // e = ...; works fine too\nelse if (e >= 0.95 && k < 0.95) // slow values from converging to 1.\ne = k - 0.1; // e *= 0.9; // value not very important\nelse if (e > k)\ne -= 0.5 * j; // 0.45 looks cool too, also slows values converging to 1\n\n e = max(min(e,1.),0.); // probably not necessary - cap values in between 0. and 1.\n\n  float f = e;\n   if( iFrame==0 ) \n   {   \n   float x= fragCoord.x / iResolution.y - 0.375;\n    float y = fragCoord.y / iResolution.y;\n    vec2 dir = vec2(x,y) - 0.5;\n    float d = length(dir);\n     f =(1. - 1./ 0.15 * d) * step(d,0.15);\n    }\n    \n\tfragColor = vec4( f, 0.0, 0.0, 0.0 );\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

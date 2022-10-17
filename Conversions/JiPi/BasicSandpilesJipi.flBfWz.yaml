@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: BasicSandpilesJipi
+  id: BasicSandpilesJipi
+  kernel: BasicSandpilesJipi
+  name: BasicSandpilesJipi
+shader:
+  author: N.N.
+  description: Inspired by numberphile, click to create a sandpile of 1000 particles,
+    starts with 80000 particles.
+  id: flBfWz
+  name: Basic Sandpiles JiPi
+  parent:
+    id: llySRK
+    name: 'Basic : Sandpiles '
+    url: https://www.shadertoy.com/view/llySRK
+  tags:
+  - sandpiles
+  url: https://www.shadertoy.com/view/flBfWz

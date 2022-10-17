@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: ImaginaryCraziness
+  id: ImaginaryCraziness
+  kernel: ImaginaryCraziness
+  name: ImaginaryCraziness
+shader:
+  author: wyatt
+  description: 'ahhh!
+
+    [url]javascript: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<12;i++)E.P.apply(this,A);};if(!H)close();[/url]'
+  id: 3sV3DV
+  name: Imaginary Craziness
+  tags:
+  - wave
+  - imaginary
+  url: https://www.shadertoy.com/view/3sV3DV

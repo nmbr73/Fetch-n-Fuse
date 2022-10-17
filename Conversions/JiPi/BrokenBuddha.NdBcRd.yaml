@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: BrokenBuddha
+  id: BrokenBuddha
+  kernel: BrokenBuddha
+  name: BrokenBuddha
+shader:
+  author: eiffie
+  description: The best fractals are broken fractals.
+  id: NdBcRd
+  name: Broken Buddha
+  tags:
+  - buddhabrot
+  url: https://www.shadertoy.com/view/NdBcRd

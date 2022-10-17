@@ -1,0 +1,31 @@
+fuse:
+  author: JiPi
+  file: TwitchVolumetricScreamer
+  id: TwitchVolumetricScreamer
+  kernel: TwitchVolumetricScreamer
+  name: TwitchVolumetricScreamer
+shader:
+  author: evvvvil
+  description: 'Volumetric screamer - Result of improvised live code session on Twitch
+
+    LIVE SHADER CODING, SHADER SHOWDOWN STYLE, EVERY TUESDAYS 20:00 Uk time:
+
+    https://www.twitch.tv/evvvvil_'
+  id: tlSBWw
+  name: '[TWITCH] Volumetric screamer'
+  tags:
+  - clouds
+  - cloud
+  - demoscene
+  - volumetric
+  - fog
+  - glow
+  - lightning
+  - monster
+  - face
+  - scary
+  - dark
+  - bolt
+  - demon
+  - scream
+  url: https://www.shadertoy.com/view/tlSBWw

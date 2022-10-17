@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: ReactionDiffusionLoluckyJipi
+  id: ReactionDiffusionLoluckyJipi
+  kernel: ReactionDiffusionLoluckyJipi
+  name: ReactionDiffusionLoluckyJipi
+shader:
+  author: N.N.
+  description: 'mouse down to add chemical B
+
+    commons has settings
+
+    sorry for the slowness. If anyone can make it faster, that would be awesome
+
+    '
+  id: 7dyBzK
+  name: Reaction Diffusion lolucky JiPi
+  parent:
+    id: fsyfzw
+    name: Reaction Diffusion lolucky
+    url: https://www.shadertoy.com/view/fsyfzw
+  tags:
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/7dyBzK

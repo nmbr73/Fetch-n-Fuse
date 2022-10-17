@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: ContinuousgradientJipi
+  id: ContinuousgradientJipi
+  kernel: ContinuousgradientJipi
+  name: ContinuousgradientJipi
+shader:
+  author: N.N.
+  description: 'Bottom : stylized use of the gradient with value for magnitude and
+    hue for direction (correct only on B&W input, in RGB there is 3 directions and
+    magnitudes).
+
+    Top left : original continuous gradient.
+
+    Top right : original input.'
+  id: NtcfDr
+  name: ContinuousGradient JiPi
+  parent:
+    id: XtK3Dd
+    name: Continuous Gradient w. Direction
+    url: https://www.shadertoy.com/view/XtK3Dd
+  tags:
+  - sobel
+  - gradient
+  - derivative
+  - norm
+  - direction
+  url: https://www.shadertoy.com/view/NtcfDr

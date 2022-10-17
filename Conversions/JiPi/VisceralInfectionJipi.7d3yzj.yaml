@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: VisceralInfectionJipi
+  id: VisceralInfectionJipi
+  kernel: VisceralInfectionJipi
+  name: VisceralInfectionJipi
+shader:
+  author: N.N.
+  description: 'Itchy throat? :D
+
+    Based on shane''s Desert Canyon https://www.shadertoy.com/view/Xs33Df'
+  id: 7d3yzj
+  name: Visceral Infection JiPi
+  parent:
+    id: 7ddcW7
+    name: Visceral Infection
+    url: https://www.shadertoy.com/view/7ddcW7
+  tags:
+  - raymarching
+  - tunnel
+  - organic
+  - bio
+  - pebbles
+  url: https://www.shadertoy.com/view/7d3yzj

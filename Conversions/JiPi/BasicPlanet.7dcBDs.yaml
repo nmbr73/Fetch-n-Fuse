@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: BasicPlanet
+  id: BasicPlanet
+  kernel: BasicPlanet
+  name: BasicPlanet
+shader:
+  author: takahiroando
+  description: A planet with land, sea, cloud.  I would be happy if I could make it
+    shorter.
+  id: 7dcBDs
+  name: basic planet
+  tags:
+  - noise
+  - planet
+  url: https://www.shadertoy.com/view/7dcBDs

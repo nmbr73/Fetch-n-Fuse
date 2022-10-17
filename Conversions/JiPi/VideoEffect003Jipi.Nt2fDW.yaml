@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: VideoEffect003Jipi
+  id: VideoEffect003Jipi
+  kernel: VideoEffect003Jipi
+  name: VideoEffect003Jipi
+shader:
+  author: N.N.
+  description: (Work in progress getting closer) Added colors and a sort of flammy/sandy
+    effect. Still trying to reproduce something like https://www.premiercri.com/ using
+    methods found in https://www.shadertoy.com/view/3tBGzh
+  id: Nt2fDW
+  name: video effect 003 JiPi
+  parent:
+    id: 7sSXRm
+    name: video effect 003
+    url: https://www.shadertoy.com/view/7sSXRm
+  tags:
+  - videoeffect
+  url: https://www.shadertoy.com/view/Nt2fDW

@@ -1,0 +1,169 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NsSBRm",
+  "date": "0",
+  "viewed": 0,
+  "name": "OCEAN ELEMENTAL JiPi 494",
+  "description": "For five years the village of Lythe offered a growing bounty for the removal of a local water elemental. Dozens of adventurers applied but none succeeded. In the sixth year the whole village was moved a league inland.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "noise",
+   "waves",
+   "sss",
+   "sdf",
+   "displacement",
+   "distortion",
+   "water",
+   "ocean",
+   "animation",
+   "scattering",
+   "flow",
+   "pbr",
+   "phase",
+   "participating",
+   "medium"
+  ],
+  "hasliked": 0,
+  "parentid": "NdS3zK",
+  "parentname": "OCEAN ELEMENTAL"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsfGzn",
+     "filepath": "/media/a/585f9546c092f53ded45332b343144396c0b2d70d9965f585ebc172080d8aa58.jpg",
+     "type": "cubemap",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Water material with depth peeling, light scattering and texture distortion\n// Follow up to https://www.shadertoy.com/view/sdBGWh\n\n// BufferA: Camera and resolution change tracking\n// BufferB: R - Perlin noise FBM for wave height map\n//          G - Worley noise for staggered mixing of textures\n\n// Large bodies of water are blue mainly due to absorption of lower frequency light. \n// Scattering from particulates suspended in the water can add other tones. For simplicity, \n// we'll use a combined transmittance colour that attenuates with Beer's law. The environment\n// and direct lights use the same depth along the refracted view ray. Light scattering uses a\n// two-lobed Henyey-Greenstein phase function.\n\n// Is there a simple phase function for water or some information on the rate of absorption?\n\n// EDIT 1: Added separate light marching.\n\n// EDIT 2: Handle total internal reflection\n\n// Uncomment for separate light depth marching and better light contribution\n//#define HQ_LIGHT\n\n// Variable iterator initializer to stop loop unrolling\n#define ZERO (min(iFrame,0))\n\n// Comment out to remove environment map\n#define CUBEMAP\n\n// Index of refraction for water\n#define IOR 1.333\n\n// Ratios of air and water IOR for refraction\n// Air to water\n#define ETA 1.0/IOR\n// Water to air\n#define ETA_REVERSE IOR\n\nconst int MAX_STEPS = 50;\nconst float MIN_DIST = 0.01;\nconst float MAX_DIST = 5.0;\nconst float EPSILON = 1e-4;\nconst float DETAIL_EPSILON = 2e-3;\nconst float DETAIL_HEIGHT = 0.1;\nconst vec3 DETAIL_SCALE = vec3(1.0);\nconst vec3 BLENDING_SHARPNESS = vec3(4.0);\n\nconst vec3 sunLightColour = vec3(3.5);\n\nvec3 waterColour = 0.85 * vec3(0.1, 0.75, 0.9);\n\n// Amount of the background visible through the water\nconst float CLARITY = 0.75;\n\n// Modifiers for light attenuation\nconst float DENSITY = 3.5;\nconst float DENSITY_POW = 1.0;\n\n// In a circle of 2*PI\nconst float sunLocation = -2.0;\nconst float sunHeight = 0.9;\n\nvec3 rayDirection(float fieldOfView, vec2 fragCoord) {\n    vec2 xy = fragCoord - iResolution.xy / 2.0;\n    float z = (0.5 * iResolution.y) / tan(radians(fieldOfView) / 2.0);\n    return normalize(vec3(xy, -z));\n}\n\n// https://www.geertarien.com/blog/2017/07/30/breakdown-of-the-lookAt-function-in-OpenGL/\nmat3 lookAt(vec3 camera, vec3 at, vec3 up){\n  vec3 zaxis = normalize(at-camera);    \n  vec3 xaxis = normalize(cross(zaxis, up));\n  vec3 yaxis = cross(xaxis, zaxis);\n\n  return mat3(xaxis, yaxis, -zaxis);\n}\n\n\nvec3 getSkyColour(vec3 rayDir){\n    vec3 col;\n#ifdef CUBEMAP\n    col = inv_gamma(texture(iChannel2, rayDir).rgb);\n    // Add some bloom to the environment\n    col += 2.0 * pow(col, vec3(2));\n#else \n    col = 0.5*(0.5+0.5*rayDir);\n#endif\n    return col;\n}\n\nfloat getGlow(float dist, float radius, float intensity){\n    dist = max(dist, 1e-6);\n\treturn pow(radius/dist, intensity);\t\n}\n\n//-------------------------------- Rotations --------------------------------\n\nvec3 rotate(vec3 p, vec4 q){\n  return 2.0 * cross(q.xyz, p * q.w + cross(q.xyz, p)) + p;\n}\nvec3 rotateX(vec3 p, float angle){\n    return rotate(p, vec4(sin(angle/2.0), 0.0, 0.0, cos(angle/2.0)));\n}\nvec3 rotateY(vec3 p, float angle){\n\treturn rotate(p, vec4(0.0, sin(angle/2.0), 0.0, cos(angle/2.0)));\n}\nvec3 rotateZ(vec3 p, float angle){\n\treturn rotate(p, vec4(0.0, 0.0, sin(angle), cos(angle)));\n}\n\n\n//---------------------------- Distance functions ----------------------------\n\n// Distance functions and operators from:\n// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm\n\nfloat displacement(vec3 p){\n    return sin(p.x)*sin(p.y)*sin(p.z);\n}\n\nfloat opDisplace(vec3 p){\n    vec3 offset = 0.4*iTime * normalize(vec3(1.0, -1.0, 0.1));\n    return displacement(10.0*(p+offset));\n}\n\n\nfloat opSmoothSub( float d1, float d2, float k ) {\n    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );\n    return mix( d2, -d1, h ) + k*h*(1.0-h); }\n\nfloat sphereSDF(vec3 p, float radius) {\n    return length(p) - radius;\n}\n\nfloat sdRoundCone( vec3 p, float r1, float r2, float h ){\n  vec2 q = vec2( length(p.xz), p.y );\n    \n  float b = (r1-r2)/h;\n  float a = sqrt(1.0-b*b);\n  float k = dot(q,vec2(-b,a));\n    \n  if( k < 0.0 ) return length(q) - r1;\n  if( k > a*h ) return length(q-vec2(0.0,h)) - r2;\n        \n  return dot(q, vec2(a,b) ) - r1;\n}\n\n// https://www.iquilezles.org/www/articles/smin/smin.htm\nfloat smoothMin(float a, float b, float k){\n    float h = clamp(0.5+0.5*(b-a)/k, 0.0, 1.0 );\n    return mix( b, a, h ) - k*h*(1.0-h);\n}\n\nfloat getSDF(vec3 p, float sdfSign){\n\n    p.y -= 0.4;\n    float dist = 1e5;\n    vec3 q = p;\n    \n    // Upper back\n    dist = sphereSDF(q, 0.5);\n    \n   \n    // Head\n    q.y -= 0.25;\n    q.x -= 0.45;\n    q = rotateZ(q, 0.39);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.25, 0.25, 0.1), 0.25);\n    \n    \n    // Upper body\n    // Two round cones for chest and shoulders\n    q = p;\n    q.z = abs(q.z);\n    q.y += 0.1;\n    q.z -= 0.15;\n    q = rotateX(q, -1.45);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.4, 0.35, 0.4), 0.25);   \n    \n    \n    // Lower body\n    q = p;\n    q.y += 0.5;\n    q.x += 0.15;\n    q = rotateZ(q, 1.4);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.35, 0.25, 0.7), 0.5);\n\n    \n    // Base\n    // A large round cone\n    q = p;\n    q.y += 1.4;\n    q.x -= 0.1;\n    q = rotateZ(q, -1.5);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.24, 2.0, 3.0), 0.25);\n\n\n    // Subtract a sphere from the base to make it flared\n    q = p;\n    q.y += 4.75;\n    \n    dist = opSmoothSub(sphereSDF(q, 2.8), dist, 0.15);\n     \n    // Arms\n    q = p;\n    q.z = abs(q.z);\n    q.z -= 0.8;\n    q.y += 0.3;\n    q = rotateZ(q, -1.7);\n    q = rotateX(q, -0.2);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.22, 0.2, 0.3), 0.15);\n    \n    // Forearms\n    q = p;\n    q.z = abs(q.z);\n    q.z -= 0.9;\n    q.y += 0.8;\n    q.x -= 0.15;\n    q = rotateZ(q, -2.0);\n    q = rotateX(q, 0.15);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.18, 0.18, 0.3), 0.1);\n  \n  \n    // Fists\n    q = p;\n    q.z = abs(q.z);\n    q.z -= 0.77;\n    q.y += 0.95;\n    q.x -= 0.55;\n    q = rotateZ(q, PI*0.6);\n    \n    dist = smoothMin(dist, sdRoundCone(q, 0.1, 0.1, 0.2), 0.15);\n   \n   \n    float height = p.y+0.4;\n    // Displace the surface for larger waves\n    // Add more displacement lower down\n    float strength = mix(0.02, 0.1, smoothstep(-0.6, -1.5, height));\n    if(height < -1.5){\n        // No displacement at the very bottom\n        strength = mix(strength, 0.0, smoothstep(-1.5, -1.62, height));\n    }\n    dist += strength * opDisplace(p);\n    \n    return sdfSign * dist;\n}\n\nfloat distanceToScene(vec3 cameraPos, vec3 rayDir, float start, float end, float sdfSign){\n\t\n    // Start at a predefined distance from the camera in the ray direction\n    float depth = start;\n    \n    // Variable that tracks the distance to the scene at the current ray endpoint\n    float dist;\n    \n    // For a set number of steps\n    for (int i = ZERO; i < MAX_STEPS; i++) {\n        \n        // Get the sdf value at the ray endpoint, giving the maximum \n        // safe distance we can travel in any direction without hitting a surface\n        dist = getSDF(cameraPos + depth * rayDir, sdfSign);\n        \n        // If it is small enough, we have hit a surface\n        // Return the depth that the ray travelled through the scene\n        if (dist < EPSILON){\n            return depth;\n        }\n        \n        // Else, march the ray by the sdf value\n        depth += dist;\n        \n        // Test if we have left the scene\n        if (depth >= end){\n            return end;\n        }\n    }\n\n    return depth;\n}\n\n//----------------------------- Texture distortion -----------------------------\n\n// Find the local gradients in the X and Y directions which we use as the velocities \n// of the texure distortion\nvec2 getGradient(vec2 uv){\n\n    float delta = 1e-1;\n    uv *= 0.3;\n    \n    float data = texture(iChannel1, uv).r;\n    float gradX = data - texture(iChannel1, uv-vec2(delta, 0.0)).r;\n    float gradY = data - texture(iChannel1, uv-vec2(0.0, delta)).r;\n    \n    return vec2(gradX, gradY);\n}\n\n// https://catlikecoding.com/unity/tutorials/flow/texture-distortion/\nfloat getDistortedTexture(vec2 uv){\n\n    float strength = 0.5;\n    \n    // The texture is distorted in time and we switch between two texture states.\n    // The transition is based on Worley noise which will shift the change of differet parts\n    // for a more organic result\n    float time = 0.5 * iTime + texture(iChannel1, 0.25*uv).g;\n    \n    float f = fract(time);\n    \n    // Get the velocity at the current location\n    vec2 grad = getGradient(uv);\n    uv *= 1.0;\n    vec2 distortion = strength*vec2(grad.x, grad.y) + vec2(0, -0.3);\n\n    // Get two shifted states of the texture distorted in time by the local velocity.\n    // Loop the distortion from 0 -> 1 using fract(time)\n    float distort1 = texture(iChannel1, uv + f * distortion).r;\n    float distort2 = texture(iChannel1, uv + fract(time + 0.5) * distortion).r;\n\n    // Mix between the two texture states to hide the sudden jump from 1 -> 0.\n    // Modulate the value returned by the velocity.\n    return (1.0-length(grad)) * (mix(distort1, distort2, abs(1.0 - 2.0 * f)));\n}\n\n//----------------------------- Normal mapping -----------------------------\n\n// https://tinyurl.com/y5ebd7w7\nvec3 getTriplanar(vec3 position, vec3 normal){\n\n    // A hack to get the flow direction on the arms to be consistent\n    vec2 xpos = position.zx;\n    if(abs(position.z) > 0.65){\n        // If position is below 0.0, flip the uv direction for upwards flow\n        xpos = mix(xpos, vec2(position.z, -position.x), smoothstep(-0.0, -0.2, position.y));\n    }\n\n    vec3 xaxis = vec3(getDistortedTexture(DETAIL_SCALE.x*(position.zy)));\n    vec3 yaxis = vec3(getDistortedTexture(DETAIL_SCALE.y*(xpos)));\n    vec3 zaxis = vec3(getDistortedTexture(DETAIL_SCALE.z*(position.xy)));\n   \n    vec3 blending = abs(normal);\n\tblending = normalize(max(blending, 0.00001));\n    blending = pow(blending, BLENDING_SHARPNESS);\n\tfloat b = (blending.x + blending.y + blending.z);\n\tblending /= b;\n\n    return\txaxis * blending.x + \n       \t\tyaxis * blending.y + \n        \tzaxis * blending.z;\n}\n\n// Return the position of p extruded in the normal direction by a normal map\nvec3 getDetailExtrusion(vec3 p, vec3 normal){\n\n    float detail = DETAIL_HEIGHT * length(getTriplanar(p, normal));\n    \n    // Increase the normal extrusion height on the upper body\n    float d = 1.0 + smoothstep(0.0, -0.5, p.y);\n    return p + d * detail * normal;\n}\n\n// Tetrahedral normal technique with a loop to avoid inlining getSDF()\n// This should improve compilation times\n// https://iquilezles.org/www/articles/normalsSDF/normalsSDF.htm\nvec3 getNormal(vec3 p, float sdfSign){\n    vec3 n = vec3(0.0);\n    int id;\n    for(int i = ZERO; i < 4; i++){\n        vec3 e = 0.5773*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);\n        n += e*getSDF(p+e*EPSILON, sdfSign);\n    }\n    return normalize(n);\n}\n\n// Get orthonormal basis from surface normal\n// https://graphics.pixar.com/library/OrthonormalB/paper.pdf\nvoid pixarONB(vec3 n, out vec3 b1, out vec3 b2){\n\tfloat sign_ = sign(n.z);\n\tfloat a = -1.0 / (sign_ + n.z);\n\tfloat b = n.x * n.y * a;\n\tb1 = vec3(1.0 + sign_ * n.x * n.x * a, sign_ * b, -sign_ * n.x);\n\tb2 = vec3(b, sign_ + n.y * n.y * a, -n.y);\n}\n\n// Return the normal after applying a normal map\nvec3 getDetailNormal(vec3 p, vec3 normal){\n\n    vec3 tangent;\n    vec3 bitangent;\n    \n    // Construct orthogonal directions tangent and bitangent to sample detail gradient in\n    pixarONB(normal, tangent, bitangent);\n    \n    tangent = normalize(tangent);\n    bitangent = normalize(bitangent);\n\n    vec3 delTangent = vec3(0);\n    vec3 delBitangent = vec3(0);\n    \n    for(int i = ZERO; i < 2; i++){\n        \n        //i to  s\n        //0 ->  1\n        //1 -> -1\n        float s = 1.0 - 2.0 * float(i&1);\n    \n        delTangent += s * getDetailExtrusion(p + s * tangent * DETAIL_EPSILON, normal);\n        delBitangent += s * getDetailExtrusion(p + s * bitangent * DETAIL_EPSILON, normal);\n\n    }\n    \n    return normalize(cross(delTangent, delBitangent));\n}\n\n//--------------------------------- PBR ---------------------------------\n\n// Trowbridge-Reitz\nfloat distribution(vec3 n, vec3 h, float roughness){\n    float a_2 = roughness*roughness;\n\treturn a_2/(PI*pow(pow(dot_c(n, h),2.0) * (a_2 - 1.0) + 1.0, 2.0));\n}\n\n// GGX and Schlick-Beckmann\nfloat geometry(float cosTheta, float k){\n\treturn (cosTheta)/(cosTheta*(1.0-k)+k);\n}\n\nfloat smiths(vec3 n, vec3 viewDir, vec3 lightDir, float roughness){\n    float k = pow(roughness + 1.0, 2.0)/8.0; \n\treturn geometry(dot_c(n, lightDir), k) * geometry(dot_c(n, viewDir), k);\n}\n\n// Fresnel-Schlick\nvec3 fresnel(float cosTheta, vec3 F0){\n    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);\n} \n\n// Specular part of Cook-Torrance BRDF\nvec3 BRDF(vec3 p, vec3 n, vec3 viewDir, vec3 lightDir, vec3 F0, float roughness){\n    vec3 h = normalize(viewDir + lightDir);\n    float cosTheta = dot_c(h, viewDir);\n    float D = distribution(n, h, roughness);\n    vec3 F = fresnel(cosTheta, F0);\n    float G = smiths(n, viewDir, lightDir, roughness);\n    \n    vec3 specular =  D * F * G / max(0.0001, (4.0 * dot_c(lightDir, n) * dot_c(viewDir, n)));\n    \n    return specular;\n}\n\n// From the closest intersection with the scene, raymarch the negative SDF field to \n// find the far instersection. The distance inside the water is used to determine \n// transmittance and the attenuation of the environment.\nvec3 getEnvironment(vec3 org, vec3 rayDir, out vec3 transmittance, out vec3 halfwayPoint){\n        float sdfSign = -1.0;\n        \n        float distFar = distanceToScene(org, rayDir, MIN_DIST, MAX_DIST, sdfSign);\n        \n        vec3 positionFar = org + rayDir * distFar;\n        halfwayPoint = org + rayDir * distFar * 0.5;\n        vec3 geoNormalFar = getNormal(positionFar, sdfSign);\n\n        // Avoid artefacts when trying to sample detail normals across Z-plane. Shape \n        // deformation increases the region where visible errors occur.\n        if(abs(geoNormalFar.z) < 1e-5){\n            geoNormalFar.z = 1e-5;\n        }\n\n        //Use the geometry normal on the far side to reduce noise\n        vec3 refractedDir = normalize(refract(rayDir, geoNormalFar, ETA_REVERSE));\n\n        // When total internal reflection occurs, reflect the ray off the far side\n        // Critical angle for 1.333 -> 1.0 is 0.8483\n        // cos(0.8483) = 0.66125\n        if(dot(-rayDir, geoNormalFar) <= 0.66125){\n            refractedDir = normalize(reflect(rayDir, geoNormalFar));\n        }\n\n        vec3 transmitted = getSkyColour(refractedDir);\n        \n        // View depth\n        float d = DENSITY*length(org-positionFar);\n        \n        if(DENSITY_POW != 1.0){\n            d = pow(d, DENSITY_POW);\n        }\n        \n        \n        // Beer's law depending on the water colour\n        transmittance = exp( -d * (1.0 - waterColour));\n        \n        vec3 result = transmitted * transmittance;\n        return result;\n}\n\nfloat getLightDepth(vec3 org, vec3 rayDir){\n    float sdfSign = -1.0;\n        \n    return distanceToScene(org, rayDir, MIN_DIST, MAX_DIST, sdfSign);\n}\n\n\n//------------------------------- Shading -------------------------------\n\nfloat HenyeyGreenstein(float g, float costh){\n\treturn (1.0/(FOUR_PI))  * ((1.0 - g * g) / pow(1.0 + g*g - 2.0*g*costh, 1.5));\n}\n\nvec3 shadingPBR(vec3 cameraPos, vec3 lightPos, vec3 p, vec3 n, vec3 rayDir, vec3 geoNormal){\n    vec3 I = vec3(0);\n\n    vec3 F0 = vec3(0.02);\n    float roughness = 0.1;\n\n    vec3 vectorToLight = lightPos - p;\n   \tvec3 lightDir = normalize(vectorToLight);\n    I +=  BRDF(p, n, -rayDir, lightDir, F0, roughness) \n        * sunLightColour \n        * dot_c(n, lightDir);\n        \n\n    vec3 transmittance;\n    vec3 halfwayPoint;\n    \n    float f = smoothstep(0.0, -0.5, p.y);\n    \n    vec3 result = vec3(0);\n    \n    result += (1.0-f) * CLARITY * getEnvironment(p+rayDir*2.0*EPSILON,\n                                  refract(rayDir, n, ETA), \n                                  transmittance, halfwayPoint);\n    \n   \n    float mu = dot(refract(rayDir, n, ETA), lightDir);\n    float phase = mix(HenyeyGreenstein(-0.3, mu), HenyeyGreenstein(0.85, mu), 0.5);\n    \n    #ifdef HQ_LIGHT\n    \n    float lightDepth = getLightDepth(p+rayDir*2.0*EPSILON, normalize(lightPos-halfwayPoint));\n    lightDepth = max(1.0, lightDepth);\n\n    vec3 lightTransmittance = exp(-DENSITY*lightDepth * (1.0 - waterColour));\n    \n    result += CLARITY * sunLightColour * lightTransmittance * phase;\n    #else\n    \n    result += CLARITY * sunLightColour * transmittance * phase;\n    \n    #endif\n    \n    // Reflection of the environment.\n    vec3 reflectedDir = normalize(reflect(rayDir, n));\n    vec3 reflectedCol = getSkyColour(reflectedDir);\n    \n    float cosTheta = dot_c(n, -rayDir);\n    vec3 F = fresnel(cosTheta, F0);\n    \n    result = mix(result, reflectedCol, F);\n    \n    // Foam based on wave height\n    float waveHeight = length(getTriplanar(p, n));\n\n    // Sharper crests higher up\n    float e = mix(2.0, 16.0, 1.0-smoothstep(0.2, -1.3, p.y));\n    \n    result += f * pow(waveHeight, e);\n\n    return result + I;\n}\n\n//https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/\nvec3 ACESFilm(vec3 x){\n    float a = 2.51;\n    float b = 0.03;\n    float c = 2.43;\n    float d = 0.59;\n    float e = 0.14;\n    return clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0, 1.0);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n        \n    vec3 col = vec3(0);\n    \n\t//----------------- Define a camera -----------------\n    \n    vec3 rayDir = rayDirection(60.0, fragCoord);\n\n    //vec3 cameraPos = texelFetch(iChannel0, ivec2(0.5, 1.5), 0).xyz;\n    vec3 cameraPos = texture(iChannel0, (vec2(ivec2(0.5, 1.5))+0.5)/iResolution.xy).xyz;\n\n    vec3 targetDir = -cameraPos;\n\n    vec3 up = vec3(0.0, 1.0, 0.0);\n\n    // Get the view matrix from the camera orientation.\n    mat3 viewMatrix = lookAt(cameraPos, targetDir, up);\n\n    // Transform the ray to point in the correct direction.\n    rayDir = normalize(viewMatrix * rayDir);\n\n    //---------------------------------------------------\n\t\n    vec3 lightPos = 100.0 * normalize(vec3(cos(sunLocation), sunHeight, sin(sunLocation)));\n    vec3 lightDirection = normalize(lightPos);\n    \n    float sdfSign = 1.0;\n    \n    // Find the distance to where the ray stops.\n    float dist = distanceToScene(cameraPos, rayDir, MIN_DIST, MAX_DIST, sdfSign);\n    \n    if(dist < MAX_DIST){\n    \n    \n    vec3 position = cameraPos + rayDir * dist;\n        \n        vec3 geoNormal = getNormal(position, sdfSign);\n\n        // Avoid artefacts when trying to sample detail normals across Z-plane. Shape \n        // deformation increases the region where visible errors occur.\n        if(abs(geoNormal.z) < 1e-5){\n            geoNormal.z = 1e-5;\n        }\n\n        vec3 detailNormal = normalize(getDetailNormal(position, geoNormal));\n        \n        col += shadingPBR(cameraPos, lightPos, position, detailNormal, rayDir, geoNormal);\n\n        \n    }else{\n    \n        col += getSkyColour(rayDir);\n        float mu = dot(rayDir, lightDirection);\n        col += sunLightColour * getGlow(1.0-mu, 0.0005, 1.0);\n        \n    }\n    \n    //col = vec3(getDistortedTexture(fragCoord.xy/iResolution.xy));\n    //col = vec3(texture(iChannel1, fragCoord.xy/iResolution.xy, 0.0).r);\n    \n    //Tonemapping.\n    col = ACESFilm(col);\n\n    //Gamma correction 1.0/2.2 = 0.4545...\n    col = pow(col, vec3(0.4545));\n\n    //Output to screen.\n    fragColor = vec4(col, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Track mouse movement and resolution change between frames and set camera position.\n\n#define CAMERA_DIST 2.5\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    \n    // Work with just the first four pixels.\n    if((fragCoord.x == 0.5) && (fragCoord.y < 4.0)){\n        \n        //vec4 oldMouse = texelFetch(iChannel0, ivec2(0.5), 0).xyzw;\n        vec4 oldMouse = texture(iChannel0, (vec2(ivec2(0.5))+0.5)/iResolution.xy);\n        vec4 mouse = (iMouse / iResolution.xyxy); \n        vec4 newMouse = vec4(0);\n\n        //float mouseDownLastFrame = texelFetch(iChannel0, ivec2(0.5, 3.5), 0).x;\n        float mouseDownLastFrame = texture(iChannel0, (vec2(ivec2(0.5, 3.5))+0.5)/iResolution.xy).x;\n        \n        // If mouse button is down and was down last frame\n        if(iMouse.z > 0.0 && mouseDownLastFrame > 0.0){\n            \n            // Difference between mouse position last frame and now.\n            vec2 mouseMove = mouse.xy-oldMouse.zw;\n            newMouse = vec4(oldMouse.xy + vec2(5.0, 3.0)*mouseMove, mouse.xy);\n        }else{\n            newMouse = vec4(oldMouse.xy, mouse.xy);\n        }\n        newMouse.x = mod(newMouse.x, 2.0*PI);\n        newMouse.y = min(0.99, max(-0.99, newMouse.y));\n\n        // Store mouse data in the first pixel of Buffer A.\n        if(fragCoord == vec2(0.5, 0.5)){\n            // Set value at first frames\n            if(iFrame < 5){\n                newMouse = vec4(1.15, 0.2, 0.0, 0.0);\n            }\n            fragColor = vec4(newMouse);\n        }\n\n        // Store camera position in the second pixel of Buffer A.\n        if(fragCoord == vec2(0.5, 1.5)){\n            // Set camera position from mouse information.\n            vec3 cameraPos = CAMERA_DIST * \n                                vec3(sin(newMouse.x), -sin(newMouse.y), -cos(newMouse.x));\n                                \n            fragColor = vec4(cameraPos, 1.0);\n        }\n        \n        // Store resolution change data in the third pixel of Buffer A.\n        if(fragCoord == vec2(0.5, 2.5)){\n            float resolutionChangeFlag = 0.0;\n            // The resolution last frame.\n            //vec2 oldResolution = texelFetch(iChannel0, ivec2(0.5, 2.5), 0).yz;\n            vec2 oldResolution = texture(iChannel0, (vec2(ivec2(0.5, 2.5))+0.5)/iResolution.xy).yz;\n            \n            if(iResolution.xy != oldResolution){\n            \tresolutionChangeFlag = 1.0;\n            }\n            \n        \tfragColor = vec4(resolutionChangeFlag, iResolution.xy, 1.0);\n        }\n           \n        // Store whether the mouse button is down in the fourth pixel of Buffer A\n        if(fragCoord == vec2(0.5, 3.5)){\n            if(iMouse.z > 0.0){\n            \tfragColor = vec4(vec3(1.0), 1.0);\n            }else{\n            \tfragColor = vec4(vec3(0.0), 1.0);\n            }\n        }\n        \n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Perlin noise FBM for heightmap and Worley noise for texture fade out control.\n\n// GLSL version of 2D periodic seamless perlin noise.\n// https://github.com/g-truc/glm/blob/master/glm/gtc/noise.inl\n\nvec4 taylorInvSqrt(vec4 r){\n    return 1.79284291400159-0.85373472095314*r;\n}\n\nvec4 mod289(vec4 x){\n  return x-floor(x*(1.0/289.0))*289.0;\n}\n\nvec4 permute(vec4 x){\n  return mod289(((x*34.0)+1.0)*x);\n}\n\nvec2 fade(vec2 t){\n  return (t * t * t) * (t * (t * 6.0 - 15.0) + 10.0);\n}\n\nfloat perlin(vec2 Position, vec2 rep){\n    vec4 Pi = floor(vec4(Position.x, Position.y, Position.x, Position.y)) + vec4(0.0, 0.0, 1.0, 1.0);\n    vec4 Pf = fract(vec4(Position.x, Position.y, Position.x, Position.y)) - vec4(0.0, 0.0, 1.0, 1.0);\n    Pi = mod(Pi, vec4(rep.x, rep.y, rep.x, rep.y)); // To create noise with explicit period\n    Pi = mod(Pi, vec4(289)); // To avoid truncation effects in permutation\n    vec4 ix = vec4(Pi.x, Pi.z, Pi.x, Pi.z);\n    vec4 iy = vec4(Pi.y, Pi.y, Pi.w, Pi.w);\n    vec4 fx = vec4(Pf.x, Pf.z, Pf.x, Pf.z);\n    vec4 fy = vec4(Pf.y, Pf.y, Pf.w, Pf.w);\n\n    vec4 i = permute(permute(ix) + iy);\n\n    vec4 gx = float(2) * fract(i / float(41)) - float(1);\n    vec4 gy = abs(gx) - float(0.5);\n    vec4 tx = floor(gx + float(0.5));\n    gx = gx - tx;\n\n    vec2 g00 = vec2(gx.x, gy.x);\n    vec2 g10 = vec2(gx.y, gy.y);\n    vec2 g01 = vec2(gx.z, gy.z);\n    vec2 g11 = vec2(gx.w, gy.w);\n\n    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));\n    g00 *= norm.x;\n    g01 *= norm.y;\n    g10 *= norm.z;\n    g11 *= norm.w;\n\n    float n00 = dot(g00, vec2(fx.x, fy.x));\n    float n10 = dot(g10, vec2(fx.y, fy.y));\n    float n01 = dot(g01, vec2(fx.z, fy.z));\n    float n11 = dot(g11, vec2(fx.w, fy.w));\n\n    vec2 fade_xy = fade(vec2(Pf.x, Pf.y));\n    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);\n    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);\n    return float(2.3) * n_xy;\n}\n\nfloat hash(float n){\n\treturn fract(sin(n) * 43758.5453);\n}\n\n// From Shadertoy somewhere but not sure where originally.\nfloat noise(in vec3 x){\n\tvec3 p = floor(x);\n\tvec3 f = fract(x);\n\n\tf = f*f*(3.0 - 2.0 * f);\n\tfloat n = p.x + p.y*57.0 + 113.0*p.z;\n\treturn mix(\n\tmix(\n       \tmix(hash(n + 0.0), hash(n + 1.0), f.x),\n\t\tmix(hash(n + 57.0), hash(n + 58.0), f.x),\n\t\tf.y),\n\tmix(\n\t\tmix(hash(n + 113.0), hash(n + 114.0), f.x),\n\t\tmix(hash(n + 170.0), hash(n + 171.0), f.x),\n\t\tf.y),\n\tf.z);\n}\n\nfloat TILES = 1.0;\n\nfloat worley(vec3 pos, float numCells){\n\tvec3 p = pos * numCells;\n\tfloat d = 1.0e10;\n\tfor (int x = -1; x <= 1; x++){\n\t\tfor (int y = -1; y <= 1; y++){\n\t\t\tfor (int z = -1; z <= 1; z++){\n                vec3 tp = floor(p) + vec3(x, y, z);\n                tp = p - tp - noise(mod(tp, numCells / TILES));\n                d = min(d, dot(tp, tp));\n            }\n        }\n    }\n\treturn 1.0 - clamp(d, 0.0, 1.0);\n}\n\nfloat fbm(vec2 pos, vec2 scale){\n    float res = 0.0;\n    float freq = 1.0;\n    float amp = 1.0;\n    float sum = 0.0;\n    \n    int limit = 5;\n    \n    for(int i = 0; i < limit; i++){ \n        float offset = float(limit-i);\n        float d = mod(float(i), 2.0) > 0.0 ? 1.0 : -1.0;\n        res += d * (perlin(freq*(pos+offset), freq*scale)) * amp;\n\n        freq *= 2.0;\n        amp *= 0.5;\n    }\n    return res/float(limit);\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n   \n    vec2 uv = fragCoord/iResolution.xy;\n    vec3 col = vec3(0);\n    \n    //bool resolutionChanged = texelFetch(iChannel0, ivec2(0.5, 2.5), 0).r > 0.0;\n    bool resolutionChanged = texture(iChannel0, (vec2(ivec2(0.5, 2.5))+0.5)/iResolution.xy).x > 0.0;\n    \n    if(iFrame == 0 || resolutionChanged){\n\n        // Use diffrent scales for X and Y to get long wave fronts\n        vec2 scale = vec2(8.0, 15.0);\n\n        // For seamless texture, UV scale has to match rep\n        float noise = perlin(scale*uv, vec2(scale));\n        noise = 0.5+0.5*(fbm(scale*uv, vec2(scale)));\n\n        float s = 2.0;\n        float worley = worley(s * vec3(uv, 0.0), s);\n        \n        col = vec3(noise, worley, 0.0);\n        \n    }else{\n        //col = texelFetch(iChannel1, ivec2(fragCoord.xy), 0).rgb;\n        col = texture(iChannel1, (vec2(ivec2(fragCoord.xy))+0.5)/iResolution.xy).xyz;\n    }\n    \n    // Output to screen\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define PI 3.14159\n#define FOUR_PI 4.0 * PI\n#define GAMMA 2.2\n#define INV_GAMMA (1.0/GAMMA)\n\n// Minimum dot product value\nconst float minDot = 1e-3;\n\n// Clamped dot product\nfloat dot_c(vec3 a, vec3 b){\n\treturn max(dot(a, b), minDot);\n}\n\nvec3 gamma(vec3 col){\n\treturn pow(col, vec3(INV_GAMMA));\n}\n\nvec3 inv_gamma(vec3 col){\n\treturn pow(col, vec3(GAMMA));\n}\n\nfloat saturate(float x){\n\treturn clamp(x, 0.0, 1.0);\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

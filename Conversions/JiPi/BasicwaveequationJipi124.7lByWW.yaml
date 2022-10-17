@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: BasicwaveequationJipi124
+  id: BasicwaveequationJipi124
+  kernel: BasicwaveequationJipi124
+  name: BasicwaveequationJipi124
+shader:
+  author: N.N.
+  description: Verlet integration of the wave equation using a nine-point stencil
+    to calculate the laplacian. Use your mouse.
+  id: 7lByWW
+  name: BasicWaveEquation JiPi 124
+  parent:
+    id: ldVyWW
+    name: 'Basic : Wave Equation'
+    url: https://www.shadertoy.com/view/ldVyWW
+  tags:
+  - 2d
+  - wave
+  - numerical
+  - equation
+  - integration
+  url: https://www.shadertoy.com/view/7lByWW

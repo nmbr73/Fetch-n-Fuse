@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: ImageMorphBleedEffectVFab
+  id: ImageMorphBleedEffectVFab
+  kernel: ImageMorphBleedEffectVFab
+  name: ImageMorphBleedEffectVFab
+shader:
+  author: FabriceNeyret2
+  description: 'refactoring, commenting and extending _bm'' "Image Morph Bleed Effect"
+    [url]https://shadertoy.com/view/NdS3WK[/url]
+
+
+    morphing one image into another only by swapping random pixels every frame
+
+    Buffer A iChannel1 is the source image, it morphs into iChannel3'
+  id: ssS3DV
+  name: Image Morph Bleed Effect (v.Fab)
+  tags:
+  - experiment
+  - glitch
+  - morph
+  url: https://www.shadertoy.com/view/ssS3DV

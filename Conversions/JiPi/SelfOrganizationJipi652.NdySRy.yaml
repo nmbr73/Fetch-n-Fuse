@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: SelfOrganizationJipi652
+  id: SelfOrganizationJipi652
+  kernel: SelfOrganizationJipi652
+  name: SelfOrganizationJipi652
+shader:
+  author: N.N.
+  description: "I have no idea really what this is. \nIt's interesting to adjust the\
+    \ coefficients in Common\n\n"
+  id: NdySRy
+  name: Self-Organization JiPi652
+  parent:
+    id: WdKGRd
+    name: Self-Organization
+    url: https://www.shadertoy.com/view/WdKGRd
+  tags:
+  - particlephysics
+  url: https://www.shadertoy.com/view/NdySRy

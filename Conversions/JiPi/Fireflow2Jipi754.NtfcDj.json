@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtfcDj",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fireflow 2 JiPi 754",
+  "description": "Just an experiment in quick-and-dirty flow like simulations. Click to add buoyancy, spacebar to clear.\n\nedit: by the way is there any easy way to save a duplicate of a shader?",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cellular"
+  ],
+  "hasliked": 0,
+  "parentid": "4lBcDG",
+  "parentname": "Fireflow 2"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec3 col_add=vec3(0.0, 0.0, 0.0), col_scale=vec3(2.0,2.0,1.0);\n    \n\tfragColor = vec4(abs(texture(iChannel0, uv).xzy)*col_scale+col_add, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const float diffuse=5.5;// 3.5 also works well. 11.5 makes crazy colour swirls.\n\nconst float accel=0.1;\nconst float max_speed=0.3;\n\nconst float dissipate=0.001;\nconst float springiness=0.01;\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // this makes makes it a bit more varied.\n    //diffuse=sin(iTime*0.1)*12.0;\n    //dissipate=sin(iTime)*0.01;\n    \n    vec2 uv = (fragCoord.xy) / iResolution.xy;\n    vec2 delta=vec2(diffuse)/iResolution.xy;\n    \n    vec4 a_=texture(iChannel0, uv-delta);\n    vec4 b_=texture(iChannel0, uv+vec2(delta.x, -delta.y));\n    vec4 c_=texture(iChannel0, uv+vec2(-delta.x, delta.y));\n    vec4 d_=texture(iChannel0, uv+delta);\n    \n    vec4 v=0.25*(a_+b_+c_+d_);\n    uv-=delta*clamp(v.xy, vec2(-max_speed), vec2(max_speed));\n    \n    // propagate (backwards of what I actually need)\n    v=texture(iChannel0, uv);\n    \n    vec4 a=texture(iChannel0, uv-delta);\n    vec4 b=texture(iChannel0, uv+vec2(delta.x, -delta.y));\n    vec4 c=texture(iChannel0, uv+vec2(-delta.x, delta.y));\n    vec4 d=texture(iChannel0, uv+delta);\n    vec4 avg=0.25*(a+b+c+d);\n    v=mix(v,avg,dissipate);\n    //v.w=avg.w;\n    \n    vec4 ddx=(b+d)-(a+c);\n    vec4 ddy=(c+d)-(a+b);\n    \n        \n    // x,y : velocity , z: 'pressure' (but not quite), w: buoyancy\n    \n    float divergence=ddx.x+ddy.y;\n    \n    v.xy-=vec2(ddx.z, ddy.z)*accel;\n    v.z-=divergence*springiness;\n    \n    v.xy+=(v.w)*vec2(0.0, 1.0);\n    \n    float t=iTime*0.2+3.0;\n    \n    vec2 mousePos=iMouse.xy;\n    if(mousePos.x<3.0)mousePos.xy=vec2(iResolution.xy*0.31);\n    \n    \n    float mouse=length(mousePos.xy-fragCoord.xy);\n    v+=vec4(0,0, 0, 0.001)*max(1.0-0.03*mouse, 0.0)*dot(mousePos.xy-fragCoord.xy, vec2(sin(t),cos(t)));   \n    \n    v.w*=0.99;\n\n    if(texelFetch( iChannel1, ivec2(32,0), 0 ).x>0.5){\n        fragColor=vec4(0.0);\n    }else{    \n   \t\tfragColor=clamp(v*0.998, vec4(-1), vec4(1));        \n        \n    }    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

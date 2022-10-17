@@ -1,0 +1,323 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NdySRy",
+  "date": "0",
+  "viewed": 0,
+  "name": "Self-Organization JiPi652",
+  "description": "I have no idea really what this is. \nIt's interesting to adjust the coefficients in Common\n\n",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "particlephysics"
+  ],
+  "hasliked": 0,
+  "parentid": "WdKGRd",
+  "parentname": "Self-Organization"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "float T(vec2 U) {\n\tvec4 a = A(U);\n    vec4 b = B(U);\n    vec4 c = C(U);\n    vec4 d = D(U);\n    return dot(a,a)+dot(b,b)+dot(c.xyz,c.xyz)+dot(d.xyz,d.xyz);\n}\nvoid mainImage( out vec4 Q, in vec2 U )\n{\n    vec4 a = A(U);\n    vec4 b = B(U);\n    vec4 c = C(U);\n    vec4 d = D(U);\n    float\n        n = T(U+vec2(0,1)),\n        e = T(U+vec2(1,0)),\n        s = T(U-vec2(0,1)),\n        w = T(U-vec2(1,0));\n    vec3 g = normalize(vec3(e-w,n-s,1));\n    c = .1*vec4(c.x,0.5*c.x+0.5*c.y,c.y,1);\n    d = .1*vec4(d.x,0.5*d.x+0.5*d.y,d.y,1);\n    Q = .8*(sqrt(c*c+10.*d*d+.01*(a*a+5.*b*b)));\n    Q.xyz = mix(Q.xyz,normalize(Q.xyz),min(1.,length(Q.xyz)));\n\tQ *= dot(reflect(g,vec3(0,0,1)),normalize(vec3(1)))*0.3+0.7;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define R iResolution.xy\n\n#define A(U) texture(iChannel0, (U)/R)\n#define B(U) texture(iChannel1, (U)/R)\n#define C(U) texture(iChannel2, (U)/R)\n#define D(U) texture(iChannel3, (U)/R)\n\n//controls :\n\n#define all 1.\n#define M   0.2\n#define PN  .5\n#define RGB 0.5\n\n#define loss 0.03\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 Q, in vec2 U )\n{\n    Q = A(U);\n    Q += B(U);\n    //if (iFrame < 1) Q = 5.*sin(.01*length(U-0.5*R)*vec4(1,2,3,4));\n    if (iFrame < 1) Q = texture(iChannel3,U/iResolution.xy)*5. - 2.5;//5.*sin(.01*length(U-0.5*R)*vec4(1,2,3,4));\n    \n    \n\tif(iMouse.z>0.&&length(U-iMouse.xy)<24.||(length(U-0.5*R)<2.&&iFrame<2)) Q = vec4(0);\n\tif (U.x<1.||U.y<1.||R.x-U.x<1.||R.y-U.y<1.) Q *= 0.;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 Q, in vec2 U )\n{\n    Q = B(U);\n    vec4 a = A(U);\n    vec4 c = C(U);\n    vec4 dm = 1./4.*(\n    \tA(U+vec2(1,0))+\n        A(U+vec2(0,1))+\n        A(U-vec2(1,0))+\n        A(U-vec2(0,1))\n    )-a;\n    vec4 dmb = 1./4.*(\n    \tB(U+vec2(1,0))+\n        B(U+vec2(0,1))+\n        B(U-vec2(1,0))+\n        B(U-vec2(0,1))\n    )-Q;\n    Q += dm + loss*dmb;\n    float mag = sqrt(a.w*a.w+dot(c.xy,c.xy)+dot(a.xyz,a.xyz));\n    //if (length(a.xyz)>0.) Q.xyz += RGB*3./6.*a.xyz/length(a.xyz);\n\tif (abs(a.w)>0.) Q.w+= M*1./6.*a.w/abs(a.w);\n    if (mag > 0.) Q -= all*a/mag;\n\tif(iMouse.z>0.&&length(U-iMouse.xy)<24.||(length(U-0.5*R)<2.&&iFrame<2)) Q = vec4(0);\n\tif (U.x<1.||U.y<1.||R.x-U.x<1.||R.y-U.y<1.) Q *= 0.;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 Q, in vec2 U )\n{\n    Q = C(U);\n    Q += D(U);\n    //if (iFrame < 1) Q = 5.*sin(.01*length(U-0.5*R)*vec4(4,5,3,4));\n    if (iFrame < 1) Q = texture(iChannel0,U/iResolution.xy)*5. - 2.5;//\n    \n\tif(iMouse.z>0.&&length(U-iMouse.xy)<24.||(length(U-0.5*R)<2.&&iFrame<2)) Q = vec4(0);\n\tif (U.x<1.||U.y<1.||R.x-U.x<1.||R.y-U.y<1.) Q *= 0.;\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 Q, in vec2 U )\n{\n    Q = D(U);\n    vec4 a = A(U);\n    vec4 c = C(U);\n    vec4 dm = 1./4.*(\n    \tC(U+vec2(1,0))+\n        C(U+vec2(0,1))+\n        C(U-vec2(1,0))+\n        C(U-vec2(0,1))\n    )-c;\n    vec4 dmd = 1./4.*(\n    \tD(U+vec2(1,0))+\n        D(U+vec2(0,1))+\n        D(U-vec2(1,0))+\n        D(U-vec2(0,1))\n    )-Q;\n    Q += dm + loss*dmd;\n    float mag = sqrt(a.w*a.w+dot(c.xy,c.xy)+dot(a.xyz,a.xyz));\n    //if (length(c.xy)>0.) Q.xy += 2./6.*PN*c.xy/length(c.xy);\n    if (mag > 0.) Q.xy -= all*c.xy/mag;\n\tif(iMouse.z>0.&&length(U-iMouse.xy)<24.||(length(U-0.5*R)<2.&&iFrame<2)) Q = vec4(0);\n    if (U.x<1.||U.y<1.||R.x-U.x<1.||R.y-U.y<1.) Q *= 0.;\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

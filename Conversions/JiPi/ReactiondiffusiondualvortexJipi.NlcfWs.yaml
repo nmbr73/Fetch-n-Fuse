@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: ReactiondiffusiondualvortexJipi
+  id: ReactiondiffusiondualvortexJipi
+  kernel: ReactiondiffusiondualvortexJipi
+  name: ReactiondiffusiondualvortexJipi
+shader:
+  author: N.N.
+  description: 'forked from https://www.shadertoy.com/view/MlKXDw by https://www.shadertoy.com/user/antonOTI
+
+
+    added a vortex pair texture warp on mouse drag.'
+  id: NlcfWs
+  name: ReactionDiffusionDualVortex JiPi
+  parent:
+    id: lsfcD7
+    name: reaction diffusion + dual vortex
+    url: https://www.shadertoy.com/view/lsfcD7
+  tags:
+  - planedeformation
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/NlcfWs

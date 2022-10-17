@@ -1,0 +1,50 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7l2yD3",
+  "date": "0",
+  "viewed": 0,
+  "name": "FountainWater JiPi840",
+  "description": "Fountain water ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "water",
+   "fountain"
+  ],
+  "hasliked": 0,
+  "parentid": "7tBcDc",
+  "parentname": "Fountain water"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdXGzr",
+     "filepath": "/media/a/8979352a182bde7c3c651ba2b2f4e0615de819585cc37b7175bcefbca15a6683.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\nvoid sinF(vec3 p, float freq, float amp, float phase, out float f, out vec3 df) {\n    float m = length(p.xz);\n    f = p.y-cos(freq*(m-phase))*amp*min(1.0, 6./m);\n    df.y = 1.0;\n    df.x = p.x/m;\n    df.z = p.z/m;\n    df.xz *= freq*sin(freq*(m-phase))*amp*min(1.0, 20./m);\n    \n}\n\nfloat map(vec3 p) {\n    vec3 p1 = p-vec3(-2.,0.0,0.0);\n    float f;\n    vec3 df;\n    sinF(p1, 1.0, 2.0, 10.0*iTime, f, df);\n    return (f)/length(df);\n}\n\nvec3 CalcNormal(vec3 p) {\n    vec2 e = vec2(0.0, 0.001);\n    vec3 n;\n    n.x = map(p+e.yxx) - map(p-e.yxx);\n    n.y = map(p+e.xyx) - map(p-e.xyx);\n    n.z = map(p+e.xxy) - map(p-e.xxy);\n    return normalize(n);\n}\n\nfloat raymarch(vec3 ro, vec3 rd) {\n    float t = 0.001;\n    for (int i=0; i<1000; i++) {\n        float h = map(ro+t*rd);\n        if (abs(h)<0.0001*t)\n            return t;\n        t += 1.0*h;\n        if (t>80.0) return -1.0;\n    }\n}\n\nfloat softShadow(vec3 ro, vec3 rd) {\n    float sha = 1.0;\n    float t = 0.01;\n    for (int i=0; i<256; i++) {\n    \tfloat h = map(ro+t*rd);\n        sha = min(sha, 2.0*h/t);\n        t += 1.0*clamp(h,0.02,0.20);\n        if (t>16.0) break;\n    }\n    sha = clamp(sha, 0.0, 1.0);\n    return sha*sha*(3.0-2.0*sha);\n}\n\nmat2 rotMat(float ang) {\n    return mat2(cos(ang), sin(ang), -sin(ang), cos(ang));\n}\n\nfloat fresnel(vec3 rd, vec3 normal) {\n    float cosf = clamp(dot(rd, normal), -1., 1.);\n    float n1, n2;\n    if (cosf < 0.0) {\n        n1 = 1.;\n        n2 = 1.25;\n        cosf = -cosf;\n    }\n    else {\n        n1 = 1.25;\n        n2 = 1.;\n    }\n    float sinf = n1/n2 * sqrt(max(0., 1.-cosf*cosf));\n    if (sinf>=1.0) {\n        return 1.0;\n    }\n    else {\n        float cost = sqrt(max(0., 1.-sinf*sinf));\n        float Rs = ((n1 * cosf) - (n2 * cost)) / ((n1 * cosf) + (n2 * cost));\n        float Rp = ((n2 * cosf) - (n1 * cost)) / ((n2 * cosf) + (n1 * cost));\n        return (Rs * Rs + Rp * Rp) /3.;\n    }\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = (2.*fragCoord - iResolution.xy) / iResolution.y;\n    vec3 ro = vec3(0.0,15.0,-20.0);\n    vec3 rd = normalize(vec3(uv, 1.));\n    rd.zy = rotMat(-0.9) * rd.zy;\n    \n    vec3 lig = normalize(vec3(0.5, 1.0, -0.5));\n    \n    float r = raymarch(ro,rd);\n    \n    vec3 backCol = vec3(.9,.6, .2);\n    float waterDepth = 2.;\n    vec3 col;\n    if (r>=0.0) {\n    \tvec3 pos = ro + r*rd;\n    \tvec3 normal = CalcNormal(pos);\n     \n        float glow = max(0.0, dot(reflect(rd, normal), lig));\n        glow = pow(glow, 50.0);\n        float fres =fresnel(rd, normal);\n        float fresOp = 1.-fres;\n        vec3 refVec = refract(rd, normal, 1.0/1.5);\n        vec2 floorPos = refVec.xz / refVec.y * (pos.y+waterDepth) + pos.xz;\n        \n        if (pos.y+waterDepth<0.0) floorPos = vec2(0.0);\n        \n        \n      \n        col += texture(iChannel0, floorPos*0.04).xyz*1.2;\n        col += vec3(glow);\n        col *= fresOp;\n        col += fres*backCol;\n    }\n    else {\n        col = backCol;\n    }\n    \n    col = pow(col,vec3(0.8));\n    \n    fragColor = vec4(col, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: FastElasticNBallCollisionJi
+  id: FastElasticNBallCollisionJi
+  kernel: FastElasticNBallCollisionJi
+  name: FastElasticNBallCollisionJi
+shader:
+  author: N.N.
+  description: Uses particle buckets for elastic collisions. Occasionally balls get
+    stuck in each other when multiple collide at the same time. Click to zoom in;
+    space to spawn a ball in the center with random velocity. Modify the ballRadius
+    in the Common Tab.
+  id: 7lXBzs
+  name: Fast Elastic N-Ball collision Ji
+  parent:
+    id: wdlGRN
+    name: Fast Elastic N-Ball Collision
+    url: https://www.shadertoy.com/view/wdlGRN
+  tags:
+  - fast
+  - balls
+  - collisions
+  - billiards
+  - elastic
+  - buckets
+  url: https://www.shadertoy.com/view/7lXBzs

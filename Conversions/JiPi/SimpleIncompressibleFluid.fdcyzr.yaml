@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: SimpleIncompressibleFluid
+  id: SimpleIncompressibleFluid
+  kernel: SimpleIncompressibleFluid
+  name: SimpleIncompressibleFluid
+shader:
+  author: davidar
+  description: Yet another fluid simulation, just advection with a "Poisson filter"
+    based pressure solver to zero out divergence. Click and drag the mouse the interact
+  id: fdcyzr
+  name: Simple Incompressible Fluid
+  tags:
+  - simulation
+  - filter
+  - fluid
+  - poisson
+  - advection
+  - gaussian
+  - ca
+  - separable
+  - incompressible
+  - divergence
+  - svd
+  url: https://www.shadertoy.com/view/fdcyzr

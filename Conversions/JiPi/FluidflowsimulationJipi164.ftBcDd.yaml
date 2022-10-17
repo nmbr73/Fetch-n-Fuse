@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: FluidflowsimulationJipi164
+  id: FluidflowsimulationJipi164
+  kernel: FluidflowsimulationJipi164
+  name: FluidflowsimulationJipi164
+shader:
+  author: N.N.
+  description: 'Experimenting at 60fps with incompressible-fluid flow simulation.
+    What a time to be alive!
+
+
+    There''s various options to activate on the ''common'' buffer.'
+  id: ftBcDd
+  name: FluidFlowSimulation JiPi164
+  parent:
+    id: ft2czK
+    name: Fluid flow simulation
+    url: https://www.shadertoy.com/view/ft2czK
+  tags:
+  - simulation
+  - fluid
+  - vortex
+  - incompressible
+  - foil
+  - stokes
+  - naviers
+  url: https://www.shadertoy.com/view/ftBcDd

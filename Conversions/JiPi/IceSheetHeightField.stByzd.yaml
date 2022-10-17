@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: IceSheetHeightField
+  id: IceSheetHeightField
+  kernel: IceSheetHeightField
+  name: IceSheetHeightField
+shader:
+  author: mrange
+  description: 'CC0: Ice sheet height field experimentation
+
+    Was tinkering with using recursive voronoi patterns to
+
+    generate something that could pass for ice breaking up
+
+    into smaller blocks'
+  id: stByzd
+  name: Ice sheet height field
+  tags:
+  - 2d
+  - height
+  url: https://www.shadertoy.com/view/stByzd

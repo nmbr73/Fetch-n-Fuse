@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: BurningCubeJipi360
+  id: BurningCubeJipi360
+  kernel: BurningCubeJipi360
+  name: BurningCubeJipi360
+shader:
+  author: N.N.
+  description: I liked how the really low effort "fluid" turned out
+  id: NtfyWX
+  name: Burning Cube JiPi 360
+  parent:
+    id: 7lXyzl
+    name: Burning Cube
+    url: https://www.shadertoy.com/view/7lXyzl
+  tags:
+  - cube
+  - fluid
+  - multipass
+  url: https://www.shadertoy.com/view/NtfyWX

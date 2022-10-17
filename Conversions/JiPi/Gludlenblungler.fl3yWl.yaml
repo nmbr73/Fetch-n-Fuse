@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Gludlenblungler
+  id: Gludlenblungler
+  kernel: Gludlenblungler
+  name: Gludlenblungler
+shader:
+  author: lomateron
+  description: 3 layers across time of 5x5+4 pixel grid
+  id: fl3yWl
+  name: gludlenblungler
+  tags:
+  - automata
+  url: https://www.shadertoy.com/view/fl3yWl

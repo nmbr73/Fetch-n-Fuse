@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: NebulousTunnel
+  id: NebulousTunnel
+  kernel: NebulousTunnel
+  name: NebulousTunnel
+shader:
+  author: Shane
+  description: A simple volumetric tunnel winding through a nebulous substrate.
+  id: ltfBzM
+  name: Nebulous Tunnel
+  tags:
+  - clouds
+  - volumetric
+  url: https://www.shadertoy.com/view/ltfBzM

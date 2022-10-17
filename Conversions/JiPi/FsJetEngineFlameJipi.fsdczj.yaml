@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: FsJetEngineFlameJipi
+  id: FsJetEngineFlameJipi
+  kernel: FsJetEngineFlameJipi
+  name: FsJetEngineFlameJipi
+shader:
+  author: N.N.
+  description: Experiments for the jet engine flame for Floating Sandbox.
+  id: fsdczj
+  name: FS Jet Engine Flame JiPi
+  parent:
+    id: 7scczj
+    name: FS Jet Engine Flame
+    url: https://www.shadertoy.com/view/7scczj
+  tags:
+  - floatingsandbox
+  url: https://www.shadertoy.com/view/fsdczj

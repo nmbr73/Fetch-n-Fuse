@@ -1,0 +1,95 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7ljfzG",
+  "date": "0",
+  "viewed": 0,
+  "name": "Ice Crystals JiPi",
+  "description": "Experimenting with visualizing crystal growth through a particle simulation.\n\nPressing Space re-seeds the simulation, which is especially useful after switching to fullscreen-mode.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation",
+   "particles",
+   "brownian",
+   "ice",
+   "dla"
+  ],
+  "hasliked": 0,
+  "parentid": "XtsfWs",
+  "parentname": "Ice Crystals 1.0"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 sTexelSize;\n\nvoid mainImage(\n    out vec4 outFragColor,\n    in vec2 fragCoord)\n{\n    sTexelSize = (1.0 / iResolution.xy);\n    \n    vec4 selfState = texture(iChannel0, (fragCoord * sTexelSize));\n    \n    outFragColor = vec4(0.25, 0.25, 0.7, 1.0);\n    \n    if (selfState.g > 0.5)\n    {\n        outFragColor = vec4(0.85, 0.9, 1.0, 1.0);\n    }\n    else if (selfState.r > 0.5)\n    {\n        outFragColor = mix(outFragColor, vec4(0.6, 0.6, 1.0, 1.0), (1.0 - (1.0 / (1.0 + selfState.r))));\n    }\n        \n\t// outFragColor = selfState; // Debug.\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Buffer format:\n// R - Moving Particle Count (can be temporarily greater than 1 if particles collide)\n// G - Frozen Particle Count (should only ever be 0 or 1)\n\nvec2 kDirectionDeltas[8] = vec2[](\n    vec2(1.0, 0.0),\n    vec2(1.0, 1.0),\n    vec2(0.0, 1.0),\n    vec2(-1.0, 1.0),\n    vec2(-1.0, 0.0),\n    vec2(-1.0, -1.0),\n    vec2(0.0, -1.0),\n    vec2(1.0, -1.0));\n\nconst int kKeySpace = 32;\n\nvec2 sTexelSize;\n\nfloat randomFloat(\n  vec2 testCoord)\n{\n\t// From: https://www.shadertoy.com/view/Xd23Dh\n\t// (just removed some dimensions)\n\tfloat testCoordInGeneratorSpace = \n\t\tdot(testCoord, vec2(127.1, 311.7));\n\n\treturn fract(sin(testCoordInGeneratorSpace) * 43758.5453);\n}\n\nbool coordIsContainedInFragment(\n    vec2 testCoord,\n    vec2 fragCoord)\n{\n    vec2 delta = (testCoord - fragCoord);\n    return (\n        (-0.5 < delta.x) && (delta.x <= 0.5) && \n\t\t(-0.5 < delta.y) && (delta.y <= 0.5));\n}\n\nint wrapDirectionIndex(\n    int unboundedDirectionIndex)\n{\n    return (\n        unboundedDirectionIndex + \n\t\t((unboundedDirectionIndex < 0) ? 8 : 0) +\n\t\t((unboundedDirectionIndex > 7) ? -8 : 0));\n}\n\nfloat getFragRandom(\n    vec2 fragCoord)\n{\n    return randomFloat((fragCoord * sTexelSize) + mod(iTime, 15.0));;\n}\n\nint directionFractionToIndex(\n    float directionFraction)\n{\n    return int(directionFraction * 7.999999);\n}\n\nvoid mainImage(\n    out vec4 outFragColor,\n    in vec2 fragCoord)\n{\n    sTexelSize = (1.0 / iResolution.xy);\n        \n    vec4 selfState = texture(iChannel0, (fragCoord * sTexelSize));\n    \n    outFragColor = selfState;\n    \n    float selfRandom = getFragRandom(fragCoord);\n        \n    if ((iFrame == 0) || \n        (texelFetch(iChannel1, ivec2(kKeySpace, 1), 0).x > 0.0))\n    {\n        // If we're the seed-crystal, else we're possibly a moving particle.\n        if (coordIsContainedInFragment((iResolution.xy / 2.0), fragCoord))\n        {\n            outFragColor = vec4(0.0, 1.0, 0.0, 0.0);\n        }\n        else\n        {\n            outFragColor = vec4(step(0.8, selfRandom), 0.0, 0.0, 0.0);\n        }\n    }\n    else\n    {        \n        // If we're frozen.\n        if (selfState.g > 0.5)\n        {\n            // TODO: Handshake with neighbors to let any remaining moving particles escape to empty cells.\n            outFragColor.r = 0.0;\n        }\n        else\n        {\n            float selfDirection = floor((selfRandom * 8.0) + 0.5);\n            \n            // Accept moving particles from neighbors.\n            {\n                float incomingMovingParticleCount = 0.0;\n                for (int directionIndex = 0; directionIndex < 8; directionIndex++)\n                {\n                    vec2 neighborFragCoord = (fragCoord + kDirectionDeltas[directionIndex]);\n                    float neighborRandom = getFragRandom(neighborFragCoord);\n\n                    // If this neighbor is trying to move into our cell.\n                    if (directionFractionToIndex(neighborRandom) == wrapDirectionIndex(directionIndex + 4))\n                    {\n                        vec4 neighborState = texture(iChannel0, (neighborFragCoord * sTexelSize));\n\n                        if (neighborState.r > 0.5)\n                        {\n                            incomingMovingParticleCount += 1.0;\n                        }\n                    }\n                }\n\n                outFragColor.r += incomingMovingParticleCount;\n            }\n            \n            // If we contained a moving particle.\n            if (selfState.r > 0.5)\n            {\n            \tvec2 destinationFragCoord = (fragCoord + kDirectionDeltas[directionFractionToIndex(selfRandom)]);\n                vec4 destinationState = texture(iChannel0, (destinationFragCoord * sTexelSize));\n                \n                // If we just froze.\n                if (destinationState.g > 0.5)\n                {\n                    outFragColor.g = 1.0; // Become frozen.\n\n                    // TODO: Handshake with neighbors to let any remaining moving particles escape to empty cells.\n                    outFragColor.r = 0.0;\n                }\n                else\n                {\n                    // We're losing one particle to movement towards whichever neighbor is accepting movement from us.\n                    outFragColor.r = max(0.0, (outFragColor.r - 1.0));\n                }\n            }\n        }\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

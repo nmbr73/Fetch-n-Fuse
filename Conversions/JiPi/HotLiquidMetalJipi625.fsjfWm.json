@@ -1,0 +1,318 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fsjfWm",
+  "date": "0",
+  "viewed": 0,
+  "name": "Hot liquid metal JiPi 625",
+  "description": "A variation of [url=https://www.shadertoy.com/view/ldy3D1]Liquid stuff 2[/url]...\n\nControls:\n- Mouse: draw colliders;\n- Mouse + SPACE: erase colliders;\n- LEFT / RIGHT: rotate the gravity;\n- DOWN: invert the gravity;\n- R: reset the scene.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "fluid",
+   "liquid",
+   "physics"
+  ],
+  "hasliked": 0,
+  "parentid": "4sKGDK",
+  "parentname": "Hot liquid metal"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGRn",
+     "filepath": "/media/a/95b90082f799f48677b4f206d856ad572f1d178c676269eac6347631d4447258.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Display particles and colliders\n\n// iChannel0 = Background texture\n// iChannel1 = [nothing]\n// iChannel2 = Buf C (id & colliders)\n// iChannel3 = Buf D (inputs)\n\n#define PARTICLE_RADIUS\t\t\t\t3.5\n#define PARTICLE_VELOCITY_FACTOR\t0.02\n\n#define CEIL(x) (float (int ((x) + 0.9999))) // To workaround a bug with Firefox on Windows...\n\nfloat segDist (in vec2 p, in vec2 a, in vec2 b) {\n\tp -= a;\n\tb -= a;\n\treturn length (p - b * clamp (dot (p, b) / dot (b, b), 0.0, 1.0));\n}\n\nvec3 particleColor (in float particleVelocity) {\n\treturn mix (vec3 (0.8, 0.2, 0.2), vec3 (1.0, 1.0, 0.5), particleVelocity * PARTICLE_VELOCITY_FACTOR);\n}\n\nvoid mainImage (out vec4 fragColor, in vec2 fragCoord) {\n\n\t// Get the background texture\n\tvec3 color = texture (iChannel0, fragCoord / iResolution.xy).rgb;\n\n\t// Check whether there is a collider here\n\tvec4 data = texture (iChannel2, fragCoord / iResolution.xy);\n\tfloat collider = data.a;\n\tif (collider < 0.5) {\n\n\t\t// Darken the background\n\t\tcolor *= 0.4;\n\n\t\t// Check whether there is a particle here\n\t\tfloat particleVelocity = data.b;\n\t\tfloat weightTotal = step (0.0, particleVelocity);\n\t\tfloat weightedVelocity = weightTotal * particleVelocity;\n\n\t\t// Check for nearby particles\n\t\tconst float displayRadius = CEIL (PARTICLE_RADIUS);\n\t\tfor (float i = -displayRadius; i <= displayRadius; ++i) {\n\t\t\tfor (float j = -displayRadius; j <= displayRadius; ++j) {\n\t\t\t\tvec2 offset = vec2 (i, j);\n\t\t\t\tif (offset != vec2 (0.0)) {\n\t\t\t\t\tparticleVelocity = texture (iChannel2, (fragCoord + offset) / iResolution.xy).b;\n\t\t\t\t\tif (particleVelocity >= 0.0) {\n\t\t\t\t\t\tfloat weight = max (0.0, 1.0 - (length (offset) - 1.0) / PARTICLE_RADIUS);\n\t\t\t\t\t\tweightTotal += weight;\n\t\t\t\t\t\tweightedVelocity += weight * particleVelocity;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\t// Display the particle\n\t\tif (weightTotal > 0.0) {\n\t\t\tcolor += particleColor (weightedVelocity / weightTotal) * min (weightTotal * weightTotal, 1.0);\n\t\t}\n\t}\n\n\t// Display the direction of the gravity\n\tdata = texture (iChannel3, vec2 (1.5, 0.5) / iResolution.xy);\n\tfloat gravityTimer = data.g;\n\tif (gravityTimer > 0.0) {\n\t\tfloat gravityDirection = data.r;\n\t\tvec2 frag = fragCoord - 0.5 * iResolution.xy;\n\t\tvec2 direction = vec2 (cos (gravityDirection), sin (gravityDirection));\n\t\tvec2 pointA = 25.0 * direction;\n\t\tvec2 pointB = 15.0 * direction;\n\t\tvec2 offset = 10.0 * vec2 (direction.y, -direction.x);\n\t\tfloat dist = segDist (frag, -pointA, pointA);\n\t\tdist = min (dist, segDist (frag, pointA, pointB + offset));\n\t\tdist = min (dist, segDist (frag, pointA, pointB - offset));\n\t\tcolor = mix (color, vec3 (smoothstep (4.0, 3.0, dist)), gravityTimer * smoothstep (6.0, 5.0, dist));\n\t}\n\n\t// Set the fragment color\n\tfragColor = vec4 (color, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Update the density of each particle\n\n// iChannel0 = Buf A (density)\n// iChannel1 = Buf B (velocity & position)\n// iChannel2 = Buf C (id & colliders)\n// iChannel3 = Buf D (inputs)\n\n#define PARTICLE_RADIUS\t\t\t2.5\n#define PARTICLE_DENSITY_REST\t0.4\n\n#define CEIL(x) (float (int ((x) + 0.9999))) // To workaround a bug with Firefox on Windows...\n\nfloat particleDensity;\nvec2 particlePosition;\nvec2 particleIdCheck;\n\nvoid densityUpdate (in vec2 offset) {\n\n\t// Get the position of the cell\n\tvec2 cellPosition = floor (particlePosition + offset) + 0.5;\n\n\t// Get the particle ID\n\tvec2 particleId = texture (iChannel2, cellPosition / iResolution.xy).rg;\n\n\t// Check whether there is a particle here\n\tif (offset == vec2 (0.0)) {\n\n\t\t// This is the current particle\n\t\tparticleIdCheck = particleId;\n\t} else if (particleId.x > 0.0) {\n\n\t\t// Get the position of this other particle\n\t\tvec2 otherParticlePosition = texture (iChannel1, particleId / iResolution.xy).ba;\n\n\t\t// Check whether these 2 particles touch each other\n\t\tfloat dist = length (otherParticlePosition - particlePosition);\n\t\tif (dist < 2.0 * PARTICLE_RADIUS) {\n\n\t\t\t// Compute the density\n\t\t\tfloat compression = 1.0 - dist / (2.0 * PARTICLE_RADIUS);\n\t\t\tparticleDensity += compression * compression * compression;\n\t\t}\n\t}\n}\n\nvoid mainImage (out vec4 fragColor, in vec2 fragCoord) {\n\n\t// Check for a reset\n\tbool reset = iFrame == 0 || texture (iChannel3, vec2 (0.5) / iResolution.xy).a > 0.5;\n\n\t// Define the density\n\tif (reset) {\n\t\tparticleDensity = 1.0;\n\t} else {\n\n\t\t// Get the particle data\n\t\tparticlePosition = texture (iChannel1, fragCoord / iResolution.xy).ba;\n\t\tif (particlePosition.x > 0.0) {\n\t\t\tparticleDensity = 1.0;\n\n\t\t\t// Check for nearby particles\n\t\t\tparticleIdCheck = vec2 (-1.0);\n\t\t\tconst float collisionRadius = CEIL (PARTICLE_RADIUS * 2.0);\n\t\t\tfor (float i = -collisionRadius; i <= collisionRadius; ++i) {\n\t\t\t\tfor (float j = -collisionRadius; j <= collisionRadius; ++j) {\n\t\t\t\t\tdensityUpdate (vec2 (i, j));\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t// Make sure the particle is still tracked\n\t\t\tif (particleIdCheck != fragCoord) {\n\n\t\t\t\t// The particle is lost...\n\t\t\t\tparticleDensity = 0.0;\n\t\t\t}\n\t\t} else {\n\n\t\t\t// The particle is lost...\n\t\t\tparticleDensity = 0.0;\n\t\t}\n\t}\n\n\t// Compute the \"density factor\" to ease the computation of the pressure force\n\tfloat particleDensityFactor = (particleDensity - PARTICLE_DENSITY_REST) / (particleDensity * particleDensity);\n\n\t// Update the fragment\n\tfragColor = vec4 (particleDensity, particleDensityFactor, 0.0, 0.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Update the velocity and position of each particle\n\n// iChannel0 = Buf A (density)\n// iChannel1 = Buf B (velocity & position)\n// iChannel2 = Buf C (id & colliders)\n// iChannel3 = Buf D (inputs)\n\n#define GRAVITY_NORM\t\t\t\t100.0\n#define PARTICLE_RADIUS\t\t\t\t2.5\n#define PARTICLE_PRESSURE_FACTOR\t4000.0\n#define PARTICLE_VISCOSITY_FACTOR\t40.0\n#define PARTICLE_VELOCITY_MAX\t\t1.5\n#define PARTICLE_SPAWN_VELOCITY\t\tvec2 (-10.0, 0.0)\n#define PARTICLE_SPAWN_POSITION\t\tiResolution.xy * 0.9\n#define COLLIDER_RADIUS\t\t\t\t0.75\n#define COLLIDER_SPRING_STIFFNESS\t4000.0\n#define COLLIDER_SPRING_DAMPING\t\t20.0\n#define TIME_STEP_MAX\t\t\t\t0.02\n#define SQRT3\t\t\t\t\t\t1.732\n\n#define CEIL(x) (float (int ((x) + 0.9999))) // To workaround a bug with Firefox on Windows...\n#define MAX(x,y) ((x) > (y) ? (x) : (y))\n\nfloat particleDensity;\nfloat particleDensityFactor;\nvec2 particleAcceleration;\nvec2 particleVelocity;\nvec2 particlePosition;\nvec2 particleIdCheck;\n\nvec2 rand (in vec2 seed) {\n\tvec2 n = seed * vec2 (12.9898, 78.233);\n\treturn fract (n.yx * fract (n));\n}\n\nvec2 rand (in float seed) {\n\tvec2 n = seed * vec2 (12.9898, 78.233);\n\treturn fract (n.yx * fract (n));\n}\n\nvoid accelerationUpdate (in vec2 offset) {\n\n\t// Get the position of the cell\n\tvec2 cellPosition = floor (particlePosition + offset) + 0.5;\n\n\t// Get the particle ID and the collider\n\tvec4 data = texture (iChannel2, cellPosition / iResolution.xy);\n\tvec2 particleId = data.rg;\n\tfloat collider = data.a;\n\n\t// Check whether there is a particle here\n\tif (offset == vec2 (0.0)) {\n\n\t\t// This is the current particle\n\t\tparticleIdCheck = particleId;\n\t} else if (particleId.x > 0.0) {\n\n\t\t// Get the position of this other particle\n\t\tdata = texture (iChannel1, particleId / iResolution.xy);\n\t\tvec2 otherParticlePosition = data.ba;\n\n\t\t// Compute the distance between these 2 particles\n\t\tvec2 direction = otherParticlePosition - particlePosition;\n\t\tfloat dist = length (direction);\n\n\t\t// Check whether these 2 particles touch each other\n\t\tif (dist < 2.0 * PARTICLE_RADIUS) {\n\n\t\t\t// Normalize the direction\n\t\t\tdirection /= dist;\n\t\t\tdist /= 2.0 * PARTICLE_RADIUS;\n\n\t\t\t// Get the velocity and density of this other particle\n\t\t\tvec2 otherParticleVelocity = data.rg;\n\t\t\tdata = texture (iChannel0, particleId / iResolution.xy);\n\t\t\tfloat otherParticleDensity = data.r;\n\t\t\tfloat otherParticleDensityFactor = data.g;\n\n\t\t\t// Apply the pressure and viscosity forces (SPH)\n\t\t\tfloat compression = 1.0 - dist;\n\t\t\tfloat pressure = PARTICLE_PRESSURE_FACTOR * (particleDensityFactor + otherParticleDensityFactor);\n\t\t\tfloat viscosity = PARTICLE_VISCOSITY_FACTOR * max (0.0, dot (particleVelocity - otherParticleVelocity, direction)) / ((particleDensity + otherParticleDensity) * dist);\n\t\t\tparticleAcceleration -= direction * (pressure + viscosity) * 3.0 * compression * compression;\n\t\t}\n\t}\n\n\t// Collision with a collider?\n\tif (collider > 0.5) {\n\n\t\t// Compute the signed distance between the center of the particle (circle) and the border of the collider (square)\n\t\tvec2 direction = cellPosition - particlePosition;\n\t\tvec2 distCollider = abs (direction) - COLLIDER_RADIUS;\n\t\tfloat dist = length (max (distCollider, 0.0)) + min (max (distCollider.x, distCollider.y), 0.0);\n\n\t\t// Check whether the particle touches the collider\n\t\tif (dist < PARTICLE_RADIUS) {\n\n\t\t\t// Normalize the direction\n\t\t\tdirection = sign (direction) * (dist > 0.0 ? distCollider / dist : step (distCollider.yx, distCollider));\n\n\t\t\t// Apply the collision force (spring)\n\t\t\tfloat compression = 1.0 - (dist + COLLIDER_RADIUS) / (PARTICLE_RADIUS + COLLIDER_RADIUS);\n\t\t\tparticleAcceleration -= direction * (compression * COLLIDER_SPRING_STIFFNESS + dot (particleVelocity, direction) * COLLIDER_SPRING_DAMPING);\n\t\t}\n\t}\n}\n\nvoid mainImage (out vec4 fragColor, in vec2 fragCoord) {\n\n\t// Check for a reset\n\tbool reset = iFrame == 0 || texture (iChannel3, vec2 (0.5) / iResolution.xy).a > 0.5;\n\n\t// Define the particle data\n\tif (reset) {\n\n\t\t// Define the particle spawning area\n\t\tfloat liquid =\n\t\t\tstep (fragCoord.y, iResolution.y * 0.5)\n\t\t\t* step (mod (fragCoord.x + SQRT3 * fragCoord.y, ceil (2.0 * PARTICLE_RADIUS)), 1.0)\n\t\t\t* step (mod (fragCoord.y, ceil (SQRT3 * PARTICLE_RADIUS)), 1.0);\n\n\t\t// Initialize the particle\n\t\tparticleVelocity = vec2 (0.0);\n\t\tparticlePosition = liquid > 0.5 ? fragCoord + 0.01 * rand (fragCoord): vec2 (-1.0);\n\t} else {\n\n\t\t// Get the particle data\n\t\tvec4 data = texture (iChannel0, fragCoord / iResolution.xy);\n\t\tparticleDensity = data.r;\n\t\tif (particleDensity > 0.5) {\n\t\t\tparticleDensityFactor = data.g;\n\t\t\tdata = texture (iChannel1, fragCoord / iResolution.xy);\n\t\t\tparticleVelocity = data.rg;\n\t\t\tparticlePosition = data.ba;\n\n\t\t\t// Initialize the acceleration\n\t\t\tfloat gravityDirection = texture (iChannel3, vec2 (1.5, 0.5) / iResolution.xy).r;\n\t\t\tparticleAcceleration = GRAVITY_NORM * vec2 (cos (gravityDirection), sin (gravityDirection));\n\n\t\t\t// Check for collisions with nearby particles and colliders\n\t\t\tparticleIdCheck = vec2 (-1.0);\n\t\t\tconst float collisionRadius = CEIL (PARTICLE_RADIUS + MAX (PARTICLE_RADIUS, COLLIDER_RADIUS));\n\t\t\tfor (float i = -collisionRadius; i <= collisionRadius; ++i) {\n\t\t\t\tfor (float j = -collisionRadius; j <= collisionRadius; ++j) {\n\t\t\t\t\taccelerationUpdate (vec2 (i, j));\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t// Make sure the particle is still tracked\n\t\t\tif (particleIdCheck != fragCoord) {\n\n\t\t\t\t// The particle is lost...\n\t\t\t\tparticlePosition = vec2 (-1.0);\n\t\t\t} else {\n\n\t\t\t\t// Limit the time step\n\t\t\t\tfloat timeStep = min (iTimeDelta, TIME_STEP_MAX);\n\n\t\t\t\t// Update the velocity of the particle\n\t\t\t\tparticleVelocity += particleAcceleration * timeStep;\n\n\t\t\t\t// Limit the velocity (to avoid losing track of the particle)\n\t\t\t\tfloat dist = length (particleVelocity * timeStep);\n\t\t\t\tif (dist > PARTICLE_VELOCITY_MAX) {\n\t\t\t\t\tparticleVelocity *= PARTICLE_VELOCITY_MAX / dist;\n\t\t\t\t}\n\n\t\t\t\t// Update the position of the particle\n\t\t\t\tparticlePosition += particleVelocity * timeStep;\n\t\t\t}\n\t\t} else {\n\n\t\t\t// Check the particle ID\n\t\t\tvec2 particleId = 0.5 + floor (iResolution.xy * rand (iTime));\n\t\t\tif (fragCoord == particleId) {\n\n\t\t\t\t// Spawn a new particle\n\t\t\t\tparticleVelocity = PARTICLE_SPAWN_VELOCITY;\n\t\t\t\tparticlePosition = floor (PARTICLE_SPAWN_POSITION) + 0.5;\n\t\t\t} else {\n\n\t\t\t\t// The particle is lost...\n\t\t\t\tparticlePosition = vec2 (-1.0);\n\t\t\t}\n\t\t}\n\t}\n\n\t// Update the fragment\n\tfragColor = vec4 (particleVelocity, particlePosition);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Track the particles\n\n// iChannel0 = [nothing]\n// iChannel1 = Buf B (velocity & position)\n// iChannel2 = Buf C (id & colliders)\n// iChannel3 = Buf D (inputs)\n\n#define PARTICLE_VELOCITY_MAX\t1.5\n#define PARTICLE_SPAWN_POSITION\tiResolution.xy * 0.9\n\n#define CEIL(x) (float (int ((x) + 0.9999))) // To workaround a bug with Firefox on Windows...\n\nbool reset;\nvec2 particleIdFound;\nfloat particleVelocity;\n\nfloat track (in vec2 fragCoord, in vec2 offset) {\n\n\t// Get the particle ID and collider\n\tvec2 cellPosition = fragCoord + offset;\n\tvec4 data;\n\tif (reset) {\n\n\t\t// Define the colliders\n\t\tfloat collider = step (0.5 * iResolution.x - 5.0, abs (fragCoord.x - 0.5 * iResolution.x));\n\t\tcollider += step (fragCoord.y, 5.0);\n\t\tcollider += step (abs (fragCoord.y - 0.8 * iResolution.y), 2.5) * step (0.8 * iResolution.x, fragCoord.x);\n\n\t\t// Set the initial data\n\t\tdata = vec4 (cellPosition, 0.0, collider);\n\t} else {\n\n\t\t// Get the exisiting data\n\t\tdata = texture (iChannel2, cellPosition / iResolution.xy);\n\t}\n\tvec2 particleId = data.rg;\n\tfloat collider = data.a;\n\n\t// Get the position of this particle\n\tif (particleId.x > 0.0) {\n\t\tdata = texture (iChannel1, particleId / iResolution.xy);\n\t\tvec2 particlePosition = data.ba;\n\n\t\t// Check whether this particle is the one to track\n\t\tvec2 delta = floor (particlePosition - fragCoord + 0.5);\n\t\tif (delta == vec2 (0.0)) {\n\n\t\t\t// Take note of the particle ID and its velocity\n\t\t\tparticleIdFound = particleId;\n\t\t\tparticleVelocity = length (data.rg);\n\t\t}\n\t}\n\n\t// Return the collider\n\treturn collider;\n}\n\nvec2 rand (in float seed) {\n\tvec2 n = seed * vec2 (12.9898, 78.233);\n\treturn fract (n.yx * fract (n));\n}\n\nfloat segDist (in vec2 p, in vec2 a, in vec2 b) {\n\tp -= a;\n\tb -= a;\n\treturn length (p - b * clamp (dot (p, b) / dot (b, b), 0.0, 1.0));\n}\n\nvoid mainImage (out vec4 fragColor, in vec2 fragCoord) {\n\n\t// Initialization\n\tparticleIdFound = vec2 (-1.0);\n\tparticleVelocity = -1.0;\n\tfloat collider = 0.0;\n\n\t// Check the player inputs\n\tvec4 data = texture (iChannel3, vec2 (0.5) / iResolution.xy);\n\treset = iFrame == 0 || data.a > 0.5;\n\n\t// Check the current position\n\tvec2 offset = vec2 (0.0);\n\tcollider = track (fragCoord, offset);\n\n\t// Allow to add colliders (removing particles)\n\tif (iMouse.z > 0.5) {\n\t\tfloat dist;\n\t\tif (data.b < 0.5) {\n\t\t\tdist = length (fragCoord - iMouse.xy);\n\t\t} else {\n\t\t\tdist = segDist (fragCoord, data.rg, iMouse.xy);\n\t\t}\n\t\tif (dist < 3.0) {\n\t\t\tcollider = texture (iChannel3, vec2 (1.5, 0.5) / iResolution.xy).b;\n\t\t}\n\t}\n\tif (collider < 0.5) {\n\n\t\t// Track the particle (spiral loop from the current position)\n\t\tvec2 direction = vec2 (1.0, 0.0);\n\t\tfor (float n = 1.0; n < (2.0 * CEIL (PARTICLE_VELOCITY_MAX) + 1.0) * (2.0 * CEIL (PARTICLE_VELOCITY_MAX) + 1.0); ++n) {\n\t\t\tif (particleIdFound.x > 0.0) {\n\t\t\t\tbreak;\n\t\t\t}\n\t\t\toffset += direction;\n\t\t\ttrack (fragCoord, offset);\n\t\t\tif (offset.x == offset.y || (offset.x < 0.0 && offset.x == -offset.y) || (offset.x > 0.0 && offset.x == 1.0 - offset.y)) {\n\t\t\t\tdirection = vec2 (-direction.y, direction.x);\n\t\t\t}\n\t\t}\n\n\t\t// Spawn a new particle?\n\t\tif (particleIdFound.x < 0.0 && fragCoord == floor (PARTICLE_SPAWN_POSITION) + 0.5) {\n\t\t\tvec2 particleId = 0.5 + floor (iResolution.xy * rand (iTime));\n\t\t\tvec2 particlePosition = texture (iChannel1, particleId / iResolution.xy).ba;\n\t\t\tif (particlePosition == fragCoord) {\n\t\t\t\tparticleIdFound = particleId;\n\t\t\t}\n\t\t}\n\t}\n\n\t// Update the fragment\n\tfragColor = vec4 (particleIdFound, particleVelocity, collider);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Handle player inputs\n\n// iChannel0 = Keyboard\n// iChannel1 = [nothing]\n// iChannel2 = [nothing]\n// iChannel3 = Buf D (inputs)\n\n#define KEY_R\t\t(vec2 (82.5, 0.5) / 256.0)\n#define KEY_LEFT\t(vec2 (37.5, 0.5) / 256.0)\n#define KEY_RIGHT\t(vec2 (39.5, 0.5) / 256.0)\n#define KEY_DOWN\t(vec2 (40.5, 0.5) / 256.0)\n#define KEY_SPACE\t(vec2 (32.5, 0.5) / 256.0)\n#define PI\t\t\t3.14159265359\n\nvoid mainImage (out vec4 fragColor, in vec2 fragCoord) {\n\n\t// Don't waste time\n\tif (fragCoord.x > 2.0 || fragCoord.y > 1.0) {\n\t\tdiscard;\n\t}\n\n\t// Get the status of the reset (R) key\n\tfloat reset = texture (iChannel0, KEY_R).r;\n\n\t// Check what to do\n\tif (fragCoord.x < 1.0) {\n\n\t\t// Update the fragment\n\t\tfragColor = vec4 (iMouse.xyz, reset);\n\t} else {\n\n\t\t// Set the direction of the gravity\n\t\tfloat gravityDirection;\n\t\tfloat gravityTimer;\n\t\tif (iFrame == 0 || reset > 0.5) {\n\n\t\t\t// Reset the gravity\n\t\t\tgravityDirection = -PI * 0.5;\n\t\t\tgravityTimer = 0.0;\n\t\t} else {\n\n\t\t\t// Get the current values\n\t\t\tvec2 data = texture (iChannel3, fragCoord / iResolution.xy).rg;\n\t\t\tgravityDirection = data.r;\n\t\t\tgravityTimer = data.g;\n\n\t\t\t// Get the status of the left, right and down keys\n\t\t\tfloat keyLeft = texture (iChannel0, KEY_LEFT).r;\n\t\t\tfloat keyRight = texture (iChannel0, KEY_RIGHT).r;\n\t\t\tfloat keyDown = texture (iChannel0, KEY_DOWN).r;\n\t\t\tif (keyLeft + keyRight + keyDown < 0.5) {\n\t\t\t\tgravityTimer = max (0.0, gravityTimer - iTimeDelta * 5.0);\n\t\t\t} else {\n\t\t\t\tif (keyLeft > 0.5) {\n\t\t\t\t\tgravityDirection -= PI * 0.5 * iTimeDelta;\n\t\t\t\t} else if (keyRight > 0.5) {\n\t\t\t\t\tgravityDirection += PI * 0.5 * iTimeDelta;\n\t\t\t\t} else if (gravityTimer == 0.0) {\n\t\t\t\t\tgravityDirection += PI;\n\t\t\t\t}\n\t\t\t\tgravityTimer = 1.0;\n\t\t\t}\n\t\t}\n\n\t\t// Get the status of the space key\n\t\tfloat keySpace = texture (iChannel0, KEY_SPACE).r;\n\n\t\t// Update the fragment\n\t\tfragColor = vec4 (gravityDirection, gravityTimer, 1.0 - keySpace, 0.0);\n\t}\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

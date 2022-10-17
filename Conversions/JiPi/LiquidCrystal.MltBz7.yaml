@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: LiquidCrystal
+  id: LiquidCrystal
+  kernel: LiquidCrystal
+  name: LiquidCrystal
+shader:
+  author: wyatt
+  description: "Click to see a region close up! \n\nLiquid crystals are fascinating\
+    \ and beautiful and are used in cool applications (like the pixels of the LCD\
+    \ youre probably looking at)\nhttps://www.youtube.com/watch?v=DLluRjH_gWM"
+  id: MltBz7
+  name: Liquid Crystal
+  tags:
+  - simulation
+  - physics
+  url: https://www.shadertoy.com/view/MltBz7

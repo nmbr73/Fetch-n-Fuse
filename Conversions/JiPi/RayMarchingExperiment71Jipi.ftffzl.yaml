@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: RayMarchingExperiment71Jipi
+  id: RayMarchingExperiment71Jipi
+  kernel: RayMarchingExperiment71Jipi
+  name: RayMarchingExperiment71Jipi
+shader:
+  author: N.N.
+  description: 'I would like to know the look of the famous shader [url=https://www.shadertoy.com/view/XddSRX]Suture
+    Fluid[/url] from [url=https://www.shadertoy.com/user/cornusammonis]cornusammonis
+    [/url] displaced on a ball
+
+    mouse x for control the displace offset'
+  id: ftffzl
+  name: Ray Marching Experiment 71 JiPi
+  parent:
+    id: 4tXyDl
+    name: Ray Marching Experiment 71
+    url: https://www.shadertoy.com/view/4tXyDl
+  tags:
+  - ray
+  - experiment
+  - marching
+  - '71'
+  url: https://www.shadertoy.com/view/ftffzl

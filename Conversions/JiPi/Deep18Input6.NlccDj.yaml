@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Deep18Input6
+  id: Deep18Input6
+  kernel: Deep18Input6
+  name: Deep18Input6
+shader:
+  author: lomateron
+  description: 'why it has color?
+
+    read user comment in https://www.shadertoy.com/view/Nltyzs
+
+    '
+  id: NlccDj
+  name: deep 18input 6
+  tags:
+  - automata
+  url: https://www.shadertoy.com/view/NlccDj

@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: Lbm2DFluidJipi981
+  id: Lbm2DFluidJipi981
+  kernel: Lbm2DFluidJipi981
+  name: Lbm2DFluidJipi981
+shader:
+  author: N.N.
+  description: 'press the left mouse button to draw the wall,
+
+    press the space bar and the left mouse button to erase.
+
+
+    LBM: https://en.wikipedia.org/wiki/Lattice_Boltzmann_methods'
+  id: fl2yz1
+  name: lbm_2d_fluid JiPi 981
+  parent:
+    id: Nl2cRR
+    name: lbm_2d_fluid
+    url: https://www.shadertoy.com/view/Nl2cRR
+  tags:
+  - 2d
+  - simulation
+  - fluid
+  - lbm
+  - freesurface
+  url: https://www.shadertoy.com/view/fl2yz1

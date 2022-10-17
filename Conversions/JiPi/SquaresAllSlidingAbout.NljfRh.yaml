@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: SquaresAllSlidingAbout
+  id: SquaresAllSlidingAbout
+  kernel: SquaresAllSlidingAbout
+  name: SquaresAllSlidingAbout
+shader:
+  author: DJDoomz
+  description: 'Funky little effect. Mess with the params in Buffer A
+
+    High number of squares + fast wiggle time gives a cool watery effect.
+
+
+    #define SQUARES 45.0
+
+    #define WIGGLE 45.0'
+  id: NljfRh
+  name: Squares All Sliding About
+  tags:
+  - 2d
+  - texture
+  - feedback
+  url: https://www.shadertoy.com/view/NljfRh

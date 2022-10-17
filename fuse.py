@@ -563,6 +563,7 @@ def fuse_it(id,force=False):
         if i+1>channelsSeenNum:
           channelsSeenNum=i+1
 
+  #print("PARAMETER: ", has_param, v)
 
   ichan_create    = ''
   ichan_process1  = ''

@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: ComplexfourierepicyclesJipi
+  id: ComplexfourierepicyclesJipi
+  kernel: ComplexfourierepicyclesJipi
+  name: ComplexfourierepicyclesJipi
+shader:
+  author: N.N.
+  description: I have always wanted to make this and I finally did after watching
+    The Coding Train's  videos about DFT (Discrete Fourier Transform). This was also
+    my first time actually going under the hood of complex numbers.
+  id: ftdBDs
+  name: ComplexFourierEpicycles JiPi
+  parent:
+    id: ttGcRW
+    name: Complex Fourier Epicycles
+    url: https://www.shadertoy.com/view/ttGcRW
+  tags:
+  - fourier
+  - complexnumbers
+  - epicycles
+  url: https://www.shadertoy.com/view/ftdBDs

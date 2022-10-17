@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: ColorBranches
+  id: ColorBranches
+  kernel: ColorBranches
+  name: ColorBranches
+shader:
+  author: wyatt
+  description: something for a friend
+  id: st2yz1
+  name: Color Branches
+  tags:
+  - yann
+  url: https://www.shadertoy.com/view/st2yz1

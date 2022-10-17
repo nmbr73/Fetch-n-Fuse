@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: SuperSph
+  id: SuperSph
+  kernel: SuperSph
+  name: SuperSph
+shader:
+  author: michael0884
+  description: 'Finally implemented a proper SPH fluid
+
+    if you have the plugin:
+
+    use acceleration 4x'
+  id: tdXBRf
+  name: 'Super SPH '
+  tags:
+  - fluid
+  - particles
+  url: https://www.shadertoy.com/view/tdXBRf

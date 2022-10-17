@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: Balance
+  id: Balance
+  kernel: Balance
+  name: Balance
+shader:
+  author: mare
+  description: " - sunrise and sunset\n - water with raindrops from the clear sky\n\
+    \ - some strings and sea noise totally unrelated to rain\n - visual overlay to\
+    \ cover initial buffer raw state"
+  id: XssGRH
+  name: Balance
+  tags:
+  - audio
+  - meditation
+  url: https://www.shadertoy.com/view/XssGRH

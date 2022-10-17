@@ -1,0 +1,42 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7ljcDd",
+  "date": "0",
+  "viewed": 0,
+  "name": "NeuronsColors2 JiPi699",
+  "description": "neuron",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "neuron"
+  ],
+  "hasliked": 0,
+  "parentid": "7tByWd",
+  "parentname": "neurons colors2"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\nvec2 pointad(vec2 i,float dScale){\n    //float a = random1(vec2(i.x*100.2324+ 102.23))*PI*2.;\n    //float d = random1(vec2(i.x*12.1324 + 0.23452, i.y/1000.*0.))*8.;\n    \n    float a = noise(vec2(i.x*1000.2324+ 102.23) + i.y/3.)*PI*2.;\n    float d = noise(vec2(i.x*12.1324 + 0.23452) + i.y)*dScale;\n    \n    \n    return vec2(a,d);\n}\n\n//float calcPointSDF(\n\n//Need to use noise instead of random so that I get smooth values to alter with iTime;\n\nfloat points(vec2 p, int k, int n,float seed){\n    float m0 = 1.;\n    float m1 = 1.;\n    \n    float m = 1.;\n    float smoth =1.3;\n    \n    vec2 point0 = vec2(0.);\n    vec2 point1 = vec2(0.);\n    float a0 = 0.;\n    //vec2 point2 = vec2(0.);\n    m0 = length(p - point0);\n    for(int i = 0;i<k;i++){\n        vec2 ad = pointad( vec2(float(i), iTime/8. + seed),8. );\n        float a = ad.x/1.;\n        float d = ad.y;\n\n\n        vec2 point = vec2(cos(a),sin(a))*d + point0;\n        point1 = point;\n\n        vec2 direction = normalize(point - point0);\n        float perpAngle = a - PI/2.;\n        vec2 perp = vec2(cos(perpAngle),sin(perpAngle));\n        float dAlongDir = dot(direction,p);\n\n        //d/2. is halfway point for a nice stretch\n        float scaler = abs(dAlongDir- d/2.);\n        float thinnest = 0.1;\n        scaler = smoothstep(0.,5.,scaler)*.1*1. - (0.5-thinnest);\n        //point -= perp*scaler/10.;\n\n        m1 = length(p - point);\n        m1 = sdSegment(p, point0, point)- scaler;\n        m0 = smin( m0, m1, smoth );\n        a0 = a;\n        \n        for(int j = 0;j<n;j++){\n            vec2 ad = pointad( vec2(float(j+i), iTime/1.5 + seed),2. );\n            float a = ad.x;\n            \n            float thrs = 0.2;\n            float left = (a/PI *(1.-2.*thrs) + thrs)*PI;\n            float right = ((a - PI)/PI*(1.-2.*thrs) + (1.+thrs))*PI;\n            float lrMix = smoothstep(0.,1.5*fwidth(a-PI),a-PI);\n            lrMix = smoothstep(0.,0.1,a-PI);\n            \n            float aLR = mix(left,right,lrMix);\n            \n            //a = aLR + a0;\n            \n            \n            float d = ad.y;\n            \n\n            vec2 point2 = vec2(cos(a),sin(a))*d + point1;\n\n            vec2 direction = normalize(point2 - point1);\n            float perpAngle = a - PI/2.;\n            vec2 perp = vec2(cos(perpAngle),sin(perpAngle));\n            float dAlongDir = dot(direction,p)/length(p);\n\n            //d/2. is halfway point for a nice stretch\n            float scaler = abs(dAlongDir- d/2.);\n            float thinnest = 0.025;\n            scaler = smoothstep(0.,5.,scaler)*.05*1. - (0.5-thinnest);\n            //point -= perp*scaler/10.;\n\n            m1 = length(p - point2);\n            m1 = sdSegment(p, point1, point2)- scaler;\n            m0 = smin( m0, m1, smoth/2. );\n        }\n        \n        \n    }\n \n    return m0;\n}\n\nvec4 getPoints(vec2 p, int k,int n){\n    float s1 = 23503.23532;\n    float s2 = 533.7345;\n    float s3 = 2525.233;\n    \n    vec3 c1 = vec3(0.2,.2,0.7);\n    vec3 c2 = vec3(0.6,.1,0.2);\n    vec3 c3 = vec3(0.7,.5,.2);\n    vec3 c = vec3(0.);\n\n    float n1 = points(p,k,n,s1);\n    float n2 = points(p- vec2(5.5,0.),k,n,s2);\n    float n3 = points(p - vec2(-5.,1.),6,3,s3);\n    vec2 ns = sminC( n1, n2, 2. );\n    c = mix(c1,c2,smoothstep(0.,1.,ns.y));\n    ns = sminC(ns.x,n3,2.);\n    c = mix(c,c3,smoothstep(0.,1.,ns.y));\n    return vec4(ns.x,c);;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = (fragCoord - R/2.)/R.y;\n    uv *= 15.;\n    //uv = floor(uv*8.)/8.;\n    //uv += iTime;\n    vec4 pm = getPoints(uv,8,2);\n\n\n    \n    float f = pm.x-0.5;\n    float s = 1.-smoothstep(0.,1.5*fwidth(f),f)*1.;\n    \n    vec3 c1 = vec3(0.7,0.6,0.8);\n    vec3 c2 = vec3(0.2,0.6,0.4);\n    \n    vec2 dir = vec2(-1.,1.);\n    float dither = random1(floor(uv*40.));\n    \n    \n    float d = dot(dir,uv) + dither*1.;\n    float mi = smoothstep(-3.2,5.2,d);\n    \n    vec3 c = mix(c1,c2,mi);\n    \n    float br = smoothstep(-2.,5.,length(uv))+0.5;\n    float edges = smoothstep(-.15,-.05,f);\n    float thrs = 0.05;\n    edges = smoothstep(0.,1.5*fwidth(f+thrs),f+thrs);\n    \n    float h = 1.-smoothstep(0.,1.5*fwidth(f+thrs),f+thrs);\n    \n    vec3 c12 = vec3(0.2,.2,0.7);\n    vec3 c22 = vec3(0.1,.46,0.6);\n    vec3 c32 = vec3(0.4,.5,.7);\n    \n    vec3 c4 = (c12 + c22 + c32)/3.;\n    vec3 c5 = vec3(0.5,0.4,1.);\n\n    \n    //vec3 col = vec3(s)*pm.yzw-h*0.;\n    vec3 col = mix(vec3(1.),pm.yzw,s); //outer\n    col = mix(vec3(1.),col,edges); //inner\n    \n    col = pow(col,vec3(1./2.2));\n\n    // Output to screen\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define PI 3.1415926538\n#define R iResolution.xy\n\nfloat getAngle(vec2 v1)\n{\n    //return atan(v1.x,v1.y) -atan(v2.x,v2.y);\n    return mod( atan(v1.x,v1.y) -atan(1.,0.), PI*2.)/PI/2.; //0 ... TWOPI\n    //return mod( atan(v1.x,v1.y) -atan(v2.x,v2.y), TWOPI) - PI; //-pi to +pi \n}\n\nfloat random1 (in vec2 _st) {\n    return fract(sin(dot(_st.xy,\n                         vec2(12.9898,78.233)))*\n        43758.5453123);\n}\n\nfloat random(vec2 p)\n{\n\tvec3 p3  = fract(vec3(p.xyx) * .1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\n// Based on Morgan McGuire @morgan3d\n// https://www.shadertoy.com/view/4dS3Wd\nfloat noise (in vec2 _st) {\n    vec2 i = floor(_st);\n    vec2 f = fract(_st);\n\n    // Four corners in 2D of a tile\n    float a = random1(i);\n    float b = random1(i + vec2(1.0, 0.0));\n    float c = random1(i + vec2(0.0, 1.0));\n    float d = random1(i + vec2(1.0, 1.0));\n\n    vec2 u = f * f * (3.0 - 2.0 * f);\n\n    return mix(a, b, u.x) +\n            (c - a)* u.y * (1.0 - u.x) +\n            (d - b) * u.x * u.y;\n}\n\nfloat sdSegment( in vec2 p, in vec2 a, in vec2 b )\n{\n    vec2 pa = p-a, ba = b-a;\n    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );\n    return length( pa - ba*h );\n}\n\nfloat smin( float a, float b, float k )\n{\n    float h = max( k-abs(a-b), 0.0 )/k;\n    return min( a, b ) - h*h*h*k*(1.0/6.0);\n}\n\nvec2 sminC( float a, float b, float k )\n{\n    float h = max( k-abs(a-b), 0.0 )/k;\n    float m = h*h*h*0.5;\n    float s = m*k*(1.0/3.0); \n    return (a<b) ? vec2(a-s,m) : vec2(b-s,1.0-m);\n}\n\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

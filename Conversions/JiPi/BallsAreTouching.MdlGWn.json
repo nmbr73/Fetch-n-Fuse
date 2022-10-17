@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fs2fzm",
+  "date": "0",
+  "viewed": 0,
+  "name": "balls are touching  JiPi 605",
+  "description": "oh..oh",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarching",
+   "metaballs",
+   "cubemap",
+   "reflections"
+  ],
+  "hasliked": 0,
+  "parentid": "MdlGWn",
+  "parentname": "balls are touching"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsX3zn",
+     "filepath": "/media/a/94284d43be78f00eb6b298e6d78656a1b34e2b91b34940d02f1ca8b22310e8a0.png",
+     "type": "cubemap",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// history:\n//  - v.01, mac browser crash fixed\n//  - v.00, f1rs7 p05t\n\n#define TRACE_STEPS 128\n#define TRACE_EPSILON .001\n#define REFLECT_EPSILON .1\n#define TRACE_DISTANCE 30.\n#define NORMAL_EPSILON .01\n#define REFLECT_DEPTH 4\n#define NUM_BALLS 7\n#define CUBEMAP_SIZE 128\n\n\n\nvec3 balls[NUM_BALLS];\n\nfloat touching_balls(in vec3 at) {\n\tfloat sum = 0.;\n\tfor (int i = 0; i < NUM_BALLS; ++i) {\n\t\tfloat r = length(balls[i] - at);\n\t\tsum += 1. / (r * r);\n\t}\n\treturn 1. - sum;\n}\n\nvoid update_balls(float t) {\n\n    for (int i = 0; i < NUM_BALLS; ++i) {\n\t\tballs[i] = 3. * vec3(\n\t\t\tsin(.3+float(i+1)*t),\n\t\t\tcos(1.7+float(i-5)*t),\n\t\t\t1.1*sin(2.3+float(i+7)*t));\n\t}\n}\n\nfloat world(in vec3 at) {\n\treturn touching_balls(at);\n}\n\nvec3 normal(in vec3 at) {\n\tvec2 e = vec2(0., NORMAL_EPSILON);\n\treturn normalize(vec3(world(at+e.yxx)-world(at), \n\t\t\t\t\t\t  world(at+e.xyx)-world(at),\n\t\t\t\t\t\t  world(at+e.xxy)-world(at)));\n}\n\nvec4 raymarch(in vec3 pos, in vec3 dir, in float maxL) {\n\tfloat l = 0.;\n\tfor (int i = 0; i < TRACE_STEPS; ++i) {\n\t\tfloat d = world(pos + dir * l);\n\t\tif (d < TRACE_EPSILON*l) break; // if we return here, browser will crash on mac os x, lols\n\t\tl += d;\n\t\tif (l > maxL) break;\n\t}\n\treturn vec4(pos + dir * l, l);\n}\n\nvec3 lookAtDir(in vec3 dir, in vec3 pos, in vec3 at) {\n\tvec3 f = normalize(at - pos);\n\tvec3 r = cross(f, vec3(0.,1.,0.));\n\tvec3 u = cross(r, f);\n\treturn normalize(dir.x * r + dir.y * u + dir.z * f);\n}\n\n// http://the-witness.net/news/2012/02/seamless-cube-map-filtering/\nvec3 cube(in vec3 v) {\n   float M = max(max(abs(v.x), abs(v.y)), abs(v.z));\n   float scale = (float(CUBEMAP_SIZE) - 1.) / float(CUBEMAP_SIZE);\n   if (abs(v.x) != M) v.x *= scale;\n   if (abs(v.y) != M) v.y *= scale;\n   if (abs(v.z) != M) v.z *= scale;\n   return texture(iChannel0, v).xyz;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    float t = iTime * .11;\n\tupdate_balls(t);\n\tfloat aspect = iResolution.x / iResolution.y;\n\tvec2 uv = (fragCoord.xy / iResolution.xy * 2. - 1.) * vec2(aspect, 1.);\n\t\n\tvec3 pos = vec3(cos(2.+4.*cos(t))*10., 2.+8.*cos(t*.8), 10.*sin(2.+3.*cos(t)));\n\tvec3 dir = lookAtDir(normalize(vec3(uv, 2.)), pos.xyz, vec3(balls[0]));\n\t\n\tvec3 color = vec3(0.);\n\tfloat k = 1.;\n\tfor (int reflections = 0; reflections < REFLECT_DEPTH; ++reflections) {\n\t\tvec4 tpos = raymarch(pos, dir, TRACE_DISTANCE);\n\t\tif (tpos.w >= TRACE_DISTANCE) {\n\t\t\tcolor += cube(dir);\n\t\t\tbreak;\n\t\t}\n\t\tcolor += vec3(.1) * k;\n\t\tk *= .6;\n\t\tdir = normalize(reflect(dir, normal(tpos.xyz)));\n\t\tpos = tpos.xyz + dir * REFLECT_EPSILON;\n\t}\n\tfragColor = vec4(color, 0.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

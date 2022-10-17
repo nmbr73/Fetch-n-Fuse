@@ -1,0 +1,113 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtScRm",
+  "date": "0",
+  "viewed": 0,
+  "name": "Chaos&Order JiPi 102",
+  "description": "all life long",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "3d",
+   "points"
+  ],
+  "hasliked": 0,
+  "parentid": "7tjyzh",
+  "parentname": "Chaos & Order"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// chaos & order by kastorp\n//---------------------------\nvoid mainImage( out vec4 O, in vec2 U )\n{\n    Init\n    vec2  p = (U/R.y -R/R.y*.5),mp = (iMouse.xy/R.y -R/R.y*.5),\n        c = (p*R.y/R.xy +.5)*float(M) ;    \n    int j = int(c.x) +int(c.y)*M, //current region id\n        jj= int(step(.5,fract(c.x))+2.*step(.5,fract(c.y)));\n    \n    O=vec4(0,0,0,10);\n    float q;\n    for(int i=0,k=i;k<N && i<500;i++){ // scan points in current region (max 500)\n        \n        \n        //int sk=int(texelFetch(iChannel1,ivec2(k%NX,k/NX +j*NY),0)[jj]);\n        int sk=int(texture(iChannel1,(vec2(ivec2(k%NX,k/NX +j*NY))+0.5)/R)[jj]);\n        if(sk==0) { //the point is in\n            //vec4 c=texelFetch(iChannel0,ivec2(k%NX,k/NX ),0);\n            vec4 c=texture(iChannel0,(vec2(ivec2(k%NX,k/NX ))+0.5)/R);\n            float r= TL*2./(2.+c.w);\n            float d =length(p-c.xy), \n                //sh= (1.5- length(p-c.xy-vec2(0,r*.5))/r)*1.5 -.5;sh=.5+sh*sh;\n                sh= (1.+dot((p-c.xy) +vec2(0,d+r),vec2(0,d+r))/d/r)*.15; \n            if(c.w<O.w && d<r) O=vec4((0.5 + 0.5*cos(c.z*6.+vec3(0,2,4)))*sh,c.w);\n            \n            k+=1; //next point\n        }\n        else k+=int(sk); //skip till first point in region\n        q=float(i-N/H)/30.;\n    }\n    \n   \n   //O = texture(iChannel1,U/R);\n   \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//random points \n//// Hash without Sine (c)2014 David Hoskins\nvec3 hash32(vec2 p)\n{\n\tvec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yxz+33.33);\n    return fract((p3.xxy+p3.yzz)*p3.zyx);\n}\n\n\nvoid mainImage( out vec4 O, in vec2 U )\n{\n    Init\n    if(int(U.y)>(NY*M*M) || int(U.x)>NX) return ;\n    int i= (int(U.y)%NY)*NX + int(U.x); \n        \n    vec3 p = mix(vec3(i/(L*L),(i%(L*L))/L,i%L)/float(L)-.5+1./float(L) , (hash32(U)-.5),.5+.5*cos(iTime/2.));    \n  \n   float a = iTime/4.0 + iMouse.x/iResolution.x*3.;\n   \n   //a = iMouse.x/iResolution.x*3.0;\n   \n   p.xy*=mat2(cos(a),sin(a),-sin(a),cos(a));\n   p.xz*=mat2(cos(a),sin(a),-sin(a),cos(a));\n   O.xy=p.xy *1.4 / (2.+p.z);\n   O.z=float(i)/float(N);\n   O.w= p.z;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "//#define R iResolution.xy\n\n#define N 1000   //number of points\n#define H 200  //number of scanned points in buffer B\n#define TL 0.015 //sphere size \n\n#define Init vec2 R =iResolution.xy;\\\n    int NX =int(iResolution.x);\\\n    int NY= (N/NX+1);\\\n    int M= min(10,int(sqrt(iResolution.y/float(NY))));\\\n    int L= int(pow(float(N),1./3.));\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//points in each region\nvoid mainImage( out vec4 O, in vec2 U )\n{\n    Init\n    O= vec4(H);\n    if(int(U.y)>(NY*M*M) || int(U.x)>NX) return ;\n       \n    int j=int(U.y)/NY, //current region\n        i= (int(U.y)%NY)*NX + int(U.x); //current point\n\n    bvec4 f=bvec4(false);\n    for( int k = i; k<min(N,i+H);k++){ //iterate on max H points in region\n        \n        \n        //vec4 p= texelFetch(iChannel0,ivec2(k%NX,k/NX),0); //point position\n        vec4 p= texture(iChannel0,(vec2(ivec2(k%NX,k/NX))+0.5)/R); //point position\n        float r= TL*2./(2.+p.w);\n        float sz=1./float(M);\n        vec2 s =(vec2((j%M),j/M)+.25);\n        vec2 s1=s+.25; s1=s1*sz-.5 ; s1*=R.xy/R.y ; //region center\n        if(max(abs(p.x-s1.x)-.5*sz*R.x/R.y,abs(p.y-s1.y)-.5*sz)>r) continue; //outside region\n          \n        for(int jj=0;jj<4;jj++){\n          if(f[jj])continue; //already found next point for subregion\n               \n          vec2 ss=s +vec2((jj==1|| jj==3) ?.5:0.,(jj==2|| jj==3) ?.5:0.); ss=ss*sz-.5 ; ss*=R.xy/R.y ; //subregion center\n      \n            if(max(abs(p.x-ss.x)-.25*sz*R.x/R.y,abs(p.y-ss.y)-.25*sz)<r)\n            {\n                //this point is inside subergion\n                O[jj]= float(k-i); \n                f[jj]=true;\n            }\n       } \n       if(all(f)) return; \n    }\n    \n       \n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

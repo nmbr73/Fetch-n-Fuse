@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: WellBottom
+  id: WellBottom
+  kernel: WellBottom
+  name: WellBottom
+shader:
+  author: nikixd
+  description: '...'
+  id: Ns3BRH
+  name: well bottom
+  tags:
+  - noise
+  - ring
+  url: https://www.shadertoy.com/view/Ns3BRH

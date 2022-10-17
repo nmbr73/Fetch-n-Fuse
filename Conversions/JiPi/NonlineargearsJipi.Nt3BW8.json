@@ -1,0 +1,191 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "Nt3BW8",
+  "date": "0",
+  "viewed": 0,
+  "name": "NonlinearGears  JiPi",
+  "description": "two sources and two sinks. Mouse to disturb the system. Different gear patterns will emerge!",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "gears",
+   "fluid",
+   "navierstokes"
+  ],
+  "hasliked": 0,
+  "parentid": "MtdyzX",
+  "parentname": "Nonlinear Gears"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 hash22(vec2 p)\n{//https://www.shadertoy.com/view/4djSRW\n\tvec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+19.19);\n    return fract((p3.xx+p3.yz)*p3.zy)*2.-1.;\n\n}\nvec2 vf (vec2 v) {\n    v = texture(iChannel0, v).xy;\n\treturn v;\n}\nfloat ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nfloat ff (vec2 U, vec2 o) {\n    float q = 0.3*iResolution.x;\n\tvec2 V = floor(U*q+0.5 + o)/q;\n    V += 0.5*hash22(floor(V*iResolution.xy))/q;\n    \n    vec2 v;\n    v = vf(V);\n    float a = 1e3;\n    \n    for (int i = 0; i < 4; i++) {\n        v = 0.5*vf(V );\n        a = min(a,1.2*ln(U, V, V+v));\n        V += v;\n    }\n    \n    return max(1.-iResolution.x*0.4*a,0.);\n}\nvoid mainImage( out vec4 C, in vec2 U )\n{\n    \n    float c = 0.;\n    for (int x = -2; x <= 2; x++) {\n    for (int y = -2; y <= 2; y++) {\n        c += 0.33*ff(U/iResolution.xy,vec2(x,y));\n    }\n    }\n    \n    \n    \n    vec4 me = texture(iChannel0,U/iResolution.xy);\n   \tC.xyz = vec3(c)*(.3+5.*me.w);\n    C.y *= length(me.xy)*10.;\n    C.x *= max(0.,0.2+me.z);\n    C.z *= max(0.,0.2-me.z);\n    C*=vec4(1,1.5,2,1)*(1.+0.5*C*C);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec2 hash23(vec3 p3)\n{//https://www.shadertoy.com/view/4djSRW\n\tp3 = fract(p3 * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+19.19);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\nvec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel2,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel2,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1) {\n        Co = vec4(0);\n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 6; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 6; i++) {\n            A -= t(A).xy;\n            B -= t(B).xy;\n            C -= t(C).xy;\n            D -= t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z - (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n        \n        \n        if (U.x<2.&&abs(U.y-0.7*ur.y)<2.) {me.x=.1;me.z=-1.;}\n        if (ur.x-U.x<2.&&abs(U.y-0.7*ur.y)<2.) {me.x=.1;me.z=1.;}\n        if (U.x<2.&&abs(U.y-0.3*ur.y)<2.) {me.x=-.1;me.z=1.;}\n        if (ur.x-U.x<2.&&abs(U.y-0.3*ur.y)<2.) {me.x=-.1;me.z=-1.;}\n        else if (U.x<1.||ur.x-U.x<1.||ur.y-U.y<1.||U.y<1.) me.xy*=0.;\n        \n        \n        \n        float o = 0., m=10.;\n        vec2 y = U/iResolution.xy*m;\n        y = fract(y)*2.-1.+hash23(vec3(floor(y),iFrame))*2.-1.;\n       \tme.w = me.w*.99 + 2.*(1.+clamp(-0.2*me.z*(me.z)*me.z,0.,2.))*smoothstep(0.004,0.,length(y)/m);\n        \n        \n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec2 hash23(vec3 p3)\n{//https://www.shadertoy.com/view/4djSRW\n\tp3 = fract(p3 * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+19.19);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\nvec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1) {\n        Co = vec4(0);\n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 6; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 6; i++) {\n            A -= t(A).xy;\n            B -= t(B).xy;\n            C -= t(C).xy;\n            D -= t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z - (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n        \n        \n        if (U.x<2.&&abs(U.y-0.7*ur.y)<2.) {me.x=.1;me.z=-1.;}\n        if (ur.x-U.x<2.&&abs(U.y-0.7*ur.y)<2.) {me.x=.1;me.z=1.;}\n        if (U.x<2.&&abs(U.y-0.3*ur.y)<2.) {me.x=-.1;me.z=1.;}\n        if (ur.x-U.x<2.&&abs(U.y-0.3*ur.y)<2.) {me.x=-.1;me.z=-1.;}\n        else if (U.x<1.||ur.x-U.x<1.||ur.y-U.y<1.||U.y<1.) me.xy*=0.;\n        \n        \n        \n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec2 hash23(vec3 p3)\n{//https://www.shadertoy.com/view/4djSRW\n\tp3 = fract(p3 * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+19.19);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\nvec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1) {\n        Co = vec4(0);\n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 6; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 6; i++) {\n            A -= t(A).xy;\n            B -= t(B).xy;\n            C -= t(C).xy;\n            D -= t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z - (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n        \n        vec4 mouse = texture(iChannel1,vec2(0.5));\n        float q = ln(U,mouse.xy,mouse.zw);\n        vec2 mo = mouse.xy-mouse.zw;\n        float l = length(mo);\n        if (l>0.) {\n            mo = normalize(mo)*min(l,.1);\n        \tme += exp(-q*q)*vec4(normalize(mo.xy),0,0);\n        }\n        \n        \n        if (U.x<2.&&abs(U.y-0.7*ur.y)<2.) {me.x=.1;me.z=-1.;}\n        if (ur.x-U.x<2.&&abs(U.y-0.7*ur.y)<2.) {me.x=.1;me.z=1.;}\n        if (U.x<2.&&abs(U.y-0.3*ur.y)<2.) {me.x=-.1;me.z=1.;}\n        if (ur.x-U.x<2.&&abs(U.y-0.3*ur.y)<2.) {me.x=-.1;me.z=-1.;}\n        else if (U.x<1.||ur.x-U.x<1.||ur.y-U.y<1.||U.y<1.) me.xy*=0.;\n        \n        \n        \n        \n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// MOUSE\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec4 p = texture(iChannel0,fragCoord/iResolution.xy);\n    if (iMouse.z>0.) {\n        if (p.z>0.) fragColor =  vec4(iMouse.xy,p.xy);\n    \telse fragColor =  vec4(iMouse.xy,iMouse.xy);\n    }\n    else fragColor = vec4(-iResolution.xy,-iResolution.xy);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

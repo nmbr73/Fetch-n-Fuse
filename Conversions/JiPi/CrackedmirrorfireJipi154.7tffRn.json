@@ -1,0 +1,36 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tffRn",
+  "date": "0",
+  "viewed": 0,
+  "name": "CrackedMirrorFire JiPi154",
+  "description": "Cracked mirror fire",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fire",
+   "mirror",
+   "cracked"
+  ],
+  "hasliked": 0,
+  "parentid": "NlScDd",
+  "parentname": "Cracked Mirror Fire"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\nvec2 hash( vec2 p ) {\n\tp = vec2( dot(p,vec2(354.3,542.8)), dot(p,vec2(185.4,196.3)) );\n\n\treturn -1.0 + 2.*fract(sin(p) * 68556.4357786);\n}\n\nfloat noise( in vec2 p ) {\n    float f1 = 0.366;\n    float f2 = 0.211324865; \n\tvec2 k = floor( p + (p.x+p.y) *f1);\n    vec2 a = p - k + (k.x+k.y) * f2;\n    vec2 s = step(a.yx,a.xy);\n    vec2 b = a - s + f2;\n\tvec2 c = a - 1.0 + 2.0*f2;\n\n    vec3 h = max( 0.5-vec3(dot(a,b), dot(b,b), dot(c,c) ), 0.0 );\n\n\tvec3 n = h*h*h*h*vec3( dot(a,hash(k+0.0)), dot(b,hash(k+s)), dot(c,hash(k+1.0)));\n\n    return dot( n, vec3(70.0) );\n}\n\n\nfloat fbm ( in vec2 p ) {\n    float f = 0.0;\n    mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );\n    f  = 0.5000*noise(p); p = m*p;\n    f += 0.2500*noise(p); p = m*p;\n    f += 0.1250*noise(p); p = m*p;\n    f += 0.0625*noise(p); p = m*p;\n    f = 0.5 + 0.5 * f;\n    return f;\n}\n\nvec3 map(vec2 uv) {\n    vec2 s = vec2(1./630., 1./354.);\n    float p =  fbm(uv);\n    float h = fbm(uv + s * vec2(1., 0));\n    float v = fbm(uv + s * vec2(0, 1.));\n   \tvec2 xy = (p - vec2(h, v))*40.;\n    return vec3(xy + .2, 9.);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    vec2 fmove= vec2(-0.02, 0.0);\n    vec3 m = map(uv * vec2(1., 0.3) + fmove*iTime);\n    vec2 disp = clamp((m.xy - .5) * 0.15, -1., 1.);\n    uv += disp;\n    vec2 fmove1= vec2(-0.02, -0.3);\n    vec2 uv1 = (uv * vec2(1.0, 0.5)) + fmove1 * iTime;\n    \n    float n = fbm(3.2 * uv1);\n    float col = pow(1.0 - uv.y, 4.) * 4.;\n    float colN = n * col; \n\n    vec3 color = colN * vec3(3.*n, 3.*n*n*n, n*n*n*n);\n    vec3 color2 = colN * vec3(2.*n, 3.2*n*n*n,2.*n*n*n*n);\n    color = mix(color, color2.rgb, pow(1.0 - uv.y, 1.5));\n    \n    fragColor = vec4(color , 1.0);\n   ;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

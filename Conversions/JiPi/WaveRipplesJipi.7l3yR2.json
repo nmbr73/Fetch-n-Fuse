@@ -1,0 +1,46 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7l3yR2",
+  "date": "0",
+  "viewed": 0,
+  "name": "Wave Ripples JiPi",
+  "description": "Circular ripples extend from the mouse click position.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "waves",
+   "ripples",
+   "distortion"
+  ],
+  "hasliked": 0,
+  "parentid": "ldSSD1",
+  "parentname": "Wave Ripples"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGRn",
+     "filepath": "/media/a/95b90082f799f48677b4f206d856ad572f1d178c676269eac6347631d4447258.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n    //Tweakable parameters\n    float waveStrength = 0.02;\n    float frequency = 30.0;\n    float waveSpeed = 5.0;\n    vec4 sunlightColor = vec4(1.0,0.91,0.75, 1.0);\n    float sunlightStrength = 5.0;\n    //\n    \n    vec2 tapPoint = vec2(iMouse.x/iResolution.x,iMouse.y/iResolution.y);\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    float modifiedTime = iTime * waveSpeed;\n    float aspectRatio = iResolution.x/iResolution.y;\n    vec2 distVec = uv - tapPoint;\n    distVec.x *= aspectRatio;\n    float distance = length(distVec);\n    vec2 newTexCoord = uv;\n    \n    float multiplier = (distance < 1.0) ? ((distance-1.0)*(distance-1.0)) : 0.0;\n    float addend = (sin(frequency*distance-modifiedTime)+1.0) * waveStrength * multiplier;\n    newTexCoord += addend;    \n    \n    vec4 colorToAdd = sunlightColor * sunlightStrength * addend;\n    \n\tfragColor = texture(iChannel0, newTexCoord) + colorToAdd;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

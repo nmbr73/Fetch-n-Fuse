@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Clouds2DshadowsJipi613
+  id: Clouds2DshadowsJipi613
+  kernel: Clouds2DshadowsJipi613
+  name: Clouds2DshadowsJipi613
+shader:
+  author: N.N.
+  description: Simple clouds2D shader with shadows from light
+  id: 7l2czt
+  name: Clouds2DShadows JiPi 613
+  parent:
+    id: 7l2yRt
+    name: Clouds2D With Shadows
+    url: https://www.shadertoy.com/view/7l2yRt
+  tags:
+  - simplexnoiseclouds2draymarchingdiffuselight
+  url: https://www.shadertoy.com/view/7l2czt

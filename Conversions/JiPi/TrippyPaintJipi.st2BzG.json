@@ -1,0 +1,114 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "st2BzG",
+  "date": "0",
+  "viewed": 0,
+  "name": "Trippy Paint JiPi",
+  "description": "Quick project to make a playful paint program.\n\nControls: LMB+drag draws on the canvas. Spacebar clears the canvas.\n",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation",
+   "paint"
+  ],
+  "hasliked": 0,
+  "parentid": "MdKfRG",
+  "parentname": "Trippy Paint"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(\n    out vec4 out_frag_color,\n    in vec2 frag_coord)\n{\n    vec2 texel_size = (1.0 / iResolution.xy);\n    \n    vec4 selfState = texture(iChannel0, (frag_coord.xy * texel_size));\n    \n    out_frag_color = vec4(sqrt(selfState).rgb, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGzn",
+     "filepath": "/media/a/0c7bf5fe9462d5bffbd11126e82908e39be3ce56220d900f633d58fb432e56f5.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(\n    out vec4 out_frag_color,\n    in vec2 frag_coord)\n{\n    vec2 texel_size = (1.0 / iResolution.xy);\n    \n\tvec4 prev_self_state = texture(iChannel0, (frag_coord.xy * texel_size));\n    \n    vec4 new_self_state = prev_self_state;\n    \n    // Bleed in from neighbors.\n    {\n        float bleed_angle = 0.0;\n        bleed_angle += fract(0.08 * iTime);\n        //bleed_angle += fract(0.002 * (frag_coord.x + frag_coord.y));\n        bleed_angle += (2.0 * texture(iChannel2, (0.0002 * frag_coord.xy)).r);\n        bleed_angle *= k_tau;\n        \n        vec2 neighbor_offset = vec2(cos(bleed_angle), sin(bleed_angle));\n         \n\t\tvec4 neighbor_state = texture(iChannel0, ((frag_coord.xy + neighbor_offset) * texel_size));\n        \n        float blending_fract = 0.4;\n        //blending_fract = mix(0.15, 0.8, smoothstep(-1.0, 1.0, cos(k_tau * 0.15 * iTime)));\n            \n\t\tnew_self_state.rgb = mix(new_self_state.rgb, neighbor_state.rgb, blending_fract);\n    }\n    \n    // If any mouse button is pressed, add more paint.\n    if (iMouse.z > 0.0)\n    {\n        vec2 fragToMouse = ((iMouse.xy + 0.5) - frag_coord.xy);\n        \n        float fragmentToCursorSquared = dot(fragToMouse, fragToMouse);\n        \n        if (fragmentToCursorSquared < (k_cursor_radius * k_cursor_radius))\n        {\n            // Intentionally use a curved falloff.\n            float strengthFract = (1.0 - (fragmentToCursorSquared / (k_cursor_radius * k_cursor_radius)));\n            \n            // Soften the edges.\n            strengthFract *= strengthFract;\n            strengthFract *= strengthFract;\n\t\t\n            new_self_state.rgb = mix(new_self_state.rgb, calc_cursor_color(iTime), strengthFract);\n        }\n    }\n    \n    /* KILLED: Because it caused secondary colors to promptly warp into bizarre results.\n    // Re-saturate the color to keep everything from turning muddy-brown.\n    {\n        vec3 self_hsb = rgb_to_hsb(new_self_state.rgb);\n        \n        const float minimum_saturation = 0.9;\n        \n        self_hsb.y = \n            (self_hsb.y < minimum_saturation) ?\n\t\t\t\tmix(self_hsb.y, minimum_saturation, 0.01) :\n        \t\tself_hsb.y;\n        \n        //self_hsb.z = step(0.01, self_hsb.z);\n        \n        new_self_state.rgb = hsb_to_rgb(self_hsb);\n    }\n\t*/\n    \n    // If this is the first frame or the spacebar's been pressed.\n\tif (iFrame == 0)\n    {\n        vec2 central_normalized_uv = ((frag_coord.xy - (0.5 * iResolution.xy)) / vec2(iResolution.y));\n        float distance_to_center = length(central_normalized_uv);\n        \n        float brightness = \n            smoothstep(0.45, 0.35, distance_to_center) * \n            smoothstep(0.25, 0.35, distance_to_center);\n            \n        float hue = (atan(central_normalized_uv.y, central_normalized_uv.x) / k_tau);\n        hue = mix(0.66, 0.98, smoothstep(-1.0, 1.0, sin(k_tau * hue)));\n        \n        new_self_state = vec4(hsb_to_rgb(vec3(hue, 1.0, brightness)), 1.0);\n    }\n    else if (texelFetch(iChannel1, ivec2(k_keycode_spacebar, 1), 0).x > 0.0)\n    {\n        new_self_state = vec4(vec3(0.0), 1.0);\n    }\n    \n    out_frag_color = new_self_state;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "const float k_tau = radians(360.0);\n\nconst float k_cursor_radius = 30.0;\n\nconst int k_keycode_spacebar = 32;\n\nvec3 hsb_to_rgb(\n    vec3 hsb_color)\n{\n    // From: https://www.shadertoy.com/view/MsS3Wc\n    vec3 rgb = clamp(abs(mod((hsb_color.x * 6.0) + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);\n    rgb = (rgb * rgb * (3.0 - (2.0 * rgb)));\n    return (hsb_color.z * mix(vec3(1.0), rgb, hsb_color.y));\n}\n\n/* These generate a rather ugly hue-wheel, plus it appears to drasticaly alter colors when just converting back and forth.\nvec3 hsb_to_rgb(\n    vec3 hsb_color)\n{\n    // From: https://www.laurivan.com/rgb-to-hsv-to-rgb-for-shaders/\n    \n    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n    vec3 p = abs(fract(hsb_color.xxx + K.xyz) * 6.0 - K.www);\n   \n    return hsb_color.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), hsb_color.y);\n}\n\nvec3 rgb_to_hsb(\n    vec3 rgb_color)\n{\n    // From: https://www.laurivan.com/rgb-to-hsv-to-rgb-for-shaders/\n    \n    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n    vec4 p = mix(vec4(rgb_color.bg, K.wz), vec4(rgb_color.gb, K.xy), step(rgb_color.b, rgb_color.g));\n    vec4 q = mix(vec4(p.xyw, rgb_color.r), vec4(rgb_color.r, p.yzx), step(p.x, rgb_color.r));\n \n    float d = q.x - min(q.w, q.y);\n    float e = 1.0e-10;\n    \n    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n}\n*/\n\nvec3 calc_cursor_color(\n\tfloat timeSeconds)\n{\n    return hsb_to_rgb(vec3(0.5 * timeSeconds, 1.0, 1.0));\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

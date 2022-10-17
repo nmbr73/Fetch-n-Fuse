@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: ShiftingScalesJipi
+  id: ShiftingScalesJipi
+  kernel: ShiftingScalesJipi
+  name: ShiftingScalesJipi
+shader:
+  author: N.N.
+  description: 'Noise controlled NCA test
+
+    '
+  id: 7d3cRM
+  name: shifting scales JiPi
+  parent:
+    id: 7styz4
+    name: shifting scales
+    url: https://www.shadertoy.com/view/7styz4
+  tags:
+  - clip
+  - nca
+  url: https://www.shadertoy.com/view/7d3cRM

@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: MousepositionfogJipi
+  id: MousepositionfogJipi
+  kernel: MousepositionfogJipi
+  name: MousepositionfogJipi
+shader:
+  author: N.N.
+  description: My first shader, written in 2011-10-23. I tried porting it to Shadertoy,
+    but at the time it did not support extra buffers. On 2016-04-26, I've updated
+    this shader to make it work in Shadertoy. This would look much cooler if there
+    was mouse-over support.
+  id: 7lGfDG
+  name: MousePositionFog JiPi
+  parent:
+    id: XdBGzw
+    name: Mouse position fog
+    url: https://www.shadertoy.com/view/XdBGzw
+  tags:
+  - mouse
+  - framebuffer
+  url: https://www.shadertoy.com/view/7lGfDG

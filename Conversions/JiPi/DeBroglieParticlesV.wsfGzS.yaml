@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: DeBroglieParticlesV
+  id: DeBroglieParticlesV
+  kernel: DeBroglieParticlesV
+  name: DeBroglieParticlesV
+shader:
+  author: wyatt
+  description: 'Not sure what I''m seeing, but it seems real cool. But I have heard
+    that magnetism and spin are related.
+
+    Meant for full screen viewing. Click bottom left to reset'
+  id: wsfGzS
+  name: De Broglie Particles V
+  tags:
+  - physics
+  url: https://www.shadertoy.com/view/wsfGzS

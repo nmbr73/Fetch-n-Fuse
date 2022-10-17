@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: VoronoiBrokeTheSceneJipi
+  id: VoronoiBrokeTheSceneJipi
+  kernel: VoronoiBrokeTheSceneJipi
+  name: VoronoiBrokeTheSceneJipi
+shader:
+  author: N.N.
+  description: The goal of this Shader was to show that we can create a very simple
+    voronoi cutting operator applicable to any scene with a simple function call (opCutVoronoi
+    ). Unfortunately it's a bit slow.
+  id: ftBfRy
+  name: Voronoi broke the scene JiPi
+  parent:
+    id: 7tBBDw
+    name: Voronoi broke the scene
+    url: https://www.shadertoy.com/view/7tBBDw
+  tags:
+  - text
+  - effect
+  - font
+  - slice
+  - cut
+  - operator
+  url: https://www.shadertoy.com/view/ftBfRy

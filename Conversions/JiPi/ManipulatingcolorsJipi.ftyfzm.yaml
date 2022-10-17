@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: ManipulatingcolorsJipi
+  id: ManipulatingcolorsJipi
+  kernel: ManipulatingcolorsJipi
+  name: ManipulatingcolorsJipi
+shader:
+  author: N.N.
+  description: Collection of color manipulations. Please let me know if any need fixed
+    or effects that need added.
+  id: ftyfzm
+  name: ManipulatingColors JiPi
+  parent:
+    id: Wlt3zS
+    name: Manipulating Colors
+    url: https://www.shadertoy.com/view/Wlt3zS
+  tags:
+  - wave
+  - invert
+  - blackandwhite
+  - contrast
+  - sepia
+  - greyscale
+  - intensity
+  - swizzle
+  - mystery
+  - multiply
+  - blacklight
+  - invertwithcolor
+  url: https://www.shadertoy.com/view/ftyfzm

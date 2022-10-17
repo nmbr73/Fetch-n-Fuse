@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Trig1Jipi478
+  id: Trig1Jipi478
+  kernel: Trig1Jipi478
+  name: Trig1Jipi478
+shader:
+  author: N.N.
+  description: Testing depth of field.
+  id: sdBfWm
+  name: Trig1 JiPi 478
+  parent:
+    id: Xs23WV
+    name: Trig1
+    url: https://www.shadertoy.com/view/Xs23WV
+  tags:
+  - raymarchingdof
+  url: https://www.shadertoy.com/view/sdBfWm

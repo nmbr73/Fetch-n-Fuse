@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Gravifluid
+  id: Gravifluid
+  kernel: Gravifluid
+  name: Gravifluid
+shader:
+  author: michael0884
+  description: Wave fluid interacting with a scalar grav field
+  id: WlVGzw
+  name: Gravifluid
+  tags:
+  - waves
+  - fluid
+  - nonlinear
+  url: https://www.shadertoy.com/view/WlVGzw

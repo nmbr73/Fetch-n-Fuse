@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Entropy5
+  id: Entropy5
+  kernel: Entropy5
+  name: Entropy5
+shader:
+  author: FabriceNeyret2
+  description: '.
+
+    '
+  id: stdGWs
+  name: entropy 5
+  tags:
+  - 2d
+  - short
+  - reproduction
+  url: https://www.shadertoy.com/view/stdGWs

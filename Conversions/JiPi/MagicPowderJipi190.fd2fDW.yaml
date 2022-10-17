@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: MagicPowderJipi190
+  id: MagicPowderJipi190
+  kernel: MagicPowderJipi190
+  name: MagicPowderJipi190
+shader:
+  author: N.N.
+  description: Mouse enabled after 5 seconds
+  id: fd2fDW
+  name: Magic Powder JiPi 190
+  parent:
+    id: tsGXR3
+    name: Magic Powder
+    url: https://www.shadertoy.com/view/tsGXR3
+  tags:
+  - particles
+  url: https://www.shadertoy.com/view/fd2fDW

@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: TrippyPaintJipi
+  id: TrippyPaintJipi
+  kernel: TrippyPaintJipi
+  name: TrippyPaintJipi
+shader:
+  author: N.N.
+  description: 'Quick project to make a playful paint program.
+
+
+    Controls: LMB+drag draws on the canvas. Spacebar clears the canvas.
+
+    '
+  id: st2BzG
+  name: Trippy Paint JiPi
+  parent:
+    id: MdKfRG
+    name: Trippy Paint
+    url: https://www.shadertoy.com/view/MdKfRG
+  tags:
+  - simulation
+  - paint
+  url: https://www.shadertoy.com/view/st2BzG

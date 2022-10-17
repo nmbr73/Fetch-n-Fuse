@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Colorsneu
+  id: Colorsneu
+  kernel: Colorsneu
+  name: Colorsneu
+shader:
+  author: N.N.
+  description: original geht einfach nicht, deswegen Nachbau
+  id: NdGcDy
+  name: ColorsNeu
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - nachbau
+  url: https://www.shadertoy.com/view/NdGcDy

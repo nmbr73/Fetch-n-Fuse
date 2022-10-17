@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: TrajectoryRandomForceField
+  id: TrajectoryRandomForceField
+  kernel: TrajectoryRandomForceField
+  name: TrajectoryRandomForceField
+shader:
+  author: FabriceNeyret2
+  description: 'Try different scales with mouse.y (top = smoother).
+
+    click or change size to reset particles location.
+
+    Change initial spread on bufA:4.'
+  id: wd33Dr
+  name: trajectory - random force field
+  tags:
+  - simulation
+  - physics
+  url: https://www.shadertoy.com/view/wd33Dr

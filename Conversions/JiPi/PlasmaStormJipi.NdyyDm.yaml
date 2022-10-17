@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: PlasmaStormJipi
+  id: PlasmaStormJipi
+  kernel: PlasmaStormJipi
+  name: PlasmaStormJipi
+shader:
+  author: N.N.
+  description: My first shader using (messy) volumetric rendering. Badly optimized
+    and writed (my poor gpu), but quite cool for looking at (especially with low RES_INV
+    value).
+  id: NdyyDm
+  name: plasma storm JiPi
+  parent:
+    id: 7sdcWM
+    name: plasma storm
+    url: https://www.shadertoy.com/view/7sdcWM
+  tags:
+  - raymarching
+  - volumetric
+  - abstract
+  - storm
+  url: https://www.shadertoy.com/view/NdyyDm

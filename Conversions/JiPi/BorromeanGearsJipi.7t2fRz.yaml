@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: BorromeanGearsJipi
+  id: BorromeanGearsJipi
+  kernel: BorromeanGearsJipi
+  name: BorromeanGearsJipi
+shader:
+  author: N.N.
+  description: 'Click & drag to rotate.
+
+
+    Big thanks to iq for his raymarching articles!'
+  id: 7t2fRz
+  name: Borromean Gears JiPi
+  parent:
+    id: flXfWs
+    name: Borromean Gears
+    url: https://www.shadertoy.com/view/flXfWs
+  tags:
+  - gears
+  - borromean
+  url: https://www.shadertoy.com/view/7t2fRz

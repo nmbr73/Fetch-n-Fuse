@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MetaCrtSinglePass
+  id: MetaCrtSinglePass
+  kernel: MetaCrtSinglePass
+  name: MetaCrtSinglePass
+shader:
+  author: P_Malin
+  description: 'A single pass version of Meta CRT : https://www.shadertoy.com/view/4dlyWX'
+  id: NljGR1
+  name: Meta CRT - Single Pass
+  tags:
+  - crt
+  url: https://www.shadertoy.com/view/NljGR1

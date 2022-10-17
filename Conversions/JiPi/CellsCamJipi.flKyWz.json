@@ -1,0 +1,93 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flKyWz",
+  "date": "0",
+  "viewed": 0,
+  "name": "Cells cam JiPi",
+  "description": "experiments with voronoi",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "voronoi",
+   "life",
+   "cells"
+  ],
+  "hasliked": 0,
+  "parentid": "ftVyDR",
+  "parentname": "Cells cam"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n\n    fragColor = texture(iChannel0, uv);\n        \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sf3zn",
+     "filepath": "/presets/webcam.png",
+     "type": "webcam",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define hue(h) clamp( abs( fract(h + vec4(2,1,4,0)/1.) * 6. - 3.) -1. , 0., 1.)\n\nvec2 rand( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{  \n    //stuff to expose\n    const float size = 1.5;\n    const float uvFac = 10.;\n    const float colFac = .5;\n    \n    \n    vec2 ouv = fragCoord/iResolution.xy;        \n    vec2 uv = (fragCoord - iResolution.xy*.5) / (iResolution.y*size);    \n    vec2 luv = uv;\n    \n    vec4 texIn = texture(iChannel1, ouv);\n    vec2 mp = texIn.rb;\n    \n    uv *= 100. + sin(iTime*.5+mp.x*uvFac);\n   \n    vec2 iuv = floor(uv);\n    vec2 guv = fract(uv);      \n\n    float mDist = 10.;\n   \n    vec3 col = vec3(.1);\n       \n    for (float y= -1.; y <= 1.; y++) {\n        for (float x= -1.; x <= 1.; x++) {            \n            vec2 neighbor = vec2(x, y);            \n            vec2 point = rand(iuv + neighbor);\n            point = .5 + .5*sin(iTime*2. + 6.2831*point);\n            vec2 diff = neighbor + point - guv;            \n            float dist = length(diff);                      \n           \n            mDist = min(mDist, dist);                        \n        }\n    } \n       \n    float l = length(luv);    \n    col = hue(fract(mDist*.95 + iTime*.1 + l + mp.x*colFac)).rgb;\n    fragColor = vec4(col,1.0)*.05 + texture(iChannel0, ouv) *.95;    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: WeirdScienceIv
+  id: WeirdScienceIv
+  kernel: WeirdScienceIv
+  name: WeirdScienceIv
+shader:
+  author: wyatt
+  description: A strange reaction inspired by the universe. It's all a cosmic flow.
+    Stable cycles making love.
+  id: ts23Wz
+  name: Weird Science IV
+  tags:
+  - weird
+  - science
+  url: https://www.shadertoy.com/view/ts23Wz

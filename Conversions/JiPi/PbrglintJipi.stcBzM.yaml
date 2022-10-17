@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: PbrglintJipi
+  id: PbrglintJipi
+  kernel: PbrglintJipi
+  name: PbrglintJipi
+shader:
+  author: N.N.
+  description: 'Shadertoy implementation of Procedural Physically based BRDF for Real-Time
+    Rendering of Glints
+
+    Xavier Chermain (ICUBE), Basile Sauvage (ICUBE), Jean-Michel Dishler (ICUBE) and
+    Carsten Dachsbacher (KIT)
+
+    Accepted for Pacific Graphic 2020 and CGF'
+  id: stcBzM
+  name: PBRGlint JiPi
+  parent:
+    id: wstcRH
+    name: PBR Glint
+    url: https://www.shadertoy.com/view/wstcRH
+  tags:
+  - procedural
+  - brdf
+  - microfacet
+  - glint
+  url: https://www.shadertoy.com/view/stcBzM

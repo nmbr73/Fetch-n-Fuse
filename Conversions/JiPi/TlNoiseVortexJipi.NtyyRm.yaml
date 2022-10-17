@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: TlNoiseVortexJipi
+  id: TlNoiseVortexJipi
+  kernel: TlNoiseVortexJipi
+  name: TlNoiseVortexJipi
+shader:
+  author: N.N.
+  description: 'Atom distorted
+
+    '
+  id: NtyyRm
+  name: TL Noise vortex JiPi
+  parent:
+    id: Ns3cDN
+    name: TL // Noise vortex
+    url: https://www.shadertoy.com/view/Ns3cDN
+  tags:
+  - tlnoisevortex
+  url: https://www.shadertoy.com/view/NtyyRm

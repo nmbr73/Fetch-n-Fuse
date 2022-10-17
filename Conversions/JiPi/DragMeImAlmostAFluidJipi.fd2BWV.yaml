@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: DragMeImAlmostAFluidJipi
+  id: DragMeImAlmostAFluidJipi
+  kernel: DragMeImAlmostAFluidJipi
+  name: DragMeImAlmostAFluidJipi
+shader:
+  author: N.N.
+  description: Nachbau Drag Me! Im almost a Fluid!
+  id: fd2BWV
+  name: Drag Me! Im almost a Fluid! JiPi
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/fd2BWV

@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: InceptionTotem
+  id: InceptionTotem
+  kernel: InceptionTotem
+  name: InceptionTotem
+shader:
+  author: dean_the_coder
+  description: 'Another quick and small demo, playing around with creating a better
+    wood texture than I''ve made in the past.
+
+
+    If the totem falls over, let me know...'
+  id: wl3czM
+  name: Inception Totem
+  tags:
+  - 3d
+  - raymarching
+  - movie
+  - cineshader
+  url: https://www.shadertoy.com/view/wl3czM

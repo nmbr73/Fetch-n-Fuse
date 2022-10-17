@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: DriveTheMapperJipi969
+  id: DriveTheMapperJipi969
+  kernel: DriveTheMapperJipi969
+  name: DriveTheMapperJipi969
+shader:
+  author: N.N.
+  description: Just drive - will not go off-road
+  id: fsXBDf
+  name: Drive the Mapper JiPi 969
+  parent:
+    id: 7dsBW2
+    name: Drive the Mapper
+    url: https://www.shadertoy.com/view/7dsBW2
+  tags:
+  - game
+  - interactive
+  - trail
+  - car
+  - building
+  - steer
+  url: https://www.shadertoy.com/view/fsXBDf

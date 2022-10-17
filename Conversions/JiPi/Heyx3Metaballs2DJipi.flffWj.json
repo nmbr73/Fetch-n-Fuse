@@ -1,0 +1,150 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flffWj",
+  "date": "0",
+  "viewed": 0,
+  "name": "heyx3 Metaballs2D JiPi",
+  "description": "Playing around with 2D metaballs and multipass rendering. Click on the screen to push the balls away from you!",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "mouse",
+   "metaballs",
+   "liquid"
+  ],
+  "hasliked": 0,
+  "parentid": "MdySRR",
+  "parentname": "heyx3 Metaballs 2D"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsfGRn",
+     "filepath": "/media/a/1f7dca9c22f324751f2a5a59c9b181dfe3b5564a04b724c657732d0bf09c99db.jpg",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsX3zn",
+     "filepath": "/media/a/94284d43be78f00eb6b298e6d78656a1b34e2b91b34940d02f1ca8b22310e8a0.png",
+     "type": "cubemap",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define BALL_THINNESS 900.0\n#define BALL_DROPOFF_EXPONENT 2.1\n\n#define SHADOW_DROPOFF_EXPONENT 2.0\n\n#define MOUSE_MAX_DIST 100.0\n#define MOUSE_DROPOFF_EXPONENT 2.0\n\n\n//Gets the \"strength\" of a ball the given distance away from a point.\nfloat getWeight(float distToBall)\n{\n    return pow(1.0 / distToBall, BALL_DROPOFF_EXPONENT);\n}\n\n\n\n//Be careful; the following code is duplicated in the other pass.\n//Make sure it stays identical across both passes.\n//---------------------------------------------------------------\n#define N_BALLS 64\n#define BALL_MAX_SPEED 1.0\n\n#define ballPos(ballData) ballData.xy\n#define ballVel(ballData) ballData.zw\n\n//Gets the position in the \"world\" of the given pixel.\nvec2 getPos(vec2 fragCoords, vec2 resolution)\n{\n    return fragCoords / min(resolution.x, resolution.y);\n}\n\n//Gets the given ball's position/velocity.\nvec4 getBallData(float index)\n{\n    vec4 col = texture(iChannel0, vec2(index / iChannelResolution[0].x), 0.0);\n    \n    //Unpack the position/velocity.\n    ballVel(col) = BALL_MAX_SPEED * (-1.0 + (2.0 * ballVel(col)));\n    \n    return col;\n}\n//---------------------------------------------------------------\n\n\n\nvec3 getVoidColor(vec2 uv, float strength)\n{\n    vec3 tex = texture(iChannel2, uv).rgb;\n    return tex * (1.0 - pow(strength / BALL_THINNESS, SHADOW_DROPOFF_EXPONENT));\n}\nvec3 getBallColor(float strength, vec3 avgNormal)\n{\n    return texture(iChannel3, avgNormal.xzy).rgb;\n}\nvec3 getMouseColorAdd(vec2 fragCoord)\n{\n    if (iMouse.z > 1.0)\n    {\n        float dist = min(MOUSE_MAX_DIST, distance(fragCoord, iMouse.xy)),\n              distLerp = dist / MOUSE_MAX_DIST;\n        return (1.0 - distLerp) *\n            \tvec3(0.5 + (0.5 * sin(distLerp * 5.0 + (iTime * 20.0))));\n    }\n    return vec3(0.0);\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 pos = getPos(fragCoord, iResolution.xy);\n    float strength = 0.0;\n    vec3 strengthDir = vec3(0.0);\n    \n    for (int i = 0; i < N_BALLS; ++i)\n    {\n        vec4 ballDat = getBallData(float(i));\n        vec2 toBall = ballPos(ballDat) - pos;\n        float dist = length(toBall),\n              ballStrength = getWeight(dist);\n        \n        strength += ballStrength;\n        strengthDir -= vec3(toBall, strength * .01);\n    }\n    strengthDir = normalize(strengthDir);\n    \n    vec3 outColor = mix(getVoidColor(fragCoord / iResolution.xy, strength),\n                        getBallColor(strength, strengthDir),\n                        step(BALL_THINNESS, strength));\n    fragColor = vec4(outColor + getMouseColorAdd(fragCoord), 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdXGzr",
+     "filepath": "/media/a/8979352a182bde7c3c651ba2b2f4e0615de819585cc37b7175bcefbca15a6683.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n      This buffer contains the data for the balls. Each pixel is one ball.\n      The data is stored along the bottom of the texture (uv.y == 0.0).\n*/\n\n\n//Influences the starting position/velocity of each ball.\n#define SEED .6811\n\n//The strength of the attraction towards the mouse.\n#define MOUSE_STRENGTH 0.02\n#define MOUSE_DROPOFF_EXPONENT 15.0\n\n#define BALL_SLOWDOWN 0.997\n\n\n\n//Gets the \"strength\" of a ball the given distance away from the mouse.\nfloat getWeight(float distToBall)\n{\n    return MOUSE_STRENGTH * 1.0 / pow(distToBall, MOUSE_DROPOFF_EXPONENT);\n}\n\n\n//Be careful; the following code is duplicated in the other pass.\n//Make sure it stays identical across both passes.\n//---------------------------------------------------------------\n#define N_BALLS 64\n#define BALL_MAX_SPEED 1.0\n\n#define ballPos(ballData) ballData.xy\n#define ballVel(ballData) ballData.zw\n\n//Gets the position in the \"world\" of the given pixel.\nvec2 getPos(vec2 fragCoords, vec2 resolution)\n{\n    return fragCoords / min(resolution.x, resolution.y);\n}\n\n//Gets the given ball's position/velocity.\nvec4 getBallData(float index)\n{\n    vec4 col = texture(iChannel0, vec2(index / iChannelResolution[0].x, 0.0));\n    \n    //Unpack the position/velocity.\n    ballVel(col) = BALL_MAX_SPEED * (-1.0 + (2.0 * ballVel(col)));\n    \n    return col;\n}\n//---------------------------------------------------------------\n\n#define N_BALLS_F float(N_BALLS)\n\n\n//Packs up data for a ball into a texture value.\nvec4 packBallData(vec2 pos, vec2 vel)\n{\n\tvec4 outD;\n    ballPos(outD) = pos;\n    ballVel(outD) = 0.5 + (0.5 * (vel / BALL_MAX_SPEED));\n    return outD;\n}\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    if (fragCoord.x > N_BALLS_F)\n        discard;\n    \n    if (iFrame < 2)\n    {\n        vec2 uv = fragCoord / iChannelResolution[0].xy;\n        uv += SEED;\n            \n        vec2 pos = texture(iChannel1, uv * 02.12312).yz,\n             vel = texture(iChannel1, uv * 5.415234).zy;\n        pos.x *= iChannelResolution[0].x / iChannelResolution[0].y;\n        vel = BALL_MAX_SPEED * (-1.0 + (2.0 * vel));\n            \n        fragColor = packBallData(pos, vel);\n    }\n    else\n    {\n    \tvec4 ballData = getBallData(fragCoord.x);\n        vec2 pos = ballPos(ballData),\n             vel = ballVel(ballData);\n        \t\n        float aspectRatio = iChannelResolution[0].y / iChannelResolution[0].x;\n        pos += vel * iTimeDelta * vec2(aspectRatio, 1.0);\n        \n            \n        //Make sure the balls aren't outside the map.\n        float invAspectRatio = 1.0 / aspectRatio;\n        if (pos.x < 0.0)\n        {\n            pos.x = 0.0;\n            vel.x = abs(vel.x);\n        }\n        if (pos.y < 0.0)\n        {\n\t\t\tpos.y = 0.0;\n            vel.y = abs(vel.y);\n        }\n        if (pos.x >= invAspectRatio)\n        {\n            pos.x = invAspectRatio;\n            vel.x = -abs(vel.x);\n        }\n        if (pos.y >= 1.0)\n        {\n            pos.y = 1.0;\n            vel.y = -abs(vel.y);\n        }\n            \n        //Push the balls towards the mouse.\n        if (iMouse.z > 1.0)\n        {\n            vec2 toBall = pos - getPos(iMouse.xy, iResolution.xy);\n            vel += toBall * getWeight(length(toBall));\n        }\n            \n        //Update velocity.\n        vel *= BALL_SLOWDOWN;\n        float speed = length(vel);\n        if (speed > BALL_MAX_SPEED)\n            vel = (vel / speed) * BALL_MAX_SPEED;\n        \n        //Jitter the position a bit.\n        vec2 jitter = texture(iChannel3, 34.4234 * fragCoord / iChannelResolution[0].xy).rb;\n        jitter *= iTime * 9856.1341;\n        pos += vel * sin(jitter) * 0.005;\n        \n        fragColor = packBallData(pos, vel);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

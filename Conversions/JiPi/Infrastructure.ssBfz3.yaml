@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: Infrastructure
+  id: Infrastructure
+  kernel: Infrastructure
+  name: Infrastructure
+shader:
+  author: R3N
+  description: A raymarching scene with a simple greeble technique to add details
+    to surfaces, although there's still some artifacts and aliasing issues resulting
+    from this technique.
+  id: ssBfz3
+  name: Infrastructure
+  tags:
+  - procedural
+  - 3d
+  - architecture
+  - greeble
+  url: https://www.shadertoy.com/view/ssBfz3

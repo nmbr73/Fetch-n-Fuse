@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ExpandingPrismaticSmoke
+  id: ExpandingPrismaticSmoke
+  kernel: ExpandingPrismaticSmoke
+  name: ExpandingPrismaticSmoke
+shader:
+  author: morisil
+  description: Press SPACE to recenter and randomize colors.
+  id: 3dlXW8
+  name: expanding prismatic smoke
+  tags:
+  - random
+  - particles
+  - smoke
+  - brownian
+  - polar
+  - movement
+  url: https://www.shadertoy.com/view/3dlXW8

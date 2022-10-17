@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtsBzj",
+  "date": "0",
+  "viewed": 0,
+  "name": "2DRandomWalk  JiPi178",
+  "description": "A random walk that's simple (but not a simple random walk!)\nClick the screen to add more thingies.\n\nPress r to reset .",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cellularautomata"
+  ],
+  "hasliked": 0,
+  "parentid": "7s2Szm",
+  "parentname": "2D Random Walk"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Code forked from Inigo Quilez's game of life shader\n// https://www.shadertoy.com/view/XstGRf\n// Reset code stolen from somewhere else - sorry!\n// (Press R to reset shader)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    //fragColor = vec4( 1. - step(3. * texelFetch( iChannel0, ivec2(fragCoord), 0 ).x ,0.2));\n    //fragColor = vec4( 3. * texelFetch( iChannel0, ivec2(fragCoord), 0 ).x );\n    fragColor = vec4( 3.0 * texture( iChannel0,fragCoord/iResolution.xy ).x );\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define KEYBOARD iChannel1\n#define KEY_RESET 82\n\n\nfloat Cell( in ivec2 p )\n{\n    // do wrapping\n    ivec2 r = ivec2(textureSize(iChannel0, 0));\n    p = (p+r) % r;\n    \n    // fetch texel\n   // return (texelFetch(iChannel0, p, 0 ).x > 0.5 ) ? 1 : 0;\n   //return texelFetch(iChannel0, p, 0 ).x;\n   return texture(iChannel0, (vec2(p)+0.5)/iResolution.xy ).x;\n}\n\nfloat hash1( float n )\n{\n    return fract(sin(n)*138.5453123);\n}\n\nbool key_down(int key) {\n    return int(texelFetch(KEYBOARD, ivec2(key, 0), 0).x) == 1;\n}\n\nfloat S(float x)\n{\nreturn step(0.5,x);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\nivec2 px = ivec2( fragCoord );\n    \nif (key_down(KEY_RESET) || iFrame == 0)\n{    \nfloat f = 0.;\nif (fragCoord.x > 0.5 * iResolution.x && fragCoord.x < 0.5 * iResolution.x + 1.\n && fragCoord.y > 0.5 * iResolution.y && fragCoord.y < 0.5 * iResolution.y + 1.)\nf = 3.;\n\nfragColor = vec4( f, 0.0, 0.0, 0.0 );\nreturn;\n}\n    \n// center cell\nfloat e = Cell(px); \n\n// neighbour cells\nfloat t = Cell(px + ivec2(0,-1));\nfloat b = Cell(px + ivec2(0,1));\nfloat l = Cell(px + ivec2(-1,0));\nfloat r = Cell(px + ivec2(1,0));   \n\n\n// 2 up, 3 right, 4 down, 5 left\n\nif (fragCoord.y > iMouse.w && fragCoord.y < iMouse.w + 1.\n && fragCoord.x > iMouse.z && fragCoord.x < iMouse.z + 1.)\ne = 3.;\nelse if (e > 1.)\ne = 1.;\nelse if (b == 2.)\ne = 2.;\nelse if (t == 4.)\ne = 4.;\nelse if (l == 3.)\ne = 3.;\nelse if (r == 5.)\ne = 5.;\nelse \ne -= 0.005;\n\nfloat q = hash1(fragCoord.x*13.0 + 0.1 * iTime + hash1(fragCoord.y*73.1));\nif (q > 0.95) // probability direction will change\n{\n// turn anticlockwise \n// could easily be replaced with a function but I'm lazy atm\nif (e == 2.)\ne = 3.;\nelse if (e == 3.)\ne = 4.;\nelse if (e == 4.)\ne = 5.;\nelse if (e == 5.)\ne = 2.;\n}\n\n\nfragColor = vec4( e, 0.0, 0.0, 0.0 );\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

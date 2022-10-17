@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: GasEmitter
+  id: GasEmitter
+  kernel: GasEmitter
+  name: GasEmitter
+shader:
+  author: michael0884
+  description: Combining MPM-MLS with reintegration tracking. The main idea here is
+    to add forces while advecting mass, not before. For some reason cant make it stable
+    while using the affine matrix, so rn it does not conserve angular momentum as
+    well as I would like.
+  id: st3GR7
+  name: Gas emitter
+  tags:
+  - fluid
+  - particles
+  - reintegration
+  - mpm
+  - apic
+  url: https://www.shadertoy.com/view/st3GR7

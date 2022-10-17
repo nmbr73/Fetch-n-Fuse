@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: YouReAsJipi499
+  id: YouReAsJipi499
+  kernel: YouReAsJipi499
+  name: YouReAsJipi499
+shader:
+  author: N.N.
+  description: 'You can add fire by left-clcking with the mouse.
+
+    Try changing the texture in buffer A and the strength, kappa  and alpha varable
+    for different result'
+  id: 7d2cDd
+  name: You're as  JiPi 499
+  parent:
+    id: 4tfBRn
+    name: You're as Hot as Fire
+    url: https://www.shadertoy.com/view/4tfBRn
+  tags:
+  - simulation
+  - fluid
+  - multipass
+  - navierstokes
+  - jacobi
+  - multistep
+  - vorticity
+  url: https://www.shadertoy.com/view/7d2cDd

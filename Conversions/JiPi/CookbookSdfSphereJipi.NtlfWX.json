@@ -1,0 +1,49 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtlfWX",
+  "date": "0",
+  "viewed": 0,
+  "name": "Cookbook-SDF-Sphere JiPi",
+  "description": "SDF sphere",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "sdf"
+  ],
+  "hasliked": 0,
+  "parentid": "7dVXDR",
+  "parentname": "Cookbook - SDF Sphere"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sf3Rr",
+     "filepath": "/media/a/ad56fba948dfba9ae698198c109e71f118a54d209c0ea50d77ea546abad89c57.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// 09.11.2021.\n// Made by Darko Supe (omegasbk)\n\n#define MAX_STEPS 100\n\n#define MAX_DIST 100.\n#define MIN_DIST 0.0002\n\nfloat sdfSphere(vec3 c, float r, vec3 p)\n{\n    return distance(p, c) - r + texture(iChannel0, p.xy).r / ((sin(iTime) + 1.) * 80.);\n}\n\nfloat getDist(vec3 p)\n{\n    // Setup scene\n    return sdfSphere(vec3(0.), 0.8, p);\n}\n\nfloat rayMarch(vec3 ro, vec3 rd)\n{\n    float dist = 0.;\n    \n    for (int i = 0; i < MAX_STEPS; i++)\n    {\n        vec3 itPos = ro + rd * dist;\n        float itDist = getDist(itPos);\n        \n        dist += itDist;\n        \n        if (dist > MAX_DIST || dist < MIN_DIST)  \n            break;\n    }    \n    \n    return dist;\n}\n\nvec3 getNormal(vec3 p)\n{\n    vec2 e = vec2(0.01, 0.);    \n    return normalize(vec3(getDist(p + e.xyy), getDist(p + e.yxy), getDist(p + e.yyx)));    \n}\n\nfloat getLight(vec3 p)\n{\n    vec3 lightPos = vec3(sin(iTime * 3.), 3., -2.2);\n    vec3 lightDir = normalize(p - lightPos);\n    \n    return -dot(getNormal(p), lightDir);    \n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{    \n    vec2 uv = fragCoord/iResolution.xy - 0.5;\n    uv.x *= iResolution.x / iResolution.y;\n    \n    float focalDist = 0.6;\n    vec3 ro = vec3(0., 0., -1.6);\n    vec3 rd = vec3(uv.x, uv.y, focalDist);   \n    \n    vec3 col = vec3(0.);\n    \n    float dist = rayMarch(ro, rd);\n    if (dist < MAX_DIST)\n    {\n        vec3 pHit = ro + rd * dist;\n        col = vec3(0.5, 0.6, 0.6);\n        col *= vec3(getLight(pHit)) + vec3(0.1);\n        \n    }    \n\n    // Output to screen\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

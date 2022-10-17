@@ -1,0 +1,157 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ssdfDj",
+  "date": "0",
+  "viewed": 0,
+  "name": "Bacteria2 JiPi",
+  "description": "another ant life inspired gpu shader. \nNo more teleportation, life is given from backteria spot.\nthis creates odd stain patterns, where the \"backteria\" stays a bit longer, the stragglers eventually die off and spawn in the middle of screen.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "life",
+   "gpgpu",
+   "antinspired"
+  ],
+  "hasliked": 0,
+  "parentid": "ss3fDj",
+  "parentname": "Fork Bacteria2 akin 682"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// See https://iquilezles.org/articles/palettes for more information\nvec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )\n{\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float intensity = (smoothstep(0.0, 2.0, texture(iChannel0,fragCoord/iResolution.xy).r) - 0.5);\n    \n    \n    vec3 col = pal(intensity, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,0.7,0.4),vec3(0.0,0.15,0.20));\n    //vec3 col = pal(intensity, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.00, 0.10, 0.20));\n    \n\tfragColor = vec4(\n        col,\n        1.0\n    );\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\n#define OMEGA 1.57079632679\n#define PI 3.1415926538\n#define TAU 6.283185307179586\n\n#define MAX_UNIT 500\n#define GLOBAL_SCALER 1.0f\n#define LIFETIME 1.5f\n\n#define ANTENNA_DISTANCE 14.0f\n#define ANTENNA_ANGLE  (TAU / 8.0f)\n#define MOVEMENT_SPEED 250.0f\n\n#define PHEROMONE_DECAY 2.0f\n#define PHEROMONE_POTENCY 0.06f\n#define PHEROMONE_RADIUS 10.0f\n#define FRAME_COUNT 3\n\nvec2 R;\n\nstruct Unit\n{\n    vec2 position;\n    float direction;\n    float life;\n};\n\n//noise see https://www.shadertoy.com/view/ltB3zD\nfloat random (vec2 st) \n{\n    return fract(sin(dot(st.xy, vec2(12.9898,78.233)))*43758.5453123);\n}\n\nivec2 getUnitUV(int index, int frame, sampler2D sampler)\n{\n    frame = (frame + FRAME_COUNT) % FRAME_COUNT;\n    \n    int frameOffset = frame * MAX_UNIT;\n    index += frameOffset;\n    \n    int width = textureSize(sampler, 0).x;\n    return ivec2(index % width, int(index / width));\n}\n\nint getUnitIndex(ivec2 position, sampler2D sampler)\n{\n    int width = textureSize(sampler, 0).x;\n    return (position.y * width + position.x) % MAX_UNIT;\n}\n\nUnit readUnit(int index, int frame, in sampler2D sampler)\n{\n    //vec4 current = texelFetch(sampler, getUnitUV(index, frame, sampler), 0);\n    vec4 current = texture(sampler, (vec2(getUnitUV(index, frame, sampler))+0.5)/R);\n    \n    Unit unit;\n    unit.position.x = current.x;\n    unit.position.y = current.y;\n    unit.direction = current.z;\n    unit.life = current.w;\n    return unit;\n}\n\nvec4 writeUnit(in Unit unit)\n{\n    vec4 packed;\n    packed.x = unit.position.x;\n    packed.y = unit.position.y;\n    packed.z = unit.direction;\n    packed.w = unit.life;\n    return packed;\n}\n\nfloat distanceToLine(vec2 position, vec2 a, vec2 b)\n{\n    // https://iquilezles.org/articles/distfunctions\n    vec2 ap = position - a;\n    vec2 ab = b - a;\n    \n    float clamped_projection = clamp(dot(ap,ab) / dot(ab,ab), 0.0, 1.0);\n    \n    return length(ap - ab * clamped_projection);\n}\n\nvec2 calculatePosition(vec2 position, float direction, float distance, in sampler2D sampler)\n{\n    vec2 result = position + vec2(\n        cos(direction) * distance, \n        sin(direction) * distance\n    );\n    return result;\n}\n\nfloat readPheromone(vec2 position, in sampler2D sampler)\n{\n    //return texelFetch(sampler, ivec2(position.xy), 0).r;\n    return texture(sampler, (vec2(ivec2(position.xy))+0.5)/R).r;\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Unit data buffer\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    R = iResolution.xy;\n\n    ivec2 cellIndex = ivec2(fragCoord.xy);\n    int index = getUnitIndex(cellIndex, iChannel0);\n    \n    Unit unit = readUnit(index, iFrame - 1, iChannel0);\n    \n    // Make sure that we _have_ to update the unit\n    if(getUnitUV(index, iFrame, iChannel0) != cellIndex)\n    {\n        discard;\n    }\n    \n    \n    // generate ants\n    // -0.1 is a hack, unit needs to be dead for the FRAME_COUNT duration, or we will have star wars effects\n    if(unit.life < -0.1f || iFrame < FRAME_COUNT)\n    {\n        ivec2 size = textureSize(iChannel0, 0);\n        unit.position.x = random(fragCoord + 5.0) * float(size.x);\n        unit.position.y = random(fragCoord + 2.0) * float(size.y);\n        unit.direction = random(fragCoord) * TAU;\n        unit.life = mod(random(fragCoord * iTime), LIFETIME);\n    }\n\n    float dist = ANTENNA_DISTANCE;\n    float dirOff = ANTENNA_ANGLE;\n    \n    vec2 antennaLeft = calculatePosition(unit.position, unit.direction - ANTENNA_ANGLE, ANTENNA_DISTANCE, iChannel1);\n    vec2 antennaRight = calculatePosition(unit.position, unit.direction + ANTENNA_ANGLE, ANTENNA_DISTANCE, iChannel1);\n\n    float a = readPheromone(antennaLeft, iChannel1);\n    float b = readPheromone(antennaRight, iChannel1);\n\n    vec2 leftRight = normalize(vec2(a , b));\n\n    float dir = ((-a + b) + 1.0) / 2.0;\n    \n    // add life, according to detected pheromone\n    // this should make denser populations\n    unit.life += readPheromone(unit.position, iChannel1) * iTimeDelta;\n\n    unit.direction += mix(-dirOff, dirOff, dir);\n    unit.direction = mod(unit.direction + TAU, TAU);\n\n    unit.position = calculatePosition(unit.position, unit.direction, MOVEMENT_SPEED * iTimeDelta, iChannel1);\n    unit.life -= iTimeDelta;\n    fragColor = writeUnit(unit);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Pheromone buffer\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    R = iResolution.xy;\n\n    // Data is not warm yet, theres buggy data in frames, and that we do not want to draw\n    if(iFrame < FRAME_COUNT * 2)\n    {\n        discard;\n    }\n    // get the current pixel\n    float current = texelFetch(iChannel0, ivec2(gl_FragCoord.xy), 0).r;\n    current -= PHEROMONE_DECAY * iTimeDelta; // decay\n    \n    current = max(current, 0.0);\n    vec2 imageSize = vec2(textureSize(iChannel0, 0));\n    \n    for(int i=0 ; i < MAX_UNIT ; ++i)\n    {\n        Unit now = readUnit(i, iFrame, iChannel1);\n        Unit prev = readUnit(i, iFrame-1, iChannel1);\n        \n        if(now.life < 0.0f || prev.life < 0.0f)\n        {\n            continue;\n        }\n\n        float dist = distanceToLine(fragCoord, now.position, prev.position);\n        current += max(((PHEROMONE_RADIUS - dist) / PHEROMONE_RADIUS) * PHEROMONE_POTENCY,  0.0);\n    }\n    \n    fragColor = vec4(current,0,0,1.0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

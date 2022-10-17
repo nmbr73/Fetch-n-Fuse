@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: MetaSoupJipi
+  id: MetaSoupJipi
+  kernel: MetaSoupJipi
+  name: MetaSoupJipi
+shader:
+  author: N.N.
+  description: 'My shot at Metaballs.
+
+    '
+  id: flKczw
+  name: Meta Soup JiPi
+  parent:
+    id: NttyRs
+    name: Meta Soup
+    url: https://www.shadertoy.com/view/NttyRs
+  tags:
+  - metaballs
+  - metaball
+  - soup
+  url: https://www.shadertoy.com/view/flKczw

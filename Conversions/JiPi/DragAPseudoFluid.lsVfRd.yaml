@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: DragAPseudoFluid
+  id: DragAPseudoFluid
+  kernel: DragAPseudoFluid
+  name: DragAPseudoFluid
+shader:
+  author: wyatt
+  description: 'pressure is calculated by advecting a known volume and then seeing
+    how it shrinks or grows over time and space
+
+    I was thinking about how traffic congestion is related to the density and speed
+    of cars along a straight line
+
+    not super accurate but works ok'
+  id: lsVfRd
+  name: Drag a Pseudo Fluid!
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/lsVfRd

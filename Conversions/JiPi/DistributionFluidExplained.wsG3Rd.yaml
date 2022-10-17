@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: DistributionFluidExplained
+  id: DistributionFluidExplained
+  kernel: DistributionFluidExplained
+  name: DistributionFluidExplained
+shader:
+  author: wyatt
+  description: 'See Comments --> '
+  id: wsG3Rd
+  name: Distribution Fluid Explained
+  tags:
+  - fluid
+  - distribution
+  - latticeboltzmann
+  url: https://www.shadertoy.com/view/wsG3Rd

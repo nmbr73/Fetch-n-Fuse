@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: FireworkWaves
+  id: FireworkWaves
+  kernel: FireworkWaves
+  name: FireworkWaves
+shader:
+  author: michael0884
+  description: 'Playing with voronoi particle tracking #3'
+  id: Ws3SzS
+  name: Firework waves
+  tags:
+  - fast
+  - particles
+  url: https://www.shadertoy.com/view/Ws3SzS

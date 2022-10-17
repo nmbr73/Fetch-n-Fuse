@@ -1,0 +1,109 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tVyWR",
+  "date": "0",
+  "viewed": 0,
+  "name": "stable goo JiPi",
+  "description": "Use mouse to interact\nChange variables around!\n\nThe goo has a negative and positive state. I change the UV around with smooth noise to affect \"spacetime\"\n",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "diffusion",
+   "automata",
+   "cellular",
+   "gameoflife",
+   "reaction"
+  ],
+  "hasliked": 0,
+  "parentid": "MddfDM",
+  "parentname": "stable goo"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float v = texture(iChannel0, fragCoord/iResolution.xy).r;\n    v *= 0.5;\n    v = v * 0.5 + 0.5;\n    v = clamp(v, 0.0, 1.0);\n    \n    \n    fragColor.r = v*1.25;\n    fragColor.g = sin(v*0.1)*5.0+v;\n    fragColor.b = pow(v*5.0, 0.5)*0.26;\n    fragColor.a = 1.0;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdXGzn",
+     "filepath": "/media/a/3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const float TEMPERATURE = 2.0;\nconst float RADIUS = 1.33;\n\n\nconst float PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640;\n\nfloat random()\n{\n\treturn fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453);  \n}\n\nfloat get_average(vec2 uv, float size)\n{\n    const float points = 14.0;\n    const float Start = 2.0 / points;\n    vec2 scale = (RADIUS * 5.0 / iResolution.xy) + size;\n\n    float res = texture(iChannel0, uv).r;\n\n    for (float point = 0.0; point < points; point++)\n    {\n        float r = (PI * 2.0 * (1.0 / points)) * (point + Start);\n        res += texture(iChannel0, uv + vec2(sin(r), cos(r)) * scale).r;\n    }\n\n    res /= points;\n\n    return res;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    vec3 noise = texture(iChannel2, iTime*0.01 + uv*0.015).rgb;\n    float height = (noise.b*2.0-1.0) * 0.25;\n    \n    {\t\n        vec2 muv = noise.xy;\n        \n        vec2 p = uv - muv;\n        float r = length(p);\n        float a = atan(p.y, p.x);\n        r = pow(r*2.0, 1.0 + height * 0.05);\n        p = r * vec2(cos(a)*0.5, sin(a)*0.5);\n\n        uv = p + muv;\n    }\n    \n    /*if (texelFetch(iChannel1, ivec2(82, 0), 0).x == 1.0) {\n        float rot = radians(10.0);\n        uv -= 0.5;\n        uv *= mat2(cos(rot), -sin(rot), sin(rot), cos(rot)) * 1.0002;\n        uv += 0.5;\n    }*/ \n        \n    //uv.y += 0.00025;\n\n    if (iFrame == 0)\n    {\n        fragColor.r = random();\n        return;\n    }\n    \n    float val = texture(iChannel0, uv).r;\n    float avg = get_average(uv, height*-0.005);\n    fragColor.r = sin(avg * (2.3 + TEMPERATURE + height*2.0)) + sin(val);\n   \n    if (iMouse.z > 0.0) \n        fragColor.r += smoothstep(length(iResolution.xy)/5.0, 0.5, length(iMouse.xy - fragCoord.xy)) * sin(iTime*10.0);\n}  ",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: NavierstokeishJipi
+  id: NavierstokeishJipi
+  kernel: NavierstokeishJipi
+  name: NavierstokeishJipi
+shader:
+  author: N.N.
+  description: Sortiert
+  id: slcXRX
+  name: NavierStokeish JiPi
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - 2d
+  - vector
+  url: https://www.shadertoy.com/view/slcXRX

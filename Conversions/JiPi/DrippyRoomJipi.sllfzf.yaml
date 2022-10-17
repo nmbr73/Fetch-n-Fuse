@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: DrippyRoomJipi
+  id: DrippyRoomJipi
+  kernel: DrippyRoomJipi
+  name: DrippyRoomJipi
+shader:
+  author: N.N.
+  description: 'After finding out that multipass has finally been added to Shadertoy,
+    I just had to use it for a 3D watery effect with an interacting object. Thank
+    you for adding multipass to Shadertoy! Now it''s even more amazing than it was
+    before. :octopusballoon:'
+  id: sllfzf
+  name: Drippy Room JiPi
+  parent:
+    id: MstGWX
+    name: Drippy Room
+    url: https://www.shadertoy.com/view/MstGWX
+  tags:
+  - water
+  - spotlight
+  - box
+  - feedback
+  - wooden
+  url: https://www.shadertoy.com/view/sllfzf

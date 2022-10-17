@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: GolfBallsAndBigWaterRipples
+  id: GolfBallsAndBigWaterRipples
+  kernel: GolfBallsAndBigWaterRipples
+  name: GolfBallsAndBigWaterRipples
+shader:
+  author: mathmasterzach
+  description: Interact with the mouse. Play around with the constants in the code.
+    Try it in fullscreen mode.
+  id: ts3Gzs
+  name: Golf Balls And Big Water Ripples
+  tags:
+  - waves
+  - simulation
+  - water
+  - particles
+  - physics
+  url: https://www.shadertoy.com/view/ts3Gzs

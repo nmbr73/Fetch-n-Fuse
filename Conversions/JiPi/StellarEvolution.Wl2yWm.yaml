@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: StellarEvolution
+  id: StellarEvolution
+  kernel: StellarEvolution
+  name: StellarEvolution
+shader:
+  author: michael0884
+  description: "Toy model of a self-gravitating gas\nThe gas has pressure proportional\
+    \ to density^2 \nThe gravity is solved by an future estimating Jacobi like iterative\
+    \ thing, even that is not sufficient."
+  id: Wl2yWm
+  name: Stellar evolution
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/Wl2yWm

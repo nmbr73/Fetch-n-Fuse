@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Stargazinghippo
+  id: Stargazinghippo
+  kernel: Stargazinghippo
+  name: Stargazinghippo
+shader:
+  author: kuvkar
+  description: Star gazing hippo. It's winter and all! Hadn't done a shader in while.
+  id: 4tGfz3
+  name: StarGazingHippo
+  tags:
+  - snow
+  - winter
+  - hippo
+  url: https://www.shadertoy.com/view/4tGfz3

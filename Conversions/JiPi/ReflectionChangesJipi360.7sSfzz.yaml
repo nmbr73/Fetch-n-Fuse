@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ReflectionChangesJipi360
+  id: ReflectionChangesJipi360
+  kernel: ReflectionChangesJipi360
+  name: ReflectionChangesJipi360
+shader:
+  author: N.N.
+  description: reflection changes
+  id: 7sSfzz
+  name: reflection changes JiPi 360
+  parent:
+    id: fslfDf
+    name: reflection changes
+    url: https://www.shadertoy.com/view/fslfDf
+  tags:
+  - reflectionchanges
+  url: https://www.shadertoy.com/view/7sSfzz

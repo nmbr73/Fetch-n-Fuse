@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: WritingsFromHellJipi
+  id: WritingsFromHellJipi
+  kernel: WritingsFromHellJipi
+  name: WritingsFromHellJipi
+shader:
+  author: N.N.
+  description: Rebuild
+  id: flyczK
+  name: ' writings from hell JiPi'
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - hell
+  url: https://www.shadertoy.com/view/flyczK

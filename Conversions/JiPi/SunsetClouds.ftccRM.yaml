@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: SunsetClouds
+  id: SunsetClouds
+  kernel: SunsetClouds
+  name: SunsetClouds
+shader:
+  author: wyatt
+  description: Cumulative image of clouds with 2D lighting
+  id: ftccRM
+  name: Sunset Clouds
+  tags:
+  - noise
+  - sunset
+  - fbm
+  url: https://www.shadertoy.com/view/ftccRM

@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: FireInTheBrain
+  id: FireInTheBrain
+  kernel: FireInTheBrain
+  name: FireInTheBrain
+shader:
+  author: xenn
+  description: yay
+  id: fsSXDV
+  name: fire in the brain
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/fsSXDV

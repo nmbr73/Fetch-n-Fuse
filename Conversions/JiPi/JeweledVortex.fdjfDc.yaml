@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: JeweledVortex
+  id: JeweledVortex
+  kernel: JeweledVortex
+  name: JeweledVortex
+shader:
+  author: ChunderFPV
+  description: 'A logarithmic version of this: https://www.shadertoy.com/view/sllyRn
+    with added fanciness.
+
+    Magical segmentation code derived from this: https://www.shadertoy.com/view/lsdBzX
+
+    Debugging Font by valalalalala: https://www.shadertoy.com/view/WtGyWD'
+  id: fdjfDc
+  name: Jeweled Vortex
+  tags:
+  - 2d
+  - math
+  - spiral
+  - vogel
+  - fractions
+  url: https://www.shadertoy.com/view/fdjfDc

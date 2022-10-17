@@ -1,0 +1,128 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tlcRn",
+  "date": "0",
+  "viewed": 0,
+  "name": "fluid_thingy_4 JiPi 180",
+  "description": "Space reset. \nNearest to linear filter from ttg : https://www.shadertoy.com/view/tssXWf\nFluid tutorial from wyatt : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "wdlfWM",
+  "parentname": "fluid_thingy_4 (webcam)"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n** License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n** Created by bal-khan\n**\n** This is rendering code\n**\n** BufferA contain Fluid Code with a define to switch on/off\n**\n*/\n\nvoid mainImage( out vec4 o, in vec2 f )\n{\n    vec4 ret = texture(iChannel0, f/R);\n\to = vec4(ret.zzz*1e2, 1.0); // mult value by bignum \n    o = clamp(o, .0, 1.); // clamp bigvalue to be in [0-1] range\n    o -= .25; // offset value\n    o = sin(B(f/R)*-2.+length(o.xyz)*3.14+1.57*1.0+.250*vec4(.0,1.04,2.08,.0) ); // sinus coloring\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n** Based on this tutorial : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n*/\n\n//\n#define ORDER \n\nconst vec2 n = vec2(+.0, +1.);\nconst vec2 s = -n;\nconst vec2 w = vec2(+1., +0.);\nconst vec2 e = -w;\n\nvec4 F(vec2 p)\n{\n\tvec2 r = A(p/R).xy;\n    r = p - r;\n    return A(r/R);\n}\n\nvoid mainImage( out vec4 o, in vec2 f )\n{\n    float kb = C(vec2(32.5/256., 0.25)).x;\n    if (kb > .5 || iFrame < 1) {o = vec4(0.,0.,0., .0 ); return;}\n\n    o = F(f);\n    vec4 En = F(f+n);\n    vec4 Es = F(f+s);\n    vec4 Ew = F(f+w);\n    vec4 Ee = F(f+e);\n\n    o.z = (En + Es + Ew + Ee).z * .12405;// *exp(1.-4.*o.z);\n\n    // grayscale of camera texture\n    float vgb = g( B(f/R).xyz );\n    // Adding waves of different magnitudes\n    o.xy += 15. * iTimeDelta*cs(50.*vgb + 1.*(length(o.xy) ) ) ;\n    o.xy += -30.* iTimeDelta*cs(20.*vgb + 7.*(length(o.xy) )  - (length(vec2(Ee.z - Ew.z, Es.z - En.z))));\n    o.xy += 20. * iTimeDelta*cs(70.*vgb + 15.*(length(o.xy) ) + 5.*(length(vec2(Ee.z - Ew.z, Es.z - En.z))));\n    \n    // experimental other sets of values, these replace the last wave\n    /*\n    o.xy += 150.*iTimeDelta*cs(1.*g( B(f/R).xyz )+1.0*1.*(length(o.xy) ) ) ;\n    o.xy += 150.*iTimeDelta*cs(10.*g( B(f/R).xyz )+3.0*1.*(length(o.xy) ) ) ;\n\to.xy += 20.*iTimeDelta*cs(61.*g( B(f/R).xyz )+1.0*10.*(length(o.xy) )+1.0*6.*(length(vec2(Ee.z - Ew.z, Es.z - En.z)))) ;\n    */\n    /*\n    o.xy *= 1.709333; // This artifact is too cool to be killed just like that, I want to make something out of it\n\t*/\n    #ifdef ORDER\n    o.xy += vec2(Ee.z - Ew.z, Es.z - En.z) *.25; // ORDER\n\t#else\n    o.xy += vec2(Ee.z - Ew.z, Es.z - En.z) *.0125; // 50% more CHAOS\n    #endif\n\n    o.z += (Es.y - En.y + Ee.x - Ew.x) *-.99;\n\n    o = clamp(o, -1.0, 1.); // This should not be needed but idk for sure that it's not needed\n    // I should probably also clamp from -PI to PI but I like it as is\n}\n\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\n/* Linear Filtering Shim by Theron Tarigo, 2019.\n   https://www.shadertoy.com/view/tssXWf\n\n   The following codes may be used and copied freely,\n   with or without attribution.  However, please do not\n   remove the URL, so that others may find the explanation\n   provided here, which may be expanded in future.\n   This is not a legal requirement.\n*/\n\n#define LINEAR_FILTER_CONFIG  true,true,true,true\n\nconst struct LINEARFILTER_T {\n  bool iChannel0, iChannel1, iChannel2, iChannel3;\n} LINEARFILTER = LINEARFILTER_T(LINEAR_FILTER_CONFIG);\n\nconst struct SAMPLERINDEX_T {\n  int iChannel0, iChannel1, iChannel2, iChannel3;\n} SAMPLERINDEX = SAMPLERINDEX_T(0,1,2,3);\n\nvec4 textureLinearPix (sampler2D sampler, vec2 U) {\n  return mix(mix(\n      texelFetch(sampler,ivec2(U)+ivec2(0,0),0),\n      texelFetch(sampler,ivec2(U)+ivec2(1,0),0),\n    fract((U).x)),mix(\n      texelFetch(sampler,ivec2(U)+ivec2(0,1),0),\n      texelFetch(sampler,ivec2(U)+ivec2(1,1),0),\n    fract((U).x)),fract((U).y));\n}\n\n#define textureLinear(sampler,P) textureLinearPix(sampler, \\\n    (P)*iChannelResolution[SAMPLERINDEX.sampler].xy-vec2(.5))\n\n#define texture(sampler,P) ( LINEARFILTER.iChannel0 ? \\\n    textureLinear(sampler,P) \\\n  : texture(sampler,P) )\n// End of Linear Filtering Shim\n\n#define R iResolution.xy\n\n// grayscale\n#define g(c) (.3*c.x + .59*c.y + .11*c.z) \n\n// trigonometrics\nvec2 cs(float a) { return vec2(cos(a), sin(a)); }\n\n//code shortcuts\n#define A(u) texture(iChannel0, u)\n#define B(u) texture(iChannel1, u)\n#define C(u) texture(iChannel2, u)\n#define D(u) texture(iChannel3, u)\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

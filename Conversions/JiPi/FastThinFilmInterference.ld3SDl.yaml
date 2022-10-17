@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: FastThinFilmInterference
+  id: FastThinFilmInterference
+  kernel: FastThinFilmInterference
+  name: FastThinFilmInterference
+shader:
+  author: cornusammonis
+  description: A fast and fairly realistic thin-film interference and chromatic dispersion
+    simulation shader.
+  id: ld3SDl
+  name: Fast Thin-Film Interference
+  tags:
+  - interference
+  - bubble
+  - thinfilm
+  url: https://www.shadertoy.com/view/ld3SDl

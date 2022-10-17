@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: GravityStreams
+  id: GravityStreams
+  kernel: GravityStreams
+  name: GravityStreams
+shader:
+  author: Lorenzo_Vannuccini
+  description: 'Let''s make art from gravity!
+
+
+    BuffA stores and updates particles positions & inertia.
+
+    BuffB & BuffC exploit accumulation to track particles trails, generating scene
+    albedo & normals.
+
+    Image Shader computes lighting, glow & vignetting (final compositing).'
+  id: MdGfDc
+  name: Gravity Streams
+  tags:
+  - particles
+  - physics
+  - gravity
+  - multipass
+  - streams
+  url: https://www.shadertoy.com/view/MdGfDc

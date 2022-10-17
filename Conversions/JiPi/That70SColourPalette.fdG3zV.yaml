@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: That70SColourPalette
+  id: That70SColourPalette
+  kernel: That70SColourPalette
+  name: That70SColourPalette
+shader:
+  author: xenn
+  description: 'yeah
+
+    mouse click influences general direction'
+  id: fdG3zV
+  name: That 70's Colour Palette
+  tags:
+  - mouse
+  - background
+  - shadertoy
+  - feedback
+  - integration
+  - library
+  - web
+  - webdevelopment
+  - webdev
+  - javascript
+  url: https://www.shadertoy.com/view/fdG3zV

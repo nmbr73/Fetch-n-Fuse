@@ -1,0 +1,64 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NlXBRn",
+  "date": "0",
+  "viewed": 0,
+  "name": "ReflectionTutorial JiPi849",
+  "description": "Reflection from cubemap.\nFrom tutorial: https://inspirnathan.com/posts/63-shadertoy-tutorial-part-16",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "reflection",
+   "cubemap"
+  ],
+  "hasliked": 0,
+  "parentid": "stjyWm",
+  "parentname": "ReflectionTutorial"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3zn",
+     "filepath": "/media/a/488bd40303a2e2b9a71987e48c66ef41f5e937174bf316d3ed0e86410784b919.jpg",
+     "type": "cubemap",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsX3zn",
+     "filepath": "/media/a/94284d43be78f00eb6b298e6d78656a1b34e2b91b34940d02f1ca8b22310e8a0.png",
+     "type": "cubemap",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "const int MAX_MARCHING_STEPS = 255;\nconst float MIN_DIST = 0.0;\nconst float MAX_DIST = 100.0;\nconst float PRECISION = 0.001;\nconst float EPSILON = 0.0005;\nconst float PI = 3.14159265359;\n\nmat2 rotate2d(float theta) {\n  float s = sin(theta), c = cos(theta);\n  return mat2(c, -s, s, c);\n}\n\nfloat sdSphere(vec3 p, float r )\n{\n  return length(p) - r;\n}\n\nfloat sdScene(vec3 p) {\n  return sdSphere(p, 1.);\n}\n\nfloat rayMarch(vec3 ro, vec3 rd) {\n  float depth = MIN_DIST;\n\n  for (int i = 0; i < MAX_MARCHING_STEPS; i++) {\n    vec3 p = ro + depth * rd;\n    float d = sdScene(p);\n    depth += d;\n    if (d < PRECISION || depth > MAX_DIST) break;\n  }\n\n  return depth;\n}\n\nvec3 calcNormal(vec3 p) {\n    vec2 e = vec2(1.0, -1.0) * EPSILON;\n    float r = 1.;\n    return normalize(\n      e.xyy * sdScene(p + e.xyy) +\n      e.yyx * sdScene(p + e.yyx) +\n      e.yxy * sdScene(p + e.yxy) +\n      e.xxx * sdScene(p + e.xxx));\n}\n\nmat3 camera(vec3 cameraPos, vec3 lookAtPoint) {\n\tvec3 cd = normalize(lookAtPoint - cameraPos);\n\tvec3 cr = normalize(cross(vec3(0, 1, 0), cd));\n\tvec3 cu = normalize(cross(cd, cr));\n\t\n\treturn mat3(-cr, cu, -cd);\n}\n\nvec3 phong(vec3 lightDir, float lightIntensity, vec3 rd, vec3 normal) {\n  vec3 cubemapReflectionColor = texture(iChannel0, reflect(rd, normal)).rgb;\n\n    \n \n  vec3 K_a = 1.5 * vec3(0.7,0.7,0.8) * cubemapReflectionColor; // Reflection\n  vec3 K_d = vec3(1);\n  vec3 K_s = vec3(1);\n  float alpha = 50.;\n\n  float diffuse = clamp(dot(lightDir, normal), 0., 1.);\n  float specular = pow(clamp(dot(reflect(lightDir, normal), -rd), 0., 1.), alpha);\n\n  return lightIntensity * (K_a + K_d * diffuse + K_s * specular);\n}\n\nfloat fresnel(vec3 n, vec3 rd) {\n  return pow(clamp(1. - dot(n, -rd), 0., 1.), 5.);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n  vec2 uv = (fragCoord-.5*iResolution.xy)/iResolution.y;\n  vec2 mouseUV = iMouse.xy/iResolution.xy;\n  if (mouseUV == vec2(0.0)) mouseUV = vec2(0.5); // trick to center mouse on page load\n\n  vec3 lp = vec3(0);\n  vec3 ro = vec3(0, 0, 3);\n  ro.yz *= rotate2d(mix(-PI/2., PI/2., mouseUV.y));\n  ro.xz *= rotate2d(mix(-PI, PI, mouseUV.x));\n\n  vec3 rd = camera(ro, lp) * normalize(vec3(uv, -1));\n  \n  vec3 col = texture(iChannel0, rd).rgb;\n\n  float d = rayMarch(ro, rd);\n\n  vec3 p = ro + rd * d;\n  vec3 normal = calcNormal(p);\n\n  vec3 lightPosition1 = vec3(1, 1, 1);\n  vec3 lightDirection1 = normalize(lightPosition1 - p);\n  vec3 lightPosition2 = vec3(-8, -6, -5);\n  vec3 lightDirection2 = normalize(lightPosition2 - p);\n\n  float lightIntensity1 = 0.6;\n  float lightIntensity2 = 0.3;\n    \n  vec3 sphereColor = phong(lightDirection1, lightIntensity1, rd, normal);\n  sphereColor += phong(lightDirection2, lightIntensity2, rd, normal);\n  sphereColor += fresnel(normal, rd) * 0.4;\n  \n  col = mix(col, sphereColor, step(d - MAX_DIST, 0.));\n\n  fragColor = vec4(col, 1.0);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

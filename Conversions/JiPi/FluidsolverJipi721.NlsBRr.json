@@ -1,0 +1,77 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NlsBRr",
+  "date": "0",
+  "viewed": 0,
+  "name": "FluidSolver JiPi721",
+  "description": "Single-pass Navier-Stokes solver, from [url=https://hal.inria.fr/inria-00596050/document]Simple and Fast Fluids[/url]",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "XlsBDf",
+  "parentname": "Fluid solver"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define PI 3.141592653589793\n\nvoid mainImage(out vec4 o, in vec2 p) {\n    vec4 c = texture(iChannel0, p.xy / iResolution.xy);\n    o.rgb = .6 + .6 * cos(6.3 * atan(c.y,c.x)/(2.*PI) + vec3(0,23,21)); // velocity\n\to.rgb *= c.w/5.; // ink\n\to.rgb += clamp(c.z - 1., 0., 1.)/10.; // local fluid density\n    o.a = 1.;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/******** 3d simplex noise from https://www.shadertoy.com/view/XsX3zB ********/\n\n/* discontinuous pseudorandom uniformly distributed in [-0.5, +0.5]^3 */\nvec3 random3(vec3 c) {\n\tfloat j = 4096.0*sin(dot(c,vec3(17.0, 59.4, 15.0)));\n\tvec3 r;\n\tr.z = fract(512.0*j);\n\tj *= .125;\n\tr.x = fract(512.0*j);\n\tj *= .125;\n\tr.y = fract(512.0*j);\n\treturn r-0.5;\n}\n\n/* skew constants for 3d simplex functions */\nconst float F3 =  0.3333333;\nconst float G3 =  0.1666667;\n\n/* 3d simplex noise */\nfloat simplex3d(vec3 p) {\n\t /* 1. find current tetrahedron T and it's four vertices */\n\t /* s, s+i1, s+i2, s+1.0 - absolute skewed (integer) coordinates of T vertices */\n\t /* x, x1, x2, x3 - unskewed coordinates of p relative to each of T vertices*/\n\t \n\t /* calculate s and x */\n\t vec3 s = floor(p + dot(p, vec3(F3)));\n\t vec3 x = p - s + dot(s, vec3(G3));\n\t \n\t /* calculate i1 and i2 */\n\t vec3 e = step(vec3(0.0), x - x.yzx);\n\t vec3 i1 = e*(1.0 - e.zxy);\n\t vec3 i2 = 1.0 - e.zxy*(1.0 - e);\n\t \t\n\t /* x1, x2, x3 */\n\t vec3 x1 = x - i1 + G3;\n\t vec3 x2 = x - i2 + 2.0*G3;\n\t vec3 x3 = x - 1.0 + 3.0*G3;\n\t \n\t /* 2. find four surflets and store them in d */\n\t vec4 w, d;\n\t \n\t /* calculate surflet weights */\n\t w.x = dot(x, x);\n\t w.y = dot(x1, x1);\n\t w.z = dot(x2, x2);\n\t w.w = dot(x3, x3);\n\t \n\t /* w fades from 0.6 at the center of the surflet to 0.0 at the margin */\n\t w = max(0.6 - w, 0.0);\n\t \n\t /* calculate surflet components */\n\t d.x = dot(random3(s), x);\n\t d.y = dot(random3(s + i1), x1);\n\t d.z = dot(random3(s + i2), x2);\n\t d.w = dot(random3(s + 1.0), x3);\n\t \n\t /* multiply d by w^4 */\n\t w *= w;\n\t w *= w;\n\t d *= w;\n\t \n\t /* 3. return the sum of the four surflets */\n\t return dot(d, vec4(52.0));\n}\n\n/*****************************************************************************/\n\n\nvec2 pen(float t) {\n    t *= 0.05;\n    return 0.5 * iResolution.xy *\n        vec2(simplex3d(vec3(t,0,0)) + 1.,\n             simplex3d(vec3(0,t,0)) + 1.);\n}\n\n\n#define T(p) texture(iChannel0,(p)/iResolution.xy)\n#define length2(p) dot(p,p)\n\n#define dt 0.15\n#define K 0.2\n#define nu 0.5\n#define kappa 0.1\n\nvoid mainImage(out vec4 c, in vec2 p) {\n    if(iFrame < 10) {\n        c = vec4(0,0,1,0);\n        return;\n    }\n    \n    c = T(p);\n    \n    vec4 n = T(p + vec2(0,1));\n    vec4 e = T(p + vec2(1,0));\n    vec4 s = T(p - vec2(0,1));\n    vec4 w = T(p - vec2(1,0));\n    \n    vec4 laplacian = (n + e + s + w - 4.*c);\n    \n    vec4 dx = (e - w)/2.;\n    vec4 dy = (n - s)/2.;\n    \n    // velocity field divergence\n    float div = dx.x + dy.y;\n    \n    // mass conservation, Euler method step\n    c.z -= dt*(dx.z * c.x + dy.z * c.y + div * c.z);\n    \n    // semi-Langrangian advection\n    c.xyw = T(p - dt*c.xy).xyw;\n    \n    // viscosity/diffusion\n    c.xyw += dt * vec3(nu,nu,kappa) * laplacian.xyw;\n    \n    // nullify divergence with pressure field gradient\n    c.xy -= K * vec2(dx.z,dy.z);\n    \n    // external source\n    vec2 m = pen(iTime);\n    c.xyw += dt * exp(-length2(p - m)/50.) * vec3(m - pen(iTime-0.1), 1);\n    \n    // dissipation\n    c.w -= dt*0.0005;\n    \n    c.xyzw = clamp(c.xyzw, vec4(-5,-5,0.5,0), vec4(5,5,3,5));\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

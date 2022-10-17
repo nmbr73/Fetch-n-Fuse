@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Meander
+  id: Meander
+  kernel: Meander
+  name: Meander
+shader:
+  author: wyatt
+  description: meandering currents
+  id: 3tsBDr
+  name: Meander
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/3tsBDr

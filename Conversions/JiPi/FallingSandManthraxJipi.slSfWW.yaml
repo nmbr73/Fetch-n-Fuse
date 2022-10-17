@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: FallingSandManthraxJipi
+  id: FallingSandManthraxJipi
+  kernel: FallingSandManthraxJipi
+  name: FallingSandManthraxJipi
+shader:
+  author: N.N.
+  description: "sand: click + drag: \nwall: left shift + click + drag:\nerase: space\
+    \ + click + drag:\n\nchange scale and brush radius in common tab\n\ntheres a bug\
+    \ where sometimes sand duplicates itself :)"
+  id: slSfWW
+  name: Falling Sand Manthrax JiPi
+  parent:
+    id: 7d2cDz
+    name: Fork Falling Sa manthrax 836
+    url: https://www.shadertoy.com/view/7d2cDz
+  tags:
+  - simulation
+  - falling
+  - sand
+  url: https://www.shadertoy.com/view/slSfWW

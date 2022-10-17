@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: FluidAutomata
+  id: FluidAutomata
+  kernel: FluidAutomata
+  name: FluidAutomata
+shader:
+  author: wyatt
+  description: I know I make a lot of fluids and they all probably look the same,
+    but this one is different. This one has better math going on I swear.
+  id: WlcGDH
+  name: Fluid Automata
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/WlcGDH

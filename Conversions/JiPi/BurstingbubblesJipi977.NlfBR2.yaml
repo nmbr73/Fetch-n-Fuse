@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: BurstingbubblesJipi977
+  id: BurstingbubblesJipi977
+  kernel: BurstingbubblesJipi977
+  name: BurstingbubblesJipi977
+shader:
+  author: N.N.
+  description: 'Little modification of an old automata. Thought the ''pops'' looked
+    kinda satisfying.
+
+
+    press r to reset'
+  id: NlfBR2
+  name: BurstingBubbles JiPi977
+  parent:
+    id: NtfGRj
+    name: Bursting bubbles automata
+    url: https://www.shadertoy.com/view/NtfGRj
+  tags:
+  - automata
+  - cool
+  url: https://www.shadertoy.com/view/NlfBR2

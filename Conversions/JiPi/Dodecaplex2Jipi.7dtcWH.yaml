@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: Dodecaplex2Jipi
+  id: Dodecaplex2Jipi
+  kernel: Dodecaplex2Jipi
+  name: Dodecaplex2Jipi
+shader:
+  author: N.N.
+  description: "Continue experiments with rendering regular 4-poytopes. Adding ao\
+    \ and shadows. \n\n"
+  id: 7dtcWH
+  name: Dodecaplex2 JiPi
+  parent:
+    id: NdtcD8
+    name: Dodecaplex2
+    url: https://www.shadertoy.com/view/NdtcD8
+  tags:
+  - 3sphere
+  - poincarespace
+  - binaryicosahedralgroup
+  url: https://www.shadertoy.com/view/7dtcWH

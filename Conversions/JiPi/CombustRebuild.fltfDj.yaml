@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: CombustRebuild
+  id: CombustRebuild
+  kernel: CombustRebuild
+  name: CombustRebuild
+shader:
+  author: N.N.
+  description: rebuild
+  id: fltfDj
+  name: Combust Rebuild
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - combust
+  url: https://www.shadertoy.com/view/fltfDj

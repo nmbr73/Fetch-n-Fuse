@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: NotebookDrawings
+  id: NotebookDrawings
+  kernel: NotebookDrawings
+  name: NotebookDrawings
+shader:
+  author: flockaroo
+  description: 'hand drawing effect
+
+    ...i used to draw a lot, now i let computers pursue my hobbies ;)
+
+
+    took aspect ratio into account, so webcams dont get quenched too much
+
+    ...so try your webcam instead of jean claude ;)'
+  id: XtVGD1
+  name: notebook drawings
+  tags:
+  - effect
+  - pencil
+  - drawing
+  - hand
+  url: https://www.shadertoy.com/view/XtVGD1

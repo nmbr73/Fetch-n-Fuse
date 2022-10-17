@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: LichtenbergFigure5Jipi129
+  id: LichtenbergFigure5Jipi129
+  kernel: LichtenbergFigure5Jipi129
+  name: LichtenbergFigure5Jipi129
+shader:
+  author: N.N.
+  description: Reworking edge bundling stuff to try and get a denser tree structure.
+    Now particles spawn at a random location and follow a gradient field towards the
+    densest regions. Use Mouse y to change smoothness of the gradient field.
+  id: 7tfyDr
+  name: Lichtenberg Figure5 JiPi 129
+  parent:
+    id: 3t3Xz4
+    name: Lichtenberg figure 5
+    url: https://www.shadertoy.com/view/3t3Xz4
+  tags:
+  - particles
+  - river
+  - erosion
+  url: https://www.shadertoy.com/view/7tfyDr

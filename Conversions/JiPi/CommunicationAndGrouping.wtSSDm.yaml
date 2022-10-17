@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: CommunicationAndGrouping
+  id: CommunicationAndGrouping
+  kernel: CommunicationAndGrouping
+  name: CommunicationAndGrouping
+shader:
+  author: wyatt
+  description: 'What you think something is has a lot more to do with how it interacts
+    with you than what it is to itself. '
+  id: wtSSDm
+  name: Communication and Grouping
+  tags:
+  - particles
+  - fields
+  url: https://www.shadertoy.com/view/wtSSDm

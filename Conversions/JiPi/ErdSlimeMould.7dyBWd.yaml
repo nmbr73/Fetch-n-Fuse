@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: ErdSlimeMould
+  id: ErdSlimeMould
+  kernel: ErdSlimeMould
+  name: ErdSlimeMould
+shader:
+  author: xenn
+  description: 'featuring a two-pass 9x9 Gaussian Blur pipeline for the diffusion,
+    gradient lookup for morphological expansion, and a simple differential "Turing
+    Pattern" reaction. Lookout, there are 3 more diffused channels '
+  id: 7dyBWd
+  name: ERD slime mould
+  tags:
+  - gaussianblur
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/7dyBWd

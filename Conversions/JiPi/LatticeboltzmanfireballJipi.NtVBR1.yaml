@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: LatticeboltzmanfireballJipi
+  id: LatticeboltzmanfireballJipi
+  kernel: LatticeboltzmanfireballJipi
+  name: LatticeboltzmanfireballJipi
+shader:
+  author: N.N.
+  description: 'Home made Lattice Boltzmann
+
+    Use mouse to interact
+
+    wip : floating-point precision to be optimized'
+  id: NtVBR1
+  name: LatticeBoltzmanFireball JiPi
+  parent:
+    id: 7tcyDX
+    name: Lattice Boltzmann Fireball
+    url: https://www.shadertoy.com/view/7tcyDX
+  tags:
+  - fire
+  - fluid
+  - lbm
+  url: https://www.shadertoy.com/view/NtVBR1

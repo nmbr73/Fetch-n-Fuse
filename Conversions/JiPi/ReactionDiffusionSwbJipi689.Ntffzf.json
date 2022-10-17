@@ -1,0 +1,105 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "Ntffzf",
+  "date": "0",
+  "viewed": 0,
+  "name": "Reaction Diffusion swb JiPi689",
+  "description": "click to erase\nbunch of extra crap left over from the fork, buffer A is where the meat is\nbunnies terminology from\nhttps://www.youtube.com/watch?v=LMzYrsfTiEw&t=920s \nand \nhttps://www.youtube.com/watch?v=BV9ny785UNc",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "feedback"
+  ],
+  "hasliked": 0,
+  "parentid": "stXBzj",
+  "parentname": "reaction diffusion swb"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdXGzn",
+     "filepath": "/media/a/3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// change the ramp values for colors\n// a is the position on the gradient. \n// 69 in r = return the original color\n\nvec3 zurple = vec3(0.65, 0.1921, 0.4235);\n\n\nvec4 ramp[10] = vec4[10](\n    vec4(vec3(0.65, 0.65, 0.85), 0.0), // zurple\n    vec4(vec3(0.8, 1.0, 0.007), 1.0), // wow yellow\n    vec4(vec3(0.8, 1.0, 0.007), 1.0), // wow yellow\n    vec4(vec3(0.8, 1.0, 0.007), 1.0), // wow yellow\n    vec4(vec3(0.8, 1.0, 0.007), 1.0), // wow yellow\n    vec4(vec3(0.8, 1.0, 0.007), 1.0), // wow yellow\n    vec4(vec3(1.0, 1.0, 1.0), 2.0), // white, maxed out\n    vec4(vec3(1.0, 1.0, 1.0), 2.0), // white, maxed out\n    vec4(vec3(1.0, 1.0, 1.0), 2.0), // white, maxed out\n    vec4(vec3(1.0, 1.0, 1.0), 2.0) // white, maxed out\n);\n// change ramp count if you add more points on the gradient\nint rampCount = 5;\n\n\nint getLowerRampIndex(in float key){\n    for (int i = 0; i < rampCount - 1; i++) {\n        float lowerBound = ramp[i].a;\n        float upperBound = ramp[i + 1].a;\n        if (key <= ramp[i + 1].a) {\n            return i;\n        }\n    }\n    return rampCount - 1;\n}\n\nfloat easeInOutCubic(in float x) {\n    if (x < 0.5) {\n        return 4.0 * x * x * x;\n    }    \n    return 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0;\n}\n\nfloat getLum(in vec3 color) {\n    return 0.2126*color.r + 0.7152*color.g + 0.0722*color.b;\n}\n\nvec4 evalSpecials(in vec4 color, in vec3 tex_col) {\n    if (color.r > 68.5 && color.r < 69.5) {\n        return vec4(tex_col, color.a);\n    }\n    else if (color.r > 1.0 && color.g > 1.0 && color.b > 1.0) {\n        return vec4(color.r/255.0, color.g/255.0, color.b/255.0, color.a);\n    }\n    return color;\n    \n}\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec4 min = ramp[0];\n    vec4 max = ramp[1];\n    // ramp[1] = vec4(ramp[1].rgb, (sin(iTime * 0.5)/4.0) + 1.0);\n    // vec4 color1 = vec4(vec3(0.0, 1.0, 0.0), 1.0);\n    bool found = false;\n    vec2 uv = fragCoord/iResolution.xy;\n    \n\n    \n    vec3 tex_col = texture(iChannel0, uv).rgb;\n    //float mixVal = getLum(tex_col);\n    float mixVal = 1.1 - tex_col.r;\n    \n    // debug show gradient, try commenting this out\n    if (uv.x > 0.95) { mixVal = uv.y; }\n    // end show gradient\n    \n    int lowerRampIndex = getLowerRampIndex(mixVal);\n    min = ramp[lowerRampIndex];\n    max = ramp[lowerRampIndex + 1];\n    mixVal = ((mixVal-min.a)/(max.a - min.a));\n    mixVal = easeInOutCubic(mixVal);\n    // Normalized pixel coordinates (from 0 to 1)\n    // r value of 69 = get the texture color\n    min = evalSpecials(min, tex_col);\n    max = evalSpecials(max, tex_col);\n    vec3 color = mix(min.rgb, max.rgb, mixVal);\n\n    // Time varying pixel color\n\n    // Output to screen\n    fragColor = vec4(color, 1);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdXGzn",
+     "filepath": "/media/a/3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// 2D Random\nfloat random (in vec2 st) {\n    return fract(sin(dot(st.xy,\n                         vec2(12.9898,78.233)))\n                 * 43758.5453123);\n}\nfloat noise (in vec2 st) {\n    vec2 i = floor(st);\n    vec2 f = fract(st);\n\n    // Four corners in 2D of a tile\n    float a = random(i);\n    float b = random(i + vec2(1.0, 0.0));\n    float c = random(i + vec2(0.0, 1.0));\n    float d = random(i + vec2(1.0, 1.0));\n\n    // Smooth Interpolation\n\n    // Cubic Hermine Curve.  Same as SmoothStep()\n    vec2 u = f*f*(3.0-2.0*f);\n    // u = smoothstep(0.,1.,f);\n\n    // Mix 4 coorners percentages\n    return mix(a, b, u.x) +\n            (c - a)* u.y * (1.0 - u.x) +\n            (d - b) * u.x * u.y;\n}\n\nfloat quantize(in float color, float steps) {\n    return (floor(color * steps)+0.150) /steps;\n}\nfloat idk (in float a, in float b) {\n    return noise(vec2(a, b/2.0));\n}\nfloat getBrightness(in vec3 color) {\n    //return (color.r + color.g + color.b)/3.0;\n    return (0.299*color.r + 0.587*color.g + 0.114*color.b);\n}\nfloat getSaturation(in vec3 color) {\n    float colorMax = max(color.b, max(color.r, color.g));\n    float colorMin = min(color.b, min(color.r, color.g));\n    float luminence = getBrightness(color);\n    if (luminence == 1.0) {\n        return 0.0;\n    }\n    return (colorMax - colorMin) / (1.0 - (2.0 * luminence - 1.0));\n    \n\n}\nvec3 getNewFrameColor(in vec3 lastFrameColor, vec2 uv, sampler2D lastFrame) {\n    float pi = 3.14159;\n\n    float speed = 0.0012;\n\n    vec3 newFrameColor = texture(lastFrame, vec2(uv.x + (0.99 - getBrightness(lastFrameColor)) * speed, uv.y)).rgb;\n    vec3 maybeNewFrameColor = texture(lastFrame, vec2(uv.x - (0.99 - getBrightness(lastFrameColor)) * speed, uv.y)).rgb;\n    /*\n    if (random(lastFrameColor.rg) > 0.5) {\n    return newFrameColor;\n    } else {\n    return maybeNewFrameColor;\n    }\n    */\n    if (getSaturation(maybeNewFrameColor) > getSaturation(newFrameColor)){\n        return maybeNewFrameColor;\n    }\n    \n    //newFrameColor = newFrameColor/2.0;\n    return newFrameColor;\n}\nfloat diffuse( in float[9] state, float[9] rules) {\n    float retVal = 0.0;\n    for (int i = 0; i < 9; i++) {\n        retVal = retVal + state[i] * rules[i];\n    }\n    return retVal;\n}\nvec2 getUV(in vec2 inFragCoord, vec2 resolution){\n  inFragCoord.x = mod(inFragCoord.x, resolution.x);\n  inFragCoord.y = mod(inFragCoord.y, resolution.y);\n  return inFragCoord/resolution.xy;\n}\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    float pi = 3.14159;\n    bool zoomers = false;\n    bool do_quantize = false;\n    vec2 uv = fragCoord/iResolution.xy;\n    vec3 lastFrameColor = texture(iChannel0, uv).rgb;\n    // vec3 newFrameColor = getNewFrameColor(lastFrameColor, uv, iChannel0);\n    fragColor = vec4(lastFrameColor, 1.0);\n    //  fragColor.r = random(uv);\n    float webcamBrightness = getBrightness(texture(iChannel1, uv).rgb);\n    //anotherNoiseVal = mod(iTime, 5.0)/5.0;\n    if (iTime < 0.05) {\n        fragColor = texture(iChannel1, (uv.xy/vec2(4.0, 5.0)));\n        return;\n    }\n    if (do_quantize) {\n        fragColor.r = quantize(fragColor.r, 20.0);\n        fragColor.g = quantize(fragColor.g, 10.0);\n        fragColor.b = quantize(fragColor.b, 5.0);\n    }\n    \n    float diagonalDiffuse = 0.05;\n    float adjacentDiffuse = 0.2;\n    float[9] rules = float[9](\n    diagonalDiffuse, adjacentDiffuse, diagonalDiffuse,\n    adjacentDiffuse, -1.0, adjacentDiffuse,\n    diagonalDiffuse, adjacentDiffuse, diagonalDiffuse);\n    \n    float[9] fstate = float[9](\n        texture(iChannel0, getUV(vec2(fragCoord.x - 1.0, fragCoord.y - 1.0), iResolution.xy)).r,\n        texture(iChannel0, getUV(vec2(fragCoord.x, fragCoord.y - 1.0), iResolution.xy)).r,\n        texture(iChannel0, getUV(vec2(fragCoord.x + 1.0, fragCoord.y - 1.0), iResolution.xy)).r,\n        \n        texture(iChannel0, getUV(vec2(fragCoord.x - 1.0, fragCoord.y), iResolution.xy)).r,\n        texture(iChannel0, getUV(vec2(fragCoord.x, fragCoord.y), iResolution.xy)).r,\n        texture(iChannel0, getUV(vec2(fragCoord.x + 1.0, fragCoord.y), iResolution.xy)).r,\n        \n        texture(iChannel0, getUV(vec2(fragCoord.x - 1.0, fragCoord.y + 1.0), iResolution.xy)).r,\n        texture(iChannel0, getUV(vec2(fragCoord.x, fragCoord.y + 1.0), iResolution.xy)).r,\n        texture(iChannel0, getUV(vec2(fragCoord.x + 1.0, fragCoord.y + 1.0), iResolution.xy)).r\n    );\n    \n    float[9] bstate = float[9](\n        texture(iChannel0, getUV(vec2(fragCoord.x - 1.0, fragCoord.y - 1.0), iResolution.xy)).g,\n        texture(iChannel0, getUV(vec2(fragCoord.x, fragCoord.y - 1.0), iResolution.xy)).g,\n        texture(iChannel0, getUV(vec2(fragCoord.x + 1.0, fragCoord.y - 1.0), iResolution.xy)).g,\n        \n        texture(iChannel0, getUV(vec2(fragCoord.x - 1.0, fragCoord.y), iResolution.xy)).g,\n        texture(iChannel0, getUV(vec2(fragCoord.x, fragCoord.y), iResolution.xy)).g,\n        texture(iChannel0, getUV(vec2(fragCoord.x + 1.0, fragCoord.y), iResolution.xy)).g,\n        \n        texture(iChannel0, getUV(vec2(fragCoord.x - 1.0, fragCoord.y + 1.0), iResolution.xy)).g,\n        texture(iChannel0, getUV(vec2(fragCoord.x, fragCoord.y + 1.0), iResolution.xy)).g,\n        texture(iChannel0, getUV(vec2(fragCoord.x + 1.0, fragCoord.y + 1.0), iResolution.xy)).g\n    );\n    \n    \n    \n    float timestep = 1.0;\n    float bunnies = lastFrameColor.g;\n    if (mod(float(iFrame), 5.0) != 0.0) {\n        // fragColor = vec4(lastFrameColor.rgb, 1);\n        // return;\n    }\n    // diffuse\n    float dA = 1.0;\n    float dB = 1.0 - webcamBrightness;  // 0.5;  \n    dB = (sin(iTime/10.0) + 1.0)/3.0;\n    fragColor = vec4(dA * diffuse(fstate, rules), dB * diffuse(bstate, rules), 0, 1);\n    /* */\n\n    float maxFood = 1.0;\n    // float feedRate = 0.15;\n    // feedRate = (webcamBrightness + 0.45)/3.15;\n    float feedRate = 0.055;\n\n    float dieRate = 0.062;\n\n    // react\n\n    float eatenFood = lastFrameColor.r * (lastFrameColor.g * lastFrameColor.g);\n    fragColor.r = fragColor.r - eatenFood;\n    fragColor.g = fragColor.g + eatenFood;\n    // kill\n    fragColor.g = clamp(lastFrameColor.g + timestep*(fragColor.g - ((dieRate + feedRate) * lastFrameColor.g)), 0.0001, 1.0);\n    // feed\n    float addedFood = feedRate * clamp(maxFood - lastFrameColor.r, 0.0, 1.0);\n    fragColor.r = clamp(timestep*(fragColor.r + addedFood) + lastFrameColor.r, 0.0, 1.0);\n    fragColor.b = eatenFood;\n    \n    if (distance(fragCoord.xy, iMouse.xy) < 40.0 && iMouse.z > 0.0) {\n        fragColor.r = 0.5;\n        if (distance(fragCoord.xy, iMouse.xy) < 20.0) {\n            fragColor.g = 0.1;\n        }\n    }\n    /**/\n    /*\n        // react\n    float eatenFood = lastFrameColor.r * lastFrameColor.g * lastFrameColor.g;\n    fragColor.r = fragColor.r - eatenFood;\n    fragColor.g += eatenFood;\n    // kill\n    fragColor.g = fragColor.g - (dieRate * lastFrameColor.g);\n    // feed\n    float addedFood = feedRate * (maxFood - lastFrameColor.r);\n    fragColor.r = fragColor.r + addedFood;\n    fragColor.b = 0.0;\n    */\n    // fragColor.r = noise(vec2(idk(uv.x, iTime), idk(uv.y, iTime))*scale);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

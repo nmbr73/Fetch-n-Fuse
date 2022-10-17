@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: CatvolleyballJipi
+  id: CatvolleyballJipi
+  kernel: CatvolleyballJipi
+  name: CatvolleyballJipi
+shader:
+  author: N.N.
+  description: Cat Volleyball
+  id: dssGz4
+  name: CatVolleyball JiPi
+  parent:
+    id: 7ll3zS
+    name: Cat Volleyball
+    url: https://www.shadertoy.com/view/7ll3zS
+  tags:
+  - cat
+  - pbr
+  - volleyball
+  url: https://www.shadertoy.com/view/dssGz4

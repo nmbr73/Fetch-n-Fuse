@@ -1,0 +1,50 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fsdyRB",
+  "date": "0",
+  "viewed": 0,
+  "name": "Tex Puff Ball JiPi",
+  "description": "A little cool little thing that's little. Switch the textures, its cool.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raytracing",
+   "sdf"
+  ],
+  "hasliked": 0,
+  "parentid": "7d3czS",
+  "parentname": "Tex Puff Ball"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRn",
+     "filepath": "/media/a/10eb4fe0ac8a7dc348a2cc282ca5df1759ab8bf680117e4047728100969e7b43.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define r1 1.\n#define gr1 .5\n#define c1 vec3(0.)\n#define r2 1.\n#define c2 vec3(0., 4., 0.)\n\nfloat sdfSphere(vec3 p, vec3 c, float radius){\n    return length(p - c) - radius;\n}\n\nfloat sdfSphere2(vec3 p, vec3 c, float radius){\n    return length(p - c) - 0.;\n}\n\nfloat hash3(vec2 xy){\n    xy = mod(xy, .19);\n    float h = dot(xy.yyx, vec3(.013, 27.15, 2027.3));\n    h *= h;\n    h *= fract(h);\n    \n    return fract(h);\n}\n\n\nvec3 quaternionVectorRotation(vec3 v, vec4 q){\n    vec3 rowOne = vec3(1. - (2. * ((q.z * q.z) + (q.w * q.w))), 2.* ((q.y * q.z) - (q.x * q.y)), 2. * ((q.x * q.z) + (q.y * q.w)));\n    vec3 rowTwo = vec3(2. * ((q.y * q.z) + (q.x * q.w)), 1. - (2. * ((q.y * q.y) + (q.w * q.w))), 2. * ((q.y * q.z) + (q.x * q.w)));\n    vec3 rowThree = vec3(2. * ((q.y * q.w) - (q.x * q.z)), 2. * ((q.x * q.y) + (q.z * q.w)), 1. - (2. * ((q.y * q.y) + (q.z * q.z))));\n    \n    mat3 r = mat3(rowOne, rowTwo, rowThree);\n    return r * v;\n}\n\nfloat color(float x, float a, float b){\n    return ((b * x) * exp(a * (x - 1.)));\n}\n\nfloat color2(float x, float a, float x0){\n    return 1. / (exp(abs(a * (x - x0))));\n}\n\n\n\nvec4 quaternionMult(vec4 a, vec4 b){\n    return vec4(a.x * b.x - dot(a.yzw, b.yzw), a.x*b.yzw + b.x*a.yzw + cross(a.yzw, b.yzw));\n}\n\n\nvec3 generateReflectionVector(vec3 normal, vec3 inV){\n    return inV - (2. * normal);\n}\n\n\nfloat acos2(float X, float Y){\n    \n    return acos(X / length(vec2(X, Y))) * sign(Y);\n}\n\nfloat atan2(float x, float y){\n    return atan(y / x) + (((1. - sign(x)) / 2.) * 3.14);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    \n    \n    \n    //get the mouse location for look direction unless mouse is not down\n    vec2 muv = iMouse.z > 0.0 ? iMouse.xy / iResolution.xy : vec2(0.5, 0.5);\n    \n        \n    vec4 col = vec4(0.);\n    \n    float screenRatio = iResolution.y / iResolution.x;\n    \n    //Setting up the ray directions and other information about the point and camera\n    //##############################################################################\n    \n    \n    //camera direction angles phi (xy plane) and theta (xz plane)\n    //float phi = radians(180.);\n    //float theta = radians(105.);\n    float phi = -radians(360. * (1.- muv.x));\n    float theta = -radians(180. * (1. - muv.y));\n\n    //get the camera direction as the basis for the rotation (each ray direction is a rotation of the camera direciton vector)\n    //it is in quarternion form here so its a vec4 instead of a vec3\n    vec4 camD = vec4(0., cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));\n    \n    \n    float rad90 = radians(90.);\n    \n    float fov = 110.;\n    \n    float xAng = radians(fov * (.5 - uv.x));\n    //replace \"fov\" with \"(fov + (110. * pow(.5 - uv.x, 2.)))\" below to add a counteractment to the fisheye lens effect\n    //it basically counteracts the artifact with quaternions that happens when you rotate by a large angle on one axis then try to rotate on another axis perpendicular, it just rotates around it thus making the new direction lesser\n    float yAng = radians(fov * screenRatio * (.5 - uv.y));\n    \n    //get the axes that the quarternions should be based around (perpendicular to the camera plane or dv)\n    vec3 xRotAxis = vec3(cos(phi) * sin(theta - rad90), sin(phi) * sin(theta - rad90), cos(theta - rad90));\n    vec3 yRotAxis = cross(xRotAxis, camD.yzw);//vec3(cos(phi - rad90) * sin(theta), sin(phi - rad90) * sin(theta), cos(theta));\n    \n    //get the quarternions of the ray direction rotations\n    vec4 xQuat = vec4(cos(xAng / 2.), xRotAxis * sin(xAng / 2.));\n    vec4 yQuat = vec4(cos(yAng / 2.), yRotAxis * sin(yAng / 2.));\n    \n    \n    \n    //combine the rotations\n    vec4 compQuat = quaternionMult(yQuat, xQuat);\n    \n    \n    \n    //get the conjugate of the compQuart\n    vec4 conjComp = vec4(compQuat.x, -compQuat.yzw);\n\n    \n    //ray direction\n    vec3 rayD = quaternionMult(quaternionMult(compQuat, camD), conjComp).yzw;\n    \n    \n    //############################################\n    \n    float t = 0.;\n    \n    float d = 100.;\n    \n    \n    vec3 p = vec3(0.);\n    \n    float m = 0.;\n    \n    \n    int steps = 300;\n    \n    \n    vec3 rayO = -camD.yzw * 2.;\n    \n    \n    \n    float t0 = distance(rayO, c1) - r1;\n    \n    float minStep = (t0 + r1 + r1) / float(steps);\n    \n    vec3 n = normalize(c1-rayO);\n    \n    vec3 sunD = normalize(vec3(cos(iTime + 1.7), sin(iTime + 1.7), 0.));\n    \n    float cValue, cv2, surface;\n    \n    vec3 camN = normalize(rayO - c1);\n    \n    \n    //trace 1\n    for (int i = 0; i <= steps; i++){\n        p = rayO + (rayD * (t));\n        \n        \n        vec3 surfHit = normalize(p - c1);\n        \n        float l = length(surfHit);\n        \n        float theta = acos2(surfHit.z, l);\n        vec2 angs = vec2(atan2(surfHit.x, surfHit.y) + iTime, theta);\n        \n        vec4 tex = texture(iChannel0, angs / 3.14);\n        \n        \n        d = distance(p, c1);\n        \n        \n        \n        if(d - gr1 < length(tex) * .1){\n            \n            \n            \n            col = tex;\n            break;\n        }\n         \n        t += minStep;\n    }\n        \n    \n    \n    \n    \n    \n    float shadow = dot(n, sunD);\n    \n    \n    fragColor = col;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

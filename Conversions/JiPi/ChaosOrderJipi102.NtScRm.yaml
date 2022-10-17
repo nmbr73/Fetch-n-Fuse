@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ChaosOrderJipi102
+  id: ChaosOrderJipi102
+  kernel: ChaosOrderJipi102
+  name: ChaosOrderJipi102
+shader:
+  author: N.N.
+  description: all life long
+  id: NtScRm
+  name: Chaos&Order JiPi 102
+  parent:
+    id: 7tjyzh
+    name: Chaos & Order
+    url: https://www.shadertoy.com/view/7tjyzh
+  tags:
+  - 3d
+  - points
+  url: https://www.shadertoy.com/view/NtScRm

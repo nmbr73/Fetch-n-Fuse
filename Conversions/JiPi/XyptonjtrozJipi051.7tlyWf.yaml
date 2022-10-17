@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: XyptonjtrozJipi051
+  id: XyptonjtrozJipi051
+  kernel: XyptonjtrozJipi051
+  name: XyptonjtrozJipi051
+shader:
+  author: N.N.
+  description: Going out for a morning stroll on Xyptonjtroz.
+  id: 7tlyWf
+  name: Xyptonjtroz JiPi 051
+  parent:
+    id: 4ts3z2
+    name: Xyptonjtroz
+    url: https://www.shadertoy.com/view/4ts3z2
+  tags:
+  - procedural
+  - 3d
+  - raymarching
+  - noise
+  - volumetric
+  - bumpmapping
+  - storm
+  - dust
+  url: https://www.shadertoy.com/view/7tlyWf

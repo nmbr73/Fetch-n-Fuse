@@ -1,0 +1,60 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftyfzm",
+  "date": "0",
+  "viewed": 0,
+  "name": "ManipulatingColors JiPi",
+  "description": "Collection of color manipulations. Please let me know if any need fixed or effects that need added.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "wave",
+   "invert",
+   "blackandwhite",
+   "contrast",
+   "sepia",
+   "greyscale",
+   "intensity",
+   "swizzle",
+   "mystery",
+   "multiply",
+   "blacklight",
+   "invertwithcolor"
+  ],
+  "hasliked": 0,
+  "parentid": "Wlt3zS",
+  "parentname": "Manipulating Colors"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define TUTORIAL 12 // Default to 12, my favorite\n\n\n/* TUTORIAL LIST\n\t0 = Normal/No effect\n\t1 = Contrast\n\t2 = Invert\n\t3 = Intensity\n\t4 = Grey Scale Average\n\t5 = Grey Scale Basic\n\t6 = Grey Scale Fancy\n\t7 = Single Color Channel Gray Scale\n\t8 = Grey Scale HSL\n\t9 = Grey Scale Range\n\t10 = Black Light\n\t11 = Swizzle\n\t12 = Wave\n\t13 = sepia\n    14 = invert black and white, keep color\n    15 = multiply colorchannel\n\t16 = dithering // use to fix https://www.shadertoy.com/view/XsVBW1 (needs work)\n\t17 = Mystery (Not sure what this is but it's cool)\n\t18 Black and White Threshold\n\n// TODO\n// Brightness, Bloom, Glow, Posterization, sat, lum, gamma correction, hsv, hsb, infared, quantize, threshold\n\n// Neighboring pixels\n// Neon, bloom, dream, emboss, blurs, edge detection, halftone dots, outline, sharpen, sketch, water color\n\n// shift pixels / neighbors\n// chromatic aberration, \n\n// gradients, dithering\n\n// kaleidoscope\n\n// iterative\n// mandle brot, julia, \n\t\n*/\n\n// #1 = Contrast\n\nvec3 Contrast(vec3 color, float contrast)\n{\n  // increase values above 0.5 and decrease below 0.5\n  color -= 0.5;\n  color *= contrast;\n  color += 0.5;\n  return color;\n}\n\n// #2 = Invert\n\nvec3 Invert(vec3 color)\n{\n  return 1.0 - color;\n}\n\n// #3 = Intensity\n\nvec3 Intensity(vec3 color, float factor)\n{\n  return color *= factor;\n}\n\n// #4 = Grey Scale Average\n\nvec3 GreyScaleAverage(vec3 color)\n{\n  return vec3((color.r + color.g + color.b) / 3.0);\n}\n\n// #5 = Grey Scale Basic\n\n// Tint green\nvec3 GreyScaleBasic(vec3 color)\n{ \n  return vec3(color.r * 0.3 + color.g * 0.59 + color.b * 0.11);\n}\n\n// #6 = Grey Scale Fancy\n\nvec3 GreyScaleFancy(vec3 color)\n{\n  vec3 lumCoeff = vec3(0.3, 0.59, 0.11);\n  color = vec3(dot(color, lumCoeff));\n  return color;\n}\n\n// #7 = Grey Scale Single Channel\n\n// could use any of the 3 channels\nvec3 SingleColorChannelGrayScale(vec3 color)\n{\n    return vec3(color.r);\n    // return vec3(color.g);\n    // return vec3(color.b);\n}\n\n// #8 = Grey Scale HSL\n\nvec3 GrayScaleHSL(vec3 color)\n{\n  return vec3(max(color.r, max(color.g, color.b)) + min(color.r, min(color.g, color.b)) / 2.0);\n}\n\n// #9 = Grey Scale Range\n\nvec3 GrayScaleRange(vec3 color, float NumberOfShades)\n{\n  float ConversionFactor = 255.0 / (NumberOfShades - 1.0);\n  float AverageValue = (color.r + color.g + color.b) / 3.0;\n  float Gray = ((AverageValue / ConversionFactor) + 0.5) * ConversionFactor;\n  return vec3(Gray);\n}\n\n// #10 = Black Light\n\nvec3 BlackLight(vec3 color, float fxWeight)\n{\n  float lum = color.r + color.g + color.b / 3.0;\n  lum = (222.0 * color.r + 707.0 * color.g + 71.0 * color.b) / 1000.0;\n  // R = Abs(R - L) * fxWeight\n  color.r = abs(color.r - lum) * fxWeight;\n  color.r = clamp(color.r, 0.0, 1.0);\n  color.g = abs(color.g - lum) * fxWeight;\n  color.g = clamp(color.g, 0.0, 1.0);\n  color.b = abs(color.b - lum) * fxWeight;\n  color.b = clamp(color.b, 0.0, 1.0);\n\n  return color;\n}\n\n// TODO It would be nice to slide show thru options with iTime\n// # 11 Swizzle\nvec3 Swizzle(vec3 color)\n{\n    // each color used once\n    return vec3(color.g, color.b, color.r);\n    // return vec3(color.b, color.r, color.g);\n    // return vec3(color.b, color.r, color.g);\n    // return vec3(color.b, color.g, color.r);\n    // return vec3(color.g, color.r, color.b);\n    // return vec3(color.r, color.b, color.g);\n    \n    // one channel used twice(one channel not used)\n    // return vec3(color.r, color.r, color.g);\n    // return vec3(color.r, color.r, color.b);\n    // return vec3(color.g, color.g, color.r);\n    // return vec3(color.g, color.g, color.b);\n    // return vec3(color.b, color.b, color.r);\n    // return vec3(color.b, color.b, color.g);\n    \n    // one channel used twice(one channel not used) but in different order\n    // return vec3(color.g, color.r, color.r);\n    // return vec3(color.b, color.r, color.r);\n    // return vec3(color.r, color.g, color.g);\n    // return vec3(color.b, color.g, color.g);\n    // return vec3(color.r, color.b, color.b);\n    // return vec3(color.g, color.b, color.b);\n    \n    // one channel used twice(one channel not used) but in yet another order\n    // return vec3(color.r, color.g, color.r);\n    // return vec3(color.r, color.b, color.r);\n    // return vec3(color.g, color.r, color.g);\n    // return vec3(color.g, color.b, color.g);\n    // return vec3(color.b, color.r, color.b);\n    // return vec3(color.b, color.g, color.b);\n}\n\n// # 12 Wave\nvec3 Wave(vec3 color, float amount)\n{\n \tcolor.r = (sin(color.r * amount) + 1.0) * 0.5;\n    color.g = (sin(color.g * (amount * 2.0 )) + 1.0) * 0.5;\n    color.b = (sin(color.b * (amount * 4.0)) + 1.0) * 0.5;\n    return color;\n}\n\n// # 13 Sepia\nvec3 Sepia(vec3 color)\n{\n    vec3 outputColor;\n    outputColor.r = (color.r * 0.393) + (color.g * 0.769) + (color.b * 0.189);\n    outputColor.g = (color.r * 0.349) + (color.g * 0.686) + (color.b * 0.168);    \n    outputColor.b = (color.r * 0.272) + (color.g * 0.534) + (color.b * 0.131);\n    \n    return outputColor;\n}\n\n// Used with InvertWithColor\nvec3 ColourToYPbPr2(vec3 C)\n{\n\tconst mat3 Mat = mat3(\n  \t\t0.299,0.587,0.114,\n  \t\t-0.168736,-0.331264,0.5,\n  \t\t0.5,-0.418688,-0.081312);\n\treturn C * Mat;\n}\n\n// Used with InvertWithColor\nvec3 YPbPrToColour(vec3 YPbPr)\n{\n\tconst mat3 Mat = mat3(\n  \t\t1.0,0.0,1.402,\n  \t\t1.0,-0.34413,-0.714136,\n  \t\t1.0,1.772,0.0);\n\treturn YPbPr * Mat;\n}\n\n// # 14 Invert black and white, keep color\nvec3 InvertWithColor(vec3 color)\n{\n   \tcolor = ColourToYPbPr2(color);\n\n  \tcolor.x = 1.0 - color.x;\n\n  \treturn YPbPrToColour(color);\n}\n\n// TODO normalize\n// # 15 Multiply colorchannel\nvec3 MultiplyColorChannel(vec3 color, float redFactor, float greenFactor, float blueFactor)\n{\n \treturn vec3(color.r * redFactor, color.g * greenFactor, color.b * blueFactor);   \n}\n\n\n// TODO implement\n// #16 - dithering // use to fix https://www.shadertoy.com/view/XsVBW1\nvec3 Dithering(vec3 color)\n{\n    return color;\n}\n\n\n// # 17 - Mystery\nfloat Mystery(float component, float colorCountPerComponent)\n{\n    float a = floor(component * colorCountPerComponent) / colorCountPerComponent;\n    float ditherThreshold = 0.5;\n    \n    float step = 1.0 / colorCountPerComponent;\n    if (a + step * ditherThreshold < component)\n    return a+step;\n}\n\n// # 18 - Black and White Threshold\nvec3 BlackAndWhiteThreshold(vec3 color, float threshold)\n{\n    float bright = 0.333333 * (color.r + color.g + color.b);\n    float b = mix(0.0, 1.0, step(threshold, bright));\n    return vec3(b);\n}\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n\n      //Get the pixel at xy from iChannel0\n  \tvec3 col = texture(iChannel0, uv).rgb;\n    \n    #if TUTORIAL == 1\n\t\tcol = Contrast(col, 2.0);\n\n\t#elif TUTORIAL == 2\n    \tcol = Invert(col);\n    \n    #elif TUTORIAL == 3\n    \tcol = Intensity(col, 2.0);\n    \n    #elif TUTORIAL == 4\n    \tcol = GreyScaleAverage(col);\n    \n    #elif TUTORIAL == 5\n    \tcol = GreyScaleBasic(col);\n    \n    #elif TUTORIAL == 6\n    \tcol = GreyScaleFancy(col);\n    \n    #elif TUTORIAL == 7\n    \tcol = SingleColorChannelGrayScale(col);\n    \n    #elif TUTORIAL == 8\n    \tcol = GrayScaleHSL(col);\n    \n    #elif TUTORIAL == 9\n        col = GrayScaleRange(col, 500.0);\n    \n    #elif TUTORIAL == 10\n    \t// range 1 to 7\n  \t\tcol = BlackLight(col, 5.0);\n    \n    #elif TUTORIAL == 11\n        col = Swizzle(col);\n    \n    #elif TUTORIAL == 12\n    \tcol = Wave(col, 10.0);\n    \n    #elif TUTORIAL == 13\n        col = Sepia(col);\n    \n    #elif TUTORIAL == 14\n    \tcol = InvertWithColor(col);\n    \n    #elif TUTORIAL == 15\n    \tcol = MultiplyColorChannel(col, 2.4, 1.0, 0.4);\n    \n    // Dithering\n    #elif TUTORIAL == 16\n    \t\n    \n    #elif TUTORIAL == 17\n    \tcol.r = Mystery(col.r, 4.0);\n        col.g = Mystery(col.g, 4.0);\n        col.b = Mystery(col.b, 4.0);\n    #elif TUTORIAL == 18\n    \tcol = BlackAndWhiteThreshold(col, 0.5);\n    \n    #endif\n    \n    \n  \tfragColor = vec4(col, 1.0);\n}\n\n \n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Rlstyle
+  id: Rlstyle
+  kernel: Rlstyle
+  name: Rlstyle
+shader:
+  author: N.N.
+  description: ersatz
+  id: fd2BRR
+  name: RLStyle
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - audio
+  url: https://www.shadertoy.com/view/fd2BRR

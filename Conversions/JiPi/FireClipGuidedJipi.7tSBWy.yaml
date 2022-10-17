@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: FireClipGuidedJipi
+  id: FireClipGuidedJipi
+  kernel: FireClipGuidedJipi
+  name: FireClipGuidedJipi
+shader:
+  author: N.N.
+  description: "Created after AIAIART lesson #8 \nPrompt: 'Blue fire (high detail)'\
+    \ with a fire stock pic\nClick to draw\nNotebook: (https://colab.research.google.com/drive/1Qpx_4wWXoiwTRTCAP1ohpoPGwDIrp9z-?usp=sharing)\
+    \ \nFull course: https://github.com/johnowhitaker/aiaiart"
+  id: 7tSBWy
+  name: Fire - CLIP Guided JiPi
+  parent:
+    id: 7t2BRt
+    name: Fire - CLIP Guided NCA
+    url: https://www.shadertoy.com/view/7t2BRt
+  tags:
+  - clip
+  - nca
+  url: https://www.shadertoy.com/view/7tSBWy

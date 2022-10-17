@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: CaveExplorationJipi
+  id: CaveExplorationJipi
+  kernel: CaveExplorationJipi
+  name: CaveExplorationJipi
+shader:
+  author: N.N.
+  description: Exploring a deep cave by following a will o' the wisp.
+  id: ftjBRD
+  name: Cave Exploration JiPi
+  parent:
+    id: stXfWB
+    name: Cave Exploration
+    url: https://www.shadertoy.com/view/stXfWB
+  tags:
+  - procedural
+  - 3d
+  - raymarching
+  - noise
+  - tunnel
+  - water
+  - cave
+  - wisp
+  - stalactites
+  - moss
+  url: https://www.shadertoy.com/view/ftjBRD

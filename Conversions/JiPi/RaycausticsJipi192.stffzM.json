@@ -1,0 +1,50 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stffzM",
+  "date": "0",
+  "viewed": 0,
+  "name": "RayCaustics JiPi192",
+  "description": "VERY SLOW ! TURN OFF ANIMATION !!\nI'm open to ideas for optimisation",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "noise",
+   "clouds"
+  ],
+  "hasliked": 0,
+  "parentid": "ftsBzH",
+  "parentname": "Ray Caustics"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define samples 64\n#define width 8.0\n\n///////////////// BORROWED FROM \"JAYBIRD\" /////////////////\n// taken from Simple Water Caustic Pattern : https://www.shadertoy.com/view/3d3yRj\n// 3D simplex noise adapted from https://www.shadertoy.com/view/Ws23RD \nvec4 mod289(vec4 x)\n{\n    return x - floor(x / 289.0) * 289.0;\n}\n\nvec4 permute(vec4 x)\n{\n    return mod289((x * 34.0 + 1.0) * x);\n}\n\nvec4 snoise(vec3 v)\n{\n    const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);\n\n    // First corner\n    vec3 i  = floor(v + dot(v, vec3(C.y)));\n    vec3 x0 = v   - i + dot(i, vec3(C.x));\n\n    // Other corners\n    vec3 g = step(x0.yzx, x0.xyz);\n    vec3 l = 1.0 - g;\n    vec3 i1 = min(g.xyz, l.zxy);\n    vec3 i2 = max(g.xyz, l.zxy);\n\n    vec3 x1 = x0 - i1 + C.x;\n    vec3 x2 = x0 - i2 + C.y;\n    vec3 x3 = x0 - 0.5;\n\n    // Permutations\n    vec4 p =\n      permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0))\n                            + i.y + vec4(0.0, i1.y, i2.y, 1.0))\n                            + i.x + vec4(0.0, i1.x, i2.x, 1.0));\n\n    // Gradients: 7x7 points over a square, mapped onto an octahedron.\n    // The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)\n    vec4 j = p - 49.0 * floor(p / 49.0);  // mod(p,7*7)\n\n    vec4 x_ = floor(j / 7.0);\n    vec4 y_ = floor(j - 7.0 * x_);\n\n    vec4 x = (x_ * 2.0 + 0.5) / 7.0 - 1.0;\n    vec4 y = (y_ * 2.0 + 0.5) / 7.0 - 1.0;\n\n    vec4 h = 1.0 - abs(x) - abs(y);\n\n    vec4 b0 = vec4(x.xy, y.xy);\n    vec4 b1 = vec4(x.zw, y.zw);\n\n    vec4 s0 = floor(b0) * 2.0 + 1.0;\n    vec4 s1 = floor(b1) * 2.0 + 1.0;\n    vec4 sh = -step(h, vec4(0.0));\n\n    vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;\n    vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;\n\n    vec3 g0 = vec3(a0.xy, h.x);\n    vec3 g1 = vec3(a0.zw, h.y);\n    vec3 g2 = vec3(a1.xy, h.z);\n    vec3 g3 = vec3(a1.zw, h.w);\n\n    // Compute noise and gradient at P\n    vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);\n    vec4 m2 = m * m;\n    vec4 m3 = m2 * m;\n    vec4 m4 = m2 * m2;\n    vec3 grad =\n      -6.0 * m3.x * x0 * dot(x0, g0) + m4.x * g0 +\n      -6.0 * m3.y * x1 * dot(x1, g1) + m4.y * g1 +\n      -6.0 * m3.z * x2 * dot(x2, g2) + m4.z * g2 +\n      -6.0 * m3.w * x3 * dot(x3, g3) + m4.w * g3;\n    vec4 px = vec4(dot(x0, g0), dot(x1, g1), dot(x2, g2), dot(x3, g3));\n    return 42.0 * vec4(grad, dot(m4, px));\n}\n///////////////// END OF BORROWED CODE /////////////////\nconst float inv_sqrt_2pi = 0.3989422804014327;\nfloat gaussianf(float sigma, float dist)\n{\n    float a = dist / sigma;\n    return (inv_sqrt_2pi / sigma ) * exp( -0.5 * a * a );\n}\n\nfloat ray_caustic(vec2 uv, vec2 res, float st)\n{\n    vec2 pix_l = 1.0/res;\n    \n    float sample_step = width*st/float(samples);\n    \n    int h_samples = samples / 2;\n    \n    float sum = 0.0;\n    for( int i = 0; i < samples; i++)\n    {\n        for(int y = 0; y < samples; y++)\n        {\n            vec2 stepm = sample_step*vec2(i-h_samples,y-h_samples);\n            vec2 coords = uv+pix_l*stepm;\n            vec2 dir = -st*snoise(vec3(coords,iTime*.1)).xy;\n            float dist = distance(uv*res,uv*res+stepm+dir);\n            sum += width*.04*gaussianf(4.,dist);\n        }\n    }\n    return sum;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = (5. * fragCoord.xy - iResolution.xy) / iResolution.y;\n\n    fragColor = vec4(vec3(ray_caustic(uv,iResolution.xy,50.0)),1.) + texture(iChannel0, fragCoord/iResolution.xy);;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: ThePassageXxixJipi
+  id: ThePassageXxixJipi
+  kernel: ThePassageXxixJipi
+  name: ThePassageXxixJipi
+shader:
+  author: N.N.
+  description: still life replicating 'The Passage" series by H.R. Giger [url]https://wikioo.org/paintings.php?refarticle=A25TB8&titlepainting=hr+giger+passage+XXIX&artistname=H.R.+Giger[/url]
+  id: sl3BzS
+  name: The Passage XXIX JiPi
+  parent:
+    id: 7dK3DD
+    name: The Passage XXIX
+    url: https://www.shadertoy.com/view/7dK3DD
+  tags:
+  - 3d
+  - reproduction
+  - giger
+  url: https://www.shadertoy.com/view/sl3BzS

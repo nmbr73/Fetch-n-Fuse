@@ -1,0 +1,65 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7lfBDN",
+  "date": "0",
+  "viewed": 0,
+  "name": "PlanetAttempt JiPi309",
+  "description": "An attempt to render a planet with terrain mapped using triplanar mapping.\nInspired from : https://www.youtube.com/watch?v=lctXaT9pxA0",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "noise",
+   "terrain",
+   "sdf",
+   "planet"
+  ],
+  "hasliked": 0,
+  "parentid": "7tlBzM",
+  "parentname": "Planet attempt"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n    Use the mouse to rotate around.\n*/\n\n#define MAX_RM_ITER 128.\n\nfloat mdot(vec3 u, vec3 v){\n    return max(0., dot(u, v));\n}\n\nmat2 rot(float a){\n    float c = cos(a);\n    float s = sin(a);\n    return mat2(c, -s, s, c);\n}\n\nfloat fbmT(vec2 p){\n    return texture(iChannel0, p).x;\n}\n\nfloat fbmF(vec2 p){\n    return texture(iChannel0, p).y;\n}\n\nfloat trimapTerrain(vec3 p, vec3 n){\n    float a = 0.29;\n    float c = cos(a);\n    float s = sin(a);\n    mat2 r = mat2(c, -s, s, c);\n    p.xz *= r; // attempt to break symetries\n    \n    p = 0.25*p+0.5;\n    \n    float fx = fbmT(p.yz);\n    float fy = fbmT(p.xz);\n    float fz = fbmT(p.xy);\n    \n    n = abs(n);\n    \n    return dot(n, vec3(fx, fy, fz));\n}\n\nfloat trimapForest(vec3 p, vec3 n){\n    p = 0.25*p+0.5;\n    \n    float fx = fbmF(p.yz);\n    float fy = fbmF(p.xz);\n    float fz = fbmF(p.xy);\n    \n    n = abs(n);\n    \n    return dot(n, vec3(fx, fy, fz));\n}\n\nconst float radius = 1.5;\nconst float atmRadius = 1.9;\n\nvec2 sphereItsc(vec3 ro, vec3 rd, float r){\n    float b = dot(ro, rd);\n    float d = b*b - dot(ro, ro) + r*r;\n    if(d < 0.0) {\n        return vec2(-1., -1.);\n    };\n    return vec2(-b-sqrt(d), -b+sqrt(d));\n}\n\nvec2 seaItsc(vec3 ro, vec3 rd)\n{\n    return sphereItsc(ro, rd, radius);\n}\n\nvec2 atmoItsc(vec3 ro, vec3 rd){\n    return sphereItsc(ro, rd, atmRadius);\n}\n\n\nfloat sdf(vec3 p){\n    float sd = length(p) - radius;\n    \n    vec3 n = normalize(p);\n    \n    float dsp = trimapTerrain(p, n);\n    dsp *= 0.1;\n    \n    return sd - dsp;\n}\n\nvec3 raymarch(vec3 ro, vec3 rd){\n    const float eps = 0.0001;\n    const float k = 0.65;\n    float i = 0.;\n    float t = 0.;\n    float dmin = 100000.;\n    vec3 p = ro;\n    for(; i < MAX_RM_ITER; i++){\n        float d = sdf(p);\n        dmin = min(32.*d / t, dmin);\n        if(d < eps){\n            break;\n        }\n        p += k*d*rd;\n        t += k*d;\n    }\n    return vec3(t, i, dmin);\n}\n\nvec3 normal(vec3 p){\n    vec2 h = vec2(0.001, 0.);\n    return normalize(vec3(\n        sdf(p+h.xyy) - sdf(p-h.xyy),\n        sdf(p+h.yxy) - sdf(p-h.yxy),\n        sdf(p+h.yyx) - sdf(p-h.yyx)\n    ));\n}\n\nfloat specRef(vec3 n, vec3 ldir, vec3 rd, float a){\n    vec3 r = reflect(-ldir, n);\n    return pow(mdot(r, -rd), a);\n}\n\nvec3 terrainCol(vec3 p, vec3 n){\n    vec3 col = vec3(0.);\n    float h = length(p);\n    float r = radius;\n    float t = smoothstep(r-0.1, r, h);\n    \n    col = mix(vec3(0.6, 0.5, 0.4), vec3(0.9, 1., 0.5), t);\n    \n    t = smoothstep(r, r+0.01, h);\n    float f = trimapForest(p, n);\n    f = smoothstep(0.1, 0.5, f);\n    vec3 green = mix(vec3(0.4, 0.6, 0.1), vec3(0.,0.4,0.3), f);\n    col = mix(col, green, t);\n    \n    t = smoothstep(r+0.02, r+0.05, h);\n    col = mix(col, vec3(0.7, 0.5, 0.3), t);\n    \n    vec3 up = normalize(p);\n    float s = 1.-mdot(n, up);\n    col = mix(col, vec3(0.5), min(4.*s, 1.));\n    \n    t = smoothstep(r+0.06, r+0.08, h);\n    col = mix(col, vec3(1.), t);\n    \n    return col;\n}\n\nfloat atmDensity(vec3 p){\n    float r = (length(p) - radius)/(atmRadius - radius);\n    return exp(-r) * (1. - r);\n}\n\nvec3 evalAtmosphere(vec3 p1, vec3 p2, vec3 ldir){\n    float dt = 0.1;\n    float ds = 0.1;\n    float dst = length(p2 - p1);\n    \n    vec3 coefs = vec3(\n        pow(400./700., 4.),\n        pow(400./530., 4.),\n        pow(400./440., 4.)\n    );\n    \n    vec3 scattered = vec3(0.);\n    \n    for(float t = 0.; t <= 1.; t += dt){\n        vec3 p = p1 + (p2 - p1) * t;\n        \n        float s = 0.;\n        vec3 q = p;\n        float opd = 0.;\n        while(dot(q, q) < atmRadius * atmRadius){\n            q += ds * ldir;\n            opd += atmDensity(q);\n        }\n        \n        vec3 tsm = exp(-opd * coefs);\n        \n        scattered += atmDensity(p) * tsm * dst * dt;\n    }\n    \n    return scattered;\n}\n\n\nfloat shadow(vec3 p, vec3 ldir, vec3 n){\n    float dmin = raymarch(p + n*0.025, ldir).z;\n    return smoothstep(0., 1., dmin);\n}\n\nvec3 background(vec3 rd, vec3 ldir){\n    float f = mdot(rd, ldir);\n    f = smoothstep(0.999, 0.9994, f);\n    return mix(vec3(0.), vec3(1., 0.99, 0.7), f);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    fragColor = vec4(texture(iChannel0, uv).rrr,1.0);\n    uv -= 0.5;\n    uv.x *= iResolution.x / iResolution.y;\n    \n    vec2 mr = iMouse.xy/iResolution.xy;\n    mr -= 0.5;\n    mr.x *= iResolution.x / iResolution.y;\n    mr *= -3.141592;\n    \n    vec3 col = vec3(0.);\n    \n    vec3 ro = vec3(0.,0.,-5.);\n    vec3 rd = normalize(vec3(uv, 1.));\n    ro.yz *= rot(mr.y);\n    rd.yz *= rot(mr.y);\n    ro.xz *= rot(mr.x);\n    rd.xz *= rot(mr.x);\n    \n    float rxz = iTime * 0.1;\n    ro.xz *= rot(rxz);\n    rd.xz *= rot(rxz);\n    \n    vec3 ldir = normalize(vec3(1.,1.,-1.));\n    //ldir.yz *= rot(mr.y);\n    //ldir.xz *= rot(mr.x);\n    ldir.xz *= rot(rxz);\n    \n    vec3 rm = raymarch(ro, rd);\n    float t = rm.x;\n    float i = rm.y;\n    \n    vec2 ts = seaItsc(ro, rd);\n    \n    vec2 ta = atmoItsc(ro, rd);\n    \n    col = background(rd, ldir);\n    \n    if(i < MAX_RM_ITER || ts.x > 0. || ta.x > 0.){  \n        vec3 n = vec3(0.);\n        vec3 m = vec3(0.);\n        \n        if(i < MAX_RM_ITER){\n            m = ro + t * rd;\n            n = normal(ro + t * rd);\n            col = terrainCol(m, n);\n        }\n        \n        float t2 = t;\n        if(ts.x > 0. && (ts.x < t || i == MAX_RM_ITER)){\n            m = ro + ts.x * rd;\n            n = normalize(m);\n            t2 = ts.x;\n        }\n        \n        // sea coloring\n        float sdepth = min(ts.y-ts.x, t-ts.x);\n        if(sdepth > 0.){\n            float od = 1. - exp(-sdepth*50.);\n            float a = 1. - exp(-sdepth*200.);\n            vec3 scol = mix(vec3(0.,0.8,0.9), vec3(0., 0.3, 0.4), od);\n            scol += specRef(n, ldir, rd, 50.);\n            col = mix(col, scol, a);\n        }\n        \n        float lig = mdot(n, ldir);\n        if(ts.x > 0. || i < MAX_RM_ITER){\n            lig *= shadow(m, ldir, n);\n            col *= lig;\n        }\n        \n        // adding the atmosphere\n        if(min(ta.y-ta.x, t-ta.x) > 0.){\n            vec3 p1 = ro + ta.x * rd;\n            vec3 p2 = ro + min(ta.y, t2) * rd;\n            vec3 scattered = evalAtmosphere(p1, p2, ldir);\n            col = mix(col, vec3(0.5, 0.8, 1.), scattered);\n        }\n    }\n    \n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float rand(vec2 p){\n    p = 50.0*fract(p*0.3183099 + vec2(2.424, -3.145));\n    return fract(p.x*p.y*(p.x+p.y));\n}\n\nfloat noise(vec2 x){\n    vec2 p = floor(x);\n    vec2 w = fract(x);\n    vec2 u = w*w*w*(w*(w*6.0-15.0)+10.0);\n    \n    vec2 h = vec2(1,0);\n    float a = rand(p+h.yy);\n    float b = rand(p+h.xy);\n    float c = rand(p+h.yx);\n    float d = rand(p+h.xx);\n    \n    return -1. + 2.*(a + (b-a)*u.x + (c-a)*u.y + (a - b - c + d)*u.x*u.y);\n}\n\nfloat sat(float x){\n    return clamp(x, 0., 1.);\n}\n\nfloat fbm(vec2 p, int oct, float lac, float gain){\n    p += vec2(0., 15.);\n    \n    mat2 r = 0.2*mat2(3., -4., 4., 3.);\n    \n    float f = 0.;\n    float s = 1.;\n    for(int i = 0; i < oct; i++){\n        f += noise(p) * s;\n        p = lac*r*p;\n        s *= gain;\n    }\n    \n    return f;\n}\n\nfloat fbm(vec2 p){\n    return fbm(p, 12, 2., 0.45);\n}\n\nfloat fbm2(vec2 p){\n    return fbm(p, 4, 2., 0.45);\n}\n\nfloat smin( float a, float b, float k )\n{\n    float res = exp2( -k*a ) + exp2( -k*b );\n    return -log2( res )/k;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord - 0.5*iResolution.xy;\n    uv /= iResolution.xy;\n    //uv.x *= iResolution.x / iResolution.y;\n    \n    // generate the terrain texture\n    /*float elevation = fbm(uv*10.+273.);\n    elevation *= 0.7;*/\n    float elevation = fbm(uv*10.+273.0, 8, 2., 0.4);\n    float mask = max(elevation-0.1, 0.);\n    elevation = smin(elevation, 0.2, 32.);\n    elevation += fbm(uv*20.+273., 12, 2., 0.5) * 0.1;\n    elevation += max(fbm(uv*16.+273., 12, 2., 0.5), 0.) * 0.5 * mask;\n\n    \n    // generate the forest areas\n    float forest = fbm2(uv*8.+vec2(0.5));\n    forest = sat(forest);\n    \n    fragColor = vec4(elevation, forest, 0., 1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

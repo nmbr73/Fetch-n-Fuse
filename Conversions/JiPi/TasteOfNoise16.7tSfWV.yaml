@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TasteOfNoise16
+  id: TasteOfNoise16
+  kernel: TasteOfNoise16
+  name: TasteOfNoise16
+shader:
+  author: leon
+  description: Noice noise
+  id: 7tSfWV
+  name: Taste of Noise 16
+  tags:
+  - abstract
+  url: https://www.shadertoy.com/view/7tSfWV

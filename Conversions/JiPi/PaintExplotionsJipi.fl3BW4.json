@@ -1,0 +1,78 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fl3BW4",
+  "date": "0",
+  "viewed": 0,
+  "name": "Paint Explotions JiPi",
+  "description": "Having fun with particles, tweaking huwb's system and adding postpro",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "particles",
+   "paint"
+  ],
+  "hasliked": 0,
+  "parentid": "3dyXzV",
+  "parentname": "Paint Explotions"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define samples 30.\n#define glow_size 0.07 \n#define glow_brightness 4.\n\nfloat hash(vec2 p)\n{\n   return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float c=0.;\n    vec2 uv=fragCoord/iResolution.xy;\n    float mt=mod(iTime,5.);\n     for (float i=0.; i<samples; i++) {\n        float t=i*.354185+mt;\n        float a=hash(uv+t)*6.28;\n        float l=hash(uv+t+13.3548)*glow_size;\n        vec2 smp = vec2(cos(a),sin(a))*l;\n      \tc+=step(.1,texture(iChannel0, uv+smp).x)*(glow_size-l*.9)/glow_size; \n     }\n    vec4 part = texture(iChannel0, uv);\n    vec3 uvcol=vec3(normalize(abs(uv+.1)),1.);\n    vec3 col=(c/samples)*uvcol*glow_brightness+step(.1,part.x)*uvcol;\n\tcol*=vec3(.8,.6,.15);\n\tcol*=1.-abs(uv.x-.5)*2.;\n    fragColor = vec4(col,1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Particles idea taken from https://www.shadertoy.com/view/ll3SWs\n\n#define A 6\n\nfloat hash1(float i)\n{\n   return fract(sin(i*.156854) * 43758.5453);\n}\n\nfloat hash2(vec2 p)\n{\n   return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvec2 randCoord(float i) {\n    return vec2(hash1(i),hash1(i+12.54682));\n}\n\nfloat arrivingParticle(vec2 coord, out vec4 partData) {\n\tpartData = vec4(0);\n    float c=0.;\n    for (int i=-A; i<A; i++) {\n        for (int j=-A; j<A; j++) {\n            vec2 arrCoord = coord + vec2(i,j);\n            vec4 data = texture(iChannel0, arrCoord/iResolution.xy);\n            if (dot(data,data)<.1) continue;\n            vec2 nextCoord = data.xy + data.zw;\n            vec2 offset = abs(coord - nextCoord);\n\t\t\t// somehow I got this fluid-like effect changing the \n            // \"greedly pick one particle\" algorithm \n            // for an average of arriving particles and \n            // changing the condition below \n            if (length(offset)<1.7) { \n                partData += data;\n\t\t\t\tc++;\n            }\n        }\n    }\n    partData/=c;\n    return c;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord/iResolution.xy;\n    float t=iTime*3.;\n    vec2 co = uv-randCoord(floor(t))*vec2(1.,.6);\n    if (fract(t)<.3 && length(co)<.05) {\n        fragColor = vec4(fragCoord.xy, 4.*normalize(co)*(1.-hash2(uv)*.5)+vec2(0.,3.));\n\t\treturn;\n    }\n    if (fragCoord.y<30.+sin(uv.x*5.+t)*10.) {\n        fragColor = vec4(fragCoord.xy,0,0);\n\t\treturn;\n    }\n    vec4 partData;\n    float p = arrivingParticle(fragCoord, partData);\n    if (p<1.) {\n    \tfragColor = vec4(0.);\n        return;\n    }\n    partData.xy+=partData.zw;\n    partData.zw*=.99;\n    partData.zw-=vec2(0.,.05);\n    if (partData.y<30.) partData.w*=-1.;\n    partData.w=max(-4.,partData.w);\n    fragColor = partData;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

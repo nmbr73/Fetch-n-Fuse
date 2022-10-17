@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: ScalarFluid
+  id: ScalarFluid
+  kernel: ScalarFluid
+  name: ScalarFluid
+shader:
+  author: wyatt
+  description: "Overcomplicated fluid system. \n[url]javascript: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<4;i++)E.P.apply(this,A);};if(!H)close();[/url]"
+  id: 3s3SzN
+  name: Scalar Fluid
+  tags:
+  - scalarfluid
+  url: https://www.shadertoy.com/view/3s3SzN

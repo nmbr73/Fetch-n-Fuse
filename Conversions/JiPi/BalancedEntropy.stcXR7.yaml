@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: BalancedEntropy
+  id: BalancedEntropy
+  kernel: BalancedEntropy
+  name: BalancedEntropy
+shader:
+  author: scry
+  description: https://youtu.be/DJ-6s62WcMo
+  id: stcXR7
+  name: Balanced Entropy
+  tags:
+  - 3d
+  - raymarched
+  - psychedelic
+  - trippy
+  url: https://www.shadertoy.com/view/stcXR7

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TunnelX
+  id: TunnelX
+  kernel: TunnelX
+  name: TunnelX
+shader:
+  author: jorge2017a2
+  description: tunnel x
+  id: 7dSyzV
+  name: tunnel x
+  tags:
+  - tunnelx
+  url: https://www.shadertoy.com/view/7dSyzV

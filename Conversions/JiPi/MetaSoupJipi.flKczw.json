@@ -1,0 +1,59 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flKczw",
+  "date": "0",
+  "viewed": 0,
+  "name": "Meta Soup JiPi",
+  "description": "My shot at Metaballs.\n",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "metaballs",
+   "metaball",
+   "soup"
+  ],
+  "hasliked": 0,
+  "parentid": "NttyRs",
+  "parentname": "Meta Soup"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sX3zn",
+     "filepath": "/media/a/0681c014f6c88c356cf9c0394ffe015acc94ec1474924855f45d22c3e70b5785.png",
+     "type": "cubemap",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Francesco S. Spoto\n//\n// The field is generated from a bounch of metaballs and from the horizontal plane y=0.\n//\n// First ray trace the scene (metaballs bounding spheres and bottom plane) to get the nearest field point,\n// then ray march inside it until the searched level surface.\n//\n// I will use the quintic polinomial as falloff, that allows to compute analytical derivative,\n// as shown by IQ in https://www.shadertoy.com/view/ld2GRz (you're the best ).\n//\n\nMaterial getMaterial(int matId, int objId)\n{\n    Material mat;\n    mat.albedo = vec3(1);\n    mat.albedo = samplePalette(float(objId*10)/800.);   ;\n    return mat;\n}\n\nvec3 render(vec3 eye, Hit hit)\n{\n    // No hit -> background\n    if(hit.objId == -1) return vec3(0);\n    \n    // Get the material of the hitten object at the hitten point\n    Material mat = getMaterial(hit.objId, 6);\n    \n    // Define lights in the scene\n    vec3 KeyLightPos = vec3(0,1,0);\n    vec3 KeyLightColor = vec3(0.5,0.8,0.1);\n    vec3 fillLightPos = vec3(0,1,0);\n    vec3 fillLightColor = vec3(0.65);\n    vec3 backLightPos = vec3(-1,-1,-1);\n    vec3 backLightColor = vec3(0.5);\n    \n    vec3 ambientLight = vec3(0.1,0.1,0.1);\n    \n    // Vector used in the computation of lighting\n    vec3 N = hit.normal;    // Surface normal\n    vec3 L = normalize(KeyLightPos);   // To light dir\n    vec3 V = normalize(eye-hit.point); // To eye vector\n    vec3 H = normalize(V+L);      // Half vector between to light direction and to eye direction\n    vec3 R = reflect(-L,N);\n    \n    // Compute different light components\n    vec3 ambient = ambientLight * mat.albedo;\n    vec3 diffuse = max(dot(N,L),0.) * KeyLightColor * mat.albedo;\n    diffuse += max(dot(N,normalize(fillLightPos)),0.) * fillLightColor * mat.albedo;\n    diffuse += max(dot(N,normalize(backLightPos)),0.) * backLightColor * mat.albedo;\n    \n    diffuse += 0.07*texture(iChannel0, R).xyz;\n    float specular = pow(max(dot(R,V),0.),10.);\n    float fresnel = 0.2 * pow(1.+dot(N,-V),4.);\n    return  diffuse + 0.4*specular + 2.*fresnel;\n}\n\nstruct Sphere\n{\n    vec3 center;\n    float radius;\n};\n\n// Define metaballs\n#define N_SPHERES 13\nSphere spheres[N_SPHERES] = Sphere[N_SPHERES]\n(\n     Sphere(vec3(0,0,0),1.)\n    ,Sphere(vec3(0,0,0),2.)\n    ,Sphere(vec3(0,0,0),3.)\n    ,Sphere(vec3(0,0,0),4.)\n    ,Sphere(vec3(0,0,0),5.)\n    ,Sphere(vec3(0,0,0),2.)\n    ,Sphere(vec3(0,0,0),3.)\n    ,Sphere(vec3(0,0,0),4.)\n    ,Sphere(vec3(0,0,0),5.)\n    ,Sphere(vec3(0,0,0),2.)\n    ,Sphere(vec3(0,0,0),3.)\n    ,Sphere(vec3(0,0,0),4.)\n    ,Sphere(vec3(0,0,0),5.)\n);\n \n// Get the value of the falloff function and the derivative for a value of x in [0,1]\nvoid getFalloff(float x, out float f)\n{\n    f = 0.;\n    if(x<0.01||x>1.) return; // Field is 0 outside [0,1]\n    \n    // Quintic falloff 1-6x^5 - 15x^4 + 10x^3\n    f = 1.-(x*x*x*(6.*x*x-15.*x + 10.));\n}\n\nvoid getFalloffDerivative(float x, out float df)\n{\n    df = 0.;\n    if(x<0.01||x>1.) return; // Field is 0 outside [0,1]\n   \n    // Quintic fallof derivative 1-(30x^4 - 60x^2 + 30x)\n    df = -(x*x*(30.*x*x - 60.*x + 30.));\n}\n\nbool hasFieldValue(vec3 p, float threshold, out float value, out vec3 normal)\n{\n    normal = vec3(0);\n    float f, df;\n    value = 0.;\n    \n    // Compute the field generated both from the spheres ...\n    for(int i=0;i<N_SPHERES;i++)\n    {\n        if(length(p-spheres[i].center)>spheres[i].radius) continue; // Test against sphere BBox\n        float d = length((p-spheres[i].center)/spheres[i].radius);\n        getFalloff(d, f);\n        value += f;\n    }\n    \n    // .. and add the field generated from the plane\n    float d = clamp(p.y,0.,1.);\n    getFalloff(d, f);\n    value += f;\n    \n    // If we are over the threshold compute also the normal\n    if(value>=threshold)\n    {\n        float df=0.;\n        \n        // Compute the normals for the spheres ...\n        for(int i=0;i<N_SPHERES;i++) \n        {\n            float d = length((p-spheres[i].center)/spheres[i].radius);\n            getFalloffDerivative(d, df);\n            normal += df*normalize(spheres[i].center-p);\n        }\n        \n        // ... add the normal for the plane\n        float d = clamp(p.y,0.,1.);\n        getFalloffDerivative(d, df);\n        normal += df*vec3(0,-1,0); // Normal to the planeThe field increase toward negative y, so the gradient is (0,-1,0)\n        normal = normalize(normal);\n        return true;\n    }\n    \n    // Not reached the threshold yet\n    return false;\n}\n\n\n// Find the nearest distance from origin to the field generated by the spheres on the dir direction, \n// return INF if the ray does not intersect the field\nHit getDistanceToField(vec3 origin, vec3 dir)\n{\n    float minT = INF;\n    float point;\n    Hit hit, result;\n    \n    // Get nearest point from the spheres\n    result.t = INF;\n    for(int i=0; i<N_SPHERES; i++)\n    {\n        if(traceSphere(origin, dir, spheres[i].center, spheres[i].radius, hit) && hit.t<result.t) \n        {\n            result.t = hit.t;\n            result.point = origin + result.t*dir;\n            result.objId = 1;\n        }\n    }\n    \n    // Get the nearest point from the plane\n    if(tracePlane(origin, dir, vec3(0,1,0), vec3(0,1,0), hit) && hit.t<result.t)\n    {\n        result.t = hit.t;\n        result.point = origin + result.t*dir;\n        result.normal = vec3(0,1,0);\n        result.objId = 2;\n    }\n    \n    return result;\n}\n\n// Update the position of the objects in the scene\nvoid updateScene()\n{\n    for(int i=0; i<N_SPHERES; i++)\n    {\n        float id = float(i);\n        float a = 2.;\n        //float upDown = sin(max(float(iFrame-30),0.)*0.01)*max(30.-float(iFrame),1.);\n        spheres[i].center = vec3(a*sin(float(iFrame)/200.+id*244.),1.4*abs(sin(id*0.1*iTime+323.3))-1.,a*sin(float(iFrame)/100.+id*1724.)) * 2.;   \n    }\n}\n\nvec3 castRay(vec3 origin, vec3 dir)\n{\n    updateScene();\n    \n    vec3 fieldNormal;\n    \n    float MAX_DISTANCE = 20.;\n    int MAX_ITERATIONS = 1000;\n\n    Hit hitPlane;\n    hitPlane.objId=-1;\n    if(tracePlane(origin, dir, vec3(0,1,0), vec3(0,1,0), hitPlane)) \n    {\n        hitPlane.objId=1;\n        hitPlane.normal = vec3(0,1,0);\n    }\n    \n    // Get to the field nearest point\n    Hit hit = getDistanceToField(origin, dir);\n    float t = hit.t;\n    if(t==INF) return render(origin,hitPlane); // No hit -> return\n    \n    // Ray march inside the field\n    vec3 p;\n    float value=0.;\n    float threshold = 0.4;\n    for(int i=0; i<MAX_ITERATIONS; i++)\n    {\n        if(t>MAX_DISTANCE) break; // No hit\n        t+=0.01;\n        p = origin + t*dir;\n        if(p.y<0.) break; // No hit \n        \n        if(hasFieldValue(p, threshold, value, fieldNormal))\n        {\n            hit.t=t;\n            hit.point=p;\n            hit.normal=fieldNormal;\n            hit.objId=1;            \n            break;\n        }\n    }\n    \n    if(value < 0.4) hit=hitPlane;\n    \n    return render(origin,hit);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{  \n    // Change coordinates from [0,iResolution.x]X[0,iResolution.y] to [-1,1]X[-1,-1]\n    vec2 U = (2.*fragCoord.xy - iResolution.xy) / iResolution.x;\n\n    // Right-handed camera reference system\n    //float tetha = iMouse.x/iResolution.x *2.*PI;\n    //float phi = iMouse.y/iResolution.y*PI;\n    float tetha = iTime*0.3;\n    float phi = PI/4.;\n    vec3 eye = vec3(12.*cos(tetha)*sin(phi),12.*cos(phi),12.*sin(tetha)*sin(phi));\n    vec3 target = vec3(0,0,0);\n   \n    // Reference frame\n    vec3 ww = normalize(eye-target);\n    vec3 uu = normalize(cross(vec3(0,1,0),ww));\n    vec3 vv = normalize(cross(ww,uu));\n    \n    // Cast a ray from orgin through pixel, into the scene\n    float focalLength = 1.4;\n    vec3 ray = normalize(U.x*uu + U.y*vv - focalLength*ww);\n    \n    // Cast a ray into the scene and sample the pixel color\n    fragColor = vec4(castRay(eye,ray),1.);\n    \n    // Gamma correction\n    fragColor = pow(fragColor,vec4(0.45));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// Define a very large value, will be used as infinity\n#define INF 1e5\n#define PI acos(-1.)\n\nstruct Hit \n{\n    float t;\n    vec3 point;\n    vec3 normal;\n    int objId;\n};\n\nvoid swap(inout float x0, inout float x1)\n{\n    float tmp = x0;\n    x0=x1;\n    x1=tmp;\n}\n\nbool solveQuadratic(float a, float b, float c, out float x0, out float x1) \n{ \n    float delta = b*b-4.*a*c; \n    if (delta < 0.) return false; \n    else if (delta == 0.) \n    {\n        x0 = x1 = -0.5*b/a; \n    }\n    else \n    { \n        float q = (b > 0.) ? -0.5 * (b + sqrt(delta)) : -0.5 * (b - sqrt(delta)); \n        x0 = q/a; \n        x1 = c/q; \n    } \n    \n    return true; \n} \n\nbool traceSphere(vec3 eye, vec3 ray, vec3 center, float radius, out Hit hit)\n{ \n    float t0, t1;\n\n    vec3 L = eye-center;\n    float a = dot(ray,ray);\n    float b = 2. * dot(ray,L); \n    float c = dot(L,L) - (radius*radius);\n    if (!solveQuadratic(a, b, c, t0, t1)) return false; \n    \n    if (t0 > t1) swap(t0, t1); \n\n    if (t0 < 0.) \n    { \n        t0 = t1;  //if t0 is negative, let's use t1 instead \n        if (t0 < 0.) return false;  //both t0 and t1 are negative \n    } \n\n    hit.t = t0;\n    hit.point = eye + t0*ray;\n    hit.normal = normalize(hit.point - center);\n    \n    return true; \n} \n\nbool tracePlane(vec3 origin, vec3 dir, vec3 normal, vec3 P, out Hit hit) \n{\n    float nl = dot(normal,dir);\n    if(-nl < 0.000001) return false; // line and plane parallel\n    float t = dot(P-origin,normal)/nl;\n    \n    hit.t = t;\n    hit.point = origin+t*dir;\n    hit.normal = normal;\n    \n    return true;\n}\n\nfloat checkBoardTexture(vec2 p)\n{\n    return mod(floor(p.y),2.);\n}\n\nstruct Material\n{\n    vec3 Fresnel0;   // Fresnel value when the light incident angle is 0 (angle between surface normal and to light direction)\n    float roughness; // Roughness in [0,1] \n    vec3 albedo;\n};\n\n// Palette generator tnx Iq\nvec3 getColor(vec3 a, vec3 b, vec3 c, vec3 d, float t)\n{\n    return a + b*cos(2.*PI*(t*c+d));\n}\n\n// Color palette\nvec3 samplePalette(float t)\n{\n     vec3 a = vec3(0.5,0.5,0.5);\n     vec3 b = vec3(.5,0.5,0.5);\n     vec3 c = vec3(1.0,1.0,1.0);\n     vec3 d = vec3(0.,0.2,0.4);\n     \n     return getColor(a,b,c,d,t);\n} \n\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

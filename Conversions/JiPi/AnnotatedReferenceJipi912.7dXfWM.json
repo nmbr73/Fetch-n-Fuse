@@ -1,0 +1,46 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7dXfWM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Annotated Reference  JiPi 912",
+  "description": "This is a learning aid for people new to shaders and getting started with the music input on Shadertoy. The goal is to simply recreate the spectrum analyser as seen in the channel input window. Everything you need should be in the comments",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "visualization",
+   "music",
+   "reference"
+  ],
+  "hasliked": 0,
+  "parentid": "XdX3z2",
+  "parentname": "Annotated Reference Spectrum Vis"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4df3Rn",
+     "filepath": "/media/a/3c33c415862bb7964d256f4749408247da6596f2167dca2c86cc38f83c244aa6.mp3",
+     "type": "music",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "#define bars 32.0                 // How many buckets to divide spectrum into\n#define barSize 1.0 / bars        // Constant to avoid division in main loop\n#define barGap 0.1 * barSize      // 0.1 represents gap on both sides, so a bar is\n                                  // shown to be 80% as wide as the spectrum it samples\n#define sampleSize 0.02           // How accurately to sample spectrum, must be a factor of 1.0\n                                  // Setting this too low may crash your browser!\n\n// Helper for intensityToColour\nfloat h2rgb(float h) {\n\tif(h < 0.0) h += 1.0;\n\tif(h < 0.166666) return 0.1 + 4.8 * h;\n\tif(h < 0.5) return 0.9;\n\tif(h < 0.666666) return 0.1 + 4.8 * (0.666666 - h);\n\treturn 0.1;\n}\n\n// Map [0, 1] to rgb using hues from [240, 0] - ie blue to red\nvec3 intensityToColour(float i) {\n\t// Algorithm rearranged from http://www.w3.org/TR/css3-color/#hsl-color\n\t// with s = 0.8, l = 0.5\n\tfloat h = 0.666666 - (i * 0.666666);\n\t\n\treturn vec3(h2rgb(h + 0.333333), h2rgb(h), h2rgb(h - 0.333333));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n\t// Map input coordinate to [0, 1)\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\t\n\t// Get the starting x for this bar by rounding down\n\tfloat barStart = floor(uv.x * bars) / bars;\n\t\n\t// Discard pixels in the 'gap' between bars\n\tif(uv.x - barStart < barGap || uv.x > barStart + barSize - barGap) {\n\t\tfragColor = vec4(0.0);\n\t}\n    else\n    {\n\t// Sample spectrum in bar area, keep cumulative total\n\tfloat intensity = 0.0;\n\tfor(float s = 0.0; s < barSize; s += barSize * sampleSize) {\n\t\t// Shader toy shows loudness at a given frequency at (f, 0) with the same value in all channels\n\t\tintensity += texture(iChannel0, vec2(barStart + s, 0.0)).r;\n\t}\n\tintensity *= sampleSize; // Divide total by number of samples taken (which is 1 / sampleSize)\n\tintensity = clamp(intensity, 0.005, 1.0); // Show silent spectrum to be just poking out of the bottom\n\t\n\t// Only want to keep this pixel if it is lower (screenwise) than this bar is loud\n\tfloat i = float(intensity > uv.y); // Casting a comparison to float sets i to 0.0 or 1.0\n\t\n\t//fragColor = vec4(intensityToColour(uv.x), 1.0);       // Demo of HSL function\n\t//fragColor = vec4(i);                                  // Black and white output\n\tfragColor = vec4(intensityToColour(intensity) * i, i);  // Final output\n    }\n\t// Note that i2c output is multiplied by i even though i is sent in the alpha channel\n\t// This is because alpha is not 'pre-multiplied' for fragment shaders, you need to do it yourself\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

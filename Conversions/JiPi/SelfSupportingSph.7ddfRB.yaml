@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: SelfSupportingSph
+  id: SelfSupportingSph
+  kernel: SelfSupportingSph
+  name: SelfSupportingSph
+shader:
+  author: fenix
+  description: '*drag with mouse* *space to reset* Fixed neighborhood bugs. Increased
+    convergence by solving the neighborhood, obviating the need for the expensive
+    density transport via blur. It''s amazing that GPUs have so much power they can
+    throw this much data away.'
+  id: 7ddfRB
+  name: Self supporting SPH
+  tags:
+  - 2d
+  - voronoi
+  - simulation
+  - particles
+  - flow
+  - liquid
+  - sph
+  url: https://www.shadertoy.com/view/7ddfRB

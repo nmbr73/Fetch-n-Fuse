@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Tannins
+  id: Tannins
+  kernel: Tannins
+  name: Tannins
+shader:
+  author: wyatt
+  description: 'Its a good wine if it makes drippy things on the side apparently '
+  id: 3sdczN
+  name: Tannins
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/3sdczN

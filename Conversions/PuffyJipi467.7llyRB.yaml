@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: PuffyJipi467
+  id: PuffyJipi467
+  kernel: PuffyJipi467
+  name: PuffyJipi467
+shader:
+  author: N.N.
+  description: Hi shadertoyers! I haven't done much DF modelling in the past, so I
+    thought it was a good idea to try something. I wanted to make it look cartoonish,
+    but it ended near the uncanny valley between a cartoon and something a bit more
+    real xD
+  id: 7llyRB
+  name: Puffy JiPi 467
+  parent:
+    id: ltdyDl
+    name: Puffy
+    url: https://www.shadertoy.com/view/ltdyDl
+  tags:
+  - puffy
+  url: https://www.shadertoy.com/view/7llyRB

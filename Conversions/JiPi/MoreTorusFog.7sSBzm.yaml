@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MoreTorusFog
+  id: MoreTorusFog
+  kernel: MoreTorusFog
+  name: MoreTorusFog
+shader:
+  author: SnoopethDuckDuck
+  description: i like this technique
+  id: 7sSBzm
+  name: More Torus "Fog"
+  tags:
+  - e
+  url: https://www.shadertoy.com/view/7sSBzm

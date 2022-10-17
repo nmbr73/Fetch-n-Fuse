@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: LiquidCassiniOvalsJipi
+  id: LiquidCassiniOvalsJipi
+  kernel: LiquidCassiniOvalsJipi
+  name: LiquidCassiniOvalsJipi
+shader:
+  author: N.N.
+  description: 'Morphing cassini ovals with nice fluid motion: https://mathworld.wolfram.com/CassiniOvals.html'
+  id: 7tSBRV
+  name: Liquid Cassini ovals JiPi
+  parent:
+    id: Ntjfzy
+    name: Liquid Cassini ovals
+    url: https://www.shadertoy.com/view/Ntjfzy
+  tags:
+  - metaball
+  - liquid
+  - cassini
+  - ovals
+  url: https://www.shadertoy.com/view/7tSBRV

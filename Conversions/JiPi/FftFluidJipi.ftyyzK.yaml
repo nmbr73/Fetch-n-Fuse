@@ -1,0 +1,31 @@
+fuse:
+  author: JiPi
+  file: FftFluidJipi
+  id: FftFluidJipi
+  kernel: FftFluidJipi
+  name: FftFluidJipi
+shader:
+  author: N.N.
+  description: 'see http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/jgt01.pdf
+
+    Doing diffusion and conservation of mass in frequency, and only advection in the
+    spatial domain.
+
+    Only running at 30 fps since I used all the buffers twice.
+
+    Space to toggle FFT view'
+  id: ftyyzK
+  name: FFT Fluid JiPi
+  parent:
+    id: wdBGWG
+    name: FFT Fluid
+    url: https://www.shadertoy.com/view/wdBGWG
+  tags:
+  - fluid
+  - diffusion
+  - advection
+  - fourier
+  - greyscale
+  - multipass
+  - multipass
+  url: https://www.shadertoy.com/view/ftyyzK

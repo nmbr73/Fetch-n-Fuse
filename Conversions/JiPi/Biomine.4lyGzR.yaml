@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: Biomine
+  id: Biomine
+  kernel: Biomine
+  name: Biomine
+shader:
+  author: Shane
+  description: Using a combination of simple gyroid surfaces to create a dual mineral
+    and organic looking scene.
+  id: 4lyGzR
+  name: Biomine
+  tags:
+  - raymarching
+  - voronoi
+  - tunnel
+  - cellular
+  - gyroid
+  - bio
+  url: https://www.shadertoy.com/view/4lyGzR

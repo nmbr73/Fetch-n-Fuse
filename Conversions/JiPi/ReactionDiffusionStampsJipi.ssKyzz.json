@@ -1,0 +1,186 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ssKyzz",
+  "date": "0",
+  "viewed": 0,
+  "name": "Reaction-Diffusion-Stamps JiPi",
+  "description": "A reaction-diffusion simulation (3 reaction-diffusion passes per image evaluation) with boundary conditions.\nClick the mouse to add stamps manually.\nI used the same effect here: https://www.pouet.net/prod.php?which=89693",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "mouse",
+   "diffusion",
+   "multipass",
+   "reaction"
+  ],
+  "hasliked": 0,
+  "parentid": "sdVyzR",
+  "parentname": "Reaction-Diffusion-Stamps"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n * Reaction-Diffusion-Stamps\n * \n * Copyright (C) 2022  Alexander Kraus <nr4@z10.info>\n * \n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n * \n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n * GNU General Public License for more details.\n * \n * You should have received a copy of the GNU General Public License\n * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n */\n\nvoid pixel( out vec4 fragColor, in vec2 fragCoord )\n{\n    setup(fragCoord, iResolution.xy, iTime, iFrame, iMouse);\n    \n    // SSAA\n    vec3 col = c.yyy;\n    float bound = sqrt(fsaa)-1.;\n    for(float i = -.5*bound; i<=.5*bound; i+=1.)\n        for(float j=-.5*bound; j<=.5*bound; j+=1.)\n            col += texture(iChannel0, uv+vec2(i,j)*1.5/max(bound, 1.)*unit).xyz;\n    col /= fsaa;\n\n    // edge glow\n    vec4 col11 = texture(iChannel0, uv - unit),\n        col13 = texture(iChannel0, uv + unit*c.xz),\n        col31 = texture(iChannel0 , uv + unit*c.zx),\n        col33 = texture(iChannel0, uv + unit),\n        x = col33 -col11 -3.* texture(iChannel0, uv + unit*c.yz) -col13 + col31 + 3.*texture(iChannel0, uv + unit*c.yx),\n        y = col33 -col11 -3.* texture(iChannel0, uv + unit*c.zy) -col31 + col13 + 3.*texture(iChannel0, uv + unit*c.xy);\n    fragColor = vec4(mix(col, 1.5*(abs(y.rgb) + abs(x.rgb)).rgb, .3),1.);\n\n\n    // Vignette\n    uv *=  1. - uv.yx;\n    fragColor *= pow(uv.x*uv.y * 15., .2);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float ssaa = 1.;\n    vec4 col = vec4(0.);\n    float bound = sqrt(ssaa)-1.;\n        for(float i = -.5*bound; i<=.5*bound; i+=1.)\n            for(float j=-.5*bound; j<=.5*bound; j+=1.)\n            {\n                vec4 c1;\n                float r = pi/4.;\n                mat2 R = mat2(cos(r),sin(r),-sin(r),cos(r));\n                pixel(c1, fragCoord.xy+R*(vec2(i,j)*1./max(bound, 1.)));\n                    col += c1;\n            }\n    col /= ssaa;\n    fragColor = col;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "/*\n * Reaction-Diffusion-Stamps\n * \n * Copyright (C) 2022  Alexander Kraus <nr4@z10.info>\n * \n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n * \n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n * GNU General Public License for more details.\n * \n * You should have received a copy of the GNU General Public License\n * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n */\n\nfloat f = .0545,\n    k = .062,\n    bpm = 15.,\n    spb = 60./15.,\n    stepTime,\n    nbeats,\n    scale,\n    pi = 3.14159,\n    fsaa = 144.,\n    hardBeats,\n    time = 0.;\nint frame = 0;\nvec2 unit,\n    r = vec2(1.,.5),\n    uv,\n    resolution;\nvec3 c = vec3(1.,0.,-1.);\nvec4 mouse;\n\n// Creative Commons Attribution-ShareAlike 4.0 International Public License\n// Created by David Hoskins.\n// See https://www.shadertoy.com/view/4djSRW\nvec2 hash22(vec2 p)\n{\n\tvec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+33.33);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\n\n// Creative Commons Attribution-ShareAlike 4.0 International Public License\n// Created by David Hoskins.\n// See https://www.shadertoy.com/view/4djSRW\nfloat hash12(vec2 p)\n{\n\tvec3 p3  = fract(p.xyx * .1031);\n    p3 += dot(p3, p3.yzx + 33.33);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nfloat lfnoise(vec2 t)\n{\n    vec2 i = floor(t);\n    t = smoothstep(c.yy, c.xx, fract(t));\n    vec2 v1 = vec2(hash12(i), hash12(i+c.xy)),\n    v2 = vec2(hash12(i+c.yx), hash12(i+c.xx));\n    v1 = c.zz+2.*mix(v1, v2, t.y);\n    return mix(v1.x, v1.y, t.x);\n}\n\nfloat dbox3(vec3 x, vec3 b)\n{\n  b = abs(x) - b;\n  return length(max(b,0.))\n         + min(max(b.x,max(b.y,b.z)),0.);\n}\n\n// Distance to star\nfloat dstar(vec2 x, float N, vec2 R)\n{\n    float d = pi/N,\n        p0 = acos(x.x/length(x)),\n        p = mod(p0, d);\n    vec2 a = mix(R,R.yx,mod(round((p-p0)/d),2.)),\n    \tp1 = a.x*c.xy,\n        ff = a.y*vec2(cos(d),sin(d))-p1;\n    return dot(length(x)*vec2(cos(p),sin(p))-p1,ff.yx*c.zx)/length(ff);\n}\n\nfloat dhexagonpattern(vec2 p) \n{\n    vec2 q = vec2(p.x*1.2, p.y + p.x*.6),\n        qi = floor(q),\n        pf = fract(q);\n    float v = mod(qi.x + qi.y, 3.);\n    \n    return dot(step(pf.xy,pf.yx), 1.-pf.yx + step(1.,v)*(pf.x+pf.y-1.) + step(2.,v)*(pf.yx-2.*pf.xy));\n}\n\nfloat m(vec2 x)\n{\n    return max(x.x,x.y);\n}\n\nfloat d210(vec2 x)\n{\n    return min(max(max(max(max(min(max(max(m(abs(vec2(abs(abs(x.x)-.25)-.25, x.y))-vec2(.2)), -m(abs(vec2(x.x+.5, abs(abs(x.y)-.05)-.05))-vec2(.12,.02))), -m(abs(vec2(abs(x.x+.5)-.1, x.y-.05*sign(x.x+.5)))-vec2(.02,.07))), m(abs(vec2(x.x+.5,x.y+.1))-vec2(.08,.04))), -m(abs(vec2(x.x, x.y-.04))-vec2(.02, .08))), -m(abs(vec2(x.x, x.y+.1))-vec2(.02))), -m(abs(vec2(x.x-.5, x.y))-vec2(.08,.12))), -m(abs(vec2(x.x-.5, x.y-.05))-vec2(.12, .07))), m(abs(vec2(x.x-.5, x.y))-vec2(.02, .08)));\n}\n\n// x: material\n// y: distance\n// z: reflectivity\nvec3 add(vec3 a, vec3 b)\n{\n    if(a.y < b.y) return a;\n    return b;\n}\n\nvec3 hsv2rgb(vec3 cc)\n{\n    vec4 K = vec4(1., 2. / 3., 1. / 3., 3.);\n    vec3 p = abs(fract(cc.xxx + K.xyz) * 6. - K.www);\n    return cc.z * mix(K.xxx, clamp(p - K.xxx, 0., 1.), cc.y);\n}\n\nvec2 rgb2sv(vec3 cc)\n{\n    vec4 K = vec4(0., -1. / 3., 2. / 3., -1.),\n        p = mix(vec4(cc.bg, K.wz), vec4(cc.gb, K.xy), step(cc.b, cc.g)),\n        q = mix(vec4(p.xyw, cc.r), vec4(cc.r, p.yzx), step(p.x, cc.r));\n    return vec2((q.x - min(q.w, q.y)) / (q.x + 1.e-10), q.x);\n}\n\nvec3 scene(vec3 x, sampler2D buffer)\n{\n    vec3 k = texture(buffer, mod(.5*(x.xy+.5*resolution/resolution.y),resolution.xy)).xyz;\n    return vec3(3.+8.*(k.x+k.y)+.1*k.z*k.x*k.y+nbeats+.5*x.x*x.y, x.z+.015-.65*sqrt(abs(lfnoise(.1*x.xy+.66)*lfnoise(nbeats*c.xx+.31)))*k.y, .6)*vec3(1.,.25,1.);\n}\n\nvec3 palette(float scale)\n{\n    const int N = 4;\n    vec3 colors[N] = vec3[N](\n        vec3(0.16,0.22,0.24),\n        vec3(0.90,0.29,0.37),\n        vec3(1.00,0.51,0.49),\n        vec3(1.00,0.80,0.67)\n        \n    );\n    float i = mod(floor(scale), float(N)),\n        ip1 = mod(i + 1., float(N));\n    return mix(colors[int(i)], colors[int(ip1)], fract(scale));\n}\n\nbool ray(inout vec3 col, out vec3 x, float d, vec3 dir, out vec3 s, vec3 o, vec3 l, out vec3 n, sampler2D buffer)\n{\n    for(int i=0; i<250; ++i)\n    {\n        x = o + d * dir;\n        s = scene(x, buffer);\n\n        if(abs(x.z)>.15) break;\n        \n        if(s.y < 1.e-4)\n        {\n            // Blinn-Phong Illumination\n            float dx = 5.e-5;\n            n = normalize(vec3(\n                scene(x+dx*c.xyy, buffer).y, \n                scene(x+dx*c.yxy, buffer).y, \n                scene(x+dx*c.yyx, buffer).y\n            )-s.y);\n\n            col = palette(s.x);\n\n            col = .2 * col\n                + col*max(dot(normalize(l-x),n),0.)\n                + .7 * col*pow(max(dot(reflect(normalize(l-x),n),dir),0.),2.);\n            \n            if(x.z < -.01)\n            {\n                float cc = .035;\n                vec2 a = mod(x.xy,cc)-.5*cc,\n                    ai = x.xy-mod(x.xy+.5*cc,cc), \n                    y = abs(a)-.002;\n                col = mix(col, .5*col, smoothstep(1.5/resolution.y, -1.5/resolution.y, min(y.x,y.y)))+.06*hash12(ai*1.e2);\n            }\n\n            return true;\n        }\n        d += abs(s.y);\n    }\n    return false;\n}\n\nvoid setup(vec2 fragCoord, vec2 res, float tm, int frm, vec4 ms)\n{\n    time = tm;\n    frame = frm;\n    resolution = res;\n    stepTime = mod(time+.5*spb, spb)-.5*spb;\n    nbeats = (11.+((time-stepTime+.5*spb)/spb + smoothstep(-.2*spb, .2*spb, stepTime)))*.33;\n    scale = smoothstep(-.3*spb, 0., stepTime)*smoothstep(.3*spb, 0., stepTime);\n    hardBeats = round((time-stepTime)/spb);\n    uv = fragCoord/resolution;\n    unit = c.xx/resolution;\n    mouse = ms;\n}\n\nvoid simulate(vec2 fragCoord, sampler2D buffer, out vec4 fragColor)\n{\n    vec2 \n        uv0 = 3.*(fragCoord.xy-.5*resolution.xy)/resolution.y,\n    uva = uv0-3.*(hash22(hardBeats*c.xx)-.5);\n\n    vec3 v = texture(buffer, fragCoord.xy*unit).xyz;\n    vec2 u = v.xy;\n    float s = hash12(hardBeats*c.xx),\n        sdf;\n\n    fragColor.z = v.z;\n\n    // Boundary conditions\n    k += .01*lfnoise(.1*uv0+ 2.131 + nbeats*c.xx);\n    f += .01*lfnoise(.1*uv0 + nbeats*c.xx+1.31);\n\n    // Mouse\n    if(mouse.x != 0. && mouse.y != 0.)\n    {\n        vec2 uv1 = (mouse.zw-.5*resolution.xy)/resolution.y;\n        vec3 \n            o = c.yzx,\n            dir = normalize(uv1.x * c.xyy + uv1.y * cross(c.xyy,normalize(-o))-o);\n        vec2 uve = (o - (o.z)/dir.z * dir).xy;\n        uve = .5*(uve.xy+.5*resolution/resolution.y);\n        float la = length(fragCoord*unit - uve) - .1;\n        if(la < 0.)\n        {\n            sdf = abs(la)-.005;\n            u = max(u, .85*smoothstep(35.*unit.x, -35.*unit.x, sdf)*c.xx);\n            if(sdf < 0.)\n            {\n                fragColor.z = time;\n            }\n        }\n    }\n\n    if(scale > .95)\n    {\n        if(s < .1)\n            sdf = abs(dstar(uva, 5., vec2(.2,.5)))-.05;\n        else if(s < .25)\n            sdf = abs(length(uva)-.3)-.1-.13*sin(atan(uva.y,uva.x)*4.*pi);\n        else if(s < .4)\n            sdf = abs(length(uva)-.4)-.09;\n        else if(s < .5)\n            sdf = abs(dbox3(vec3(uva+uva.yx*c.xz,0), .4*c.xxx))-.09;\n        else if(s < .55)\n            sdf = 2.*d210(.5*uva);\n        else if(s < .7)\n            sdf = abs(dhexagonpattern(2.*uva)/2.)-.005;\n        else if(s < .95)\n            sdf = abs(mod(uva.x, .8)-.4+abs(uva.y)-.4)-.005;\n        else fragColor.xy = c.yy;\n\n        u = max(u, .85*smoothstep(35.*unit.x, -35.*unit.x, sdf)*c.xx);\n        if(sdf < 0.)\n        {\n            fragColor.z = time;\n        }\n    }\n    \n    if(frame < 10)\n    {\n        sdf = abs(length(uv0+.3)-.3)-.1-.13*sin(atan(uv0.y+.3,uv0.x+.3)*4.*pi);\n        fragColor.xy = max(u, .85*smoothstep(35.*unit.x, -35.*unit.x, sdf)*c.xx);\n    }\n    else\n    {\n        vec2 l = c.yy;\n        vec3 wc = vec3(.05,.2,-1.);\n        mat3 w = mat3(wc.xyx, wc.yzy, wc.xyx);\n\n        // Laplace operator\n        for(int i=0; i<3; ++i)\n            for(int j=0; j<3; ++j)\n                l += w[i][j]*texture(buffer, (fragCoord.xy + (1.5+.5*lfnoise(nbeats*c.xx))*vec2(ivec2(i,j)-1))*unit).xy;\n\n        // Reaction-Diffusion system\n        fragColor.xy = u + r*l + c.zx*u.x*u.y*u.y + vec2(f*(1.-u.x), -(f+k)*u.y)+.0005*hash22(uv0*1.e2);\n        fragColor.xy = clamp(fragColor.xy, -1.,1.);\n\n    }\n}\n\nvec3 shifthue(vec3 rgb, float hue)\n{\n    float cc = cos(hue),\n        cs = sin(hue);\n    mat3 yiq = mat3(\n        .3,.6,.21,\n        .59,-.27,-.52,\n        .11,-.32,.31\n    );\n    rgb = yiq * rgb;\n    rgb.yz *= mat2(cc,cs,-cs,cc);\n    return  inverse(yiq) * rgb;\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n * Reaction-Diffusion-Stamps\n * \n * Copyright (C) 2022  Alexander Kraus <nr4@z10.info>\n * \n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n * \n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n * GNU General Public License for more details.\n * \n * You should have received a copy of the GNU General Public License\n * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n */\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    setup(fragCoord, iResolution.xy, iTime, iFrame, iMouse);\n    simulate(fragCoord, iChannel0, fragColor);\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n * Reaction-Diffusion-Stamps\n * \n * Copyright (C) 2022  Alexander Kraus <nr4@z10.info>\n * \n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n * \n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n * GNU General Public License for more details.\n * \n * You should have received a copy of the GNU General Public License\n * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n */\n\nvoid pixel( out vec4 fragColor, in vec2 fragCoord )\n{\n    setup(fragCoord, iResolution.xy, iTime, iFrame, iMouse);\n    \n    vec2 uv1 = (fragCoord-.5*iResolution.xy)/iResolution.y;\n    vec3 \n        o = c.yzx,\n        col,\n        c1,\n        x,\n        x1,\n        n,\n        dir = normalize(uv1.x * c.xyy + uv1.y * cross(c.xyy,normalize(-o))-o),\n        l = c.zzx-.5*c.yyx,\n        s,\n        s1;\n\n    // Material ray\n    if(ray(col, x, -(o.z-.06)/dir.z, dir, s, o, l, n, iChannel0))\n    {\n        // Reflections\n        if(ray(c1, x1, 2.e-3, reflect(dir,n), s1, x, l, n, iChannel0))\n            col = mix(col, c1, s.z);\n\n        // Hard Shadow\n        if(ray(c1, x1, 1.e-2, normalize(l-x), s1, x, l, n, iChannel0) && length(l-x1) < length(l-x))\n            col *= .5;\n    }\n\n    // Gamma\n    col += col*col + col*col*col;\n    col *= .75;\n    col = mix(col, shifthue(col, 2.*pi*lfnoise(.1*nbeats*c.xx)), .5);\n    col = mix(length(col)/sqrt(3.)*c.xxx, col, clamp(abs(x.z*100.),0.,1.));\n    fragColor = mix(texture(iChannel1, uv), vec4(clamp(col,0.,1.),1.), .5);\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float ssaa = 1.;\n    vec4 col = vec4(0.);\n    float bound = sqrt(ssaa)-1.;\n        for(float i = -.5*bound; i<=.5*bound; i+=1.)\n            for(float j=-.5*bound; j<=.5*bound; j+=1.)\n            {\n                vec4 c1;\n                float r = pi/4.;\n                mat2 R = mat2(cos(r),sin(r),-sin(r),cos(r));\n                pixel(c1, fragCoord.xy+R*(vec2(i,j)* 1./max(bound, 1.)));\n                    col += c1;\n            }\n    col /= ssaa;\n    fragColor = col;\n}\n",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n * Reaction-Diffusion-Stamps\n * \n * Copyright (C) 2022  Alexander Kraus <nr4@z10.info>\n * \n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n * \n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n * GNU General Public License for more details.\n * \n * You should have received a copy of the GNU General Public License\n * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n */\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    setup(fragCoord, iResolution.xy, iTime, iFrame, iMouse);\n    simulate(fragCoord, iChannel0, fragColor);\n}\n",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n * Reaction-Diffusion-Stamps\n * \n * Copyright (C) 2022  Alexander Kraus <nr4@z10.info>\n * \n * This program is free software: you can redistribute it and/or modify\n * it under the terms of the GNU General Public License as published by\n * the Free Software Foundation, either version 3 of the License, or\n * (at your option) any later version.\n * \n * This program is distributed in the hope that it will be useful,\n * but WITHOUT ANY WARRANTY; without even the implied warranty of\n * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n * GNU General Public License for more details.\n * \n * You should have received a copy of the GNU General Public License\n * along with this program.  If not, see <http://www.gnu.org/licenses/>.\n */\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    setup(fragCoord, iResolution.xy, iTime, iFrame, iMouse);\n    simulate(fragCoord, iChannel0, fragColor);\n}\n",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

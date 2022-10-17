@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: Cranks2DifficultJipi
+  id: Cranks2DifficultJipi
+  kernel: Cranks2DifficultJipi
+  name: Cranks2DifficultJipi
+shader:
+  author: N.N.
+  description: 'Making a tree using random walks that separate from each other and
+    are affected by some forces. '
+  id: fdtyR2
+  name: cranks2 difficult JiPi
+  parent:
+    id: 7l2BRd
+    name: cranks2 difficult
+    url: https://www.shadertoy.com/view/7l2BRd
+  tags:
+  - procedural
+  - generative
+  - stochastic
+  - routing
+  url: https://www.shadertoy.com/view/fdtyR2

@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: SmokeyJipi
+  id: SmokeyJipi
+  kernel: SmokeyJipi
+  name: SmokeyJipi
+shader:
+  author: N.N.
+  description: WIP experiment. yep jean-claude again, too good to not use! advecting
+    curl computed from video. using curl for velocities gives an incompressible flow
+    which appears fluid-like. try webcam (change vid on BufA)
+  id: stcfDH
+  name: Smokey JiPi
+  parent:
+    id: ldVGDw
+    name: Smokey
+    url: https://www.shadertoy.com/view/ldVGDw
+  tags:
+  - curl
+  - smoke
+  - invisible
+  - incompressible
+  url: https://www.shadertoy.com/view/stcfDH

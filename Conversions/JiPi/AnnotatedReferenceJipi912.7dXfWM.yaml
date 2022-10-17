@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: AnnotatedReferenceJipi912
+  id: AnnotatedReferenceJipi912
+  kernel: AnnotatedReferenceJipi912
+  name: AnnotatedReferenceJipi912
+shader:
+  author: N.N.
+  description: This is a learning aid for people new to shaders and getting started
+    with the music input on Shadertoy. The goal is to simply recreate the spectrum
+    analyser as seen in the channel input window. Everything you need should be in
+    the comments
+  id: 7dXfWM
+  name: Annotated Reference  JiPi 912
+  parent:
+    id: XdX3z2
+    name: Annotated Reference Spectrum Vis
+    url: https://www.shadertoy.com/view/XdX3z2
+  tags:
+  - visualization
+  - music
+  - reference
+  url: https://www.shadertoy.com/view/7dXfWM

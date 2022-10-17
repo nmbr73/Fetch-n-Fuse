@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: BlobBlobTheBlobbyBlobBlob
+  id: BlobBlobTheBlobbyBlobBlob
+  kernel: BlobBlobTheBlobbyBlobBlob
+  name: BlobBlobTheBlobbyBlobBlob
+shader:
+  author: SnoopethDuckDuck
+  description: was trying to play around with 4D stuff intersecting 3D space. idk
+    what this is though, very messy code
+  id: sslfRH
+  name: Blob blob the blobby blob blob
+  tags:
+  - raymarching
+  - template
+  - artofcode
+  url: https://www.shadertoy.com/view/sslfRH

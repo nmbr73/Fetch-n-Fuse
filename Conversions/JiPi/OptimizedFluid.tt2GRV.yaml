@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: OptimizedFluid
+  id: OptimizedFluid
+  kernel: OptimizedFluid
+  name: OptimizedFluid
+shader:
+  author: wyatt
+  description: '
+
+    [url]javascript:  (function(){if(Effect.prototype.Paint.toString().length>1000){_Paint=Effect.prototype.Paint;}
+    Effect.prototype.Paint = function(...args){for(var i=0; i<4;i++){_Paint.apply(this,args);}}})()[/url]'
+  id: tt2GRV
+  name: Optimized Fluid
+  tags:
+  - fluid
+  - automata
+  - physics
+  url: https://www.shadertoy.com/view/tt2GRV

@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: ShinymetalJipi
+  id: ShinymetalJipi
+  kernel: ShinymetalJipi
+  name: ShinymetalJipi
+shader:
+  author: N.N.
+  description: 'Uses a sobel filter and a mip bloom to produce a shiny metal effect.
+
+    Changing iChannel1 to use point filtering will make it look closer to aluminium
+    foil.
+
+
+    Intensity can be controlled with mouse X.
+
+    Pixel step distance can be controlled with Mouse Y.'
+  id: css3zr
+  name: ShinyMetal JiPi
+  parent:
+    id: flVBDt
+    name: Shiny Metal
+    url: https://www.shadertoy.com/view/flVBDt
+  tags:
+  - sobel
+  - postprocess
+  - bloom
+  - metal
+  - shiny
+  url: https://www.shadertoy.com/view/css3zr

@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: SimpleRefractionTest
+  id: SimpleRefractionTest
+  kernel: SimpleRefractionTest
+  name: SimpleRefractionTest
+shader:
+  author: drschizzo
+  description: .
+  id: flcSW2
+  name: simple refraction test
+  tags:
+  - raymarching
+  - reflect
+  - refract
+  url: https://www.shadertoy.com/view/flcSW2

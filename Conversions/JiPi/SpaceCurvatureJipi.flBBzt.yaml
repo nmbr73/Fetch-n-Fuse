@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: SpaceCurvatureJipi
+  id: SpaceCurvatureJipi
+  kernel: SpaceCurvatureJipi
+  name: SpaceCurvatureJipi
+shader:
+  author: N.N.
+  description: 'generalise Join3D from [iq] https://www.shadertoy.com/view/3ld3DM
+
+    => opCurveSpace (add a 2 rotations, generic 2D shape profile, generic 3D shape)
+    - (not exact)
+
+    Rq: BumpMap is a bit triky cause it requires an uvw space normal'
+  id: flBBzt
+  name: Space curvature JiPi
+  parent:
+    id: tdyBDh
+    name: Space curvature
+    url: https://www.shadertoy.com/view/tdyBDh
+  tags:
+  - 3d
+  - torsion
+  url: https://www.shadertoy.com/view/flBBzt

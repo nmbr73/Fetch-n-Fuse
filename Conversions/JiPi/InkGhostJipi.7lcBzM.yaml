@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: InkGhostJipi
+  id: InkGhostJipi
+  kernel: InkGhostJipi
+  name: InkGhostJipi
+shader:
+  author: N.N.
+  description: 'A variant of a shader i did some time ago : https://www.shadertoy.com/view/Mt33DH.
+
+    You can use the mouse to change the effect (horizontal axis).'
+  id: 7lcBzM
+  name: Ink Ghost JiPi
+  parent:
+    id: 4t3GDj
+    name: Ink Ghost
+    url: https://www.shadertoy.com/view/4t3GDj
+  tags:
+  - post
+  - effect
+  - ghost
+  - ink
+  - process
+  url: https://www.shadertoy.com/view/7lcBzM

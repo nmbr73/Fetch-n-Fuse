@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TasteOfNoise17
+  id: TasteOfNoise17
+  kernel: TasteOfNoise17
+  name: TasteOfNoise17
+shader:
+  author: leon
+  description: Another colorful noise hell
+  id: fljBWK
+  name: Taste of Noise 17
+  tags:
+  - abstract
+  url: https://www.shadertoy.com/view/fljBWK

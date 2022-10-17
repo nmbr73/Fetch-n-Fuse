@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: ShallowwaterequationsJipi823
+  id: ShallowwaterequationsJipi823
+  kernel: ShallowwaterequationsJipi823
+  name: ShallowwaterequationsJipi823
+shader:
+  author: N.N.
+  description: 'Simulating shallow water!
+
+    Use your mouse for creating waves.'
+  id: NdBBDR
+  name: ShallowWaterEquations JiPi 823
+  parent:
+    id: 4t3GWM
+    name: '[Test] shallow water equations'
+    url: https://www.shadertoy.com/view/4t3GWM
+  tags:
+  - 2d
+  - simulation
+  - water
+  url: https://www.shadertoy.com/view/NdBBDR

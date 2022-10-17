@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: TinypaintstreamsJipi
+  id: TinypaintstreamsJipi
+  kernel: TinypaintstreamsJipi
+  name: TinypaintstreamsJipi
+shader:
+  author: N.N.
+  description: Not as physically accurate as [url]https://www.shadertoy.com/view/WtfyDj[/url],
+    but 10x smaller
+  id: ftcfDM
+  name: TinyPaintStreams JiPi
+  parent:
+    id: 7lVSDD
+    name: Tiny paint streams (530char)
+    url: https://www.shadertoy.com/view/7lVSDD
+  tags:
+  - simulation
+  - fluid
+  - convolution
+  - 2tweets
+  - golf
+  url: https://www.shadertoy.com/view/ftcfDM

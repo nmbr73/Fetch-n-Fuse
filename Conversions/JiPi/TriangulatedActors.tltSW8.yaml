@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: TriangulatedActors
+  id: TriangulatedActors
+  kernel: TriangulatedActors
+  name: TriangulatedActors
+shader:
+  author: wyatt
+  description: "Seems like parallel particle simulations are finally getting cool!\
+    \ \nThis is a pretty fun way of doing it - neighboring particles are stored geometrically\
+    \ - good for massive scale\nHopefully shadertoy community keeps innovating in\
+    \ this area"
+  id: tltSW8
+  name: Triangulated Actors
+  tags:
+  - particles
+  - triangulation
+  url: https://www.shadertoy.com/view/tltSW8

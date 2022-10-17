@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: LegoShaderJipi
+  id: LegoShaderJipi
+  kernel: LegoShaderJipi
+  name: LegoShaderJipi
+shader:
+  author: N.N.
+  description: ducky :)
+  id: 7ltfWn
+  name: Lego Shader JiPi
+  parent:
+    id: ftjczd
+    name: Lego Shader
+    url: https://www.shadertoy.com/view/ftjczd
+  tags:
+  - lego
+  url: https://www.shadertoy.com/view/7ltfWn

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Mycorrhizal
+  id: Mycorrhizal
+  kernel: Mycorrhizal
+  name: Mycorrhizal
+shader:
+  author: wyatt
+  description: line tracking + fluid
+  id: tsVfDG
+  name: Mycorrhizal
+  tags:
+  - growth
+  url: https://www.shadertoy.com/view/tsVfDG

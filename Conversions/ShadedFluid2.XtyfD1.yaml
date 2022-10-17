@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ShadedFluid2
+  id: ShadedFluid2
+  kernel: ShadedFluid2
+  name: ShadedFluid2
+shader:
+  author: aiekick
+  description: 'Shaded Fluid 2, click with mouse for reset
+
+
+    based on the work of wyatt and guil'
+  id: XtyfD1
+  name: Shaded Fluid 2
+  tags:
+  - fluid
+  - '2'
+  - shaded
+  url: https://www.shadertoy.com/view/XtyfD1

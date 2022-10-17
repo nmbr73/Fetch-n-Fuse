@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: SinusoidalPainting
+  id: SinusoidalPainting
+  kernel: SinusoidalPainting
+  name: SinusoidalPainting
+shader:
+  author: leon
+  description: sine qua none painting
+  id: fttBD8
+  name: Sinusoidal Painting
+  tags:
+  - curve
+  - paint
+  - brush
+  - graffiti
+  url: https://www.shadertoy.com/view/fttBD8

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: CaMolecularDynamics
+  id: CaMolecularDynamics
+  kernel: CaMolecularDynamics
+  name: CaMolecularDynamics
+shader:
+  author: michael0884
+  description: 'Implementing perfect particle number conservation with cellular automaton
+    particle tracking
+
+    Took me some time to realize that the edge conditions in the step functions actually
+    had a large effect, thus there are 2 Heaviside step functions here. '
+  id: 3s3cWr
+  name: CA Molecular dynamics
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/3s3cWr

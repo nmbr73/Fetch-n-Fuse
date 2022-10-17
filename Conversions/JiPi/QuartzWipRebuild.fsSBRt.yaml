@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: QuartzWipRebuild
+  id: QuartzWipRebuild
+  kernel: QuartzWipRebuild
+  name: QuartzWipRebuild
+shader:
+  author: N.N.
+  description: Neubau
+  id: fsSBRt
+  name: Quartz-wip Rebuild
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - shaderoftheweek
+  url: https://www.shadertoy.com/view/fsSBRt

@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: InverseDiffusion
+  id: InverseDiffusion
+  kernel: InverseDiffusion
+  name: InverseDiffusion
+shader:
+  author: wyatt
+  description: 'The Diffusion equation in negative time!
+
+    Someone told me I do "Millennial tie dye" lol'
+  id: ttt3RM
+  name: Inverse diffusion
+  tags:
+  - differentialequations
+  url: https://www.shadertoy.com/view/ttt3RM

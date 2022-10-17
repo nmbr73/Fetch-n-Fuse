@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: MeditationForDummies
+  id: MeditationForDummies
+  kernel: MeditationForDummies
+  name: MeditationForDummies
+shader:
+  author: iapafoto
+  description: 'Modeling human head and play with animations.
+
+    Try to have a picture without artfact.'
+  id: Md3GR4
+  name: Meditation for dummies
+  tags:
+  - sss
+  - antialiasing
+  - animation
+  - man
+  url: https://www.shadertoy.com/view/Md3GR4

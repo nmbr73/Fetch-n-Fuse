@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FractalCubeSteps
+  id: FractalCubeSteps
+  kernel: FractalCubeSteps
+  name: FractalCubeSteps
+shader:
+  author: Shane
+  description: The classic hexagon fractal cube grid, rendered in 3D form.
+  id: Ns2fzG
+  name: Fractal Cube Steps
+  tags:
+  - fractal
+  - raymarch
+  - cube
+  - wall
+  - box
+  - step
+  url: https://www.shadertoy.com/view/Ns2fzG

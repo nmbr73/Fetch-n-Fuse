@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: D2DJellyJipi
+  id: D2DJellyJipi
+  kernel: D2DJellyJipi
+  name: D2DJellyJipi
+shader:
+  author: N.N.
+  description: 'Modified version of 2D Cloth https://www.shadertoy.com/view/4dG3R1
+
+    with texture mapping, mouse interaction, and inversion-resistant constraints'
+  id: fltyDl
+  name: 2D Jelly JiPi
+  parent:
+    id: 7t3cRf
+    name: 2D Jelly
+    url: https://www.shadertoy.com/view/7t3cRf
+  tags:
+  - 2d
+  - verlet
+  url: https://www.shadertoy.com/view/fltyDl

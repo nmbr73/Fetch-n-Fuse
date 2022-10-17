@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: CoolLakeJipi
+  id: CoolLakeJipi
+  kernel: CoolLakeJipi
+  name: CoolLakeJipi
+shader:
+  author: N.N.
+  description: 'Combined Xor''s Cool Lake [url]https://www.shadertoy.com/view/MlXGWf[/url]
+
+    with Dave_Hoskins'' Tileable Water Caustic [url]https://www.shadertoy.com/view/MdlXz8[/url]
+
+    Just for fun :)
+
+    Move camera with mouse.'
+  id: ftVczt
+  name: Cool Lake  JiPi
+  parent:
+    id: 7tKyz3
+    name: Cool Lake [FORK] with Caustics
+    url: https://www.shadertoy.com/view/7tKyz3
+  tags:
+  - 3d
+  - refraction
+  - water
+  - reflections
+  - caustic
+  url: https://www.shadertoy.com/view/ftVczt

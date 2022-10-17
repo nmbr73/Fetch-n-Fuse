@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: SdfCollision
+  id: SdfCollision
+  kernel: SdfCollision
+  name: SdfCollision
+shader:
+  author: jcyuan
+  description: SDF collision
+  id: NtjcDG
+  name: SDF collision
+  tags:
+  - collision
+  - sdf
+  url: https://www.shadertoy.com/view/NtjcDG

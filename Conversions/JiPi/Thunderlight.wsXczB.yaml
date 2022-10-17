@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Thunderlight
+  id: Thunderlight
+  kernel: Thunderlight
+  name: Thunderlight
+shader:
+  author: wyatt
+  description: Lightning simulation
+  id: wsXczB
+  name: Thunderlight
+  tags:
+  - lightning
+  url: https://www.shadertoy.com/view/wsXczB

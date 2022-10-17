@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: AquaVistaJipi559
+  id: AquaVistaJipi559
+  kernel: AquaVistaJipi559
+  name: AquaVistaJipi559
+shader:
+  author: N.N.
+  description: I went on a rainy walk with Maggie this morning. It's sunny now.
+  id: NllcRH
+  name: Aqua Vista JiPi 559
+  parent:
+    id: ssXGDB
+    name: Aqua Vista
+    url: https://www.shadertoy.com/view/ssXGDB
+  tags:
+  - fluid
+  - automata
+  url: https://www.shadertoy.com/view/NllcRH

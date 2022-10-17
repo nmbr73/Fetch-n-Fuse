@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: D3DPerlinIceCracksJipi
+  id: D3DPerlinIceCracksJipi
+  kernel: D3DPerlinIceCracksJipi
+  name: D3DPerlinIceCracksJipi
+shader:
+  author: N.N.
+  description: 'Just some Perlin noise experiments to get the look down before using
+    it in a ray marcher.
+
+
+    The view shows an XZ slice and scrolls over time in all dimensions.
+
+
+    References:
+
+    Hashes from https://www.shadertoy.com/view/XlGcRh'
+  id: 7t3czn
+  name: 3D Perlin Ice Cracks JiPi
+  parent:
+    id: fsyBRV
+    name: 3D Perlin Ice Cracks
+    url: https://www.shadertoy.com/view/fsyBRV
+  tags:
+  - noise
+  url: https://www.shadertoy.com/view/7t3czn

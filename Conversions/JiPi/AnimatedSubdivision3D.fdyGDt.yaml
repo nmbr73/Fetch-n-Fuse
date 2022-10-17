@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: AnimatedSubdivision3D
+  id: AnimatedSubdivision3D
+  kernel: AnimatedSubdivision3D
+  name: AnimatedSubdivision3D
+shader:
+  author: Tater
+  description: 'I might keep making these until I run out of ideas. '
+  id: fdyGDt
+  name: Animated Subdivision 3D
+  tags:
+  - 3d
+  - raymarching
+  - cubes
+  - subdivision
+  - subdivide
+  url: https://www.shadertoy.com/view/fdyGDt

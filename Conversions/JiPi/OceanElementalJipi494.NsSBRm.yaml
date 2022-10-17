@@ -1,0 +1,34 @@
+fuse:
+  author: JiPi
+  file: OceanElementalJipi494
+  id: OceanElementalJipi494
+  kernel: OceanElementalJipi494
+  name: OceanElementalJipi494
+shader:
+  author: N.N.
+  description: For five years the village of Lythe offered a growing bounty for the
+    removal of a local water elemental. Dozens of adventurers applied but none succeeded.
+    In the sixth year the whole village was moved a league inland.
+  id: NsSBRm
+  name: OCEAN ELEMENTAL JiPi 494
+  parent:
+    id: NdS3zK
+    name: OCEAN ELEMENTAL
+    url: https://www.shadertoy.com/view/NdS3zK
+  tags:
+  - noise
+  - waves
+  - sss
+  - sdf
+  - displacement
+  - distortion
+  - water
+  - ocean
+  - animation
+  - scattering
+  - flow
+  - pbr
+  - phase
+  - participating
+  - medium
+  url: https://www.shadertoy.com/view/NsSBRm

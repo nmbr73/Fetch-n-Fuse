@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: RoomTunnel
+  id: RoomTunnel
+  kernel: RoomTunnel
+  name: RoomTunnel
+shader:
+  author: jorge2017a2
+  description: room tunnel
+  id: sljyDW
+  name: room tunnel
+  tags:
+  - roomtunnel
+  url: https://www.shadertoy.com/view/sljyDW

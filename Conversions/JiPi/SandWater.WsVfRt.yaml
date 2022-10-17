@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SandWater
+  id: SandWater
+  kernel: SandWater
+  name: SandWater
+shader:
+  author: wyatt
+  description: 'I got a bit excited when a cross appeared in the middle. '
+  id: WsVfRt
+  name: Sand † Water
+  tags:
+  - erosion
+  url: https://www.shadertoy.com/view/WsVfRt

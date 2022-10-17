@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: CartoonishWebcamVariant
+  id: CartoonishWebcamVariant
+  kernel: CartoonishWebcamVariant
+  name: CartoonishWebcamVariant
+shader:
+  author: FabriceNeyret2
+  description: '// variant from okeli4408  https://www.shadertoy.com/view/XdXXzM#
+
+    mouse:   x: threshold y: gamma    Auto-demo if no mouse
+
+    G: gamma amplif before vs after mixing colors
+
+    BG:  B: flip black/white  C: rev of FB
+
+    FG:  F: rev of BG'
+  id: 4sfSR7
+  name: 'Cartoonish WebCam: variant'
+  tags:
+  - video
+  - dfdx
+  url: https://www.shadertoy.com/view/4sfSR7

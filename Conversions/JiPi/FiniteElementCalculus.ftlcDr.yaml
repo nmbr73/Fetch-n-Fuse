@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: FiniteElementCalculus
+  id: FiniteElementCalculus
+  kernel: FiniteElementCalculus
+  name: FiniteElementCalculus
+shader:
+  author: microwerx
+  description: 'Click on the image to change the operator performed (from left: 1st:
+    vector field (RGB), 2nd: scalar field, 3rd: Gradient, 4th: Divergence, 5th: Laplacian,
+    6th: Laplacian Sign, 7th: Curl, 8th: Curl Length, 9th: Curl Vorticity).'
+  id: ftlcDr
+  name: Finite Element Calculus
+  tags:
+  - gradient
+  - curl
+  - nyancat
+  - laplacian
+  - laplace
+  - divergence
+  - vorticity
+  url: https://www.shadertoy.com/view/ftlcDr

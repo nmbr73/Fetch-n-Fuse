@@ -1,0 +1,163 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fl3BWN",
+  "date": "0",
+  "viewed": 0,
+  "name": "MouseableAirFoil  JiPi",
+  "description": "Did you know that planes fly because of Christmas magic?",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "dynamics",
+   "snow"
+  ],
+  "hasliked": 0,
+  "parentid": "lt3cDM",
+  "parentname": "Mouseable Air Foil"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 C, in vec2 U )\n{\n    \n    vec4 g = texture(iChannel0,U/iResolution.xy);\n\tC.xyz = vec3(g.w);\n    \n    U = U-vec2(0.4,0.5)*iResolution.xy;\n    float an = -iMouse.x/iResolution.x,\n        co = cos(an), si = sin(an);\n    U.xy = mat2(co,-si,si,co)*U.xy;\n    U.x*=0.125;\n    U.y += (iMouse.y/iResolution.y)*U.x*U.x;\n    if (length(U)<6.) C.xyz = vec3(sin(iTime)*0.5+0.5,0.5,1.);\n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 hash23(vec3 p3)\n{//https://www.shadertoy.com/view/4djSRW\n\tp3 = fract(p3 * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+19.19);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\nvec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1||U.x < 3.||ur.x-U.x < 3.) {\n        Co = vec4(0.1,0,0,0);\n     \n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 2; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 9; i++) {\n            A += t(A).xy;\n            B += t(B).xy;\n            C += t(C).xy;\n            D += t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z + (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n        \n        float o = 0., m=20.;\n        vec2 y = U/iResolution.xy*m;\n        y = fract(y)*2.-1.+hash23(vec3(floor(y),iFrame))*2.-1.;\n        me.w = me.w + 0.5*(1.+clamp(-0.2*me.z*(me.z)*me.z,0.,2.))*smoothstep(0.004,0.,length(y)/m);\n        \n        \n    \tU = U-vec2(0.4,0.5)*ur;\n        float an = -iMouse.x/ur.x,\n            co = cos(an), si = sin(an);\n        U.xy = mat2(co,-si,si,co)*U.xy;\n        U.x*=0.125;\n        U.y += (iMouse.y/ur.y)*U.x*U.x;\n        \n        me.xyw *= step(6.,length(U));\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1||U.x < 3.||ur.x-U.x < 3.) {\n        Co = vec4(0.1,0,0,0);\n     \n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 2; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 9; i++) {\n            A += t(A).xy;\n            B += t(B).xy;\n            C += t(C).xy;\n            D += t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z + (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n    \tU = U-vec2(0.4,0.5)*ur;\n        float an = -iMouse.x/ur.x,\n            co = cos(an), si = sin(an);\n        U.xy = mat2(co,-si,si,co)*U.xy;\n        U.x*=0.125;\n        U.y += (iMouse.y/ur.y)*U.x*U.x;\n        \n        me.xyw *= step(6.,length(U));\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1||U.x < 3.||ur.x-U.x < 3.) {\n        Co = vec4(0.1,0,0,0);\n     \n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 2; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 9; i++) {\n            A += t(A).xy;\n            B += t(B).xy;\n            C += t(C).xy;\n            D += t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z + (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n    \tU = U-vec2(0.4,0.5)*ur;\n        float an = -iMouse.x/ur.x,\n            co = cos(an), si = sin(an);\n        U.xy = mat2(co,-si,si,co)*U.xy;\n        U.x*=0.125;\n        U.y += (iMouse.y/ur.y)*U.x*U.x;\n        \n        me.xyw *= step(6.,length(U));\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 ur, U;\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1||U.x < 3.||ur.x-U.x < 3.) {\n        Co = vec4(0.1,0,0,0);\n     \n    } else {\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        for (int i = 0; i < 2; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        vec4 me = t(v);\n        for (int i = 0; i < 3; i++) {\n            vec2 tmp = t(v).xy;\n            v -= tmp;\n        }\n        me.zw = t(v).zw;\n        for (int i = 0; i < 9; i++) {\n            A += t(A).xy;\n            B += t(B).xy;\n            C += t(C).xy;\n            D += t(D).xy;\n        }\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        vec4 ne = .25*(n+e+s+w);\n        me = mix(me,ne,vec4(0.06,0.06,1,0.0));\n        me.z  = me.z + (area(A,B,C)+area(B,C,D)-4.);\n        vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        \n    \tU = U-vec2(0.4,0.5)*ur;\n        float an = -iMouse.x/ur.x,\n            co = cos(an), si = sin(an);\n        U.xy = mat2(co,-si,si,co)*U.xy;\n        U.x*=0.125;\n        U.y += (iMouse.y/ur.y)*U.x*U.x;\n        \n        me.xyw *= step(6.,length(U));\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -vec3(.5,.5,40.), vec3(.5,.5,40.));\n    }\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

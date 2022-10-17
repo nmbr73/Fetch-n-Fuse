@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: D2DrandomwalkJipi178
+  id: D2DrandomwalkJipi178
+  kernel: D2DrandomwalkJipi178
+  name: D2DrandomwalkJipi178
+shader:
+  author: N.N.
+  description: 'A random walk that''s simple (but not a simple random walk!)
+
+    Click the screen to add more thingies.
+
+
+    Press r to reset .'
+  id: NtsBzj
+  name: 2DRandomWalk  JiPi178
+  parent:
+    id: 7s2Szm
+    name: 2D Random Walk
+    url: https://www.shadertoy.com/view/7s2Szm
+  tags:
+  - cellularautomata
+  url: https://www.shadertoy.com/view/NtsBzj

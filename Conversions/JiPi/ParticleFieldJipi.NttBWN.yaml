@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ParticleFieldJipi
+  id: ParticleFieldJipi
+  kernel: ParticleFieldJipi
+  name: ParticleFieldJipi
+shader:
+  author: N.N.
+  description: Messing with @michael0884 algorithm
+  id: NttBWN
+  name: Particle Field JiPi
+  parent:
+    id: ttccWM
+    name: Particle Field
+    url: https://www.shadertoy.com/view/ttccWM
+  tags:
+  - fluid
+  - particles
+  url: https://www.shadertoy.com/view/NttBWN

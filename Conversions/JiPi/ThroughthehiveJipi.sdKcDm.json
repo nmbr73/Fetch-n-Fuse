@@ -1,0 +1,34 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sdKcDm",
+  "date": "0",
+  "viewed": 0,
+  "name": "ThroughTheHive JiPI",
+  "description": "Ersatz",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "ersatz"
+  ],
+  "hasliked": 0,
+  "parentid": "",
+  "parentname": ""
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Author: bitless\n// Title: Through the hive\n\n// Thanks to Patricio Gonzalez Vivo & Jen Lowe for \"The Book of Shaders\"\n// and Fabrice Neyret (FabriceNeyret2) for https://shadertoyunofficial.wordpress.com/\n// and Inigo Quilez (iq) for  https://iquilezles.org/www/index.htm\n// and whole Shadertoy community for inspiration.\n\n//Inigo Quiles article \"Simple color palettes\" \n//https://iquilezles.org/articles/palettes/\n#define pal(t, a, b, c, d) ( a + b*cos( 6.28318*(c*t+d) ) )\n\n// Hash from \"Hash without Sine\" by Dave_Hoskins (https://www.shadertoy.com/view/4djSRW)\nfloat hash11(in float x) {\n    x = fract(x * 0.1031);\n    x *= x + 33.33;\n    x *= x + x;\n    return fract(x);\n}\n\nvec2 hash22(vec2 p)\n{\n  vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+33.33);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\n\n\n\n// Code from Fabrice (thanks a lot)\n// Smaller, faster and doesn't cause a weird bug that wasn't present on my main computer\n\n#define H2(p)       fract( sin((p+9.)*mat2(127.1,311.7, 269.5,183.3)) *4e4 )\n#define H1(p)       H2(vec2(p)).x\n\nvec2 hexPt(vec2 p, float T, float l)  {\n    vec2 t = p + floor(T/5.) + l;\n    return p * mat2(1,-.5,0, .866)\n           + ( mix( H2(t),  H2(t+1.),  smoothstep (0.,1.,mod(T,5.)) )\n                -.5  ) * .433; \n}\n\nfloat Voronoi(vec2 p, float M, float T, float l)  // --- Voronoi\n{   \n    vec2 pH = floor( p * mat2(1,.6,0,1) ), // pixToHex(p)\n         mo, o, C, c,h;\n    \n    float m = 8., md = m, d, f;\n    for (int i=0; i<9; i++)\n        c = vec2(i%3,i/3)-1.,\n        h = hexPt(pH + c, T, l) - p,\n        d = dot(h, h),\n        d < md ? md = d, mo = h, C = c : C;\n\n    for (int i=0; i<9; i++)\n        h = hexPt(pH + vec2(i%3,i/3)-1. + C, T, l) - p - mo,\n        d = dot(mo + h*.5, normalize(h)),\n        f = max(0., 1. - abs(d-m)/M )/2., // smin2\n        m = min(m, d) - M*f*f;\n\n    return m;\n}\n\n////////////////// HEXAGONAL VORONOI///////////////\n\n\n\n\nvoid mainImage( out vec4 O, in vec2 g )\n{\n    vec2 r = iResolution.xy\n        ,uv = (g+g-r)/r.y/2.\n        ,xy;\n\n    float   lcl = sin(iTime*.2)     // zoom speed changing cycle\n            ,tm = fract (iTime)     //  1-second timer between cycles\n            ,cicle = iTime-tm       //  cycle number\n            ,speed = 1.5+lcl*.25    //  zoom speed\n            ,LAYERS =11.;            // num of layers \n    \n    uv *= (1. - length(uv)*lcl*.5)  //  camera distortion\n            /exp(tm*log(speed))     // camera zoom\n            *(.3+lcl*.1);\n    \n    O = vec4(0.);\n\n\n    float T, v, m, s;\n    for (float i=LAYERS; i >= 0.; i--) //draw layers from the far side to the near side\n    {\n        T = iTime+hash11(cicle+i)*5.; //phase offset from the global timer for a particular layer\n        xy = uv*pow(speed,i+1.) + vec2(sin(iTime),cos(iTime*2.))*.07; //local coordinates of the layer with a zoom and a small shift\n\n        s = max(smoothstep(5.,0.,i-tm)*.01              // blur the closest layers\n                    +(1. + sin(T*20.+xy.x*10.-xy.y*10.))     // and changing layers (with a shaking effect)\n                    *(smoothstep (1.5,0.,mod(T,5.)))*.02   // in 1.5 seconds\n                 , fwidth(xy.x));               // AA for far small layers\n\n        v = Voronoi (xy+vec2(-.01,.01), .2, T, cicle+i); //voronoi with an offset to draw the highlighted edge\n        m = 1. + smoothstep (.04-s,.05+s, v);                     //highlighted edge mask\n        vec4 col =  pal((iTime*2.+i-tm)*.10,vec4(.5),vec4(.4),vec4(1.),vec4(.1,.2,.3,1)) //layer color\n                    * smoothstep(LAYERS,3.,i-tm)        // darken the farthest layers\n                    * m;      \n\n        v = Voronoi (xy, .2, T, cicle+i); //   voronoi for current layer\n        m = smoothstep (.3,.07+sin(T*5.)*.05, v) // layer shadow mask\n            *(1. - tm*step(i,0.));                  // make the closest layer shadow transparent at the end of the cycle\n        O *= 1. - m*.7;    //draw layer shadow\n\n        m = smoothstep (.05+s,.04-s, v)   //  layer mask\n            *(1. - tm*step(i,0.));          //  make the closest layer shadow transparent too \n        O = mix (O,col,m); //draw layer\n    }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

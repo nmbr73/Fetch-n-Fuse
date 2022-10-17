@@ -1,0 +1,77 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tSfWh",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork RPS(3) rea JiPi 168",
+  "description": "A model of the \"rock-paper-scissors\" reaction-diffusion system, composed of three fields which \"defeat\" each other nontransitively, similarly to the game rock-paper-scissors. Takes a few seconds to look interesting due to poorly chosen initial conditions.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "reactiondiffusion"
+  ],
+  "hasliked": 0,
+  "parentid": "fl2fDz",
+  "parentname": "RPS(3) reaction-diffusion"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "const vec3 c1 = vec3(0.8, 0.3, 1.0);\nconst vec3 c2 = vec3(0.2, 0.9, 0.5);\nconst vec3 c3 = vec3(0.95, 0.65, 0.25);\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    vec3 rps = texture(iChannel0, fragCoord/iResolution.xy).xyz;\n    rps.x = 1.0 - pow(1.0 - rps.x, 3.0);\n    rps.y = 1.0 - pow(1.0 - rps.y, 3.0);\n    rps.z = 1.0 - pow(1.0 - rps.z, 3.0);\n    fragColor.rgb = (\n        rps.x * c1 +\n        rps.y * c2 +\n        rps.z * c3\n    );\n    fragColor = mix(sqrt(fragColor),fragColor,.4) ;\n    //fragColor = texture(iChannel0, fragCoord/iResolution.xy);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const float diffusionCoef = 3.0e-5;\nconst float reactionCoef = 50.;\n\nvec2 hash( vec2 p ) {\n\tp = vec2( dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)) );\n\treturn -1.0 + 2.0*fract(sin(p)*43758.5453123);\n}\n\nfloat simplexNoise( in vec2 p ) {\n    const float K1 = 0.366025404; // (sqrt(3)-1)/2;\n    const float K2 = 0.211324865; // (3-sqrt(3))/6;\n\n\tvec2  i = floor( p + (p.x+p.y)*K1 );\n    vec2  a = p - i + (i.x+i.y)*K2;\n    float m = step(a.y,a.x); \n    vec2  o = vec2(m,1.0-m);\n    vec2  b = a - o + K2;\n\tvec2  c = a - 1.0 + 2.0*K2;\n    vec3  h = max( 0.5-vec3(dot(a,a), dot(b,b), dot(c,c) ), 0.0 );\n\tvec3  n = h*h*h*h*vec3( dot(a,hash(i+0.0)), dot(b,hash(i+o)), dot(c,hash(i+1.0)));\n    return dot( n, vec3(70.0) );\n}\n\nvec3 fractalNoise(in vec2 p) {\n    vec2 uv;\n    vec3 res;\n    mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );\n    uv = p*5.0 + vec2(10.76543, 30.384756);\n\tres.x  = 0.5000*simplexNoise( uv ); uv = m*uv;\n\tres.x += 0.2500*simplexNoise( uv ); uv = m*uv;\n\tres.x += 0.1250*simplexNoise( uv ); uv = m*uv;\n    res.x += 0.0625*simplexNoise( uv ); uv = m*uv;\n    uv = p*5.0 + vec2(14.87443, 508.12743);\n\tres.y  = 0.5000*simplexNoise( uv ); uv = m*uv;\n\tres.y += 0.2500*simplexNoise( uv ); uv = m*uv;\n\tres.y += 0.1250*simplexNoise( uv ); uv = m*uv;\n    res.y += 0.0625*simplexNoise( uv ); uv = m*uv;\n    uv = p*5.0 + vec2(83.21675, 123.45678);\n\tres.z  = 0.5000*simplexNoise( uv ); uv = m*uv;\n\tres.z += 0.2500*simplexNoise( uv ); uv = m*uv;\n\tres.z += 0.1250*simplexNoise( uv ); uv = m*uv;\n    res.z += 0.0625*simplexNoise( uv ); uv = m*uv;\n    return res;\n}\n\nvec3 laplacian(in vec2 uv) {\n    vec2 step = vec2(1.0/iResolution.y, 0.0);\n    return (\n        texture(iChannel0, mod(uv + step.xy,1.0)).xyz +\n        texture(iChannel0, mod(uv - step.xy,1.0)).xyz +\n        texture(iChannel0, mod(uv + step.yx,1.0)).xyz +\n        texture(iChannel0, mod(uv - step.yx,1.0)).xyz +\n        -4.0 * texture(iChannel0, uv).xyz\n    ) / (step.x*step.x);\n}\n\nvoid mainImage( out vec4 vals, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    if (iFrame==0) {\n        vals.xyz = clamp(fractalNoise(uv+hash(iDate.zw)),0.0,1.0);\n    } else {\n        vals = texture(iChannel0, uv);\n        float rho = vals.x + vals.y + vals.z;\n        vals.xyz = vals.xyz + iTimeDelta * (\n            diffusionCoef * laplacian(uv).xyz +\n            vals.xyz * (1.0 - rho/3.0 - reactionCoef*vals.yzx)\n        );\n        vals.xyz = clamp(vals.xyz, 0.0, 1.0);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

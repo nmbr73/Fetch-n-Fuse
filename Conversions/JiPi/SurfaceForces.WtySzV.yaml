@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SurfaceForces
+  id: SurfaceForces
+  kernel: SurfaceForces
+  name: SurfaceForces
+shader:
+  author: wyatt
+  description: 3 interacting color channels
+  id: WtySzV
+  name: Surface Forces*
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/WtySzV

@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: GlassAndBubbleJipi424
+  id: GlassAndBubbleJipi424
+  kernel: GlassAndBubbleJipi424
+  name: GlassAndBubbleJipi424
+shader:
+  author: N.N.
+  description: 'Well, this is only a test, but since it looks pretty, I decided to
+    publish it! ;)
+
+    Use the mouse to move around.
+
+    Comments and suggestions are welcome!'
+  id: fd2fRw
+  name: Glass and Bubble JiPi 424
+  parent:
+    id: XdVSRV
+    name: Glass and Gold Bubble
+    url: https://www.shadertoy.com/view/XdVSRV
+  tags:
+  - test
+  - reflection
+  - waves
+  - refraction
+  - glass
+  - bubble
+  - bump
+  - gold
+  url: https://www.shadertoy.com/view/fd2fRw

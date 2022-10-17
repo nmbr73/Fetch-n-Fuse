@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: MouseRotTheUniverseJipi
+  id: MouseRotTheUniverseJipi
+  kernel: MouseRotTheUniverseJipi
+  name: MouseRotTheUniverseJipi
+shader:
+  author: N.N.
+  description: click mouse and move
+  id: slycRR
+  name: mouse rot the universe JiPi
+  parent:
+    id: NldcR2
+    name: mouse rot the universe
+    url: https://www.shadertoy.com/view/NldcR2
+  tags:
+  - mouse
+  - stars
+  - universe
+  url: https://www.shadertoy.com/view/slycRR

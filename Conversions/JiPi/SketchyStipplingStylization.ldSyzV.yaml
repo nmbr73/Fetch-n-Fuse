@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: SketchyStipplingStylization
+  id: SketchyStipplingStylization
+  kernel: SketchyStipplingStylization
+  name: SketchyStipplingStylization
+shader:
+  author: starea
+  description: "A one-pass shader with 2 tex looks up for sketch stippling / dotted\
+    \ drawing post processing effect. \nPress mouse for a slower but more classic\
+    \ sketchy effect, though I prefer the stippling version :-)\nShader forked and\
+    \ related ones are listed in the code."
+  id: ldSyzV
+  name: Sketchy Stippling Stylization
+  tags:
+  - 2d
+  - postprocessing
+  - video
+  - mipmap
+  - sketch
+  - dots
+  - draw
+  - pencil
+  - drawing
+  - hand
+  - stippling
+  - artistic
+  - notebook
+  - ruofei
+  url: https://www.shadertoy.com/view/ldSyzV

@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: NonlineargearsJipi
+  id: NonlineargearsJipi
+  kernel: NonlineargearsJipi
+  name: NonlineargearsJipi
+shader:
+  author: N.N.
+  description: two sources and two sinks. Mouse to disturb the system. Different gear
+    patterns will emerge!
+  id: Nt3BW8
+  name: NonlinearGears  JiPi
+  parent:
+    id: MtdyzX
+    name: Nonlinear Gears
+    url: https://www.shadertoy.com/view/MtdyzX
+  tags:
+  - gears
+  - fluid
+  - navierstokes
+  url: https://www.shadertoy.com/view/Nt3BW8

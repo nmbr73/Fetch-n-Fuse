@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: Simple2DnavierstokesJipi
+  id: Simple2DnavierstokesJipi
+  kernel: Simple2DnavierstokesJipi
+  name: Simple2DnavierstokesJipi
+shader:
+  author: N.N.
+  description: 'Experiment with divergence free fluid - at least it would be div-free
+    if I could somehow execute pass C multiple times.
+
+    Mostly ported from an old WebGL experiment of mine https://github.com/Wumpf/fluidwebglts
+
+    There is a lot room for improvement here :)'
+  id: fttBRM
+  name: Simple2DNavierStokes  JiPi
+  parent:
+    id: ldd3WS
+    name: Simple 2D Navier Stokes
+    url: https://www.shadertoy.com/view/ldd3WS
+  tags:
+  - fluid
+  - multipass
+  - navierstokes
+  url: https://www.shadertoy.com/view/fttBRM

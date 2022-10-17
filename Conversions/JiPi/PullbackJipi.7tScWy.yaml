@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: PullbackJipi
+  id: PullbackJipi
+  kernel: PullbackJipi
+  name: PullbackJipi
+shader:
+  author: N.N.
+  description: Nachbau, da Original Fehlerhaften Container
+  id: 7tScWy
+  name: Pullback JiPi
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - demo
+  url: https://www.shadertoy.com/view/7tScWy

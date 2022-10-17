@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: RipleysBelieveIt
+  id: RipleysBelieveIt
+  kernel: RipleysBelieveIt
+  name: RipleysBelieveIt
+shader:
+  author: xenn
+  description: 'All hail michael10884
+
+    Try swapping out iChannel 3 for a webcam source
+
+    SPACE to restart
+
+
+    Use mouse to spawn vortices'
+  id: 7lyfWD
+  name: Ripleys Believe It
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/7lyfWD

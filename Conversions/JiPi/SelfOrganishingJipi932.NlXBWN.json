@@ -1,0 +1,78 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NlXBWN",
+  "date": "0",
+  "viewed": 0,
+  "name": "Self-Organishing JiPi932",
+  "description": "Points constrained by squares using gradient descent to distribute themselves. Optimising for distance produces a regular (hex) grid, by also optimising for having a set variance the points attempt to be distributed in a blue noise-ish pattern.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "bluenoise",
+   "gradientdescent"
+  ],
+  "hasliked": 0,
+  "parentid": "7llfWH",
+  "parentname": "Self-organising blue-ish noise"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv;\n    vec2 loc_coor;\n    uv = fragCoord * .1 + vec2(10, 10);\n    loc_coor = fract(uv);\n    uv = floor(uv) + vec2(.5, .5);\n    uv /= iResolution.xy;\n    vec2 uv_shift = vec2(1., 1.) / iResolution.xy;\n\n    \n    float lit = 0.;\n    \n    for (int y = -3; y <= 3; ++y) {\n        for (int x = -3; x <= 3; ++x) {\n            vec2 cell_uv = uv + uv_shift * vec2(x, y);\n            vec2 val = texture(iChannel0, cell_uv).xy;\n            val += vec2(x, y);\n            lit += clamp(1. - length(val - loc_coor) * 5., 0., 1.);\n        }\n    }\n\n    // Output to screen\n    fragColor = vec4(lit, lit, lit, 1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 Hash22(vec2 p) {\n\tvec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+33.33);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\n\n\nvec2 Hash32(vec3 p) {\n\tvec3 p3 = fract(vec3(p.xyz) * vec3(.1031, .1030, .0973));\n    p3 += dot(p3, p3.yzx+33.33);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\n\n\nfloat eval_pixel(vec2 self, vec2 neighbours[8])\n{\n    vec2 offsets[8] = vec2[8](\n        vec2(-1., -1.),\n        vec2( 0., -1.),\n        vec2( 1., -1.),\n        vec2(-1.,  0.),\n        vec2( 1.,  0.),\n        vec2(-1.,  1.),\n        vec2( 0.,  1.),\n        vec2( 1.,  1.)\n    );\n    float distances[8];\n    \n    float error = 0.;\n    \n    float mean = 0.;\n    for (int i = 0; i < 8; ++i) {\n        mean += (distances[i] = length(neighbours[i] + offsets[i] - self));\n    }\n    \n    mean /= 8.;\n    float var = 0.;\n    \n    for (int i = 0; i < 8; ++i) {\n        var += pow(distances[i] - mean, 2.);\n    }\n    var /= 8.;\n    \n    float off_centre = length(self - vec2(0.5, 0.5));\n    \n    return pow(1. / (1e-5 + mean), 2.) + pow(abs(var - .1) * 64., 3.) + pow(off_centre * 1., 6.) * .05;\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 mouse_offset = vec2(iMouse.xy * .1 - fragCoord + vec2(10., 10.));\n    \n    vec2 uv_self = fragCoord / iResolution.xy;\n    vec2 uv_shift = vec2(1., 1.) / iResolution.xy;\n\n    vec2 val_self = texture(iChannel0, uv_self).xy;\n    vec2 val_mom  = texture(iChannel0, uv_self).zw;\n    \n    vec2 neighbours[8] = vec2[8](\n         texture(iChannel0, uv_self + vec2(-uv_shift.x, -uv_shift.y)).xy,\n         texture(iChannel0, uv_self + vec2(         0., -uv_shift.y)).xy,\n         texture(iChannel0, uv_self + vec2( uv_shift.x, -uv_shift.y)).xy,\n         texture(iChannel0, uv_self + vec2(-uv_shift.x,          0.)).xy,\n         texture(iChannel0, uv_self + vec2( uv_shift.x,          0.)).xy,\n         texture(iChannel0, uv_self + vec2(-uv_shift.x,  uv_shift.y)).xy,\n         texture(iChannel0, uv_self + vec2(         0.,  uv_shift.y)).xy,\n         texture(iChannel0, uv_self + vec2( uv_shift.x,  uv_shift.y)).xy\n    );\n    \n    vec2 offset;\n    float epsilon = 1e-3;\n    offset.x = (eval_pixel(val_self + vec2(epsilon, 0.), neighbours) - eval_pixel(val_self + vec2(-epsilon, 0.), neighbours));\n    offset.y = (eval_pixel(val_self + vec2(0., epsilon), neighbours) - eval_pixel(val_self + vec2(0., -epsilon), neighbours));\n    \n    vec2 val_next = val_self + val_mom * 1e-1;\n    \n    if (iMouse.z > 0.)\n        val_next += normalize(mouse_offset) / (1e-3 + length(mouse_offset) * 6.);\n    \n    if (length(offset) > 1e-3) {\n        offset = normalize(offset);\n        val_next -= offset * 5e-2 * max(1., 1.5 - iTime * 0.1);\n    }\n    \n    val_next = clamp(val_next, vec2(0., 0.), vec2(1., 1.));\n    val_next += (Hash32(vec3(fragCoord * 10., iTime)) - vec2(0.5, 0.5)) * 1e-3;\n        \n    fragColor.xy = val_next;\n    fragColor.zw = val_next - val_self + val_mom * 0.75;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

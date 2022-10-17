@@ -1,0 +1,80 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NdGyDm",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fluid Expeperiment JiPi",
+  "description": "Forked from aiekick's Fluid Cells Random Experiment:\nhttps://www.shadertoy.com/view/MlVBWd",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "experiment",
+   "fluid",
+   "cells",
+   "hazard"
+  ],
+  "hasliked": 0,
+  "parentid": "fsVcDz",
+  "parentname": "Fluid Experiment (fork)"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    fragColor = texture( iChannel0, uv );\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float dx = 8.0;\n    vec2 uv = fragCoord;\n    vec4 left   = texture(iChannel0, (uv-vec2(-dx,0))/iResolution.xy);\n\tvec4 right  = texture(iChannel0, (uv-vec2( dx,0))/iResolution.xy);\n\tvec4 top    = texture(iChannel0, (uv-vec2(0,-dx))/iResolution.xy);\n\tvec4 bottom = texture(iChannel0, (uv-vec2(0, dx))/iResolution.xy);\n\tvec4 st     = texture(iChannel0, uv/iResolution.xy) * 2.0 - 1.0;\n\tvec4 lst    = texture(iChannel0, (uv-st.xy)/iResolution.xy);\n\tvec2 grad   = vec2( right.z - left.z, bottom.z - top.z );\n\tfloat diff  = ( left.z + right.z + top.z + bottom.z ) / 4.0;\n\tfloat div   = ( ( right.x - left.x ) + ( bottom.y - top.y ) ) / 4.0;\n\tlst.xy += grad;\n\tlst.z = diff - div * 0.05;\n    lst.xyz = mix(\n        lst.xyz,\n        normalize( lst.xyz * 2.0 - 1.0 ) * 0.5 + 0.5,\n        0.8\n    );\n\tlst.w = 1.0;\n    \n    if( iFrame < 1 || iMouse.z > 0.0 )\n    {\n        lst = vec4(0);\n        if     ( fragCoord.x < 1.0 )                 { lst.x = -1.0; }\n        else if( fragCoord.x > iResolution.x - 1.0 ) { lst.x =  1.0; }\n        if     ( fragCoord.y < 1.0 )                 { lst.y = -1.0; }\n        else if( fragCoord.y > iResolution.y - 1.0 ) { lst.y =  1.0; }\n    }\n    fragColor = lst;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

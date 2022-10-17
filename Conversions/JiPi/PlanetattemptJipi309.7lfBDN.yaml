@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: PlanetattemptJipi309
+  id: PlanetattemptJipi309
+  kernel: PlanetattemptJipi309
+  name: PlanetattemptJipi309
+shader:
+  author: N.N.
+  description: 'An attempt to render a planet with terrain mapped using triplanar
+    mapping.
+
+    Inspired from : https://www.youtube.com/watch?v=lctXaT9pxA0'
+  id: 7lfBDN
+  name: PlanetAttempt JiPi309
+  parent:
+    id: 7tlBzM
+    name: Planet attempt
+    url: https://www.shadertoy.com/view/7tlBzM
+  tags:
+  - noise
+  - terrain
+  - sdf
+  - planet
+  url: https://www.shadertoy.com/view/7lfBDN

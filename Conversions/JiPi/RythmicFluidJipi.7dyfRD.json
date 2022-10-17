@@ -1,0 +1,107 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7dyfRD",
+  "date": "0",
+  "viewed": 0,
+  "name": "rythmic fluid JiPi",
+  "description": "Mute britney spears for the intended experience. Looks best at 60 FPS.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "visualizer",
+   "reactiondiffusion"
+  ],
+  "hasliked": 0,
+  "parentid": "XsyfDm",
+  "parentname": "rythmic fluid"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 out_color, in vec2 coordinates )\n{\n    vec2 uv = coordinates.xy/iResolution.xy;\n    float v = texture(iChannel0, uv).r * 1.5;\n        \n    vec3 color = pow(vec3(cos(v), tan(v), sin(v)) * 0.5 + 0.5, vec3(0.5));\n    vec3 e = vec3(vec2(1.0) / iResolution.xy, 0.0);\n    vec3 grad = normalize(vec3(\n        texture(iChannel0, uv + e.xz).x - texture(iChannel0, uv - e.xz).x, \n        texture(iChannel0, uv + e.zy).x - texture(iChannel0, uv - e.zy).x, 1.0));\n    vec3 light = vec3(0.26, -0.32, 0.91);\n    float diffuse = dot(grad, light);\n    float spec = pow(max(0.0, -reflect(light, grad).z), 32.0);\n    \n    out_color.rgb = (color * diffuse) + spec;\n    out_color.a = 1.0;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "Xdf3Rn",
+     "filepath": "/media/a/e81e818ac76a8983d746784b423178ee9f6cdcdf7f8e8d719341a6fe2d2ab303.webm",
+     "type": "video",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "MsBSz3",
+     "filepath": "https://soundcloud.com/capsadmin/bill",
+     "type": "musicstream",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 0
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define FFT(f) texture(iChannel1, vec2(f, 0.0)).x\n#define PIXEL(x, y) texture(iChannel0, uv + vec2(x, y) / iResolution.xy).r\n\nvoid mainImage(out vec4 out_color, in vec2 coordinates)\n{    \n    vec2 uv = coordinates.xy / iResolution.xy;\n    \n    float v = PIXEL(0.0, 0.0);\n    v = PIXEL(\n        sin(PIXEL(v, 0.0)  - PIXEL(-v, 0.0) + 3.1415) * v * 0.4, \n        cos(PIXEL(0.0, -v) - PIXEL(0.0 , v) - 1.57) * v * 0.4\n    );\n    v += pow(FFT(pow(v*0.1, 1.5) * 0.25) * 1.5, 3.0);\n    v -= pow(length(texture(iChannel2, uv)) + 0.05, 3.0) * 0.08;\n    v *= 0.925 + FFT(v)*0.1;\n    \n    out_color.r = v;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

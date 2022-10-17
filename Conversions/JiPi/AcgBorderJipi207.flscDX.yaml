@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: AcgBorderJipi207
+  id: AcgBorderJipi207
+  kernel: AcgBorderJipi207
+  name: AcgBorderJipi207
+shader:
+  author: N.N.
+  description: The pink portion moves as if it's a circle moving along the perimeter
+    of the screen. The moving and background colors are blended with a sin function
+    that's horizontal at both the center and the edge of the circle as to not have
+    any harsh transitions.
+  id: flscDX
+  name: ACG Border JiPi 207
+  parent:
+    id: 7tXyWX
+    name: Animated Color Gradient Border
+    url: https://www.shadertoy.com/view/7tXyWX
+  tags:
+  - blending
+  - border
+  url: https://www.shadertoy.com/view/flscDX

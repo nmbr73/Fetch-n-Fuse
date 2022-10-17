@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Jeanparticlevandamme
+  id: Jeanparticlevandamme
+  kernel: Jeanparticlevandamme
+  name: Jeanparticlevandamme
+shader:
+  author: kuvkar
+  description: Just messing around.. simple VanDamme based particlesystem
+  id: WsKXWh
+  name: JeanParticleVanDamme
+  tags:
+  - particles
+  - feedback
+  url: https://www.shadertoy.com/view/WsKXWh

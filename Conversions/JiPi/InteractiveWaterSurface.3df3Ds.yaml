@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: InteractiveWaterSurface
+  id: InteractiveWaterSurface
+  kernel: InteractiveWaterSurface
+  name: InteractiveWaterSurface
+shader:
+  author: hypnothalamus
+  description: 'Oscillations of a mass-spring surface. Click and hold somewhere in
+    the viewport.
+
+    The line separates two media (you''ll see refraction/reflection at the interface).
+
+    Some extra attenuation on the edges helps remove the border reflections. Lens
+    next!'
+  id: 3df3Ds
+  name: Interactive water surface
+  tags:
+  - wave
+  - water
+  - physics
+  - oscillation
+  - buffers
+  url: https://www.shadertoy.com/view/3df3Ds

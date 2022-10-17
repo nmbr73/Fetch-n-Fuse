@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: DynamicBlockGrid
+  id: DynamicBlockGrid
+  kernel: DynamicBlockGrid
+  name: DynamicBlockGrid
+shader:
+  author: dr2
+  description: Varying randomly sized mobile blocks
+  id: sdsBDH
+  name: Dynamic Block Grid
+  tags:
+  - blocks
+  url: https://www.shadertoy.com/view/sdsBDH

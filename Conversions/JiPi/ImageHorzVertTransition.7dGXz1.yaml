@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ImageHorzVertTransition
+  id: ImageHorzVertTransition
+  kernel: ImageHorzVertTransition
+  name: ImageHorzVertTransition
+shader:
+  author: N.N.
+  description: Fork of https://www.shadertoy.com/view/ssyXzR with additional vertical
+    Transition
+  id: 7dGXz1
+  name: Image Horz&Vert Transition
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - transition
+  url: https://www.shadertoy.com/view/7dGXz1

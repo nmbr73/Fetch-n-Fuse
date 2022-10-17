@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: StopPolluting
+  id: StopPolluting
+  kernel: StopPolluting
+  name: StopPolluting
+shader:
+  author: TimoKinnunen
+  description: Fluid particles, use mouse to clear some. There are also secret keyboard
+    functions!
+  id: 3lc3DH
+  name: Stop Polluting!
+  tags:
+  - sdf
+  - fluid
+  - dynamics
+  - diffusion
+  - buffer
+  url: https://www.shadertoy.com/view/3lc3DH

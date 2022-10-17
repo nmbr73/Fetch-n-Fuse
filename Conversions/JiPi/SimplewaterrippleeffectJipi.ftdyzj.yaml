@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: SimplewaterrippleeffectJipi
+  id: SimplewaterrippleeffectJipi
+  kernel: SimplewaterrippleeffectJipi
+  name: SimplewaterrippleeffectJipi
+shader:
+  author: N.N.
+  description: 'A simple application of the (slightly modified) wave function. Click
+    to make a water displacement.
+
+
+    The ripple is pretty slow at a 60hz refresh rate, but I think making it faster
+    would mean sampling more pixels each frame.'
+  id: ftdyzj
+  name: SimpleWaterRippleEffect JiPi
+  parent:
+    id: wdtyDH
+    name: Simple Water Ripple Effect
+    url: https://www.shadertoy.com/view/wdtyDH
+  tags:
+  - ripple
+  - wavefunction
+  url: https://www.shadertoy.com/view/ftdyzj

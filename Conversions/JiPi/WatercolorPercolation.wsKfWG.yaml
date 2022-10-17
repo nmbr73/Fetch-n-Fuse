@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: WatercolorPercolation
+  id: WatercolorPercolation
+  kernel: WatercolorPercolation
+  name: WatercolorPercolation
+shader:
+  author: wyatt
+  description: 'These people did it wayy better : https://grail.cs.washington.edu/projects/watercolor/paper_tiny.pdf'
+  id: wsKfWG
+  name: Watercolor Percolation
+  tags:
+  - watercolor
+  url: https://www.shadertoy.com/view/wsKfWG

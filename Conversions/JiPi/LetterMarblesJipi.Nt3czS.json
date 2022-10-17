@@ -1,0 +1,156 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "Nt3czS",
+  "date": "0",
+  "viewed": 0,
+  "name": "Letter Marbles JiPi",
+  "description": "Used the font texture finally. also first try doing dof and transmission rays. Tried to fix using inout",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarching",
+   "sdf"
+  ],
+  "hasliked": 0,
+  "parentid": "Nt3yW4",
+  "parentname": "Letter Marbles"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = pow(texelFetch(iChannel3,ivec2(fragCoord),0)\n, vec4(1./2.2) );}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Store all Spheres\n    int ri = ivec2(fragCoord).x;\n    vec4 rp = texelFetch(iChannel0,ivec2(ri,0), 0);\n    vec4 rv = texelFetch(iChannel0,ivec2(ri,1), 0);\n    \n    bool vel = int(fragCoord.y) == 1;\n    \n    vec4 r = vel ? rv : rp;\n    \n    if(ri < sphereAmount) {\n        for(int i = 0; i < sphereAmount; i++) {\n            if(i != ri) { // Collision\n                vec4 s = texelFetch(iChannel0,ivec2(i,0), 0);\n                vec3 delt = (rp - s).xyz;\n                float dis = length(delt) - sphereRadius * 2.;\n                if(dis < 0.){\n                    if(vel){\n                        dis = min(dis,-0.01);\n                        r.x -= normalize(delt).x * dis * 0.05;\n                        r.y -= normalize(delt).y * dis * 0.05;\n                        r.z -= normalize(delt).z * dis * 0.05;\n                        r.x *= 0.9;\n                        r.y *= 0.9;\n                        r.z *= 0.9;\n\n                    }\n\n                }\n            }\n        }\n        // Velocity Update\n        if(vel){\n            r.z += -0.001;\n            r.x *= 0.9995;\n            r.y *= 0.9995;\n            r.z *= 0.9995;\n        }else{\n            r.x += rv.x;\n            r.y += rv.y;\n            r.z += rv.z;\n        }\n        \n        // Bounds\n        float bounce = 0.1;\n        // Cube Bounds\n        if(BOUNDTYPE == 0){\n        if(rp.x - sphereRadius < -bounds.x){\n            r.x = vel ? abs(rv.x)*bounce : - bounds.x + sphereRadius;\n        }\n        if(rp.x + sphereRadius > bounds.x){\n            r.x = vel ? - abs(rv.x)*bounce : bounds.x - sphereRadius;\n        }\n        if(rp.y - sphereRadius < -bounds.y){\n            r.y = vel ? abs(rv.y)*bounce : - bounds.y + sphereRadius;\n        }\n        if(rp.y + sphereRadius > bounds.y){\n            r.y = vel ? - abs(rv.y)*bounce : bounds.y - sphereRadius;\n        }\n        if(rp.z - sphereRadius < -bounds.z){\n            r.z = vel ? abs(rv.z)*bounce : - bounds.z + sphereRadius;\n        }}\n        // Sphere Bounds\n        if(BOUNDTYPE == 1){\n        if(length(rp.xyz) > boundRadius - sphereRadius){\n            if(vel){\n                float len = length(rp.xyz)-(boundRadius - sphereRadius);\n                r.xyz -= 0.9 * normalize(rp.xyz) * len;\n            }else{\n                 r.xyz = (normalize(rp.xyz) * (boundRadius - sphereRadius));\n\n            }\n        }\n        }\n        \n        \n        fragColor = r;\n    }\n    // Take\n    if(iFrame % 1500 == 1500*ri/sphereAmount){\n        if(BOUNDTYPE == 0){\n            fragColor = vec4(0,0,5.0,ri);\n        \n        }\n        if(BOUNDTYPE == 1){\n            fragColor = vec4(0,0,boundRadius - sphereRadius,ri);\n        \n        }\n        if(vel){\n            fragColor = vec4(0.0,0.0,-0.15,fragCoord.x);\n        }\n    }\n    // Initials\n    if(iFrame <= 2){\n        fragColor = vec4(0.9*mod(float(ri),5.0)-2.5,0.9*mod(float(ri)/5.0,6.0)-2.5,0.9*mod(float(ri)/12.0,6.0)-1.0,float(ri));\n        if(vel){\n            fragColor = vec4(0.0,0.0,0.0,ri);\n        }\n    }\n    \n   \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// 0: Cube, 1: Sphere\n#define BOUNDTYPE 0 \n\nint sphereAmount = 26; // Amount of balls\nfloat sphereRadius = 0.5; // Radius of balls\nvec3 bounds = vec3(2.1,2.1,1.5); // Bounding rectangle\nfloat boundRadius = 2.6;\nfloat blur = 0.8; // 0: no blur, 1: all previous frames\nfloat dofAmount = 0.03; // How \"big\" the square \"lens\" is for depth of field\nfloat ballIOR = 0.93; //  (inverse?) index of refraction of air to balls; Not optimized for ior > 1\nfloat rotationSpeed = 0.15;",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dX3zn",
+     "filepath": "/media/a/550a8cce1bf403869fde66dddf6028dd171f1852f4a704a465e1b80d23955663.png",
+     "type": "cubemap",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGzr",
+     "filepath": "/media/a/08b42b43ae9d3c0605da11d0eac86618ea888e62cdd9518ee8b9097488b31560.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define DOF 1\n\n#define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))\n\nfloat rand(vec3 po){ // Lazy random function, but only used once/twice per pixel\n    return (sin((cos(po.x*290.65+po.y*25.6+po.z*2.97)*5632.75+849.2*cos(po.y*534.24+po.x)+2424.64*cos(po.z*473.76))));\n}\n\n// Font SDF code: https://www.shadertoy.com/view/llcXRl\nvec2 matmin(vec2 a, vec2 b)\n{\n    if (a.x < b.x) return a;\n    else return b;\n}\nvec2 matmax(vec2 a, vec2 b)\n{\n    if (a.x > b.x) return a;\n    else return b;\n}\n\nvec4 SampleFontTex(vec2 uv, int letter){\n    vec2 fl = floor(uv + 0.5);\n    uv = fl + fract(uv+0.5)-0.5 + vec2(float(letter%16),float(letter/16));\n    // Sample the font texture. Make sure to not use mipmaps.\n    // Add a small amount to the distance field to prevent a strange bug on some gpus. Slightly mysterious. :(\n    return texture(iChannel0, (uv+0.5)*(1.0/16.0), -100.0) + vec4(0.0, 0.0, 0.0, 0.000000001);\n}\nfloat opSmoothUnion( float d1, float d2, float k ) {\n    float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );\n    return mix( d2, d1, h ) - k*h*(1.0-h); }\n\nfloat opSmoothSubtraction( float d1, float d2, float k ) {\n    float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );\n    return mix( d2, -d1, h ) + k*h*(1.0-h); }\n\nfloat opSmoothIntersection( float d1, float d2, float k ) {\n    float h = clamp( 0.5 - 0.5*(d2-d1)/k, 0.0, 1.0 );\n    return mix( d2, d1, h ) + k*h*(1.0-h); }\n\nfloat sdBox(vec3 p, vec3 radius){\n  vec3 dist = abs(p) - radius;\n  return min(max(dist.x, max(dist.y, dist.z)), 0.0) + length(max(dist, 0.0));\n}\nfloat sdSphere( vec3 p, float s )\n{\n  return length(p)-s;\n}\nvec2 DistanceToObject(vec3 p, int letter)\n{\n\t// Load the font texture's distance field.\n    float letterDistField = (SampleFontTex(p.xy,letter+64).w - 0.5+1.0/256.0);\n    // intersect it with a box.\n    float cropBox = sdBox(p, vec3(0.3, 0.3, 0.05));\n    vec2 letters = matmax(vec2(letterDistField, 0.0), vec2(cropBox, 1.0));\n    return letters;\n}\n\nvec3 findNormal(vec3 p, float d, int letter){\n    return normalize(vec3(\n        DistanceToObject(p + vec3(d,0,d),letter).x - DistanceToObject(p - vec3(d,0,0),letter).x,\n        DistanceToObject(p + vec3(0,d,0),letter).x - DistanceToObject(p - vec3(0,d,0),letter).x,\n        DistanceToObject(p + vec3(0,0,d),letter).x - DistanceToObject(p - vec3(0,0,d),letter).x\n        ));\n}\n\n\n\nvoid checkDist(inout float d, float c, inout int obj, int obi){\n    if(c < d){\n        d = c;\n        obj = obi;\n    }\n}\nfloat sdScene(vec3 p, inout int obj){\n    float dist = 10000.;\n    obj = -1;\n    for(int i = 0; i < sphereAmount; i++){\n        vec4 s = texelFetch(iChannel1,ivec2(i,0), 0);\n        checkDist(dist, sdSphere(p - vec3(s.x,s.y,s.z),sphereRadius), obj, i+1);\n    }\n    float douter = 0.;\n    \n    if(BOUNDTYPE == 0){ // Outer Box\n     douter = opSmoothSubtraction(sdBox(p+vec3(0.0,0.0,0), bounds-0.2) - 0.2,\n                    sdBox(p+vec3(0.0,0.0,2.9), bounds+0.5)-0.2,0.2);               \n    }\n    if(BOUNDTYPE == 1){ // Outer Bowl\n     douter = opSmoothSubtraction(sdSphere(p+vec3(0.0,0.0,0), boundRadius-0.15) - 0.2,\n                    sdSphere(p+vec3(0.0,0.0,0.4), boundRadius-0.2)-0.2,0.2);               \n    }\n    \n    checkDist(dist, douter, obj, 0);\n    return dist;\n}\nfloat sdScene(vec3 p){\n    int obj = 0;\n    return sdScene(p, obj);\n}\n\nvec3 findNormal(vec3 p, float d){\n    return normalize(vec3(\n        sdScene(p + vec3(d,0,d)) - sdScene(p - vec3(d,0,0)),\n        sdScene(p + vec3(0,d,0)) - sdScene(p - vec3(0,d,0)),\n        sdScene(p + vec3(0,0,d)) - sdScene(p - vec3(0,0,d))));\n}\n\n// For the transmission rays\nvec3 snellLaw(vec3 s, vec3 N, float ior){\n    //return ior * cross(N,cross(-N, s)) - N * sqrt(1.- ior * ior * dot(cross(N,s),cross(N,s)));\n    float c = dot(-N,s);\n    return ior * s + (ior * c - sqrt(1.-ior*ior*(1.-c*c))) * N;\n\n}\n// For the Specular Rays\nvec3 refl(vec3 d, vec3 n){\n\n    return d - 2.f * n * dot(d,n);\n}\n\nvec4 raycastBall(inout vec3 pos, inout vec3 dir, int object){\nint inrays = 30;\n    vec4 col = vec4(0,0,0,0);\n    for(int i = 0; i < inrays; i++){\n        float d = sdBox(pos, vec3(1,1,1) * sphereRadius/3.0);\n        d = DistanceToObject(pos,object).x;\n        d = min(d, -length(pos)+sphereRadius+0.02); // distance to outer edge\n        if(d < 0.01 && length(pos) < sphereRadius-0.05) {\n            i = inrays;\n            col = clamp(vec4(0.5+sin(float(object) + 2.1),0.5+sin(float(object)+4.2),0.5+sin(float(object)),1),0.,1.); // color of letters  \n        }else if(length(pos) > sphereRadius + 0.01){ // Reaches outside of sphere\n            i = inrays;\n        }else {\n            pos += dir * d;\n        }\n    }\n    \n    return col;\n}\n\n\nvec4 raycast(vec3 pos, vec3 dir, int maxmarch){ // Casts a ray from position in direction, returns color of object. TODO: out direction, materials.\n    vec4 col = vec4(0,0,0,0);\n    float lastd=0.;\n    float totalDist = 0.;\n    int ob = -1;\n    int obhit = 6;\n    float ior = ballIOR;\n    vec4 totalcol = vec4(0,0,0,0);\n    float totaldim = 1.0;\n    for(int i = 0; i < maxmarch; i++){\n         float d = sdScene(pos + dir * lastd, ob);\n         \n         if(d < 0.01 && ob >= 1 && obhit > 1){ // Hits a sphere within 0.05\n         \n             // Get hitsphere from buffer\n             vec4 s = texelFetch(iChannel1,ivec2(ob-1,0), 0);\n             vec3 ballRot = vec3(1.0*s.z,1.0*s.y,0);\n             pos += dir * lastd*1.;\n             vec3 norm = normalize(pos - s.xyz);\n             vec3 ref = refl(dir, norm);\n             // Add partial fresnel reflections\n             float fres = abs(dot(dir,norm));\n             totalcol +=  texture(iChannel2, ref.xzy, -100.0).xyzw * totaldim * (1.-fres);\n             totaldim *= (fres);\n           \n             // Updates position, direction when entering sphere \n             vec3 newpo = -s.xyz + pos;\n             vec3 newdir = normalize(snellLaw(dir,norm,ior));  // Refraction\n             vec4 col2 = vec4(1,1,0,1);\n\n             // Global to Local Transformations \n             newpo.xz*= rot(ballRot.y);\n             newdir.xz*= rot(ballRot.y);\n             newpo.yz*= rot(ballRot.x);\n             newdir.yz*= rot(ballRot.x);\n             \n             col2 = raycastBall(newpo, newdir, ob); // Casts into sphere\n               \n             if(col2.w > 0.5){ // hit letter\n                 vec3 norma = findNormal(newpo,0.03,ob);\n                 norma.yz*= rot(-ballRot.x);\n                 norma.xz *= rot(-ballRot.y);\n                 vec3 reflcol = texture(iChannel2, norma.xzy, -100.0).xyz * totaldim;\n                 totalcol += vec4(reflcol * col2.xyz,0);\n                 col = col2;\n                 i = maxmarch;\n                 \n             }else{ // go through sphere\n             \n                 // Local to Global Transformations \n                 newpo.yz*= rot(-ballRot.x);\n                 newdir.yz*= rot(-ballRot.x);\n                 newpo.xz *= rot(-ballRot.y);\n                 newdir.xz *= rot(-ballRot.y);\n                 dir = newdir;\n                 pos = s.xyz + newpo;\n                 vec3 newnorm = normalize(pos - s.xyz);\n                 \n                 dir = normalize(snellLaw(dir,-newnorm,1./ior)); // Out refraction\n                 lastd = 0.;\n                 obhit -= 1;\n             \n             }\n         \n         } else if(d < 0.005) { // Hits bowl\n              i = maxmarch;\n              vec3 norm = findNormal(pos,0.0001);\n                \n                \n              norm += 0.5*rand(floor(pos*10.));\n              float s = 1.0;\n              \n              vec3 refla = refl(dir,norm);\n              col = vec4(texture(iChannel2, refla,-100.0)) * 0.2;\n              \n              totalcol += col * totaldim;\n\n        } else if(d>200.) {\n              i = maxmarch;\n              \n              totalcol +=  texture(iChannel2, dir.xzy, 0.0).xyzw * totaldim  * totaldim;\n         } else {\n              pos += dir * lastd; // march ray\n              totalDist += lastd;\n              lastd = d;\n\n         }\n    }\n    return totalcol;\n}\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n\n    vec4 outray = vec4(1,1,1,1);\n\n    vec2 uv = (fragCoord-0.5f*iResolution.xy)/iResolution.x;\n    \n    float dofrang = 2.*4.5;\n    vec2 jitter = vec2(0,0);\n    if(DOF==1){jitter = dofAmount*vec2(rand(vec3(fragCoord.xy,iTime)),rand(vec3(fragCoord.xy,iTime+1.)));}\n    \n    \n    vec3 pos = vec3(0.0,-4.5,1.5) + vec3(jitter.x,0,jitter.y);\n    vec3 dir = normalize(vec3(uv.x-jitter.x/dofrang,0.5,uv.y-jitter.y/dofrang));\n    \n    if(iMouse.z > 0.){\n        pos -= vec3(0.0,0.0,1.5);\n\n        dir.zy *= rot(-2.*iMouse.y/iResolution.y+1.5);\n        pos.zy *= rot(-2.*iMouse.y/iResolution.y+1.5);\n\n        dir.xy *= rot(-3.14*iMouse.x/iResolution.x);\n        pos.xy *= rot(-3.14*iMouse.x/iResolution.x);\n    }else{\n    dir.zy *= rot(0.4);\n    dir.xy *= rot(iTime*rotationSpeed);\n    pos.xy *= rot(iTime*rotationSpeed);\n    }\n    \n    \n    vec4 precolor = texelFetch(iChannel3,ivec2(fragCoord),0);\n\n    outray = raycast(pos,dir,250);\n    if(iFrame > 10){\n    fragColor = precolor * blur + vec4(outray.xyz,1) * (1.-blur);\n    }else{\n    fragColor = vec4(outray.xyz,1);\n    }\n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

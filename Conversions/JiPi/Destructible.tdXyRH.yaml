@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: Destructible
+  id: Destructible
+  kernel: Destructible
+  name: Destructible
+shader:
+  author: wyatt
+  description: "I found the sorting condition for delaunay triangulation! It was the\
+    \ distance to the triangle/circumradius! \nNow I can interpolate between any set\
+    \ of points! very powerful mojo"
+  id: tdXyRH
+  name: Destructible*
+  tags:
+  - particles
+  - triangulation
+  url: https://www.shadertoy.com/view/tdXyRH

@@ -1,0 +1,217 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftyyzK",
+  "date": "0",
+  "viewed": 0,
+  "name": "FFT Fluid JiPi",
+  "description": "see http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/jgt01.pdf\nDoing diffusion and conservation of mass in frequency, and only advection in the spatial domain.\nOnly running at 30 fps since I used all the buffers twice.\nSpace to toggle FFT view",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "diffusion",
+   "advection",
+   "fourier",
+   "greyscale",
+   "multipass",
+   "multipass"
+  ],
+  "hasliked": 0,
+  "parentid": "wdBGWG",
+  "parentname": "FFT Fluid"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//Four step seperated FFT, factored horizontally, vertically, and over major and minor axis for each of x and y\n//Total worst case for 2048*2048 image is 2 (x and y) times 4 (factored into 4) 32pt dft's where each pixel/thread \n//must compute one bin of its corresponding dft. Pipelining through A-B-C-D means fft of the whoe screen only takes one frame.\n//Both the x and y of the feild need to be fft'd so it takes up all 4 channels to do an fft, so every other frame\n//the fft direction is swapped to compute the inverse, and overall the simulation runs at one step per two frames\n\n\n\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    O = vec4(0);\n    if(FFT_DIR==BACKWARD){\n        if(texelFetch(iChannel1,ivec2(32,2),0).x>.5) discard;\n        vec4 t0 = texture(iChannel3, fract(I/R.xy));\n        O = vec4(.5*log(.5*length(t0)));\n    } else {\n        if(texelFetch(iChannel1,ivec2(32,2),0).x<.5) discard;\n    \tO = texture(iChannel3, fract(.5+I/R.xy));\n        float l0 = dot2(O.xy);\n        O.xy = O.xy/l0*log(1.+l0);\n        float l1 = dot2(O.zw);\n        O.zw = O.zw/l1*log(1.+l1);\n        O.xyz += vec3(1,1,0)*O.w;\n        O=abs(O);\n    }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define pi 3.14159265\n#define W(i,n) cexp(vec2(0,FFT_DIR*2.*pi*float(i)/float(n)))\n#define R iResolution\n#define fradix float(radix)\n#define T(c,x,y) texelFetch(c, ivec2(x,y), 0)\n#define SUM(expr, ind, len) \\\n    sum = vec2(0);\\\n    for(int ind = 0; ind < 64; ind++){\\\n        if (ind >= len) break;\\\n        sum += expr;\\\n    }\n\n#define FFT_DIR float((iFrame%2)*2-1)\n#define FORWARD 1.\n#define BACKWARD -1.\n\nvec2 sum;\n\nint x_N0;\nint y_N0;\nint x_N1;\nint y_N1;\n\nfloat dot2(vec2 x) { return dot(x,x); }\n\nfloat factor(float x){\n    x = floor(x);\n    float f = floor(sqrt(x));\n    while(fract(x/f)>.5/x){f--;}\n    return x/f;\n}\n\nvoid setRadix(vec3 R){\n    \n    x_N0 = int(R.x/factor(R.x));\n    y_N0 = int(R.y/factor(R.y));\n    x_N1 = int(R.x)/x_N0;\n    y_N1 = int(R.y)/y_N0;\n    \n}\n\nvec2 cprod(vec2 a, vec2 b){\n    return mat2(a,-a.y,a.x) * b;\n}\n\nvec2 cis(float t){\n    return cos(t - vec2(0,pi/2.));\n}\nvec2 cexp(vec2 z) {\n    return exp(z.x)*cis(z.y);\n}\nint IHash(int a){\n\ta = (a ^ 61) ^ (a >> 16);\n\ta = a + (a << 3);\n\ta = a ^ (a >> 4);\n\ta = a * 0x27d4eb2d;\n\ta = a ^ (a >> 15);\n\treturn a;\n}\n\nfloat Hash(int a){\n\ta = (a ^ 61) ^ (a >> 16);\n\ta = a + (a << 3);\n\ta = a ^ (a >> 4);\n\ta = a * 0x27d4eb2d;\n\ta = a ^ (a >> 15);\n\treturn float(a) / float(0x7FFFFFFF);\n}\nvec2 rand2(int seed){\n    return vec2(Hash(seed^0x348C5F93),\n                Hash(seed^0x8593D5BB));\n}\n\n\nvec2 randn(vec2 randuniform){\n    vec2 r = randuniform;\n    r.x = sqrt(-2.*log(1e-9+abs(r.x)));\n    r.y *= 6.28318;\n    r = r.x*vec2(cos(r.y),sin(r.y));\n    return r;\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec4 inp(sampler2D ch,int x, int y);\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    setRadix(R);\n    O = vec4(0);\n    int x = int(I.x);\n    int y = int(I.y);  \n    \n    int n = (x/x_N1);\n    SUM( cprod((inp(iChannel0, (x%x_N1)+i*x_N1, y).xy),W(i*n,x_N0)),i,x_N0 );\n    O.xy = (cprod(sum, W((x%x_N1)*n,int(R.x))));\n\n    SUM( cprod((inp(iChannel0, (x%x_N1)+i*x_N1, y).zw),W(i*n,x_N0)),i,x_N0 );\n    O.zw = (cprod(sum, W((x%x_N1)*n,int(R.x))));\n}\n\n\nvec4 inp(sampler2D ch,int x, int y){\n    if(FFT_DIR==FORWARD){\n        vec2 v = T(ch, x, y).xz;\n        return texture(ch, fract((-v + vec2(x, y) + rand2(IHash(x^IHash(y^IHash(iFrame)))))/R.xy));\n    } else {\n        return T(ch, x, y);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    setRadix(R);\n    O = vec4(0);\n    int x = int(I.x);\n    int y = int(I.y);\n    \n    int n = (x/x_N0);\n    SUM( cprod((T(iChannel0, (x%x_N0)*x_N1+i, y).xy),W(i*n,x_N1)),i,x_N1 );\n    O.xy = (sum);\n    \n    SUM( cprod((T(iChannel0, (x%x_N0)*x_N1+i, y).zw),W(i*n,x_N1)),i,x_N1 );\n    O.zw = (sum);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 O, in vec2 I )\n{\n    setRadix(R);\n    O = vec4(0);\n    int x = int(I.x);\n    int y = int(I.y);\n    \n    int n = (y/y_N1);\n    SUM( cprod((T(iChannel0, x, (y%y_N1)+i*y_N1).xy),W(i*n,y_N0)),i,y_N0 );\n    O.xy = (cprod(sum, W((y%y_N1)*n,int(R.y))));\n    \n    SUM( cprod((T(iChannel0, x, (y%y_N1)+i*y_N1).zw),W(i*n,y_N0)),i,y_N0 );\n    O.zw = (cprod(sum, W((y%y_N1)*n,int(R.y))));\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 O, in vec2 I )\n{\n    setRadix(R);\n    O = vec4(0);\n    int x = int(I.x);\n    int y = int(I.y);\n    \n    int n = (y/y_N0);\n    SUM( cprod((T(iChannel0, x, (y%y_N0)*y_N1+i).xy),W(i*n,y_N1)),i,y_N1 );\n    O.xy = (sum/sqrt(R.x*R.y));\n    \n    SUM( cprod((T(iChannel0, x, (y%y_N0)*y_N1+i).zw),W(i*n,y_N1)),i,y_N1 );\n    O.zw = (sum/sqrt(R.x*R.y));\n    \n    vec2 C = mod(I.xy+R.xy/2.,R.xy)-R.xy/2.;\n    if(FFT_DIR==FORWARD){\n        if(texelFetch(iChannel2,ivec2(88,2),0).x<.5)\n        \tO*=exp(-dot2( C )*2e-7);\n        if(length(C)>0. && texelFetch(iChannel2,ivec2(90,2),0).x<.5){\n            float l = length(O.xz);\n        \tO.xz-=dot(normalize(C),O.xz)*normalize(C);\n            if(texelFetch(iChannel2,ivec2(67,2),0).x<.5)\n            \tO.xz *= (l/(1e-3+length(O.xz)));\n        }\n        if(length(C)<1.) O*=0.;\n        if(length(C)>0. && texelFetch(iChannel2,ivec2(90,2),0).x<.5){\n            float l = length(O.yw);\n        \tO.yw-=dot(normalize(C),O.yw)*normalize(C);\n            if(texelFetch(iChannel2,ivec2(67,2),0).x<.5)\n            \tO.yw *= (l/(1e-3+length(O.yw)));\n        }\n        \n    } else {\n        O.xz += .01*vec2(iMouse.xy-R.xy*.5)*exp(-.1/(1.+length(I-R.xy*.5))*dot2(I-R.xy*.5));\n    }\n    \n    if(iFrame<6 && FFT_DIR==BACKWARD){\n        O=vec4(0);\n    }\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

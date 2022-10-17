@@ -1,0 +1,51 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fllcRS",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fluidic Space JiPi 699",
+  "description": "Fractal forms are derived from Simplicity by JoshP adapted from [url]https://www.shadertoy.com/view/lslGWr[/url]\nMusic by EnigmaCurry\n\npart 2 - [url]https://www.shadertoy.com/view/WdBGWm[/url]",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fractal",
+   "ambient",
+   "soundcloud"
+  ],
+  "hasliked": 0,
+  "parentid": "tdS3DD",
+  "parentname": "Fluidic Space"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4tfGD8",
+     "filepath": "https://soundcloud.com/enigmacurry/forest-chant",
+     "type": "musicstream",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 0
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Fluidic Space - EnigmaCurry\n// Adapted from Simplicity by JoshP\n// https://www.shadertoy.com/view/lslGWr\n// http://www.fractalforums.com/new-theories-and-research/very-simple-formula-for-fractal-patterns/\nfloat field(in vec3 p) {\n\tfloat strength = 4. + .03 * log(1.e-6 + fract(sin(iTime) * 4373.11));\n\tfloat accum = 0.;\n\tfloat prev = 0.;\n\tfloat tw = 1.11;\n\tfor (int i = 0; i < 32; ++i) {\n\t\tfloat mag = dot(p/1.3, p/1.3);\n\t\tp = abs(p) / mag + vec3(-.5, -.4, -1.5);\n\t\tfloat w = exp(-float(i) / 777.);\n\t\taccum += w * exp(-strength * pow(abs(mag - prev), 1.9));\n\t\ttw += w;\n\t\tprev = mag;\n\t}\n\treturn max(0., 4. * accum / tw - .5);\n}\n\nvec4 simplicity(vec2 fragCoord, float fft) {\n\tvec2 uv = 2. * fragCoord.xy / iResolution.xy - 1.;\n\tvec2 uvs = uv * iResolution.xy / max(iResolution.x, iResolution.y);\n\tvec3 p = vec3(uvs / 3., 0) + vec3(1., 0.01, 0.);\n\tp += 2. * vec3(sin(iTime / 39.), cos(iTime / 2100.)-2.,  sin(iTime / 18.)-8.);\n\tfloat t = field(p);\n\tfloat v = (1. - exp((abs(uv.x) - 1.) * 6.)) * (1. - exp((abs(uv.y) - 1.) * 6.));\n\treturn mix(.4, 1., v) * vec4(1.8 * t * t * t, 1.4 * t * t, t, 1.0) * fft;\n}\n\nvec4 simplicity2(vec2 fragCoord, float fft) {\n    float fmod = tan(fft/21222.);\n\tvec2 uv = 2. * fragCoord.xy / iResolution.xy - 1.;\n\tvec2 uvs = uv * iResolution.xy / max(iResolution.x, iResolution.y);\n\tvec3 p = vec3(uvs / 333., 0) + vec3(1., 0.1, 0.);\n\tp += tan(fmod) * vec3(cos(iTime / 39.), tan(iTime / 2100.)-2.,  sin(iTime / 18.)-8.);\n\tfloat t = field(p);\n\tfloat v = (1. - exp((abs(uv.x) - 1.) * 6.)) * (1. - exp((abs(uv.y) - 1.) * 6.));\n\treturn mix(.4, 1., v) * vec4(1.8 * t * t * t, 1.4 * t * t, t, 1.0) * fft;\n}\n\nvec4 simplicity3(vec2 fragCoord, float fft) {\n    float fmod = cos(fft*13.);\n\tvec2 uv = 2. * fragCoord.xy / iResolution.xy - 1.;\n\tvec2 uvs = uv * iResolution.xy / max(iResolution.x, iResolution.y);\n\tvec3 p = vec3(uvs / 1., 0) + vec3(1., 0.01, 0.);\n\tp += 2.19 * vec3(cos(iTime / 3900.), tan(iTime / 2100.)-2.,  sin(iTime / 18.)-8.);\n\tfloat t = field(p);\n\tfloat v = (1. - exp((abs(uv.x) - 1.) * 6.)) * (1. - exp((abs(uv.y) - 1.) * 6.));\n\treturn mix(sin(fmod)+8.8, 1., v) * vec4(0.8 * t * p.x * t, 0.9 * t, t, 1.0) * fft;\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    float fft = clamp(texture( iChannel0, vec2(0.1,0.1) ).x * 12., 0.2, 99999.);\n\tfragColor += sqrt(simplicity(fragCoord, fft));\n    fragColor += sqrt(simplicity2(fragCoord, fft));\n    fragColor += sqrt(simplicity3(fragCoord, fft));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

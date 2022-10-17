@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: GlimmerOfHope
+  id: GlimmerOfHope
+  kernel: GlimmerOfHope
+  name: GlimmerOfHope
+shader:
+  author: wyatt
+  description: 'I think digital art should be inspired by nature more, and less by
+    technology. '
+  id: wlXBzn
+  name: Glimmer of Hope
+  tags:
+  - nature
+  url: https://www.shadertoy.com/view/wlXBzn

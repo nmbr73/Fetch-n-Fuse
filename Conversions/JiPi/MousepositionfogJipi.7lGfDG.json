@@ -1,0 +1,78 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7lGfDG",
+  "date": "0",
+  "viewed": 0,
+  "name": "MousePositionFog JiPi",
+  "description": "My first shader, written in 2011-10-23. I tried porting it to Shadertoy, but at the time it did not support extra buffers. On 2016-04-26, I've updated this shader to make it work in Shadertoy. This would look much cooler if there was mouse-over support.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "mouse",
+   "framebuffer"
+  ],
+  "hasliked": 0,
+  "parentid": "XdBGzw",
+  "parentname": "Mouse position fog"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Written by Denilson SÃ¡ <denilsonsa@gmail.com>\n// http://denilson.sa.nom.br/\n//\n// GLSL Sandbox version at:\n// http://glslsandbox.com/e#12315.2\n//\n// The source is also available at:\n// https://bitbucket.org/denilsonsa/atmega8-magnetometer-usb-mouse/src/tip/html_javascript/\n// https://github.com/denilsonsa/atmega8-magnetometer-usb-mouse/tree/master/html_javascript\n//\n// The original code (above) was restructured to work with Shadertoy.\n\n// Code originally from draw_to_main().\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord) {\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tfragColor = texture(iChannel0, uv);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define fb iChannel0\n\n// Code originally from draw_to_fb().\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord) {\n\tvec2 pos;\n\tvec2 posnorm;\n\tvec2 poscanv;\n\tvec2 zooming;\n\tvec4 color;\n\tfloat dist;\n\n    // These have the same size in Shadertoy:\n    vec2 canvassize = iResolution.xy;\n\tvec2 fbsize = canvassize;\n\n    bool mouse_hold = !(iMouse.z < 0.0);\n    vec2 mouse = iMouse.xy;\n\n\t// Position of the current pixel\n\tpos = fragCoord.xy;\n\t// Position of the current pixel, normalized between 0.0 and 1.0\n\tposnorm = fragCoord.xy / iResolution.xy;\n\t// Position of the current pixel, in canvas coordinates (the same as the\n\t// mouse)\n\tposcanv = posnorm*canvassize;\n\n\n\t// Distance between the current pixel and the mouse, already taking into\n\t// account the difference between the coordinate systems\n\tdist = distance(mouse, poscanv);\n\tif ( dist < 16.0 ) {\n\t\t// Drawing a circle around the mouse with a solid color\n\t\t// Blue if mouse button is not pressed, orange if it is pressed\n\t\tcolor = vec4(0.2, 0.25, 1.0, 0.0) + vec4(1.0, 0.5, -1.0, 0.0) * float(mouse_hold);\n\t} else {\n\t\t// Zooming trick\n\t\tzooming = ((mouse - poscanv) * (0.015625)) / canvassize;\n\t\tcolor = texture(fb, posnorm + zooming);\n\n\t\tcolor -= (color * 0.00390625) + 0.001953125;\n\t}\n\n\tfragColor = color;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

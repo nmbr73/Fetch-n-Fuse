@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: FallingPi
+  id: FallingPi
+  kernel: FallingPi
+  name: FallingPi
+shader:
+  author: N.N.
+  description: 'Falling sand game using shaders. Github repo: https://github.com/Fryer/falling-pixels
+
+    Click and drag while holding any of the following keys to add:
+
+    ''No key'': Sand -- ''X'': Erase -- ''W'': Water -- ''L'': Lava -- ''B'': Bedrock'
+  id: 7dyXRG
+  name: Fork Falling Pi JiPi 332
+  parent:
+    id: 3sSyRz
+    name: Falling Pixels
+    url: https://www.shadertoy.com/view/3sSyRz
+  tags:
+  - game
+  - physics
+  url: https://www.shadertoy.com/view/7dyXRG

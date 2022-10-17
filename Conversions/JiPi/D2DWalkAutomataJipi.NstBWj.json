@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NstBWj",
+  "date": "0",
+  "viewed": 0,
+  "name": "2D Walk Automata JiPi",
+  "description": "Deterministic self-avoiding walk thing.\nUncomment the L's near the bottom of the code to get different rules + make sure you remove code where it says (A) too.\nClick the screen to add more. Press R to reset. Best in fullscreen.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cellularautomata"
+  ],
+  "hasliked": 0,
+  "parentid": "NdjXDz",
+  "parentname": "2D Walk Automata"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Code forked from Inigo Quilez's game of life shader\n// https://www.shadertoy.com/view/XstGRf\n// Reset code stolen from somewhere else - sorry!\n// (Press R to reset shader)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n//float x = texelFetch( iChannel0, ivec2(fragCoord), 0 ).x;\nfloat x = texture( iChannel0, fragCoord/iResolution.xy ).x;\n\nif (x > 1.)\n{\n\nfragColor = vec4(x,x,x,1.);\n\n}\nelse\nfragColor = (0.8 + 0.1 * cos( iTime)) * vec4(x,0.,0.,1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define KEYBOARD iChannel1\n#define KEY_RESET 82\n\n\nfloat Cell( in ivec2 p )\n{\n    // do wrapping\n    ivec2 r = ivec2(textureSize(iChannel0, 0));\n    p = (p+r) % r;\n    \n    // fetch texel\n   // return (texelFetch(iChannel0, p, 0 ).x > 0.5 ) ? 1 : 0;\n//   return texelFetch(iChannel0, p, 0 ).x;\n   return texture(iChannel0, (vec2(p)+0.5)/iResolution.xy ).x;\n}\n\nfloat hash1( float n )\n{\n    return fract(sin(n)*138.5453123);\n}\n\nbool key_down(int key) {\n    return int(texelFetch(KEYBOARD, ivec2(key, 0), 0).x) == 1;\n}\n\n\nfloat f(float x)\n{\nreturn 16. * x * x * (1. - x ) * (1. - x);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\nivec2 px = ivec2( fragCoord );\n\n/*\nif (iFrame == 0)\n{    \nfloat f = 0.;\nif (fragCoord.x > 0.5 * iResolution.x && fragCoord.x < 0.5 * iResolution.x + 1.\n && fragCoord.y > 0.5 * iResolution.y && fragCoord.y < 0.5 * iResolution.y + 1.)\nf = 3.;\n\nfragColor = vec4( f, 0.0, 0.0, 0.0 );\nreturn;\n}\n*/\n\nif (iFrame == 0 || key_down(KEY_RESET))\n{\n// change the 0.99 to get different amounts of particles spawning!\nfloat f = hash1(fragCoord.x*13.0 + 1. + 0.1 * iTime + hash1(fragCoord.y*73.1));\nif (f > 0.99 && mod(floor(fragCoord.x),2.) == 0. && mod(floor(fragCoord.y),2.) == 0.)\nf = 3.;\nelse \nf = 0.;\nfragColor = vec4( f, 0.0, 0.0, 0.0 );\nreturn;\n}\n    \n// center cell\nfloat e = Cell(px); \n\n// neighbour cells\nfloat t = Cell(px + ivec2(0,-1));\nfloat b = Cell(px + ivec2(0,1));\nfloat l = Cell(px + ivec2(-1,0));\nfloat r = Cell(px + ivec2(1,0));   \n\nfloat t2 = Cell(px + ivec2(0,-2));\nfloat b2 = Cell(px + ivec2(0,2));\nfloat l2 = Cell(px + ivec2(-2,0));\nfloat r2 = Cell(px + ivec2(2,0));   \n\nfloat tl = Cell(px + ivec2(-1,-1));\nfloat tr = Cell(px + ivec2(1,-1));\nfloat bl = Cell(px + ivec2(-1,1));\nfloat br = Cell(px + ivec2(1,1));\n\nfloat sum = t + b + l + r;\n\n// 2 up, 3 right, 4 down, 5 left\n\n/*\nif (iFrame % 60 == 0 && fragCoord.x > 0.5 * iResolution.x && fragCoord.x < 0.5 * iResolution.x + 1.\n && fragCoord.y > 0.5 * iResolution.y && fragCoord.y < 0.5 * iResolution.y + 1.)\ne = 3.;\nelse  */\nif (fragCoord.y > iMouse.y && fragCoord.y < iMouse.y + 1.\n && fragCoord.x > iMouse.x && fragCoord.x < iMouse.x + 1.)\ne = 3.;\nelse if (e > 1. || (((b == 2. && sum == 2.) || (l == 3. && sum == 3.)\n|| (t == 4. && sum == 4.) || (r == 5. && sum == 5.))))// && tl + tr + bl + br == 0.))\ne = 1.;\nelse if (b2 == 2.)\ne = 2.;\nelse if (l2 == 3.)\ne = 3.;\nelse if (t2 == 4.)\ne = 4.;\nelse if (r2 == 5.)\ne = 5.;\nelse if (e <= 1.) // (A) get rid of me to keep the trail alive forever\ne -= 0.005;\n\nfloat n = 0.;\nif (t > 0. && t <= 1.)\nn++;\nif (r > 0. && r <= 1.)\nn++;\nif (l > 0. && l <= 1.)\nn++;\nif (b > 0. && b <= 1.)\nn++;\n\n/*\nif (n == 0. && e > 1.)\n{\nint m = iFrame % 7;\nif (m < 2)\ne = 2.;\nelse if ( m < 4)\ne = 5.;\nelse if (m < 6)\ne = 4.;\nelse \ne = 3.;\n}\n*/\n\nif (n == 0. && e > 1.)\n{\nfloat e2 = 0.;\n//int L = int(100. * (1. - f(fragCoord.x / iResolution.x) * f(fragCoord.y / iResolution.y))); // change this value for bigger squares\n\nint L = int(250. * (1. - 0.5 * cos(0.25 * iTime)) * (1. - f(fract(2. * (fragCoord.x / iResolution.y - 0.375))) * f(fract(2. * fragCoord.y / iResolution.y)))); // change this value for bigger squares\n//int L = 2;\n//int L = iFrame % 60; // 5\nint m = iFrame % (4 * L);\nif (m < L)\ne2 = 2.;\nelse if ( m < 2 *L )\ne2 = 5.;\nelse if (m < 3 * L)\ne2 = 4.;\nelse\ne2 = 3.;\n\nif (mod(e - e2,2.) != 0.)\ne = e2;\n}\n\n\n\n\n\nfragColor = vec4( e, 0.0, 0.0, 0.0 );\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

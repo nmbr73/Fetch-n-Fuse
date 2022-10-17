@@ -1,0 +1,38 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stfyzB",
+  "date": "0",
+  "viewed": 0,
+  "name": "Neon Crystal JiPi 477",
+  "description": "Fifth creation in my new aim of.. surely you've seen the others by now? If not, go look at them to find out :>",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "3d",
+   "raymarching",
+   "transparency",
+   "glass",
+   "crystal"
+  ],
+  "hasliked": 0,
+  "parentid": "NlXcRB",
+  "parentname": "Neon Crystal"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define DTR 0.01745329\n#define rot(a) mat2(cos(a),sin(a),-sin(a),cos(a))\n\nvec2 uv;\nvec3 cp,cn,cr,ro,rd,ss,oc,cc,gl,vb;\nvec4 fc;\nfloat tt,cd,sd,io,oa,td;\nint es=0,ec;\n\nfloat bx(vec3 p,vec3 s){vec3 q=abs(p)-s;return min(max(q.x,max(q.y,q.z)),0.)+length(max(q,0.));}\nfloat cy(vec3 p, vec2 s){p.y+=s.x/2.;p.y-=clamp(p.y,0.,s.x);return length(p)-s.y;}\n\n\nvec3 lattice(vec3 p, int iter, float an)\n{\n\t\tfor(int i = 0; i < iter; i++)\n\t\t{\n\t\t\tp.xz *= rot(an*DTR);\n\t\t\tp.xy *= rot(an*DTR);\n\t\t\tp=abs(p)-1.;\n\t\t\tp.yz *= rot(-an*DTR);\n\t\t}\n\t\treturn p;\n}\n\n\nfloat mp(vec3 p)\n{\n//now with mouse control\nif(iMouse.z>0.){\n    p.yz*=rot(2.0*(iMouse.y/iResolution.y-0.5));\n    p.zx*=rot(-7.0*(iMouse.x/iResolution.x-0.5));\n}\n\t\tvec3 pp=p;\n\t\t\n\t\tp.xz*=rot(tt*0.1);\n\t\tp.xy*=rot(tt*0.1);\n\t\n\t\tvec3 pl1 = lattice(p, 4, 25.);\n\t\tvec3 pl2 = lattice(p, 4, 45.);\n\t\tvec3 pl3 = lattice(p, 4, 70.);\n\t\n\t\tfloat b1=bx(pl1, vec3(3.,0.15,0.15));\n\t\tfloat b2=cy(pl2, vec2(5.,0.5));\n\t\tfloat b3=bx(pl3, vec3(3.,0.15,0.15));\n\t\t\n\t\tfloat an = pow(sin(tt*3.)*0.5+0.5,10.);\n\t\tfloat an2 = 1.-pow(sin(tt*3.+3.14)*0.5+0.5,10.);\n\t\tsd = mix(b1,b3,cos(tt)*0.5+0.5);\n\t\tsd = mix(b2,sd, an+an2);\n\t\n\t\tif(sd>0.01) gl += exp(-sd*0.01) * normalize(p*p) * 0.015;\n\t\n\t\tsd=abs(sd)-0.001;\n\n\t\tif(sd<0.001)\n\t\t{\n\t\t\toc=vec3(0.);\n\t\t\tio=1.05;\n\t\t\toa=0.;\n\t\t\tss=vec3(0);\n\t\t  vb=vec3(0.,8,2.5);\n\t\t\tec=2;\t\n\t\t}\n\t\treturn sd;\n}\n\nvoid tr(){vb.x=0.;cd=0.;for(float i=0.;i<512.;i++){mp(ro+rd*cd);cd+=sd;td+=sd;if(sd<0.0001||cd>128.)break;}}\nvoid nm(){mat3 k=mat3(cp,cp,cp)-mat3(.001);cn=normalize(mp(cp)-vec3(mp(k[0]),mp(k[1]),mp(k[2])));}\n\nvoid px()\n{\n  cc=vec3(0.,0.,0.)+length(pow(rd+vec3(0,0.,0),vec3(3)))*0.1+gl;\n  vec3 l=vec3(0.9,0.7,0.5);\n  if(cd>128.){oa=1.;return;}\n  float df=clamp(length(cn*l),0.,1.);\n  vec3 fr=pow(1.-df,3.)*mix(cc,vec3(0.4),0.5);\n\tfloat sp=(1.-length(cross(cr,cn*l)))*0.2;\n\tfloat ao=min(mp(cp+cn*0.3)-0.3,0.3)*0.5;\n  cc=mix((oc*(df+fr+ss)+fr+sp+ao+gl),oc,vb.x);\n}\n\nvoid render(vec2 frag, vec2 res, float time, out vec4 col)\n{\n\ttt=mod(time, 260.);\n  uv=vec2(frag.x/res.x,frag.y/res.y);\n  uv-=0.5;uv/=vec2(res.y/res.x,1);\n  ro=vec3(0,0,-15);rd=normalize(vec3(uv,1));\n  \n\tfor(int i=0;i<20;i++)\n  {\n\t\ttr();cp=ro+rd*cd;\n    nm();ro=cp-cn*0.01;\n    cr=refract(rd,cn,i%2==0?1./io:io);\n    if(length(cr)==0.&&es<=0){cr=reflect(rd,cn);es=ec;}\n    if(max(es,0)%3==0&&cd<128.)rd=cr;es--;\n\t\tif(vb.x>0.&&i%2==1)oa=pow(clamp(cd/vb.y,0.,1.),vb.z);\n\t\tpx();fc=fc+vec4(cc*oa,oa)*(1.-fc.a);\t\n\t\tif((fc.a>=1.||cd>128.))break;\n  }\n  col = fc/fc.a;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    render(fragCoord.xy,iResolution.xy,iTime,fragColor);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

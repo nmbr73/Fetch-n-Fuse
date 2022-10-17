@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Fluiddensityconsideration2Jipi
+  id: Fluiddensityconsideration2Jipi
+  kernel: Fluiddensityconsideration2Jipi
+  name: Fluiddensityconsideration2Jipi
+shader:
+  author: N.N.
+  description: '[url]JAVASCRIPT: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<4;i++)E.P.apply(this,A);};if(!H)close();[/url]'
+  id: cssGRH
+  name: FluidDensityConsideration2 JiPi
+  parent:
+    id: 3sKXzW
+    name: Fluid Density Consideration*
+    url: https://www.shadertoy.com/view/3sKXzW
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/cssGRH

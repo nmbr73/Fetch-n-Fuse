@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: CrosshatchJipi
+  id: CrosshatchJipi
+  kernel: CrosshatchJipi
+  name: CrosshatchJipi
+shader:
+  author: N.N.
+  description: A simple crosshatching filter combined with edge detection to form
+    a quick and dirty appearance of a pencil sketch.
+  id: slVcz3
+  name: Crosshatch JiPi
+  parent:
+    id: MdX3Dr
+    name: Crosshatch
+    url: https://www.shadertoy.com/view/MdX3Dr
+  tags:
+  - simple
+  - crosshatch
+  - edgedetect
+  url: https://www.shadertoy.com/view/slVcz3

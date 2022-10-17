@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: NavierStokesJipi
+  id: NavierStokesJipi
+  kernel: NavierStokesJipi
+  name: NavierStokesJipi
+shader:
+  author: N.N.
+  description: 'test fluid
+
+    based on https://www.shadertoy.com/view/4lyyzc by wyatt'
+  id: 7tBBzW
+  name: Navier-Stokes JiPi
+  parent:
+    id: 4ltBWj
+    name: Navier-Stokes
+    url: https://www.shadertoy.com/view/4ltBWj
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/7tBBzW

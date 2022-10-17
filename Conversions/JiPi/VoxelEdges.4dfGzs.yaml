@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: VoxelEdges
+  id: VoxelEdges
+  kernel: VoxelEdges
+  name: VoxelEdges
+shader:
+  author: iq
+  description: Correct edge detection for voxels. The marching function is fb39ca4's
+    DDA, but using floating point operations instead of integers. The most interesting
+    bits are probably the exact 3D intersector, the occlusion and the edge detection
+    code.
+  id: 4dfGzs
+  name: Voxel Edges
+  tags:
+  - procedural
+  - 3d
+  - raymarching
+  - voxel
+  - occlusion
+  - dda
+  url: https://www.shadertoy.com/view/4dfGzs

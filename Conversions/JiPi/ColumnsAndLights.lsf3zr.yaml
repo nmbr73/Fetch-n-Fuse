@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ColumnsAndLights
+  id: ColumnsAndLights
+  kernel: ColumnsAndLights
+  name: ColumnsAndLights
+shader:
+  author: iq
+  description: 'Some columns, derived from Slisesix: [url]https://www.shadertoy.com/view/NtlSDs[/url]'
+  id: lsf3zr
+  name: Columns and Lights
+  tags:
+  - procedural
+  - 3d
+  - raymarching
+  - distancefield
+  - modeling
+  url: https://www.shadertoy.com/view/lsf3zr

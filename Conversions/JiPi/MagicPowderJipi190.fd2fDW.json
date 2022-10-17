@@ -1,0 +1,85 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fd2fDW",
+  "date": "0",
+  "viewed": 0,
+  "name": "Magic Powder JiPi 190",
+  "description": "Mouse enabled after 5 seconds",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "particles"
+  ],
+  "hasliked": 0,
+  "parentid": "tsGXR3",
+  "parentname": "Magic Powder"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define samples 100 \n#define size 0.04\n#define brightness 3.\n#define part_color vec3(1.,.7,.4)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float c=0.;\n    vec2 uv=fragCoord/iResolution.xy;\n     for (int i=0; i<samples; i++) {\n        float a=hash(uv+float(i)*.123)*6.28;\n        float l=hash(uv+float(i)*.454)*size;\n        vec2 smp = vec2(cos(a),sin(a))*l;\n        smp.y*=iResolution.x/iResolution.y;\n        vec4 part=texture(iChannel0, uv+smp);\n      \tc+=length(part.zw)*(size-l*.9)/size; \n     }\n    vec4 part = texture(iChannel0, uv);\n    vec3 col=(c/float(samples))*part_color*brightness*5.;\n    vec2 uvc = (uv-.5)*2.;\n    col*=1.-length(uvc*uvc*uvc);\n    fragColor = vec4(col,1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Particles idea taken from https://www.shadertoy.com/view/ll3SWs\n\n#define A 3\n#define speed 3.\n#define size .02\n#define fade .99\n\n// check if there is an arriving particle at this pixel in next frame\nfloat arrivingParticle(vec2 coord, out vec4 partData) {\n\tpartData = vec4(0);\n    float c=0.;\n    // scan area from -D to D\n    for (int i=-A; i<A; i++) {\n        for (int j=-A; j<A; j++) {\n            // position to check\n            vec2 arrCoord = coord + vec2(i,j);\n            vec4 data = texture(iChannel0, arrCoord/iResolution.xy);\n            \n            // no particles here\n            if (dot(data,data)<.1) continue;\n\n            // get next position of particle\n            vec2 nextCoord = data.xy + data.zw;\n            \n            // add the particle if it's within range\n\t\t\tvec2 offset = abs(nextCoord-coord);\n            if (offset.x <.5 && offset.y <.5) {\n                partData += data;\n\t\t\t\tc++;\n            }\n        }\n    }\n    partData/=c; //average pos and speeds of resulting particle\n    return c;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float t=float(iFrame)*.1;\n\tvec2 uv = fragCoord/iResolution.xy;\n\tvec2 m = iMouse.xy/iResolution.xy;\n    vec2 uvm=uv-m;\n    \n    //draw particles\n    if (t<35.) uvm=.5-uv-vec2(sin(t)*.7,cos(t)*.6)*.14*iTime;    \n    if ((iMouse.z>0.||iTime<5.) && step(length(uvm),size)>0.) {\n        fragColor = vec4(fragCoord.xy, \n                         speed*normalize(uvm+vec2(hash(uv+1.5465+t), hash(uv+2.5648+t))-.5)\n                         *(.3+hash(uv+t)*.7))*step(length(uvm),.2);\n\t\treturn;\n    }\n\n    // get the data of a particle arriving at this pixel \n    vec4 partData;\n    float p = arrivingParticle(fragCoord, partData);\n   \n    // no particles, empty pixel\n    if (p<1.) {\n    \tfragColor = vec4(0.);\n        return;\n    }\n    \n    partData.xy+=partData.zw;\n    partData.zw*=fade;\n\n    //set particle data\n    fragColor = partData;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "float hash(vec2 p)\n{\n   return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

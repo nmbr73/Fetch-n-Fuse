@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SunriseAtPulauSibu
+  id: SunriseAtPulauSibu
+  kernel: SunriseAtPulauSibu
+  name: SunriseAtPulauSibu
+shader:
+  author: glkt
+  description: use the mouse for time-lapse
+  id: 4d2BRz
+  name: Sunrise at Pulau Sibu
+  tags:
+  - clouds
+  - water
+  - sky
+  - sunrise
+  - swiminginthesea
+  url: https://www.shadertoy.com/view/4d2BRz

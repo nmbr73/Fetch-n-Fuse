@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: FireFireJipi
+  id: FireFireJipi
+  kernel: FireFireJipi
+  name: FireFireJipi
+shader:
+  author: N.N.
+  description: 'Fire experiment, fake fluid simulation.
+
+    click and drag to move the fireball'
+  id: 7ttyRr
+  name: Fire!Fire! JiPi
+  parent:
+    id: sdGBzt
+    name: Fire!Fire!
+    url: https://www.shadertoy.com/view/sdGBzt
+  tags:
+  - fire
+  - fluid
+  url: https://www.shadertoy.com/view/7ttyRr

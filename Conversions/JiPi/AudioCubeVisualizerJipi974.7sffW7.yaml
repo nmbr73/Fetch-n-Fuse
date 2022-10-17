@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: AudioCubeVisualizerJipi974
+  id: AudioCubeVisualizerJipi974
+  kernel: AudioCubeVisualizerJipi974
+  name: AudioCubeVisualizerJipi974
+shader:
+  author: N.N.
+  description: 'A variation of AudioCube by kuvkar -- Modified to work with Kodi shadertoy
+    [url]http://imgur.com/a/WfT2T#0[/url]
+
+    Cleanup channels and code white spaces mainly. Making it work with Kodi shadertoy'
+  id: 7sffW7
+  name: Audio cube Visualizer JiPi 974
+  parent:
+    id: 4lS3W3
+    name: Audio cube II - Visualiser
+    url: https://www.shadertoy.com/view/4lS3W3
+  tags:
+  - 3d
+  - audio
+  - visualiser
+  url: https://www.shadertoy.com/view/7sffW7

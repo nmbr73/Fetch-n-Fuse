@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: CellularautomatapfJipi
+  id: CellularautomatapfJipi
+  kernel: CellularautomatapfJipi
+  name: CellularautomatapfJipi
+shader:
+  author: N.N.
+  description: "Uses one buffer and four channels to simulate particles with field\
+    \ interactions. No time input. Click to add particles with the mouse. \n\nWork\
+    \ in progress."
+  id: NldfzM
+  name: CellularAutomataPF JiPi
+  parent:
+    id: MdGGzG
+    name: Cellular Automata Particle Field
+    url: https://www.shadertoy.com/view/MdGGzG
+  tags:
+  - automata
+  url: https://www.shadertoy.com/view/NldfzM

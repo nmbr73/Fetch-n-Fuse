@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Eggstruction
+  id: Eggstruction
+  kernel: Eggstruction
+  name: Eggstruction
+shader:
+  author: blackle
+  description: revision shader showdown 2022 semi-final
+  id: Nl2yzt
+  name: Eggstruction
+  tags:
+  - livecode
+  url: https://www.shadertoy.com/view/Nl2yzt

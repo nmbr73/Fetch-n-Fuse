@@ -1,0 +1,86 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "st2cRd",
+  "date": "0",
+  "viewed": 0,
+  "name": "Flowing Crystals JiPi296",
+  "description": "Normal map forked from dmmn. See their shader in the link above.\n\nPassing results from voronoi back in again to create the inner subdivisions.  Using min edge distance to create crystal structure.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "voronoi",
+   "light",
+   "crystal"
+  ],
+  "hasliked": 0,
+  "parentid": "ssXcWr",
+  "parentname": "Flowing Crystals"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "float pseudoRefraction = 0.1; // not real refraction ;)\nvec3 lightColor = vec3(0.7, 0.8, 1.0);\n\nfloat getHeight(vec2 uv) {\n  return texture(iChannel0, uv).r;\n}\n\n// From dmmn's 'Height map to normal map' - https://www.shadertoy.com/view/MsScRt\nvec4 bumpFromDepth(vec2 uv, vec2 resolution, float scale) {\n  vec2 step = 1. / resolution;\n    \n  float height = getHeight(uv);\n    \n  vec2 dxy = height - vec2(\n      getHeight(uv + vec2(step.x, 0.)), \n      getHeight(uv + vec2(0., step.y))\n  );\n    \n  return vec4(normalize(vec3(dxy * scale / step, 1.)), height);\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord)\n{\n  vec2 uv = fragCoord.xy / iResolution.xy;\n  \n  vec3 heightColor = vec3(getHeight(uv));\n  \n  vec3 normal = bumpFromDepth(uv, iResolution.xy, 1.0).rgb;\n  heightColor = vec3(0.5) + 0.5 * pow(heightColor, vec3(2.0));\n  \n  vec3 camDir = normalize(vec3(uv, 2.0));\n  \n  vec2 lightPosXY = Rotate2D(iTime) * vec2(-10.0, -10.0);\n  \n  vec3 lightPos = normalize(vec3(lightPosXY, 2.0)) + vec3(0.5, 0.5, 0.0);\n  \n  vec3 lightDir = vec3(uv, 0.0) - lightPos;\n  lightDir = reflect(lightDir, normal);\n  \n  float scalar = dot(camDir, lightDir);\n  scalar = clamp(scalar, 0.0, 1.0);\n  \n  vec3 shine = vec3(scalar);\n  \n  uv.x *= (iResolution.x/iResolution.y);\n  uv *= iResolution.x / 1024.0;\n  \n  vec3 color = texture(iChannel1, uv - normal.xz * pseudoRefraction).rgb;\n  color *= heightColor;\n  color += shine * lightColor;\n  \n  fragColor = vec4(color, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float density1 = 3.0;\nfloat density2 = 3.0;\nfloat density3 = 3.0;\n\n// 1.0 is typical Voronoi edge distance, increase to flatten faces\nfloat flattening1 = 15.0;\nfloat flattening2 = 8.0;\nfloat flattening3 = 3.0;\n\nvec2 N22(vec2 p)\n{\n    vec3 a = fract(p.xyx * vec3(1278.67, 3134.61, 298.647));\n    a += dot(a, a + 318.978);\n    return fract(vec2(a.x * a.y, a.y * a.z)) * 0.516846;\n}\n\nfloat N21(vec2 p)\n{\n    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid VoronoiUV(vec2 uvIn, float flatteningIn, float timeIn, out vec2 uvOut, out float nuclearDistOut, out float edgeDistOut, out vec2 cellID)\n{\n    cellID = vec2(0.0);\n\n    vec2 gv = fract(uvIn) - 0.5;\n    vec2 id = floor(uvIn);\n\n    nuclearDistOut = 100000.0;\n    edgeDistOut = 100000.0;\n\n    for (float y = -1.0; y <= 1.0; y++)\n    {\n        for(float x = -1.0; x <= 1.0; x++)\n        {\n            vec2 offset = vec2(x, y);\n\n            vec2 cellindex = id + offset;\n            vec2 n = N22(cellindex);\n            vec2 p = offset + sin(n * timeIn) * 0.5;\n\n            vec2 diff = gv - p;\n            float d = length(diff);\n\n            if (d < nuclearDistOut)\n            {\n                nuclearDistOut = d;\n                cellID = cellindex;\n                uvOut = diff;\n            }\n        }\n    }\n\n    for (float y = -1.0; y <= 1.0; y++)\n    {\n        for (float x = -1.0; x <= 1.0; x++)\n        {\n            vec2 offset = vec2(x, y);\n\n            vec2 cellindex = id + offset;\n            vec2 n = N22(cellindex);\n            vec2 p = offset + sin(n * timeIn) * 0.5;\n\n            vec2 diff = gv - p;\n\n            vec2 toCenter = (uvOut + diff) * 0.5;\n            vec2 cellDifference = normalize(diff - uvOut);\n            float edgeDistance = dot(toCenter, cellDifference);\n            edgeDistOut = min(edgeDistOut, edgeDistance);\n        }\n    }\n    \n    edgeDistOut = edgeDistOut * flatteningIn;\n    edgeDistOut *= 2.0;\n    edgeDistOut = min(1.0, edgeDistOut);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    uv.x *= iResolution.x / iResolution.y;\n\n    vec2 uv1;\n    float nuclearDist1;\n    float edgeDist1;\n    vec2 cellID1;\n    VoronoiUV(uv * density1, flattening1, iTime + 5.4864, uv1, nuclearDist1,  edgeDist1, cellID1);\n    \n    float rotSpeed1 = N21(cellID1) * 2.0 - 1.0;\n    uv1 = Rotate2D(rotSpeed1 * iTime * 0.5) * uv1;\n    \n    vec2 uv2;\n    float nuclearDist2;\n    float edgeDist2;\n    vec2 cellID2;\n    VoronoiUV(uv1 * density2, flattening2, iTime + 12.4864, uv2, nuclearDist2,  edgeDist2, cellID2);\n    \n    float rotSpeed2 = N21(cellID2) * 2.0 - 1.0;\n    uv2 = Rotate2D(rotSpeed2 * iTime * 0.5) * uv2;\n    \n    vec2 uv3;\n    float nuclearDist3;\n    float edgeDist3;\n    vec2 cellID3;\n    VoronoiUV(uv2 * density3, flattening3, iTime + 37.0846, uv3, nuclearDist3,  edgeDist3, cellID3);\n    \n    vec3 color = vec3(edgeDist1 * edgeDist2 * edgeDist3);\n    \n    fragColor = vec4(color, 1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "mat2 Rotate2D(float angle)\n{\n    return mat2(cos(angle), -sin(angle),\n                sin(angle), cos(angle));\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

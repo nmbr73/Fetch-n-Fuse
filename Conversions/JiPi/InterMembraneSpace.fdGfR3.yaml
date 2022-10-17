@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: InterMembraneSpace
+  id: InterMembraneSpace
+  kernel: InterMembraneSpace
+  name: InterMembraneSpace
+shader:
+  author: leon
+  description: another Lipschitz discontinuity
+  id: fdGfR3
+  name: Inter Membrane Space
+  tags:
+  - noise
+  - abstract
+  - gyroid
+  url: https://www.shadertoy.com/view/fdGfR3

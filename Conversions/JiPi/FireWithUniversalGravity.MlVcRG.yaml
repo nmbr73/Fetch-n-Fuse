@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: FireWithUniversalGravity
+  id: FireWithUniversalGravity
+  kernel: FireWithUniversalGravity
+  name: FireWithUniversalGravity
+shader:
+  author: mathmasterzach
+  description: 'Inspired by https://www.shadertoy.com/view/ll3SWs
+
+    Click and drag to create more particles.
+
+    Sorry for the messy code, there are lots of parameters with which to fiddle.
+
+    '
+  id: MlVcRG
+  name: Fire With Universal Gravity
+  tags:
+  - 2d
+  - sdf
+  - fire
+  - particle
+  - gravity
+  - buckets
+  url: https://www.shadertoy.com/view/MlVcRG

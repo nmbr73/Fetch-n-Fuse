@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: EmergenceOfLife
+  id: EmergenceOfLife
+  kernel: EmergenceOfLife
+  name: EmergenceOfLife
+shader:
+  author: michael0884
+  description: No really, what the heck
+  id: Wt2BR1
+  name: Emergence of life
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/Wt2BR1

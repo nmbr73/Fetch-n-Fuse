@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: BoilingMercuryHourglass3D
+  id: BoilingMercuryHourglass3D
+  kernel: BoilingMercuryHourglass3D
+  name: BoilingMercuryHourglass3D
+shader:
+  author: fenix
+  description: '* Ray marching inspired by Liquid in Glass by tmst https://www.shadertoy.com/view/3tfcRS
+
+    * Click the center to drag the hourglass
+
+    * Click not-the-center to tilt the hourglass
+
+    * Honestly it''s not really supposed to be boiling but I am a n00b.'
+  id: sdcBWs
+  name: Boiling Mercury Hourglass 3D
+  tags:
+  - 3d
+  - simulation
+  - sdf
+  - particles
+  - sph
+  - fluiddynamics
+  url: https://www.shadertoy.com/view/sdcBWs

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: LiquidWomanJipi
+  id: LiquidWomanJipi
+  kernel: LiquidWomanJipi
+  name: LiquidWomanJipi
+shader:
+  author: N.N.
+  description: Playing around with cube maps.
+  id: 7lcfDH
+  name: Liquid Woman JiPi
+  parent:
+    id: lssXRf
+    name: Liquid Woman
+    url: https://www.shadertoy.com/view/lssXRf
+  tags:
+  - water
+  url: https://www.shadertoy.com/view/7lcfDH

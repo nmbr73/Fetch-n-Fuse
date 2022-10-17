@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: LichenGrowth
+  id: LichenGrowth
+  kernel: LichenGrowth
+  name: LichenGrowth
+shader:
+  author: andrinr
+  description: Organism needs food to survive, food gets eaten, food regrows
+  id: ttdcWM
+  name: Lichen Growth
+  tags:
+  - cells
+  - growth
+  url: https://www.shadertoy.com/view/ttdcWM

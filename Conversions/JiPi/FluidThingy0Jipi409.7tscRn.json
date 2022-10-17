@@ -1,0 +1,114 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tscRn",
+  "date": "0",
+  "viewed": 0,
+  "name": "fluid_thingy_0 JiPi 409",
+  "description": "Mouse click draw, space reset. \nMade from a tuto : http://wyattflanders.com/MeAndMyNeighborhood.pdf\nApparently require linear interpolation at minimum for bufferA. ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "wdByWd",
+  "parentname": "fluid_thingy_0"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n** Following this tutorial : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n*/\n\nvoid mainImage( out vec4 o, in vec2 f )\n{\n    o = A(f/R);\n\to = sin(o.z*1.0+vec4(.0,1.04,2.08,.0)+3.14*o.wwww*2.);\n    /*\n    o.xyz -= mix(\n    vec3(.9,.8,.59)\n        ,\n        vec3(.7, .3, .4)\n        ,\n        o.w\n    );\n\t*/\n    \n    //o = (1.*A(f/R).wwww);\n\t//o = (1.*A(f/R).xyxy);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n** Following this tutorial : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n*/\n\nconst vec2 n = vec2(+.0, +1.);\nconst vec2 s = -n;\nconst vec2 w = vec2(+1., +0.);\nconst vec2 e = -w;\n\nvec4 F(vec2 p)\n{\n\tvec2 r = A(p/R).xy;\n    r = p - r;\n    return A(r/R);//-NA(r/R)*.25;\n}\n\nvoid mainImage( out vec4 o, in vec2 f )\n{\n    if (f.x < 10. || f.y < 10. || -f.x+R.x < 10. || -f.y+R.y < 10.) {o = vec4(0.); return;}\n\n    float kb = C(vec2(32.5/256., 0.25)).x;\n    if (kb > .5 || iFrame < 10) {o = vec4(0.,0.,0., (g(B(f/R))*2.-1.)*.5 ); return;}\n\n    o = F(f);//-NA(f/R)*.25;\n    vec4 En = F(f+n);\n    vec4 Es = F(f+s);\n    vec4 Ew = F(f+w);\n    vec4 Ee = F(f+e);\n\n    o.z = (En + Es + Ew + Ee).z * .25;//06125;\n\n    o.xy += vec2(Ee.z - Ew.z, Es.z - En.z) * .25;\n\n    o.z += (Es.y - En.y + Ee.x - Ew.x) *.25;\n\n    //o.xy += (B(f/R).xy -.5)/400.;\n    //o.w += g(B(f/R));\n\n    o.w += (Ee.x*Ee.w-Ew.x*Ew.w+Es.y*Es.w-En.y*En.w) * .25;\n\n    o.xy += o.w*cs(o.w*50.*1.0+g(B(f/R))*5000. )*.505;\n    //o.xy += o.w*cs( (o.w*10./(1.0001+g(B(f/R)))) * 100.)*.10501;\n    //o.xy += -NA(f/R).xy*1./8.;\n    //o.w += .001001 * (g(B(f/R))*2.-1.);\n\n    if (iMouse.z > .5 && length(f-iMouse.xy) < 100.) o.w = .5;\n\n    if (f.x < 9. || f.y < 9. || -f.x+R.x < 9. || -f.y+R.y < 9.) o *= .0;\n\n    o = clamp(o, -10.0, 10.);\n}\n\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\n#define R iResolution.xy\n\n// neighboor collection (not used)\nvec4 N(sampler2D sam, vec2 u, vec2 iR)\n{\n    vec4 r = vec4(0);\n\n    r += texture(sam, (u+vec2(+.0, +1.) )/iR );\n    r += texture(sam, (u+vec2(+.0, -1.) )/iR );\n    r += texture(sam, (u+vec2(+1., -0.) )/iR );\n    r += texture(sam, (u+vec2(-1., +0.) )/iR );\n    return r;\n}\n\n// grayscale\n#define g(c) (.3*c.x + .59*c.y + .11*c.z) \n\nvec2 cs(float a) { return vec2(cos(a), sin(a)); }\n\n//code shortcuts\n#define NA(u) N(iChannel0, u, R)\n#define NB(u) N(iChannel1, u, R)\n#define NC(u) N(iChannel2, u, R)\n#define ND(u) N(iChannel3, u, R)\n\n#define A(u) texture(iChannel0, u)\n#define B(u) texture(iChannel1, u)\n#define C(u) texture(iChannel2, u)\n#define D(u) texture(iChannel3, u)",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: CubicDispersal
+  id: CubicDispersal
+  kernel: CubicDispersal
+  name: CubicDispersal
+shader:
+  author: Tater
+  description: "3d version of [url]https://www.shadertoy.com/view/stdGz4[/url]. I\
+    \ finally got around to finishing it. \n\nuse mouse to reveal perspective. "
+  id: fldXWS
+  name: Cubic Dispersal
+  tags:
+  - 3d
+  - raymarching
+  - subdivision
+  url: https://www.shadertoy.com/view/fldXWS

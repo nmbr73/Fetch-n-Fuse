@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SpaceyBoiJipi
+  id: SpaceyBoiJipi
+  kernel: SpaceyBoiJipi
+  name: SpaceyBoiJipi
+shader:
+  author: N.N.
+  description: spacey boi
+  id: ftGcRW
+  name: spacey boi JiPi
+  parent:
+    id: NtcyDl
+    name: spacey boi
+    url: https://www.shadertoy.com/view/NtcyDl
+  tags:
+  - space
+  url: https://www.shadertoy.com/view/ftGcRW

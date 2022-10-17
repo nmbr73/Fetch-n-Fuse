@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: NPendulumJipi
+  id: NPendulumJipi
+  kernel: NPendulumJipi
+  name: NPendulumJipi
+shader:
+  author: N.N.
+  description: Just a joint physics test using "stiff springs". There are n pendulums
+    each with n joints
+  id: sl3czn
+  name: n-pendulum JiPi
+  parent:
+    id: fsVBWG
+    name: n-pendulum
+    url: https://www.shadertoy.com/view/fsVBWG
+  tags:
+  - random
+  - physics
+  url: https://www.shadertoy.com/view/sl3czn

@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: TinyPlanetClouds
+  id: TinyPlanetClouds
+  kernel: TinyPlanetClouds
+  name: TinyPlanetClouds
+shader:
+  author: valentingalea
+  description: Learning terrain and clouds rendering all in one!
+  id: ldyXRw
+  name: Tiny Planet Clouds
+  tags:
+  - noise
+  - terrain
+  - clouds
+  - fbm
+  - water
+  - planet
+  - volumetric
+  - textureless
+  url: https://www.shadertoy.com/view/ldyXRw

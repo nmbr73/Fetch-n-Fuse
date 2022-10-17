@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: LuminousDarklyCloud
+  id: LuminousDarklyCloud
+  kernel: LuminousDarklyCloud
+  name: LuminousDarklyCloud
+shader:
+  author: leon
+  description: love is in the air
+  id: NsVBzt
+  name: Luminous Darkly Cloud
+  tags:
+  - noise
+  - cloud
+  - moon
+  - lightning
+  url: https://www.shadertoy.com/view/NsVBzt

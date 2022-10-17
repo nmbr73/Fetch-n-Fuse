@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: D2Fluid
+  id: D2Fluid
+  kernel: D2Fluid
+  name: D2Fluid
+shader:
+  author: wyatt
+  description: Mouse to make fluid 2
+  id: WtK3RD
+  name: 2 Fluid
+  tags:
+  - wave
+  - fluid
+  url: https://www.shadertoy.com/view/WtK3RD

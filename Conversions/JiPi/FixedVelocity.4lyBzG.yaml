@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: FixedVelocity
+  id: FixedVelocity
+  kernel: FixedVelocity
+  name: FixedVelocity
+shader:
+  author: wyatt
+  description: Artsy experiment
+  id: 4lyBzG
+  name: Fixed Velocity
+  tags:
+  - test
+  url: https://www.shadertoy.com/view/4lyBzG

@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: WavyFluid
+  id: WavyFluid
+  kernel: WavyFluid
+  name: WavyFluid
+shader:
+  author: wyatt
+  description: wave fluid
+  id: wty3Rh
+  name: Wavy Fluid*
+  tags:
+  - wave
+  - fluid
+  url: https://www.shadertoy.com/view/wty3Rh

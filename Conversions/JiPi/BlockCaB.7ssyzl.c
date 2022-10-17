@@ -115,7 +115,7 @@ __KERNEL__ void BlockCaBFuse__Buffer_A(float4 fragColor, float2 fragCoord, float
   0);*/
 
     int isInverted;//"a" to invert time
-    if(_tex2DVecN(iChannel2,((float)(65)+0.5)/iResolution.x,((float)(2)+0.5)/iResolution.x,15).x>0.0f)  isInverted=1;
+    if(_tex2DVecN(iChannel2,((float)(65)+0.5)/iResolution.x,((float)(2)+0.5)/iResolution.y,15).x>0.0f)  isInverted=1;  //.x
     else                                                                                                isInverted=0;
     
     float2 uv = fragCoord/iResolution;
@@ -159,7 +159,7 @@ __KERNEL__ void BlockCaBFuse__Buffer_A(float4 fragColor, float2 fragCoord, float
     int2 c=to_int2_cfloat(fragCoord);
     int sum;
     if(true){
-    sum=int(
+    sum=(int)(
         +1*(int)(population*_tex2DVecN(iChannel0, ((float)(pos.x)+0.5f)/iResolution.x,((float)(pos.y)+0.5f)/iResolution.y,15).x)
         +2*(int)(population*_tex2DVecN(iChannel0, ((float)(pos.x+1)+0.5f)/iResolution.x,((float)(pos.y)+0.5f)/iResolution.y,15).x)
         +4*(int)(population*_tex2DVecN(iChannel0, ((float)(pos.x)+0.5f)/iResolution.x,((float)(pos.y+1)+0.5f)/iResolution.y,15).x)

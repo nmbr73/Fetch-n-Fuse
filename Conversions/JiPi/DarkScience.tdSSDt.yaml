@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: DarkScience
+  id: DarkScience
+  kernel: DarkScience
+  name: DarkScience
+shader:
+  author: wyatt
+  description: "Responding to one of Fabrice's daily challenges. Drag it!\nUse the\
+    \ new speedup thing! and if you don't have it already : \n[url]https://chrome.google.com/webstore/detail/shadertoy-unofficial-plug/ohicbclhdmkhoabobgppffepcopomhgl[/url]"
+  id: tdSSDt
+  name: Dark Science
+  tags:
+  - fluid
+  - diffusion
+  - reaction
+  - fabrice
+  url: https://www.shadertoy.com/view/tdSSDt

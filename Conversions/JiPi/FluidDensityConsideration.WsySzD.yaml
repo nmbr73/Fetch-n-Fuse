@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: FluidDensityConsideration
+  id: FluidDensityConsideration
+  kernel: FluidDensityConsideration
+  name: FluidDensityConsideration
+shader:
+  author: wyatt
+  description: "Studying how to account for density and temperature, instead of always\
+    \ assuming constant density.\n Pressure = density*temperature. Temperature is\
+    \ kinetic energy per particle, density is particles per volume. \n\n T*D=P = KE/N*N/V\
+    \ = KE/V"
+  id: WsySzD
+  name: Fluid Density Consideration
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/WsySzD

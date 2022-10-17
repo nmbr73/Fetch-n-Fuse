@@ -1,0 +1,123 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "css3zr",
+  "date": "0",
+  "viewed": 0,
+  "name": "ShinyMetal JiPi",
+  "description": "Uses a sobel filter and a mip bloom to produce a shiny metal effect.\nChanging iChannel1 to use point filtering will make it look closer to aluminium foil.\n\nIntensity can be controlled with mouse X.\nPixel step distance can be controlled with Mouse Y.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "sobel",
+   "postprocess",
+   "bloom",
+   "metal",
+   "shiny"
+  ],
+  "hasliked": 0,
+  "parentid": "flVBDt",
+  "parentname": "Shiny Metal"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "const float SHINE_BOOST = 50.0;\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    vec3 colour = texture(iChannel0, uv).rgb;\n    vec3 bloom = vec3(0.0, 0.0, 0.0);\n    \n    int lods = int(log2(iResolution.x));\n    \n    // fake mip bloom\n    for (int i = 1; i < lods; i++)\n        bloom += textureLod(iChannel1, uv, float(i)).rgb;\n    \n    float bloomStrength;\n    \n    if (iMouse.z > 0.0)\n        bloomStrength = iMouse.x / iResolution.x;\n    else\n        bloomStrength = 0.5;\n    \n    colour += bloom * bloomStrength * SHINE_BOOST;\n    \n    fragColor = vec4(colour / float(lods), 1.0);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "Xdf3Rn",
+     "filepath": "/media/a/e81e818ac76a8983d746784b423178ee9f6cdcdf7f8e8d719341a6fe2d2ab303.webm",
+     "type": "video",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// just storing the base texture in a buffer so it can be changed from one place\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    \n    vec3 colour = texture(iChannel0, uv).rgb;\n    \n    fragColor = vec4(colour, 1.0);\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// sobel filter\n\nconst vec2 KERNEL[9] = vec2[9]\n(\n    vec2(1.0, -1.0), vec2(0.0, -2.0), vec2(-1.0, -1.0),\n    vec2(2.0, 0.0), vec2(0.0, 0.0), vec2(-2.0, 0.0),\n    vec2(1.0, 1.0), vec2(0.0, 2.0), vec2(-1.0, 1.0)\n);\n\nconst vec3 LUMA = vec3(0.299, 0.587, 0.114);\n\nfloat LumaSobel(vec2 uv, vec2 scales)\n{\n    vec2 total = vec2(0.0, 0.0);\n    float scale;\n    \n    if (iMouse.z > 0.0)\n        scale = iMouse.y / iResolution.y;\n    else\n        scale = 0.5;\n    \n    vec2 pixelSize = scale * 4.0 / iResolution.xy;\n    \n    for (int y = -1, z = 0; y <= 1; y++)\n    {\n        for (int x = -1; x <= 1; x++, z++)\n        {\n            vec2 pixelUV = uv + pixelSize * vec2(x, y);\n            vec3 pixel = textureLod(iChannel0, pixelUV, 0.0).rgb;\n            total += KERNEL[z] * dot(LUMA, pixel);\n        }\n    }\n\n    return total.x * total.y * scales.x;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    \n    vec2 scales;\n    \n    if (iMouse.z > 0.0)\n        scales = iMouse.xy / iResolution.xy;\n    else\n        scales = vec2(cos(iTime), sin(iTime)) * vec2(0.25, 0.125) + vec2(0.75, 0.375);\n    \n    float sobel = LumaSobel(uv, scales);\n    vec3 colour = texture(iChannel0, uv).rgb * sobel;\n    \n    fragColor = vec4(colour, 1.0);\n}\n",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

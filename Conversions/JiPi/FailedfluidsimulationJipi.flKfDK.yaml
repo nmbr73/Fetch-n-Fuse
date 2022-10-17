@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: FailedfluidsimulationJipi
+  id: FailedfluidsimulationJipi
+  kernel: FailedfluidsimulationJipi
+  name: FailedfluidsimulationJipi
+shader:
+  author: N.N.
+  description: 'drag mouse to change velocity field and density of each cell.
+
+    not finished yet. xp
+
+    maybe handdle this for next time.
+
+    more reason is in ''Common'''
+  id: flKfDK
+  name: FailedFluidSimulation JiPi
+  parent:
+    id: sdy3W1
+    name: failed fluid simulation
+    url: https://www.shadertoy.com/view/sdy3W1
+  tags:
+  - simulation
+  - fluid
+  url: https://www.shadertoy.com/view/flKfDK

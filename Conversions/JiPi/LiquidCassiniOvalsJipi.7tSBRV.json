@@ -1,0 +1,37 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tSBRV",
+  "date": "0",
+  "viewed": 0,
+  "name": "Liquid Cassini ovals JiPi",
+  "description": "Morphing cassini ovals with nice fluid motion: https://mathworld.wolfram.com/CassiniOvals.html",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "metaball",
+   "liquid",
+   "cassini",
+   "ovals"
+  ],
+  "hasliked": 0,
+  "parentid": "Ntjfzy",
+  "parentname": "Liquid Cassini ovals"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    float t = 0.5 * (1. + sin(iTime * 0.53));\n    float t2 = 0.5 * (1. + sin(iTime * 0.31));\n    float t3 = 0.5 * (1. + sin(iTime * 0.37));\n    float t4 = 0.5 * (1. + sin(iTime * 0.29));\n    vec2 p = fragCoord;\n    float maxDist = iResolution.y;\n    float minX = iResolution.x / 6.;\n    float xRange = iResolution.x - minX * 2.;\n    float minY = iResolution.y / 6.;\n    float yRange = iResolution.y - minY * 2.;\n    vec2 a = vec2(minX + xRange * (1. - t2), iResolution.y / 3.);\n    vec2 b = vec2(minX + xRange * t2, 2. * iResolution.y / 3.);\n    vec2 c = vec2(iResolution.x / 2., minY + yRange * t3);\n    vec2 e = vec2(iResolution.x / 2.,  minY + yRange * (1. - t4));\n    float r1 = length(p - a);\n    float r2 = length(p - b);\n    float r3 = length(p - c);\n    float r4 = length(p - e);\n    float d = iResolution.x / 10. + iResolution.x / 10. * abs(sin(iTime * 0.5));\n    float mx = iMouse.x / iResolution.x;\n    float my = iMouse.y / iResolution.y;\n\n    \n    float distF = (1. - r1 * r2 * r3 * r4 / (d * d * d * d));\n    float f = abs(0.5 - distF) / 0.5;\n    f = pow(f, 0.3 + 2. * mx);\n    float len = length(uv - vec2(0.5, 0.5));\n    //vec3 col = vec3(f < 0.5 + 0.5 * mx && f > 0.5 * my ? 1. : 0.);\n    vec3 col = vec3(0.7 - f * 0.7, 1. - f, max(0., 0.3 + 0.7 - f * 0.7)); //  //, 0., f);\n\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

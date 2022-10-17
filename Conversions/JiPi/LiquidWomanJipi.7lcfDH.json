@@ -1,0 +1,72 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7lcfDH",
+  "date": "0",
+  "viewed": 0,
+  "name": "Liquid Woman JiPi",
+  "description": "Playing around with cube maps.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "water"
+  ],
+  "hasliked": 0,
+  "parentid": "lssXRf",
+  "parentname": "Liquid Woman"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "Xdf3Rn",
+     "filepath": "/media/a/e81e818ac76a8983d746784b423178ee9f6cdcdf7f8e8d719341a6fe2d2ab303.webm",
+     "type": "video",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdX3zn",
+     "filepath": "/media/a/488bd40303a2e2b9a71987e48c66ef41f5e937174bf316d3ed0e86410784b919.jpg",
+     "type": "cubemap",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dX3zn",
+     "filepath": "/media/a/550a8cce1bf403869fde66dddf6028dd171f1852f4a704a465e1b80d23955663.png",
+     "type": "cubemap",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    \n\tvec4 girl = texture(iChannel2, vec2(uv.x,1.0-uv.y));\n\n\tvec3 ray = vec3(uv.x - 0.5 + 0.7 * girl.x + 0.1 * girl.z,uv.y - 0.5 + 0.7 * girl.y + 0.1 * girl.z,1.0);\n\n\tvec4 cube0 = texture(iChannel0, ray);\n\tvec4 cube1 = texture(iChannel1, ray);\n\t\n\tvec4 result = cube0 + cube1 + 0.1 * girl;\n\t\n\tfragColor = result;\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

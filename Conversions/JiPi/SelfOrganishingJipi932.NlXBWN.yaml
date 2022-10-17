@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: SelfOrganishingJipi932
+  id: SelfOrganishingJipi932
+  kernel: SelfOrganishingJipi932
+  name: SelfOrganishingJipi932
+shader:
+  author: N.N.
+  description: Points constrained by squares using gradient descent to distribute
+    themselves. Optimising for distance produces a regular (hex) grid, by also optimising
+    for having a set variance the points attempt to be distributed in a blue noise-ish
+    pattern.
+  id: NlXBWN
+  name: Self-Organishing JiPi932
+  parent:
+    id: 7llfWH
+    name: Self-organising blue-ish noise
+    url: https://www.shadertoy.com/view/7llfWH
+  tags:
+  - bluenoise
+  - gradientdescent
+  url: https://www.shadertoy.com/view/NlXBWN

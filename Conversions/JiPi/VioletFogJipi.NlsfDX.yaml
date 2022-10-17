@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: VioletFogJipi
+  id: VioletFogJipi
+  kernel: VioletFogJipi
+  name: VioletFogJipi
+shader:
+  author: N.N.
+  description: Violet fog
+  id: NlsfDX
+  name: Violet Fog JiPi
+  parent:
+    id: 7tsfWS
+    name: violet fog
+    url: https://www.shadertoy.com/view/7tsfWS
+  tags:
+  - violetfog
+  url: https://www.shadertoy.com/view/NlsfDX

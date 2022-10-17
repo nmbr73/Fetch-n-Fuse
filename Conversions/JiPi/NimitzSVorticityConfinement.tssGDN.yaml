@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: NimitzSVorticityConfinement
+  id: NimitzSVorticityConfinement
+  kernel: NimitzSVorticityConfinement
+  name: NimitzSVorticityConfinement
+shader:
+  author: wyatt
+  description: 'see : https://www.shadertoy.com/view/4tGfDW
+
+    I thought it was super cool and had to give it a try. I just stole his code -
+    I don''t understand the physics one bit. (if you''re online Nimitz I''d love an
+    explanation or a resource)'
+  id: tssGDN
+  name: Nimitz's Vorticity Confinement
+  tags:
+  - fluid
+  - nimitz
+  url: https://www.shadertoy.com/view/tssGDN

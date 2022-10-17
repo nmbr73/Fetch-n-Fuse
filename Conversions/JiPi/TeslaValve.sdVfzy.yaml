@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: TeslaValve
+  id: TeslaValve
+  kernel: TeslaValve
+  name: TeslaValve
+shader:
+  author: fenix
+  description: 'This is far from the best fluid sim, and the valve itself is far from
+    ideal. And yet somehow it still demonstrates the basic principle that more fluid
+    gets through one way than the other.
+
+    *l/r arrows to reset sim*
+
+    *mouse to interact*'
+  id: sdVfzy
+  name: Tesla Valve
+  tags:
+  - 2d
+  - voronoi
+  - simulation
+  - fluid
+  - particles
+  - liquid
+  - sph
+  url: https://www.shadertoy.com/view/sdVfzy

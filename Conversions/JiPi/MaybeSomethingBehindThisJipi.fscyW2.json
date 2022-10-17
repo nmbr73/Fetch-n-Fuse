@@ -1,0 +1,45 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fscyW2",
+  "date": "0",
+  "viewed": 0,
+  "name": "maybe something behind this JiPi",
+  "description": "A 2D fractal with a 3D lighting technique",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "fractal"
+  ],
+  "hasliked": 0,
+  "parentid": "flSfWV",
+  "parentname": "maybe something behind this"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "#define time iTime*.05\n\n\n#define width .2\n\nfloat thick=0.;\nfloat pix;\nfloat zoom = .5;\n\n\nfloat formula(vec2 z) {\n\tfloat ot=1000.;\n\tfor (int i=0; i<11; i++) {\n\t\tfloat dz=dot(z,z);\n\t\tz=abs(z*2.)/dz-1.;\n\t\tot=min(ot,dz);\n\t}\n\tfloat h=.014/(max(0.,width-ot)/width*.9+.1);\n\tthick+=max(0.,1.-h);\n\treturn h;\n}\n\nvec3 normal(vec2 z) {\n\tvec2 d=vec2(pix,0.);\n\tvec3 n=normalize(cross( //get normal\n\tvec3(d.x*2.,0.,formula(z-d.xy)-formula(z+d.xy)),\n\tvec3(0.,d.x*2.,formula(z-d.yx)-formula(z+d.yx))));\n\treturn n;\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 pos = fragCoord.xy / iResolution.xy;\n\tvec2 uv=pos-.5;\n\tuv.x*=iResolution.x/iResolution.y;\n\tzoom*=1.+sin(time*2.)*.5;\n\tvec2 luv=uv;\n\tuv+=vec2(sin(time),cos(time))*2.;\n\tuv+=sin(uv*30.+time*200.)*.0015;\n\tuv*=zoom;\n\tluv*=zoom;\n\tpix=1./iResolution.x*zoom;\n\tvec2 d=vec2(pix,0.);\n\tvec3 n= normal(uv-d.xy)+normal(uv+d.xy);\n\t     n+=normal(uv-d.yx)+normal(uv+d.yx);\n\t\t n/=4.;\n\tthick/=16.;\n\tvec2 refr=-n.xy*.08;\n\tvec3 tex=texture(iChannel0,((uv+refr)*3.+vec2(time,0.))).xyz+.75;\n\tvec3 colo=tex*mix(vec3(.55,.55,0.7)*2.5,vec3(0.79,.79,.95)*.25,sqrt(thick));\t\n\tvec3 lightdir=normalize(vec3(1.,.5,2.));\n\tcolo+=max(0.,dot(-n,lightdir))*.4;\n\tcolo+=pow(max(0.,dot(reflect(-n,vec3(0.,0.,-1.)),lightdir)),50.)*.6;\n\tcolo+=pow(max(0.,dot(reflect(vec3(0.,0.,-1.),-n),lightdir)),50.)*.2;\n\tcolo=pow(colo,vec3(1.5))*2.;\n\tfragColor = vec4(colo,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

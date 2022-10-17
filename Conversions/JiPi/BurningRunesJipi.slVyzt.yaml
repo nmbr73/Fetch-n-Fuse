@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: BurningRunesJipi
+  id: BurningRunesJipi
+  kernel: BurningRunesJipi
+  name: BurningRunesJipi
+shader:
+  author: N.N.
+  description: Just playing with [url=https://www.shadertoy.com/view/MsXSRn]runes
+    generation algorithm (by Otavio Good)[/url] and some turbulent noise.
+  id: slVyzt
+  name: Burning Runes JiPi
+  parent:
+    id: MtSSRz
+    name: Burning Runes
+    url: https://www.shadertoy.com/view/MtSSRz
+  tags:
+  - fire
+  - font
+  - runes
+  - pseudofont
+  url: https://www.shadertoy.com/view/slVyzt

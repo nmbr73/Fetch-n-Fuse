@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: AnisotropicBlurImageJipi
+  id: AnisotropicBlurImageJipi
+  kernel: AnisotropicBlurImageJipi
+  name: AnisotropicBlurImageJipi
+shader:
+  author: N.N.
+  description: Warps an image using an anisotropic blur kernel controlled by a vector
+    field. Use mouse controls to mess with the underlying vector field, and spacebar
+    to reset in fullscreen.
+  id: 7dKcW1
+  name: Anisotropic Blur Image JiPi
+  parent:
+    id: ldcSDB
+    name: Anisotropic Blur Image Warp
+    url: https://www.shadertoy.com/view/ldcSDB
+  tags:
+  - blur
+  - warp
+  - image
+  - anisotropic
+  url: https://www.shadertoy.com/view/7dKcW1

@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: Curler10Jipi
+  id: Curler10Jipi
+  kernel: Curler10Jipi
+  name: Curler10Jipi
+shader:
+  author: N.N.
+  description: 'Playing around with computing the curl of a webcam and using that
+    for iterative distortion.
+
+
+    camera -> brightness -> pseudo-gaussian-blur -> gradient -> curl -> distort
+
+    Particles are dropped into the sim at random (biased towards replacing old ones).'
+  id: fl2fzK
+  name: Curler 1.0 JiPi
+  parent:
+    id: XsVBzd
+    name: Curler 1.0
+    url: https://www.shadertoy.com/view/XsVBzd
+  tags:
+  - curl
+  - webcam
+  url: https://www.shadertoy.com/view/fl2fzK

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: ElectroJipi968
+  id: ElectroJipi968
+  kernel: ElectroJipi968
+  name: ElectroJipi968
+shader:
+  author: N.N.
+  description: Port of Humus Electro demo http://humus.name/index.php?page=3D&ID=35
+  id: ftXczl
+  name: Electro JiPi 968
+  parent:
+    id: 4scGWj
+    name: Electro
+    url: https://www.shadertoy.com/view/4scGWj
+  tags:
+  - noise
+  - lightning
+  - electricity
+  url: https://www.shadertoy.com/view/ftXczl

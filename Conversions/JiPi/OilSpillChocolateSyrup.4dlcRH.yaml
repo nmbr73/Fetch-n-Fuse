@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: OilSpillChocolateSyrup
+  id: OilSpillChocolateSyrup
+  kernel: OilSpillChocolateSyrup
+  name: OilSpillChocolateSyrup
+shader:
+  author: aferriss
+  description: 'Click to draw or space to reset. Not sure why but seems to need iChannel0
+    of Buffer A to be removed and then added again to work now. '
+  id: 4dlcRH
+  name: oil spill / chocolate syrup
+  tags:
+  - blur
+  - oil
+  - convolution
+  - feedback
+  - evaporation
+  url: https://www.shadertoy.com/view/4dlcRH

@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Entropy
+  id: Entropy
+  kernel: Entropy
+  name: Entropy
+shader:
+  author: FabriceNeyret2
+  description: 'reference: see below'
+  id: stt3Wl
+  name: entropy
+  tags:
+  - 2d
+  - short
+  - reproduction
+  url: https://www.shadertoy.com/view/stt3Wl

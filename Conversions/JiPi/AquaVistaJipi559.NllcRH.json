@@ -1,0 +1,170 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NllcRH",
+  "date": "0",
+  "viewed": 0,
+  "name": "Aqua Vista JiPi 559",
+  "description": "I went on a rainy walk with Maggie this morning. It's sunny now.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "automata"
+  ],
+  "hasliked": 0,
+  "parentid": "ssXGDB",
+  "parentname": "Aqua Vista"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Fork of \"Temperatures\" by wyatt. https://shadertoy.com/view/fsf3zS\n// 2021-03-22 22:23:14\n\n// Fork of \"Transport Dynamics II\" by wyatt. https://shadertoy.com/view/sdl3RN\n// 2021-03-18 22:39:28\n\n// Display\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    vec4 f = A(U);\n    Q = 1.-(.5-0.5*(sin(3.5-.3*(f.z)+vec4(1,2,3,4))))*f.w;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define R iResolution.xy\n#define A(U) texture(iChannel0,(U)/R)\n//#define Main void mainImage(out vec4 Q, in vec2 U)\n#define box for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)\n#define r2 0.70710678118\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Forces\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 a = A(U+u);\n        float f = 0.07*a.w*((a.w-1.)+.3);\n        dQ.xy -= f*u;\n    }\n    Q += dQ;\n    if (abs(U.y-0.6*R.y)<.3*R.y) {\n        Q.xy -= Q.xy*.1*exp(-16.*Q.w*Q.w);\n    }\n    Q.y -= 3e-4;\n    vec2 M = 1.5*R;\n    if (iMouse.z>0.) M = iMouse.xy;\n    if(length(U-M)<.02*R.y)Q = vec4(.1*normalize(iMouse.xy-0.5*R),-1,1.);\n    if (length(Q.xy)>.5) Q.xy = .5*normalize(Q.xy);\n    if (iFrame < 1) Q = vec4(0,0,0,.12);\n    if (R.y-U.y<2.) Q.zw = mix(Q.zw,vec2(-8.*step(U.x,.5*R.x)*U.x/R.x,1.5-U.x/R.x*1.),.005);\n    if (U.x < 1.) Q.xy *= 0.;\n    if (U.y < 1.||R.y-U.y<1.) Q.xy *= 0.;\n    if (R.x-U.x<1.) Q.w *= 0.;\n    if (abs(R.x*.5-U.x)<1.&&U.y<.15*R.y) Q.xy *= 0.;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float j = .5+.5*max(1.-3.*Q.w*q.w,0.);\n       float k = .5+.5*max(1.-3.*Q.w*q.w,0.);\n       float wa = 0.25*Q.w*min(i,j)/j;\n       float wb = 0.25*q.w*max(k+i-1.,0.)/k;\n        dQ.xyz += Q.xyz*wa+q.xyz*wb;\n        dQ.w += wa+wb;\n        \n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n    \n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float j = .5;\n       float k = .5;\n       float wa = 0.25*Q.w*min(i,j)/j;\n       float wb = 0.25*q.w*max(k+i-1.,0.)/k;\n        dQ.xyz += Q.xyz*wa+q.xyz*wb;\n        dQ.w += wa+wb;\n        \n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n    \n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float j = .5;\n       float k = .5;\n       float wa = 0.25*Q.w*min(i,j)/j;\n       float wb = 0.25*q.w*max(k+i-1.,0.)/k;\n        dQ.xyz += Q.xyz*wa+q.xyz*wb;\n        dQ.w += wa+wb;\n        \n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n    \n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

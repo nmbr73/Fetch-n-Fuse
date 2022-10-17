@@ -1,0 +1,65 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fsffD2",
+  "date": "0",
+  "viewed": 0,
+  "name": "KISS Tracing JiPi 935",
+  "description": "Bare-bones Path Tracer",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raytracing",
+   "pathtracing",
+   "minimal"
+  ],
+  "hasliked": 0,
+  "parentid": "sttXWX",
+  "parentname": "KISS Tracing 001: Spheres&Plane"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRn",
+     "filepath": "/media/a/10eb4fe0ac8a7dc348a2cc282ca5df1759ab8bf680117e4047728100969e7b43.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdX3zn",
+     "filepath": "/media/a/488bd40303a2e2b9a71987e48c66ef41f5e937174bf316d3ed0e86410784b919.jpg",
+     "type": "cubemap",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Copyright (c) Timo Saarinen 2021\n// You can use this Work in a Good and Cool Spirit.\n//\n// KISS Path Tracing 001: Spheres and a Plane\n//------------------------------------------------------------------------\n// There are two main approaches to rendering, rasterization \n// and ray tracing (RT). Like the name says, ray tracing is \n// just tracing through 3D space (usually), simple!\n//\n// Path Tracing is a type of ray tracing,\n// and at its heart.. very simple!\n//\n// From wikipedia [https://en.wikipedia.org/wiki/Path_tracing]:\n//   Path tracing is a computer graphics Monte Carlo method of rendering images of three-dimensional scenes such that the global illumination is faithful to reality. Fundamentally, the algorithm is integrating over all the illuminance arriving to a single point on the surface of an object. This illuminance is then reduced by a surface reflectance function (BRDF) to determine how much of it will go towards the viewpoint camera. This integration procedure is repeated for every pixel in the output image. When combined with physically accurate models of surfaces, accurate models of real light sources (light bulbs), and optically correct cameras, path tracing can produce still images that are indistinguishable from photographs.\n//   Path tracing naturally simulates many effects that have to be specifically added to other methods (conventional ray tracing or scanline rendering), such as soft shadows, depth of field, motion blur, caustics, ambient occlusion, and indirect lighting. Implementation of a renderer including these effects is correspondingly simpler. An extended version of the algorithm is realized by volumetric path tracing, which considers the light scattering of a scene.\n//   Due to its accuracy, unbiased nature, and algorithmic simplicity, path tracing is used to generate reference images when testing the quality of other rendering algorithms. However, the path tracing algorithm is relatively inefficient: a very large number of rays must be traced to get high-quality images free of noise artifacts. Several variants have been introduced which are more efficient than the original algorithm for many scenes, including bidirectional path tracing, volumetric path tracing, and Metropolis light transport. \n//\n// Spheres and planes are the common first examples of ray tracing,\n// with simple intersection code, so let's start with them..\n//\n// Unoptimized for clarity! Also disclaimer: WIP\nconst float PI = 3.141592; // close enough\nconst float EPSILON = 0.0001;\nconst float NOHIT = 999999999.0; // keep positive intersection miss, so can easily min() the closest one\n\nconst int ID_NONE       = 0;\nconst int ID_SPHERE01   = 1;\nconst int ID_SPHERE02   = 2;\nconst int ID_SPHERE03   = 3;\nconst int ID_PLANE      = 4;\n\nconst vec3 sun_dir = normalize(vec3(1,1,1));\nconst float camera_distance = 1.5;\nconst float sphere_radius = 0.5;\nconst vec3 planen = vec3(0,1,0);\nconst float plane_halfsize = 3.0; // floor \"rectangle\"\n\n// Animate sphere positions\nvec3 sphere_center(int n) {\n    vec3 p;\n    // rotate around the world center, sphere bottom touching the floor\n    p.x = sin(iTime + float(n)*2.*PI/3.)*(sphere_radius + abs(sin(iTime))*sphere_radius);\n    p.z = cos(iTime + float(n)*2.*PI/3.)*(sphere_radius + abs(sin(iTime))*sphere_radius);\n    p.y = sphere_radius;\n\n    // and.. bounce!\n    float ifreq = 2.*PI;\n    float dur = 0.75;\n    float t = (mod(iTime, ifreq) - (ifreq-dur)) / dur; // [0,1] if bouncing\n    if(t >= 0.0) p.y += abs(sin(t*PI)*sphere_radius*2.); // jump!\n    return p;\n}\n\n// Let's use full 4x4 transformation matrices here.\n//\n// One way is think them as 4 x vec4: \n//      vec4(xaxis.xyz, translation.x)\n//      vec4(yaxis.xyz, translation.y)\n//      vec4(zaxis.xyz, translation.z)\n//      vec4(0, 0, 0,   1.0)\n//\n// TODO: open more?\n// TODO: looking \"top-down\" 4D vector .w component is \n//     0.0 for directions (X/Y/Z) and\n//     1.0 for locations (T)\n\n// Look from origin \"o\" to target point \"p\" with up vector \"up\"\nmat4 lookat(in vec3 o, in vec3 p, in vec3 up)\n{\n    vec3 delta = p - o;\n    vec3 z = normalize(delta); // the direction to look at (Z-axis)\n    vec3 x = normalize(cross(z, up)); // -> to-right direction (X-axis)\n    vec3 y = normalize(cross(x, z)); // -> to-up direction (Y-axis)\n\n    // let's do it \"unwrapped\" for now..\n    mat4 translation = mat4(\n        vec4(1, 0, 0, -o.x),\n        vec4(0, 1, 0, -o.y),\n        vec4(0, 0, 1, -o.z),\n        vec4(0, 0, 0, 1));\n        \n    mat4 rotation = mat4(\n        vec4(x.xyz, 0),\n        vec4(y.xyz, 0),\n        vec4(z.xyz, 0),\n        vec4(0,0,0, 1));\n\n    return rotation * translation;\n}\n\n// Transform a 3D direction vector by a 4x4 matrix\nvec3 transform_dir(vec3 dir, mat4 m) {\n    return (m * vec4(dir, 0.0)).xyz;\n}\n\n// Find an intersection between ray ro+t*rd, where t=[0, <NOHIT]\n// and a sphere located at \"p\" with radius \"r\".\n//\n// If hits, returns \"t\", otherwise NOHIT.\nfloat isect_ray_sphere(in vec3 ro, in vec3 rd, in vec3 p, in float r) {\n    vec3 oc = ro - p;\n    float b = dot(oc, rd);\n    float c = dot(oc, oc) - r*r;\n    float t = b*b - c;\n    float t2 = (t > 0.0) ? -b - sqrt(t) : NOHIT;\n    return (t2 > 0.0) ? t2 : NOHIT;\n}\n\n// Find an intersection between ray ro+t*rd, where t=[0, <NOHIT]\n// and a plane going through point \"p\" with normal \"n\".\n//\n// If hits, returns t >= 0.0, otherwise NOHIT.\nfloat isect_ray_plane(in vec3 ro, in vec3 rd, in vec3 p, in vec3 n) {\n    \n    float denom = dot(rd, -n);\n    return (denom > 0.0) ? -dot(p - ro, n) / denom : NOHIT;\n}\n\n// Sample background from cubemap\nvec3 background(vec3 dir) {\n    return texture(iChannel1, dir.xyz).xyz; \n}\n\n// Returns \"t\" if hits something, otherwise NOHIT\nfloat hit(in vec3 ro, in vec3 rd, out vec3 hitp, out vec3 hitn, out int id) {\n    // scene: 3 spheres + plane\n    vec3 scenter1 = sphere_center(0);\n    vec3 scenter2 = sphere_center(1);\n    vec3 scenter3 = sphere_center(2);\n\n    float sphe1_t = isect_ray_sphere(ro, rd, scenter1, sphere_radius);\n    float sphe2_t = isect_ray_sphere(ro, rd, scenter2, sphere_radius);\n    float sphe3_t = isect_ray_sphere(ro, rd, scenter3, sphere_radius);\n    float plane_t = isect_ray_plane(ro, rd, vec3(0,0,0), planen);\n    \n    float t = min(sphe1_t, min(sphe2_t, min(sphe3_t, plane_t))); // closest hit or NOHIT\n    hitp = ro + t*rd; // world hit point\n\n    // object id + world hit normal\n    if( t == NOHIT   ) { id = ID_NONE;     hitn = -rd; } else\n    if( t == sphe1_t ) { id = ID_SPHERE01; hitn = normalize(hitp - scenter1); } else\n    if( t == sphe2_t ) { id = ID_SPHERE02; hitn = normalize(hitp - scenter2); } else\n    if( t == sphe3_t ) { id = ID_SPHERE03; hitn = normalize(hitp - scenter3); } else\n    if( t == plane_t ) { id = ID_PLANE;    hitn = planen; } \n\n    // add some epsilon to position to compensate floating point inaccuracies\n    hitp += EPSILON*hitn;\n    return t;\n}\n\n// path tracing\nvec3 trace(in vec3 ro, in vec3 rd) {\n    const int maxdepth = 3;\n    for(int depth=0; depth < maxdepth; ++depth) {\n        int id;\n        vec3 hitp; // world position of hit point\n        vec3 hitn; // world normal of hit point\n        float t = hit(ro, rd, hitp, hitn, id); // sets \"hitp\", \"hitn\", \"id\"\n\n        switch(id) {\n            case ID_SPHERE01:\n            case ID_SPHERE02:\n            case ID_SPHERE03: {\n                // hits a sphere - 100% reflective, so continue path to reflection direction\n                vec3 reflection = normalize(reflect(rd, hitn)); // reflect the ray around sphere normal\n                ro = hitp;\n                rd = reflection;\n                break;\n            }\n            default:\n                // make up rectangular floor plane area\n                if( id == ID_PLANE && abs(hitp.x) < plane_halfsize && abs(hitp.z) < plane_halfsize ) { \n                    vec3 unused_p; vec3 unused_n; int unused_id;\n                    float shadowhitt = hit(hitp, sun_dir, unused_p, unused_n, unused_id); // shadow from sun, 1.0 if unblocked\n                    vec3 shadowmul = mix(vec3(0.5), vec3(1), min(1.0, 0.25*shadowhitt)); // fake gradient by shadower distance\n                    vec3 tex = texture(iChannel0, hitp.xz).xyz; // sample 2D floor texture\n                    return shadowmul * tex;\n                } else { \n                    // misses scene objects -> background, terminate path\n                    return background(rd);\n                }\n        }\n    }\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord)\n{\n    vec2 rotation = iMouse.xy / iResolution.xy; rotation.y = 1.0 - rotation.y; // Mouse [0,1] + tweak\n    vec2 p = (2.0*fragCoord.xy - iResolution.xy) / iResolution.y; // Pixel coordinates y=[-1,1], x=[-1*aspect,1*aspect] where aspect=width/height\n    \n    vec3 ro = vec3(sin(-rotation.x*PI)*camera_distance, 1.1 + cos(-rotation.y*PI)*1.0, cos(-rotation.x*PI)*camera_distance); // Mouse rotation around the sphere -> ray origin (camera position)\n    mat4 m = lookat(ro, vec3(0,sphere_radius,0), vec3(0,1,0)); // Camera->World transformation matrix\n    vec3 ldir = normalize(vec3(p, 1.0)); // Local ray direction (Camera Space)\n    vec3 rd = transform_dir(ldir, m); // -> World Space\n\n    vec3 c = trace(ro, rd);\n\n    fragColor = vec4(c, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

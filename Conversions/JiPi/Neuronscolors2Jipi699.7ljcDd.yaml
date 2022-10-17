@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Neuronscolors2Jipi699
+  id: Neuronscolors2Jipi699
+  kernel: Neuronscolors2Jipi699
+  name: Neuronscolors2Jipi699
+shader:
+  author: N.N.
+  description: neuron
+  id: 7ljcDd
+  name: NeuronsColors2 JiPi699
+  parent:
+    id: 7tByWd
+    name: neurons colors2
+    url: https://www.shadertoy.com/view/7tByWd
+  tags:
+  - neuron
+  url: https://www.shadertoy.com/view/7ljcDd

@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: ReactionDiffusionLighting
+  id: ReactionDiffusionLighting
+  kernel: ReactionDiffusionLighting
+  name: ReactionDiffusionLighting
+shader:
+  author: ml
+  description: basic reaction diffusion. Move the mouse to change the lighting direction.
+  id: 7dBBRG
+  name: reaction diffusion + lighting
+  tags:
+  - lighting
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/7dBBRG

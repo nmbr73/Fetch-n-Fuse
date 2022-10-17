@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: LichenGrowthV2
+  id: LichenGrowthV2
+  kernel: LichenGrowthV2
+  name: LichenGrowthV2
+shader:
+  author: andrinr
+  description: 'Updated version of: https://www.shadertoy.com/view/ttdcWM
+
+    some finetuning'
+  id: Wt3yzB
+  name: Lichen Growth V2
+  tags:
+  - automata
+  - cells
+  - gameoflife
+  - growth
+  - lichen
+  url: https://www.shadertoy.com/view/Wt3yzB

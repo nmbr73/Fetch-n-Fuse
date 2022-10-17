@@ -1,0 +1,81 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7d3BRr",
+  "date": "0",
+  "viewed": 0,
+  "name": "feedback practice JiPi",
+  "description": "Trying to get along with the feedback loops and stuff like that.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "gradient",
+   "blob",
+   "loop",
+   "feedback",
+   "irridescent"
+  ],
+  "hasliked": 0,
+  "parentid": "sdVyDK",
+  "parentname": "feedback practice "
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tfragColor = texture(iChannel0, uv);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Hue to RGB function from Fabrice's shadertoyunofficial blog:\n#define hue2rgb(hue) 0.6 + 0.6 * cos(6.3 * hue + vec3(0.0, 23.0, 21.0))\n\nconst float radius = 0.15;\nconst vec2 center = vec2(0.0);\n\n\nvec3 irri(float hue) {\n  return .5+ .5 *cos(( 9.*hue)+ vec3(0,23.,21.));\n}\n\nconst float numOfBalls = 10.;\nconst float distanceTraveled = 1.5;\nconst float speed = .8;\nconst float rotationSpeed = .5;\n\nfloat metaballs(vec2 uv, float time) {\t\t\t\t\t\t\t\t\t\n    float size = .9;\t\t\t\t\t\n    const float startIndex = numOfBalls;\n\tconst float endIndex = numOfBalls * 2.;\n    \n    for(float i = startIndex; i < endIndex; i++) {\t\t\t\t\t// create x number of balls\t\t\t\t\t\t\t\t\t\t\t// get rads for control point\n        float radius = distanceTraveled * sin(time + i * 2.);\t\t// calculate radius\n        vec2 ball = radius * vec2(sin(i), cos(i));\t\t\t\t\t// ball position\n\t\tsize += 1. / pow(i, distance(uv, ball));\t\t\t\t\t// metaball calculation\n    }\n    return size;\n}\n\nfloat aastep(float threshold, float value) {\n\n    float afwidth = length(vec2(dFdx(value), dFdy(value))) / max(iResolution.x,iResolution.y);\n    return smoothstep(threshold-afwidth, threshold+afwidth, value);\n \n}\n\n#define R iResolution\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord) {\n    vec2 screenCenter = 0.5 * iResolution.xy;\n    vec2 uv = (fragCoord - screenCenter) / iResolution.y;\n    \n    \n     float zoom = .99;\n     vec2 direction = vec2(-0.0025,0.0025)*0.;\n     vec4 previousColor =  texture(iChannel0, ((fragCoord - screenCenter) * zoom / iResolution.xy + 0.5)+direction);\n     float edgeSmoothing = 1./max(iResolution.x,iResolution.y);\n      //previousColor *= iFeedbackFadeRate;\n      vec2 off = vec2(sin(iTime)*.5,0.);\n      float blob = metaballs((uv+off)*8., iTime);\n      float shape = smoothstep(\n        1.,\n        1.+ edgeSmoothing,\n        blob\n      );\n      shape = aastep(1.-sin(iTime)*.5+.5, blob);\n      //shape = smoothstep(dFdx(uv.y),1.-dFdx(uv.y),shape);\n      vec3 col = irri(shape+ iTime *.25);\n      vec4 newColor = vec4(shape*col,1.);\n      vec4 color = max(previousColor,newColor);\n      // color.xyz += shape*irri(iTime*0.1)*1.1;\n      color = clamp(color, 0., 1.);\n      //fragColor += (1.-fragColor.a) * vec4( color.rgb, 1 ) *color.a;\n      \n      fragColor = color*.95;\n      \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

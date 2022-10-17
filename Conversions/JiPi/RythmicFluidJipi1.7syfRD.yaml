@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: RythmicFluidJipi1
+  id: RythmicFluidJipi1
+  kernel: RythmicFluidJipi1
+  name: RythmicFluidJipi1
+shader:
+  author: N.N.
+  description: Neuaufbau
+  id: 7syfRD
+  name: rythmic fluid JiPi1
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/7syfRD

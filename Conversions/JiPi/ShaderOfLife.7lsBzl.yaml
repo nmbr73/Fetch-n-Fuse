@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ShaderOfLife
+  id: ShaderOfLife
+  kernel: ShaderOfLife
+  name: ShaderOfLife
+shader:
+  author: Yetman
+  description: Yet another implementation of Conway's Game of Life.
+  id: 7lsBzl
+  name: Shader of Life
+  tags:
+  - 2d
+  - conway
+  - gameoflife
+  - multipass
+  - automaton
+  url: https://www.shadertoy.com/view/7lsBzl

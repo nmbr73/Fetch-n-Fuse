@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: AbasicfluidJipi
+  id: AbasicfluidJipi
+  kernel: AbasicfluidJipi
+  name: AbasicfluidJipi
+shader:
+  author: N.N.
+  description: Basic fluid simulation, with a high vorticity confinement, the result
+    looks interesting (although pretty wrong)
+  id: 7ltBWH
+  name: ABasicFluid JiPi
+  parent:
+    id: ws2BDK
+    name: ABasicFluid
+    url: https://www.shadertoy.com/view/ws2BDK
+  tags:
+  - fluid
+  - navierstokes
+  - gridbased
+  url: https://www.shadertoy.com/view/7ltBWH

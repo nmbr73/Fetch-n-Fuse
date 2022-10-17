@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: SupahnoiseylinesJipi
+  id: SupahnoiseylinesJipi
+  kernel: SupahnoiseylinesJipi
+  name: SupahnoiseylinesJipi
+shader:
+  author: N.N.
+  description: Noisey lines
+  id: st3BDS
+  name: SupahNoiseyLines JiPi
+  parent:
+    id: 7dcSzN
+    name: Supah Noisey lines
+    url: https://www.shadertoy.com/view/7dcSzN
+  tags:
+  - noise
+  - lines
+  - wallpaper
+  - supah
+  url: https://www.shadertoy.com/view/st3BDS

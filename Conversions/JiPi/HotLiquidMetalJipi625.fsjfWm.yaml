@@ -1,0 +1,35 @@
+fuse:
+  author: JiPi
+  file: HotLiquidMetalJipi625
+  id: HotLiquidMetalJipi625
+  kernel: HotLiquidMetalJipi625
+  name: HotLiquidMetalJipi625
+shader:
+  author: N.N.
+  description: 'A variation of [url=https://www.shadertoy.com/view/ldy3D1]Liquid stuff
+    2[/url]...
+
+
+    Controls:
+
+    - Mouse: draw colliders;
+
+    - Mouse + SPACE: erase colliders;
+
+    - LEFT / RIGHT: rotate the gravity;
+
+    - DOWN: invert the gravity;
+
+    - R: reset the scene.'
+  id: fsjfWm
+  name: Hot liquid metal JiPi 625
+  parent:
+    id: 4sKGDK
+    name: Hot liquid metal
+    url: https://www.shadertoy.com/view/4sKGDK
+  tags:
+  - 2d
+  - fluid
+  - liquid
+  - physics
+  url: https://www.shadertoy.com/view/fsjfWm

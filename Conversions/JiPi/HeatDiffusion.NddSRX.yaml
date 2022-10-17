@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: HeatDiffusion
+  id: HeatDiffusion
+  kernel: HeatDiffusion
+  name: HeatDiffusion
+shader:
+  author: elamolo
+  description: you must input a normal distribution texture in buffer A iChannel1,
+    and a jet-colourmap texture in buffer A ichannel2.
+  id: NddSRX
+  name: heat diffusion
+  tags:
+  - heat
+  url: https://www.shadertoy.com/view/NddSRX

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: VirtualParticleAdvection
+  id: VirtualParticleAdvection
+  kernel: VirtualParticleAdvection
+  name: VirtualParticleAdvection
+shader:
+  author: michael0884
+  description: 'Cellular automaton particle tracking used for advection in a fluid(WIP)
+    which is also fully conservative
+
+    Each pixel has 1 virtual particle
+
+    WIP'
+  id: WtfyW7
+  name: Virtual particle advection
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/WtfyW7

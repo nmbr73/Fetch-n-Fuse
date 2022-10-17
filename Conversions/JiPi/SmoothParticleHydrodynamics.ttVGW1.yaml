@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: SmoothParticleHydrodynamics
+  id: SmoothParticleHydrodynamics
+  kernel: SmoothParticleHydrodynamics
+  name: SmoothParticleHydrodynamics
+shader:
+  author: wyatt
+  description: '[url]JAVASCRIPT: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<4;i++)E.P.apply(this,A);};if(!H)close();[/url]'
+  id: ttVGW1
+  name: Smooth Particle Hydrodynamics
+  tags:
+  - fluid
+  - particles
+  url: https://www.shadertoy.com/view/ttVGW1

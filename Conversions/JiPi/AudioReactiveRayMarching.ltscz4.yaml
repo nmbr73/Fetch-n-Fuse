@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: AudioReactiveRayMarching
+  id: AudioReactiveRayMarching
+  kernel: AudioReactiveRayMarching
+  name: AudioReactiveRayMarching
+shader:
+  author: wizgrav
+  description: clubber mod of https://www.shadertoy.com/view/4t2SWW
+  id: ltscz4
+  name: Audio Reactive Ray Marching
+  tags:
+  - ray
+  - experiment
+  - marching
+  - '35'
+  url: https://www.shadertoy.com/view/ltscz4

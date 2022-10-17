@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: BuildingSmasher
+  id: BuildingSmasher
+  kernel: BuildingSmasher
+  name: BuildingSmasher
+shader:
+  author: michael0884
+  description: 'Tracking the deformation gradient to model solid bodies. Yeah, no
+    actual particles here.  Only particle distributions.
+
+    SPACE - zoom in
+
+    Use plugin to accelerate simulation
+
+    '
+  id: wdGcRK
+  name: Building smasher
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/wdGcRK

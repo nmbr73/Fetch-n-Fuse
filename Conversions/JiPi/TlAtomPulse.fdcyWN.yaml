@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TlAtomPulse
+  id: TlAtomPulse
+  kernel: TlAtomPulse
+  name: TlAtomPulse
+shader:
+  author: fpiaggio
+  description: TL // CIRCLE ROTATE
+  id: fdcyWN
+  name: TL // Atom Pulse
+  tags:
+  - tlcirclerotate
+  url: https://www.shadertoy.com/view/fdcyWN

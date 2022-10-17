@@ -1,0 +1,92 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftdyzj",
+  "date": "0",
+  "viewed": 0,
+  "name": "SimpleWaterRippleEffect JiPi",
+  "description": "A simple application of the (slightly modified) wave function. Click to make a water displacement.\n\nThe ripple is pretty slow at a 60hz refresh rate, but I think making it faster would mean sampling more pixels each frame.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "ripple",
+   "wavefunction"
+  ],
+  "hasliked": 0,
+  "parentid": "wdtyDH",
+  "parentname": "Simple Water Ripple Effect"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n\n    vec4 data = texture(iChannel0, uv);\n    \n    // Brightness = water height\n    //fragColor.xyz = vec3(data.x + 1.0) / 2.0;\n    \n    // Color = texture\n    fragColor = texture(iChannel1, uv + 0.2 * data.zw);\n    \n    // Sunlight glint\n    vec3 normal = normalize(vec3(-data.z, 0.2, -data.w));\n    fragColor += vec4(1) * pow(max(0.0, dot(normal, normalize(vec3(-3, 10, 3)))), 60.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Make this a smaller number for a smaller timestep.\n// Don't make it bigger than 1.4 or the universe will explode.\nconst float delta = 1.0;\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    if (iFrame == 0) {fragColor = vec4(0); return;}\n    \n    float pressure = texelFetch(iChannel0, ivec2(fragCoord), 0).x;\n    float pVel = texelFetch(iChannel0, ivec2(fragCoord), 0).y;\n\n    float p_right = texelFetch(iChannel0, ivec2(fragCoord) + ivec2(1, 0), 0).x;\n    float p_left = texelFetch(iChannel0, ivec2(fragCoord) + ivec2(-1, 0), 0).x;\n    float p_up = texelFetch(iChannel0, ivec2(fragCoord) + ivec2(0, 1), 0).x;\n    float p_down = texelFetch(iChannel0, ivec2(fragCoord) + ivec2(0, -1), 0).x;\n    \n    // Change values so the screen boundaries aren't fixed.\n    if (fragCoord.x == 0.5) p_left = p_right;\n    if (fragCoord.x == iResolution.x - 0.5) p_right = p_left;\n\tif (fragCoord.y == 0.5) p_down = p_up;\n    if (fragCoord.y == iResolution.y - 0.5) p_up = p_down;\n\n    // Apply horizontal wave function\n    pVel += delta * (-2.0 * pressure + p_right + p_left) / 4.0;\n    // Apply vertical wave function (these could just as easily have been one line)\n    pVel += delta * (-2.0 * pressure + p_up + p_down) / 4.0;\n    \n    // Change pressure by pressure velocity\n    pressure += delta * pVel;\n    \n    // \"Spring\" motion. This makes the waves look more like water waves and less like sound waves.\n    pVel -= 0.005 * delta * pressure;\n    \n    // Velocity damping so things eventually calm down\n    pVel *= 1.0 - 0.002 * delta;\n    \n    // Pressure damping to prevent it from building up forever.\n    pressure *= 0.999;\n    \n    //x = pressure. y = pressure velocity. Z and W = X and Y gradient\n    fragColor.xyzw = vec4(pressure, pVel, (p_right - p_left) / 2.0, (p_up - p_down) / 2.0);\n    \n    \n    if (iMouse.z > 1.0) {\n        float dist = distance(fragCoord, iMouse.xy);\n        if (dist <= 20.0) {\n            fragColor.x += 1.0 - dist / 20.0;\n        }\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

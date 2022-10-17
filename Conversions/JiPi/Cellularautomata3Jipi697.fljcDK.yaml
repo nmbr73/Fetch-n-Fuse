@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Cellularautomata3Jipi697
+  id: Cellularautomata3Jipi697
+  kernel: Cellularautomata3Jipi697
+  name: Cellularautomata3Jipi697
+shader:
+  author: N.N.
+  description: press r to reset with a circle
+  id: fljcDK
+  name: CellularAutomata3 JiPi697
+  parent:
+    id: fdXXRf
+    name: Cellular automata 3
+    url: https://www.shadertoy.com/view/fdXXRf
+  tags:
+  - cool
+  url: https://www.shadertoy.com/view/fljcDK

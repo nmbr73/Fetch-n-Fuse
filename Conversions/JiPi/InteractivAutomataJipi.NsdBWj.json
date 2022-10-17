@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NsdBWj",
+  "date": "0",
+  "viewed": 0,
+  "name": "Interactiv Automata JiPi",
+  "description": "Click and move the mouse for a bit of fun :)\npress r to reset ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cellularautomata"
+  ],
+  "hasliked": 0,
+  "parentid": "ssBXDy",
+  "parentname": "Interactive automata"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Code forked from Inigo Quilez's game of life shader\n// https://www.shadertoy.com/view/XstGRf\n// Reset code stolen from somewhere else - sorry!\n// (Press R to reset shader)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n//fragColor = vec4( 1. - step(3. * texelFetch( iChannel0, ivec2(fragCoord), 0 ).x ,0.2));\nfloat x =  texelFetch( iChannel0, ivec2(fragCoord), 0 ).x;\n\nx = min(x,1.);\nx = 4. * x * (1. - x);\nvec3 col = vec3(34.,32.,52.) / 255.;\nvec3 col2 = vec3(69.,40.,60.) / 255.;\nvec3 col3 = vec3(172.,50.,50.) / 255.;\nvec3 col4 = vec3(223.,113.,38.) / 255.;\nvec3 col5 = vec3(255.,182.,45.) / 255.;\nvec3 col6 = vec3(251.,242.,54.) / 255.;\n\n//vec3 col6 = vec3(1.);\nfloat m = 1. / 7.;\nif (x < m)\nfragColor = vec4(col,1.);\nelse if (x < 2. * m)\nfragColor = vec4(col2,1.);\nelse if (x < 3. * m)\nfragColor = vec4(col3,1.);\nelse if (x < 4. * m)\nfragColor = vec4(col4,1.);\nelse if (x < 5. * m)\nfragColor = vec4(col5,1.);\nelse if (x < 6. * m)\nfragColor = vec4(col6,1.);\nelse\nfragColor = vec4(col,1.);\n\n//fragColor = max(fragColor,4. * x * (1. -x));\n//fragColor = vec4(x,x,x,1.);\n\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define KEYBOARD iChannel1\n#define KEY_RESET 82\n\n\nfloat Cell( in ivec2 p )\n{\n    // do wrapping\n    ivec2 r = ivec2(textureSize(iChannel0, 0));\n    p = (p+r) % r;\n    \n    // fetch texel\n   // return (texelFetch(iChannel0, p, 0 ).x > 0.5 ) ? 1 : 0;\n   return texelFetch(iChannel0, p, 0 ).x;\n}\n\nfloat hash1( float n )\n{\n    return fract(sin(n)*138.5453123);\n}\n\nbool key_down(int key) {\n    return int(texelFetch(KEYBOARD, ivec2(key, 0), 0).x) == 1;\n}\n\nfloat S(float x)\n{\nreturn step(0.5,x);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\nivec2 px = ivec2( fragCoord );\n    \nif (key_down(KEY_RESET) || iFrame == 0)\n{    \nfloat d = length(fragCoord / iResolution.y - vec2(0.875, 0.5));\n   float g = hash1(fragCoord.x * 13.0  + 10.131 * iTime + 100.19414 + hash1(fragCoord.y*73.1 + 1931.1));\n    g = step(0.995,g);\nfragColor = vec4(g, 0.0, 0.0, 0.0 );\nreturn;\n}\n    \n// center cell\nfloat e = Cell(px); \n\n// neighbour cells\nfloat t = Cell(px + ivec2(0,-1));\nfloat b = Cell(px + ivec2(0,1));\nfloat l = Cell(px + ivec2(-1,0));\nfloat r = Cell(px + ivec2(1,0));   \n\n// \"average\" of neighbours\nfloat k = max(0.5 * (t + b), 0.5 * (l + r));\n\n// difference between \"average\" and center\nfloat j = abs(e - k);\n\n// this stuff makes a completely different automata\n/*\nfloat  count = 2. * (step(e,t) + step(e,b) + step(e,l) + step(e,r))  -4.;\nif (count >= -1.)\ne += 8. * k * e * e * j; // change 8. and 2. for better results\nelse if (count < 0.)\ne -= 2. * j;\n*/\n\n// slightly different pattern:\n// if (e <= 0.05) // 0.04 works well too\n// e =  k +  (30. + 10. * hash1(e)) * e * j;\nfloat m = 0.;\nfloat olde = e;\n\n/*\nfloat c = 0.5 * (1. + cos(1. * iTime));\nfloat ux = fragCoord.x / iResolution.y;\nfloat uy = fragCoord.y / iResolution.y;\nux = 4. * ux * (1.-ux);\nuy = 4. * uy * (1.-uy);\n*/\nif (j < 0.15 && e < 0.9)\ne = (7.2 + 0.2 * e) * j ;\n\n//e =  k * max(e,1. - 16. * e * e * (1.-e) * (1.-e));\ne = k * max(e, 1. - 8. * e * (1.-e));\ne = max(1.001 * e, (0.88 + 1.4 * sign(k-e) * (0.5 + 0.9 * olde) * j) * k);\n\ne *= 1. - 0.9 * olde * e *  j * k;// 0.99 * (1. - 0.2 * e * j);\n\nfloat lth = length(fragCoord - iMouse.xy);\nif (lth < 100.) // 200. * j // or k\n e *= pow(lth / 100.,2.);\n //e *= pow(lth / (200. * j), 2.);\n\ne = max(0., min(1.,e));\nfragColor = vec4( e, 0.0, 0.0, 0.0 );\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

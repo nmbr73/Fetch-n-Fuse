@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: CloudFlight
+  id: CloudFlight
+  kernel: CloudFlight
+  name: CloudFlight
+shader:
+  author: Shane
+  description: Moving a camera through a cloud scene. It's rendered in a surreal,
+    stylized fashion, and utilizes a relatively cheap construction process.
+  id: XtlfDn
+  name: Cloud Flight
+  tags:
+  - raymarching
+  - noise
+  - volume
+  - clouds
+  - camera
+  - sky
+  url: https://www.shadertoy.com/view/XtlfDn

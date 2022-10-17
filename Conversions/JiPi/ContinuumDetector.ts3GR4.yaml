@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: ContinuumDetector
+  id: ContinuumDetector
+  kernel: ContinuumDetector
+  name: ContinuumDetector
+shader:
+  author: wyatt
+  description: weighted diffusion
+  id: ts3GR4
+  name: Continuum Detector
+  tags:
+  - diffusion
+  url: https://www.shadertoy.com/view/ts3GR4

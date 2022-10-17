@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: TwistedTime
+  id: TwistedTime
+  kernel: TwistedTime
+  name: TwistedTime
+shader:
+  author: dr2
+  description: Shows day, date and time, with a twist (mouse enabled)
+  id: XlsyWH
+  name: Twisted Time
+  tags:
+  - voronoi
+  - font
+  - calendar
+  url: https://www.shadertoy.com/view/XlsyWH

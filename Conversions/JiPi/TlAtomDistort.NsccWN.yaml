@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TlAtomDistort
+  id: TlAtomDistort
+  kernel: TlAtomDistort
+  name: TlAtomDistort
+shader:
+  author: fpiaggio
+  description: TL // ATOM DISTORT
+  id: NsccWN
+  name: TL // ATOM DISTORT
+  tags:
+  - tlatomdistort
+  url: https://www.shadertoy.com/view/NsccWN

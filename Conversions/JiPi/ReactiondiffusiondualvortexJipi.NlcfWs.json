@@ -1,0 +1,105 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NlcfWs",
+  "date": "0",
+  "viewed": 0,
+  "name": "ReactionDiffusionDualVortex JiPi",
+  "description": "forked from https://www.shadertoy.com/view/MlKXDw by https://www.shadertoy.com/user/antonOTI\n\nadded a vortex pair texture warp on mouse drag.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "planedeformation",
+   "reactiondiffusion"
+  ],
+  "hasliked": 0,
+  "parentid": "lsfcD7",
+  "parentname": "reaction diffusion + dual vortex"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define _Smooth(p,r,s) smoothstep(-s, s, p-(r))\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 state = texture(iChannel0,uv);\n\tfragColor =  vec4(0.,state.y,state.y/state.x,1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define pi2_inv 0.159154943091895335768883763372\n\nvec2 complex_mul(vec2 factorA, vec2 factorB){\n    return vec2( factorA.x*factorB.x - factorA.y*factorB.y, factorA.x*factorB.y + factorA.y*factorB.x);\n}\n\nvec2 spiralzoom(vec2 domain, vec2 center, float n, float spiral_factor, float zoom_factor, vec2 pos){\n    vec2 uv = domain - center;\n    float d = length(uv);\n    return vec2( atan(uv.y, uv.x)*n*pi2_inv + d*spiral_factor, -log(d)*zoom_factor) + pos;\n}\n\nvec2 complex_div(vec2 numerator, vec2 denominator){\n    return vec2( numerator.x*denominator.x + numerator.y*denominator.y,\n                numerator.y*denominator.x - numerator.x*denominator.y)/\n        vec2(denominator.x*denominator.x + denominator.y*denominator.y);\n}\n\nfloat circle(vec2 uv, vec2 aspect, float scale){\n    return clamp( 1. - length((uv-0.5)*aspect*scale), 0., 1.);\n}\n\nfloat sigmoid(float x) {\n    return 2./(1. + exp2(-x)) - 1.;\n}\n\nfloat smoothcircle(vec2 uv, vec2 aspect, float radius, float ramp){\n    return 0.5 - sigmoid( ( length( (uv - 0.5) * aspect) - radius) * ramp) * 0.5;\n}\n\nfloat conetip(vec2 uv, vec2 pos, float size, float min)\n{\n    vec2 aspect = vec2(1.,iResolution.y/iResolution.x);\n    return max( min, 1. - length((uv - pos) * aspect / size) );\n}\n\nfloat warpFilter(vec2 uv, vec2 pos, float size, float ramp)\n{\n    return 0.5 + sigmoid( conetip(uv, pos, size, -16.) * ramp) * 0.5;\n}\n\nvec2 vortex_warp(vec2 uv, vec2 pos, float size, float ramp, vec2 rot)\n{\n    vec2 aspect = vec2(1.,iResolution.y/iResolution.x);\n\n    vec2 pos_correct = 0.5 + (pos - 0.5);\n    vec2 rot_uv = pos_correct + complex_mul((uv - pos_correct)*aspect, rot)/aspect;\n    float _filter = warpFilter(uv, pos_correct, size, ramp);\n    return mix(uv, rot_uv, _filter);\n}\n\nvec2 vortex_pair_warp(vec2 uv, vec2 pos, vec2 vel)\n{\n    vec2 aspect = vec2(1.,iResolution.y/iResolution.x);\n    float ramp = 8.;\n\n    float d = 0.1;\n\n    float l = length(vel);\n    vec2 p1 = pos;\n    vec2 p2 = pos;\n\n    if(l > 0.){\n        vec2 normal = normalize(vel.yx * vec2(-1., 1.))/aspect;\n        p1 = pos - normal * d / 2.;\n        p2 = pos + normal * d / 2.;\n    }\n\n    float w = l / d * 2.;\n\n    // two overlapping rotations that would annihilate when they were not displaced.\n    vec2 circle1 = vortex_warp(uv, p1, d, ramp, vec2(cos(w),sin(w)));\n    vec2 circle2 = vortex_warp(uv, p2, d, ramp, vec2(cos(-w),sin(-w)));\n    return (circle1 + circle2) / 2.;\n}\n\nvec2 mouseDelta(){\n    vec2 pixelSize = 1. / iResolution.xy;\n    float eighth = 1./8.;\n    vec4 oldMouse = texture(iChannel2, vec2(7.5 * eighth, 2.5 * eighth));\n    vec4 nowMouse = vec4(iMouse.xy * pixelSize.xy, iMouse.zw * pixelSize.xy);\n    if(oldMouse.z > pixelSize.x && oldMouse.w > pixelSize.y && \n       nowMouse.z > pixelSize.x && nowMouse.w > pixelSize.y)\n    {\n        return nowMouse.xy - oldMouse.xy;\n    }\n    return vec2(0.);\n}\n\n// below code is forked from https://www.shadertoy.com/view/MlKXDw\n#define sample(x,y) texture(iChannel0, (uv + vec2(x,y) / iResolution.xy))\n\nvec2 difRate = vec2(1.,.25);\n\n#define FEED .0367;\n#define KILL .0649;\n\nfloat zoom = .9997;\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    vec2 texel = 1. / iResolution.xy;\n\n// begin Felix' edit to the original by Cornus Ammonis\n    vec2 mouseV = mouseDelta();\n    vec2 aspect = vec2(1.,texel.x/texel.y);\n    if(length(mouseV)==0. && iFrame > 4*1024){\n        fragColor = texture(iChannel0, uv);\n        return;\n    }\n    uv = vortex_pair_warp(uv, iMouse.xy*texel, mouseV*aspect*1.);\n// end      \n    \n    uv =( uv - vec2(.5)) * zoom + vec2(.5);\n    vec4 current = sample(0.,0.);\n    \n    vec4 cumul = current * -1.;\n    \n    cumul += (   sample( 1., 0.) \n               + sample(-1., 0.) \n               + sample( 0., 1.) \n               + sample( 0.,-1.)\n             ) * .2;\n\n    cumul += (\n        sample( 1, 1) +\n        sample( 1,-1) +\n        sample(-1, 1) +\n        sample(-1,-1) \n       )*.05;\n    \n    \n    float feed = FEED;\n    float kill = KILL;\n    \n    float dist = distance(uv,vec2(.5)) - .34;\n    kill = kill + step(0.,dist) * dist*.25;\n    \n    vec4 lap =  cumul;\n    float newR = current.r + (difRate.r * lap.r - current.r * current.g * current.g + feed * (1. - current.r));\n    float newG = current.g + (difRate.g * lap.g + current.r * current.g * current.g - (kill + feed) * current.g);\n    \n    newR = clamp(newR,0.,1.);\n    newG = clamp(newG,0.,1.);\n    \n    current = vec4(newR,newG,0.,1.);\n    \n    \n        uv = (fragCoord / iResolution.y) -  vec2(iResolution.x /iResolution.y * .5,.5);\n    \tfloat f = step(length(uv),.25) - step(length(uv),.24);\n    \tf *=  .25 + fract(atan(uv.y,uv.x)*.5 + iTime*.5) * .25 * sin(iTime*.1);\n        current = max(current, vec4(0.,1.,0.,1.) * f);\n    \n    if(iMouse.z > .5)\n    {\n        uv = (fragCoord - iMouse.xy) / iResolution.xy;\n//        current = max(current,vec4(1.) * step(dot(uv,uv),.001225));\n    }\n    \n    fragColor = current;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec2 pixelSize = 1. / iResolution.xy;\n    float eighth = 1./8.;\n    if(uv.x > 7.*eighth && uv.x < 8.*eighth && uv.y > 2.*eighth && uv.y < 3.*eighth)\n    {\n        fragColor = vec4(iMouse.xy * pixelSize.xy, iMouse.zw * pixelSize.xy);\n    }\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

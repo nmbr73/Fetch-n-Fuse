@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: WatersurfacesimulationJipi
+  id: WatersurfacesimulationJipi
+  kernel: WatersurfacesimulationJipi
+  name: WatersurfacesimulationJipi
+shader:
+  author: N.N.
+  description: 'A minimalist grid based water simulation that accounts for the dispersion
+    relation of surface gravity waves.
+
+    '
+  id: Ntyyzt
+  name: WaterSurfaceSimulation JiPi
+  parent:
+    id: wl3cDj
+    name: ' Water Surface Simulation'
+    url: https://www.shadertoy.com/view/wl3cDj
+  tags:
+  - wave
+  - simulation
+  - water
+  url: https://www.shadertoy.com/view/Ntyyzt

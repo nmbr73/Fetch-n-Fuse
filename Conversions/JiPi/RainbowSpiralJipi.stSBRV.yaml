@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: RainbowSpiralJipi
+  id: RainbowSpiralJipi
+  kernel: RainbowSpiralJipi
+  name: RainbowSpiralJipi
+shader:
+  author: N.N.
+  description: Fork from https://www.shadertoy.com/view/MdlXRS
+  id: stSBRV
+  name: Rainbow Spiral JiPi
+  parent:
+    id: 7ljBRy
+    name: Rainbow Spiral (Noise Animation)
+    url: https://www.shadertoy.com/view/7ljBRy
+  tags:
+  - spiral
+  - noice
+  - animation
+  - loop
+  - rainbow
+  - weel
+  url: https://www.shadertoy.com/view/stSBRV

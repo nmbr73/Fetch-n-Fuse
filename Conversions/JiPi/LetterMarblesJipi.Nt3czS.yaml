@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: LetterMarblesJipi
+  id: LetterMarblesJipi
+  kernel: LetterMarblesJipi
+  name: LetterMarblesJipi
+shader:
+  author: N.N.
+  description: Used the font texture finally. also first try doing dof and transmission
+    rays. Tried to fix using inout
+  id: Nt3czS
+  name: Letter Marbles JiPi
+  parent:
+    id: Nt3yW4
+    name: Letter Marbles
+    url: https://www.shadertoy.com/view/Nt3yW4
+  tags:
+  - raymarching
+  - sdf
+  url: https://www.shadertoy.com/view/Nt3czS

@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Stomper
+  id: Stomper
+  kernel: Stomper
+  name: Stomper
+shader:
+  author: dr2
+  description: A stomper's job is never done...
+  id: 7t3Szj
+  name: Stomper
+  tags:
+  - randomness
+  - kinematics
+  url: https://www.shadertoy.com/view/7t3Szj

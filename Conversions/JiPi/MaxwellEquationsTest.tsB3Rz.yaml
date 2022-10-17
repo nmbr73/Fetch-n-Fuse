@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: MaxwellEquationsTest
+  id: MaxwellEquationsTest
+  kernel: MaxwellEquationsTest
+  name: MaxwellEquationsTest
+shader:
+  author: wyatt
+  description: 'Use the mouse to interact!
+
+    Discretization of the interplay of an electric field and a magnetic field.
+
+
+    inspired by Plento''s "Currents"'
+  id: tsB3Rz
+  name: Maxwell Equations Test
+  tags:
+  - test
+  - physics
+  url: https://www.shadertoy.com/view/tsB3Rz

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: CrackedmirrorfireJipi154
+  id: CrackedmirrorfireJipi154
+  kernel: CrackedmirrorfireJipi154
+  name: CrackedmirrorfireJipi154
+shader:
+  author: N.N.
+  description: Cracked mirror fire
+  id: 7tffRn
+  name: CrackedMirrorFire JiPi154
+  parent:
+    id: NlScDd
+    name: Cracked Mirror Fire
+    url: https://www.shadertoy.com/view/NlScDd
+  tags:
+  - fire
+  - mirror
+  - cracked
+  url: https://www.shadertoy.com/view/7tffRn

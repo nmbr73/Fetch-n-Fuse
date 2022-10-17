@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Kundalinguini
+  id: Kundalinguini
+  kernel: Kundalinguini
+  name: Kundalinguini
+shader:
+  author: xenn
+  description: propagation duration will vary. give it time
+  id: WtXfzX
+  name: kundalinguini
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/WtXfzX

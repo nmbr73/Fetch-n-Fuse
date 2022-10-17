@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Lomateron2X
+  id: Lomateron2X
+  kernel: Lomateron2X
+  name: Lomateron2X
+shader:
+  author: wyatt
+  description: 'lomateron''s fluid algorithm with 2 substances
+
+    [url]https://www.shadertoy.com/view/sl3Szs[/url]'
+  id: 7ltXRs
+  name: lomateron2x
+  tags:
+  - convolution
+  url: https://www.shadertoy.com/view/7ltXRs

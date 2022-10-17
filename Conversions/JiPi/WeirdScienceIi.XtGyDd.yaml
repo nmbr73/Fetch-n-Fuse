@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: WeirdScienceIi
+  id: WeirdScienceIi
+  kernel: WeirdScienceIi
+  name: WeirdScienceIi
+shader:
+  author: wyatt
+  description: I tried my hand at modeling surface tension and wound up with this
+  id: XtGyDd
+  name: Weird Science II
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/XtGyDd

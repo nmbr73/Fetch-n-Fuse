@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: GlassAndMetalHearts
+  id: GlassAndMetalHearts
+  kernel: GlassAndMetalHearts
+  name: GlassAndMetalHearts
+shader:
+  author: keim
+  description: Distance function for heart shaped brilliant cut and simple chain.
+    Render function for glass and metal. thats all.
+  id: MdfcRs
+  name: glass and metal hearts
+  tags:
+  - reflection
+  - refraction
+  - glass
+  - heart
+  - diamond
+  url: https://www.shadertoy.com/view/MdfcRs

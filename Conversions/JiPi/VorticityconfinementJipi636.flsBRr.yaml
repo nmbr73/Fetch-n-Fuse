@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: VorticityconfinementJipi636
+  id: VorticityconfinementJipi636
+  kernel: VorticityconfinementJipi636
+  name: VorticityconfinementJipi636
+shader:
+  author: N.N.
+  description: Extension of https://www.shadertoy.com/view/XlsBDf with [url=http://physbam.stanford.edu/~fedkiw/papers/stanford2001-01.pdf]vorticity
+    confinement[/url] and [url=http://physbam.stanford.edu/~fedkiw/papers/stanford2006-09.pdf]MacCormack
+    advection[/url]
+  id: flsBRr
+  name: VorticityConfinement  JiPi636
+  parent:
+    id: MlSfRR
+    name: Vorticity confinement
+    url: https://www.shadertoy.com/view/MlSfRR
+  tags:
+  - fluid
+  - advection
+  - vorticity
+  url: https://www.shadertoy.com/view/flsBRr

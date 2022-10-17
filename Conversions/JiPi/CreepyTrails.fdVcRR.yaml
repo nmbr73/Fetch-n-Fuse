@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: CreepyTrails
+  id: CreepyTrails
+  kernel: CreepyTrails
+  name: CreepyTrails
+shader:
+  author: SnoopethDuckDuck
+  description: messy code
+  id: fdVcRR
+  name: Creepy Trails
+  tags:
+  - e
+  url: https://www.shadertoy.com/view/fdVcRR

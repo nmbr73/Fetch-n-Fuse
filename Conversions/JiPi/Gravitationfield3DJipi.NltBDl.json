@@ -1,0 +1,159 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NltBDl",
+  "date": "0",
+  "viewed": 0,
+  "name": "GravitationField3D JiPi",
+  "description": "BufA: physics,  BufB: camera.\nCamera automaticlly tracks the most powerful position.\nKeyboard: WASD: rotate camera orbit, QE: go back/forward.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "3d",
+   "star",
+   "field",
+   "gravity",
+   "gravitation"
+  ],
+  "hasliked": 0,
+  "parentid": "4dVfWy",
+  "parentname": "Gravitation Field 3D"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/**\n * Written by Cairne.D\n */\n\n\n//set other constants in label \"Common\"\n\n//range = [0,2]\n#define COLOR_MODE 0\n\n//mix color\nvoid MixColor(float lit, out vec4 color)\n{\n    float rlit = GetRenderIntensity(lit);\n#if COLOR_MODE == 0\n    color = GetRenderColorBlue(rlit);\n#elif COLOR_MODE == 1\n    float t = clamp(sin(iTime/15.0*PI2-PIH)*2.0 + 0.5, 0.0, 1.0);\n    vec4 blue = GetRenderColorBlue(rlit);\n    vec4 red = GetRenderColorRed(rlit);\n    color = mix(blue, red, t);\n#else\n    //copy from \"gravity field - 2\" by FabriceNeyret2\n\tcolor = vec4(sin(lit),sin(lit/2.),sin(lit/4.),1.);\n#endif\n}\n\nCamera GetCurrentCamera()\n{\n    Camera cam;\n    cam.near = 0.001;\n    cam.far = 100000.0;\n    cam.fov = 60.0;\n    cam.aspect = iResolution.x / iResolution.y;\n    \n    vec4 td = texture(iChannel1, I2UV(1, iResolution.xy));\n    vec4 r = texture(iChannel1, I2UV(2, iResolution.xy));\n    cam.target = td.xyz;\n    cam.dist = td.w;\n    cam.rot = r;\n    \n    return cam;\n}\n\n//calculate field strength on pixel ray\nfloat CalculateIntensity(vec3 ro, vec3 rd)\n{\n    rd = normalize(rd);\n    vec3 g = vec3(0);\n    for (int i = STAR_COUNT; i < STAR_COUNT * 2; i++)\n    {\n        vec4 pm = texture(iChannel0, I2UV(i, iResolution.xy));\n        g += IntegrateAcceleration(pm.xyz-ro, rd, pm.w);\n    }\n    return length(g);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    \n    //apply camera operation\n    Camera cam = GetCurrentCamera();\n    vec3 ro, rd;\n    ScreenRay(uv, cam, ro, rd);\n\n    //calculate field strength per pixel\n    float lit = CalculateIntensity(ro, rd);\n    \n    MixColor(lit, fragColor);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "//---------------------------------------------------Constant\n#define PI  3.14159265359\n#define PI2 6.28318530718\n#define PIH 1.57079632679\n\n//star number\n#define STAR_COUNT 48\n\n//gravitational constant\n#define CONST_G 1.0\n\n//star mass\n#define DEFAULT_MASS 1.0\n\n//star density\n#define STAR_DENSITY 1000.0\n\n//initial stars area\n#define GALAXY_RADIUS 10.0\n\n//physics step time\n#define DELTA_TIME 0.02\n\n//speed up or down\n#define TIME_SCALE 1.0\n\n//trunc light for render [0,x]\n#define RENDER_INTENSITY_MAX 50.0\n\n//pow\n#define RENDER_INTENSITY_POW 0.5\n\n//IF YOU HAVE SERIOUS Trypophobia, SET IT TO false!\n//#define INTERGRATE_STAR_CENTER\n\n//---------------------------------------------------Hash\nfloat Hash21(vec2 p)\n{\n\treturn fract(sin(dot(p,vec2(12.99,78.23)))*43758.5453);\n}\nvec2 Hash22(vec2 p)\n{\n\treturn fract(sin(vec2(\n        dot(p,vec2(127.1,311.7)),\n        dot(p,vec2(269.5,183.3))\n    ))*43758.5453);\n}\nvec3 Hash23(vec2 p)\n{\n    return fract(sin(vec3(\n        dot(p,vec2(127.1,311.7)),\n        dot(p,vec2(269.5,183.3)),\n        dot(p,vec2(12.99,78.23))\n    ))*43758.5453);\n}\nvec3 HashS3(vec2 h2)\n{\n    float theta = h2.x*PI2;\n    float phi = acos(h2.y*2.0-1.0);\n    return vec3(\n        sin(theta)*sin(phi),\n        cos(theta)*sin(phi),\n        cos(phi));\n}\nvec3 HashS3(vec3 h3)\n{\n    return HashS3(h3.xy)*pow(h3.z,1.0/3.0);\n}\n\n//----------------------------------------------fragCoord=>index=>uv\n//thanks to dr2! his \"index convert function\" helped me\n//\"Faberge Balls\" by dr2\nint XY2I(vec2 xy, float sizeX)\n{\n    xy = floor(xy);\n    int i = int(xy.x + xy.y * sizeX);\n    return i;\n}\nvec2 I2UV(int i, vec2 size)\n{\n    float fi = float(i);\n    vec2 uv;\n    uv.x = mod(fi, size.x);\n    uv.y = floor(fi / size.x);\n    uv = (uv + 0.5) / size;\n    return uv;\n}\n\n//----------------------------------------------Quaternion\n\n//identity 元\n#define QUAT_IDENTITY vec4(0,0,0,1)\n\n//conjugate (inverse rotation)\nvec4 QuatInv(vec4 q){return vec4(-q.xyz,q.w);}\n\n//quaternion multiply\nvec4 QuatMul(vec4 q, vec4 r)\n{\n    vec4 nq;\n    nq.x = q.w * r.x + q.x * r.w + q.y * r.z - q.z * r.y;\n    nq.y = q.w * r.y - q.x * r.z + q.y * r.w + q.z * r.x;\n    nq.z = q.w * r.z + q.z * r.w - q.y * r.x + q.x * r.y;\n    nq.w = q.w * r.w - q.x * r.x - q.y * r.y - q.z * r.z;\n    return nq;\n}\nvec3 QuatMul(vec4 lhs, vec3 rhs)\n{\n    float x1 = lhs.x, y1 = lhs.y, z1 = lhs.z, w1 = lhs.w;\n    float x2 = rhs.x, y2 = rhs.y, z2 = rhs.z;\n    float nx = w1 * x2 + y1 * z2 - z1 * y2;\n    float ny = w1 * y2 - x1 * z2 + z1 * x2;\n    float nz = w1 * z2 + x1 * y2 - y1 * x2;\n    float nw = x1 * x2 + y1 * y2 + z1 * z2;\n    vec3 nv;\n    nv.x = nw * x1 + nx * w1 - ny * z1 + nz * y1;\n    nv.y = nw * y1 + nx * z1 + ny * w1 - nz * x1;\n    nv.z = nw * z1 - nx * y1 + ny * x1 + nz * w1;\n    return nv;\n}\nvec3 RotateFWD(vec4 q)\n{\n    vec3 nv;\n    nv.x = 2.0 * (q.x * q.z + q.y * q.w);\n    nv.y = 2.0 * (q.y * q.z - q.x * q.w);\n    nv.z = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);\n    return nv;\n}\n\n//from euler angles\nvec4 QuatEA(vec2 eulers)\n{\n    vec2 eh = eulers * 0.5;\n    float c1 = cos(eh.x), c2 = cos(eh.y);\n    float s1 = sin(eh.x), s2 = sin(eh.y);\n    vec4 nq;\n    nq.x = s1 * c2;\n    nq.y = c1 * s2;\n    nq.z = -s1 * s2;\n    nq.w = c1 * c2;\n    return nq;\n}\n\n\n//---------------------------------------------------Camera\nstruct Camera\n{\n    vec3 target; //target position\n    float dist; //target distance\n    vec4 rot; //rotation\n    float near; //near clip plane\n    float far; //far clip plane\n    float fov; //field of view\n    float aspect; //screen w/h\n};\n\n//coord transform: camera to world\nvec3 ScreenToCamera(vec2 uv, float ld, Camera cam)\n{\n    vec3 pos;\n    pos.z = mix(cam.near, cam.far, ld);\n    pos.xy = (uv - 0.5) * 2.0;\n    pos.x *= cam.aspect;\n    float t = tan(radians(cam.fov * 0.5));\n    pos.xy *= pos.z * t;\n    return pos;\n}\nvoid ScreenRay(vec2 uv, Camera cam, out vec3 ro, out vec3 rd)\n{\n    vec3 far = ScreenToCamera(uv, 1.0, cam);\n    vec3 near = cam.near / cam.far * far;\n    vec3 cpos = cam.target - cam.dist * RotateFWD(cam.rot);\n    ro = QuatMul(cam.rot, near) + cpos;\n    rd = QuatMul(cam.rot, far);\n}\n\n\n//---------------------------------------------------Gravitation\n\n//get volume\nfloat GetStarVolume(float mass)\n{\n    return mass / STAR_DENSITY;\n}\n//get radius\nfloat GetStarRadius(float mass)\n{\n    return pow(GetStarVolume(mass), 1.0 / 3.0);\n}\n\n//calculate gravitational acceleration\nvec3 CalculateAcceleration(vec3 dp, float mass)\n{\n    float l = length(dp);\n    if (l == 0.0) return vec3(0);\n\tfloat g = CONST_G * mass;\n    float l3 = l*l*l;\n    float r3 = GetStarVolume(mass);\n    if (l3 > r3) g = CONST_G * mass / l3;\n    else g = CONST_G * STAR_DENSITY;\n\treturn g * dp;\n}\n\n//calculate velocity\nvec3 CalculateVelocity(vec3 v, vec3 g, float dt)\n{\n\tvec3 dv = g * dt;\n\tvec3 nv = v + dv;\n\treturn nv;\n}\n\n//calculate position\nvec3 CalculatePosition(vec3 p, vec3 v, float dt)\n{\n\tvec3 dp = v * dt;\n\tvec3 np = p + dp;\n\treturn np;\n}\n\n//---------------------------------------------------Gravitation Display\n\n//integration function of gravitational acceleration on ray\nfloat IntegrateOuter(float x1, float x2, float d)\n{\n    return x2 / sqrt(d*d + x2*x2) - x1 / sqrt(d*d + x1*x1);\n}\nfloat IntegrateOuter(float x, float d)\n{\n    return x / sqrt(d*d + x*x) + 1.0;\n}\n\n//incorrect...\n//calculate sum acceleration on ray\nvec3 IntegrateAcceleration(vec3 ro, vec3 rd, float mass)\n{\n    float proj = dot(ro, rd);\n    vec3 dp = ro - proj * rd;\n    \n    //l = length(dp)  distance between star and ray\n    //inner = G*M/V*l * x  star inner acceleration integration\n    //outer = G*M/l * x/sqrt(l*l+x*x)  star outer acceleration integration\n    //limit(x/sqrt(l*l+x*x)) = +-1.0 function limit\n\n    float l = length(dp);\n    if (l == 0.0) return vec3(0);\n    float g = CONST_G * mass / l * IntegrateOuter(proj, l);\n    float r = GetStarRadius(mass);\n#ifdef INTERGRATE_STAR_CENTER\n    if (l < r)\n    {\n        float in0 = -sqrt(r * r - l * l);\n        if (proj > in0)\n        {\n            float in1 = min(proj, -in0);\n            g -= CONST_G * mass / d * IntegrateOuter(in0, in1, l);\n            //inner\n        #ifdef RIGID_STAR\n            g += CONST_G * mass / (r * r * r) * l * (in1 - in0);\n        #else\n            g += CONST_G * mass / (r * d) * (in1 - in0);\n        #endif\n        }\n    }\n#endif\n    return g / l * dp;\n}\n\n//---------------------------------------------------Render\nfloat GetRenderIntensity(float intensity)\n{\n    intensity = smoothstep(0., RENDER_INTENSITY_MAX, intensity);\n    intensity = pow(intensity, RENDER_INTENSITY_POW);\n    return intensity;\n}\nvec4 GetRenderColorRed(float value)\n{\n    float n = 3.0;\n    //0Black 1Red 2Golden 3White\n    \n    vec4 col;\n    //R:(0<2)\n    col.r = smoothstep(0.0/n, 2.0/n, value);\n    //G:(1<3)\n    col.g = smoothstep(1.0/n, 3.0/n, value);\n    //B:(2<3)\n    col.b = smoothstep(2.0/n, 3.0/n, value);\n    col.a = 1.0;\n    return col;\n}\nvec4 GetRenderColorBlue(float value)\n{\n    float n = 3.0;\n    //0Black 1Blue 2BlueClan 3White\n    \n    vec4 col;\n    //R:(2<3)\n    col.r = smoothstep(2.0/n, 3.0/n, value);\n    //G:(1<3)\n    col.g = smoothstep(1.0/n, 3.0/n, value);\n    //B:(0<2)\n    col.b = smoothstep(0.0/n, 2.0/n, value);\n    col.a = 1.0;\n    return col;\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\nvec4 X2X(int i)\n{\n    return texture(iChannel0, I2UV(i, iResolution.xy));\n}\nvec4 V2P(int i)\n{\n    return texture(iChannel0, I2UV(i + STAR_COUNT, iResolution.xy));\n}\nvec4 P2V(int i)\n{\n    return texture(iChannel0, I2UV(i - STAR_COUNT, iResolution.xy));\n}\n\n//calculate sum acceleation\nvec3 CalculateSumAcceleration(vec3 pos, float mass, float dt, out float power)\n{\n    vec3 sa = vec3(0);\n    power = 0.0;\n    for (int i = STAR_COUNT; i < STAR_COUNT * 2; i++)\n    {\n        vec4 pm = X2X(i);\n        vec3 dp = pm.xyz - pos;\n        float dpl2 = dot(dp, dp);\n        if (dpl2 > 0.0)\n        {\n            sa += CalculateAcceleration(dp, pm.w);\n            power += pm.w / dpl2;\n        }\n    }\n    return sa;\n}\n\n//caculate velocity and position\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    int index = XY2I(fragCoord, iResolution.x);\n    \n    if (index >= STAR_COUNT * 2)\n    {\n        discard;\n    }\n    else if (iFrame == 0)\n    {\n        vec3 sphere = HashS3(Hash23(uv)) * GALAXY_RADIUS;\n        if (index < STAR_COUNT)\n        {\n            //init velocity\n            fragColor = vec4(sphere * 0.1, 0.0);\n        }\n        else\n        {\n            //init position\n            fragColor = vec4(sphere, DEFAULT_MASS);\n        }\n    }\n    else\n    {\n        float dt = DELTA_TIME * TIME_SCALE;\n        vec4 vi, pm;\n        if (index < STAR_COUNT)\n        {\n            vi = X2X(index);\n            pm = V2P(index);\n        }\n        else\n        {\n            vi = P2V(index);\n            pm = X2X(index);\n        }\n        vec3 g = CalculateSumAcceleration(pm.xyz, pm.w, dt, vi.w);\n        vi.xyz = CalculateVelocity(vi.xyz, g, dt);\n        if (index < STAR_COUNT)\n        {\n            //save velocity\n            fragColor = vi;\n        }\n        else\n        {\n            pm.xyz = CalculatePosition(pm.xyz, vi.xyz, dt);\n            //save position\n            fragColor = pm;\n        }\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\n//-------------------------------------------------------------Keyboard\n//from \"Key Quest\" by TekF\nbool readKey(int keyCode)\n{\n\tbool toggle = false;\n    vec2 uv = vec2((float(keyCode)+.5)/256., toggle?.75:.25);\n\tfloat keyVal = textureLod(iChannel3,uv,0.).x;\n    return keyVal>.5;\n}\n#define keyQ 81\n#define keyW 87\n#define keyE 69\n#define keyA 65\n#define keyS 83\n#define keyD 68\n\n//-------------------------------------------------------------Camera\n\n#define trackSpeed 0.05\n#define scaleSpeed 1.0\n#define rotateSpeed 1.0\n\nfloat GetStarPower(int i)\n{\n    return texture(iChannel0, I2UV(i, iResolution.xy)).w;\n}\nvec3 GetStarPosition(int i)\n{\n    return texture(iChannel0, I2UV(i + STAR_COUNT, iResolution.xy)).xyz;\n}\nvec4 GetLastMouse()\n{\n    return texture(iChannel1, I2UV(0, iResolution.xy));\n}\n\n//caculate camera target position\n//camera will automaticlly track the most powerful place.\n\nvec3 CalculateCameraTarget()\n{\n    int maxi = 0;\n    float maxPower = 0.0;\n    for (int i = 0; i < STAR_COUNT; i++)\n    {\n        float power = GetStarPower(i);\n        if (maxPower < power)\n        {\n            maxPower = power;\n            maxi = i;\n        }\n    }\n    return GetStarPosition(maxi);\n}\n\nvoid UpdatePosition(vec2 uv, out vec4 result)\n{\n    if (iFrame == 0)\n    {\n        result = vec4(vec3(0), GALAXY_RADIUS * 2.0);\n    }\n    else\n    {\n        vec4 cs = texture(iChannel1, uv);\n        //--track\n        vec3 tgt = CalculateCameraTarget();\n        float dt = GALAXY_RADIUS / distance(tgt, cs.xyz) * iTimeDelta * trackSpeed;\n        cs.xyz = mix(cs.xyz, tgt, dt);\n        //--scale\n        float ds = iTimeDelta * scaleSpeed;\n        if (readKey(keyE))      cs.w *= 1.0 - ds;\n        else if (readKey(keyQ)) cs.w *= 1.0 + ds;\n        \n        result = cs;\n    }\n}\n\nvoid UpdateRotation(vec2 uv, out vec4 result)\n{\n    if (iFrame == 0)\n    {\n        result = QUAT_IDENTITY;\n    }\n    else\n    {\n        vec4 cs = texture(iChannel1, uv);\n        //--rotate\n        float dr = iTimeDelta * rotateSpeed;\n        vec2 eu = vec2(0);\n        //mouse\n        vec4 lm = GetLastMouse();\n        vec2 dn = iMouse.xy - iMouse.zw;\n        vec2 dp = iMouse.xy - lm.xy;\n        vec2 dm = iMouse.z > lm.z ? dn : dp;\n        dm = vec2(dm.x, -dm.y) / iResolution.y;\n        eu.xy += dm.yx * (dr * 100.0);\n        //key\n        if (readKey(keyW)) eu.x -= dr;\n        if (readKey(keyS)) eu.x += dr;\n        if (readKey(keyA)) eu.y -= dr;\n        if (readKey(keyD)) eu.y += dr;\n        \n        result = QuatMul(cs, QuatEA(eu));\n    }\n}\n\n//camera target position, distance, rotation buffer\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    int index = XY2I(fragCoord, iResolution.x);\n    \n    if (index >= 3)\n    {\n        discard;\n    }\n    else if (index == 0)\n    {\n        fragColor = iMouse;\n    }\n    else\n    {\n        vec2 uv = fragCoord / iResolution.xy;\n        if (index == 1)\n        {\n            UpdatePosition(uv, fragColor);\n        }\n        else if (index == 2)\n        {\n            UpdateRotation(uv, fragColor);\n        }\n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

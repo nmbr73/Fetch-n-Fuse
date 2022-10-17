@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: NeuralCaDemoJipi
+  id: NeuralCaDemoJipi
+  kernel: NeuralCaDemoJipi
+  name: NeuralCaDemoJipi
+shader:
+  author: N.N.
+  description: 'Created for AIAIART #8 (https://colab.research.google.com/drive/1Qpx_4wWXoiwTRTCAP1ohpoPGwDIrp9z-?usp=sharing)'
+  id: slBfzG
+  name: Neural CA Demo JiPi
+  parent:
+    id: ftSfzG
+    name: Neural CA Demo
+    url: https://www.shadertoy.com/view/ftSfzG
+  tags:
+  - dragon
+  - clip
+  - nca
+  url: https://www.shadertoy.com/view/slBfzG

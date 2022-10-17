@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Vasculature
+  id: Vasculature
+  kernel: Vasculature
+  name: Vasculature
+shader:
+  author: wyatt
+  description: 'Inverted Diffusion '
+  id: wt33Wr
+  name: Vasculature
+  tags:
+  - differentialequations
+  url: https://www.shadertoy.com/view/wt33Wr

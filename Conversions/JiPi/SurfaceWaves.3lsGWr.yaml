@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SurfaceWaves
+  id: SurfaceWaves
+  kernel: SurfaceWaves
+  name: SurfaceWaves
+shader:
+  author: wyatt
+  description: Strange waves resulting from me trying to simulate surface waves after
+    Fabrice told me that there was a connection between them and the Schrodinger equation.
+    I think I'm onto something, but I don't think these are surface waves...
+  id: 3lsGWr
+  name: Surface Waves?...
+  tags:
+  - wave
+  - physics
+  - quantum
+  url: https://www.shadertoy.com/view/3lsGWr

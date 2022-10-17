@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: RobotPrototype1Jipi
+  id: RobotPrototype1Jipi
+  kernel: RobotPrototype1Jipi
+  name: RobotPrototype1Jipi
+shader:
+  author: N.N.
+  description: 'Hi! This my first prototype of the robot, his name is Rolik. I made
+    it always look into your mouse cursor, just try it!)
+
+
+    This is my first work using ray marching, that has so many details. Firstly it
+    was very laggy, but I made some cool optimizations.'
+  id: ftyczy
+  name: Robot prototype1 JiPi
+  parent:
+    id: slVczW
+    name: Robot prototype 01
+    url: https://www.shadertoy.com/view/slVczW
+  tags:
+  - cute
+  - mouse
+  - screen
+  - camera
+  - robot
+  - face
+  url: https://www.shadertoy.com/view/ftyczy

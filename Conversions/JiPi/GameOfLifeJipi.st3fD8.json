@@ -1,0 +1,87 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "st3fD8",
+  "date": "0",
+  "viewed": 0,
+  "name": "Game of life JiPi",
+  "description": "Yep\n\nThanks to stb for learning me mouse things\n\nThanks to demofox for the space-to-reset-code I nicked from his snake game",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "gameoflife"
+  ],
+  "hasliked": 0,
+  "parentid": "ldGGRm",
+  "parentname": "Game of life, again"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "float getv(vec2 uv){\n \treturn max(texture(iChannel0,uv).g, texture(iChannel0,uv).b); // G channel for births, B is deaths\n    // mixing in different ways provides different results\n    // I like this one\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n     vec2 px = 1./iResolution.xy;\n\n    vec3 norm = vec3(getv(uv-vec2(1,0)*px)-getv(uv-vec2(-1,0)*px),\n                     getv(uv-vec2(0,1)*px)-getv(uv-vec2(0,-1)*px),\n                     .2\n        \n        );\n    norm = normalize(norm);\n    \n    vec3 light = normalize(vec3(sin(iTime),cos(iTime),1.));\n    \n    fragColor=vec4(vec3(dot(norm,light)),1.);\n    fragColor = 1. - (1.-fragColor)*(1.-texture(iChannel0,uv).rrra);\n\t//fragColor = texture(iChannel0,uv); // uncoment for alt/direct rendering\n    // I think it looks prettier but my work colleague pushed for 3Dish-based lighting\n    // so I embossed the birth and death data, which is blurrified some\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const float KEY_SPACE = 32.5/256.0;\n\nvec3 hash3( vec2 p )\n{\n    vec3 q = vec3( dot(p,vec2(127.1,311.7)), \n\t\t\t\t   dot(p,vec2(269.5,183.3)), \n\t\t\t\t   dot(p,vec2(419.2,371.9)) );\n\treturn fract(sin(q)*43758.5453);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    vec2 px = 1. / iResolution.xy;\n    fragColor.r = texture(iChannel0, fragCoord/iResolution.xy).r; \n    fragColor.b = texture(iChannel0, fragCoord/iResolution.xy).b*.9;\n    \n    if(iFrame<2 || (texture( iChannel1, vec2(KEY_SPACE,0.25) ).x == 1.0) ){\n        if( abs(uv.y-.5)<.2){\n        \tfragColor=vec4(hash3(fragCoord+iTime).xxx*2.,\n                       1.0);\n        }else{\n            fragColor=vec4(0.);\n        }\n    }else{\n        int count = -int( texture(iChannel0,uv).x+.1);\n        for(int x = -1; x <= 1; x++){\n            for(int y = -1; y <= 1; y++){\n                vec2 checkCoords = mod(uv+vec2(x,y)*px,1.);\n                vec4 checkPix = texture(iChannel0,checkCoords);\n        \t\tcount += int( checkPix.r+.1);\n                fragColor.g += checkPix.g*.11;\n                fragColor.b += checkPix.b*.01;\n            }\n        }\n        \n        if(count==3){ // conditions for new life\n            fragColor.r = 1.;\n            if(texture(iChannel0,uv).x < .5) // actually new, was previously dead\n            \tfragColor.g=1.;\n        }\n        else if(count<2){ // lonely\n            fragColor.r=0.;\n            if(texture(iChannel0,uv).x > .5) // new death\n            \tfragColor.b=1.;\n        }\n        else if(count>3){ // overcrowded\n            fragColor.r=0.;\n            if(texture(iChannel0,uv).x > .5) // new death\n            \tfragColor.b=1.;\n        }\n        \n        \n    if(length(iMouse.xy-fragCoord)<15. && iMouse.z>0.)\n        fragColor.r=step(0.5,hash3(fragCoord).x);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

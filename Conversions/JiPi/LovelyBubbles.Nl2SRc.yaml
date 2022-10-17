@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: LovelyBubbles
+  id: LovelyBubbles
+  kernel: LovelyBubbles
+  name: LovelyBubbles
+shader:
+  author: P_Malin
+  description: 'Some lovely shadertoy bubbles.
+
+    I''ve wanted to implement something with thin film interference for a while.'
+  id: Nl2SRc
+  name: Lovely Bubbles
+  tags:
+  - bubbles
+  url: https://www.shadertoy.com/view/Nl2SRc

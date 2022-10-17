@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: PathsThroughTime
+  id: PathsThroughTime
+  kernel: PathsThroughTime
+  name: PathsThroughTime
+shader:
+  author: wyatt
+  description: The state of a fluid dynamical system is continuously re-ordering itself
+    and therefore the time complexity of a solution is proportional to the size of
+    the system times the time evolution. The Universe is discrete, recursive, and
+    local.
+  id: WlSGDK
+  name: Paths Through Time
+  tags:
+  - fluid
+  - automata
+  - physics
+  url: https://www.shadertoy.com/view/WlSGDK

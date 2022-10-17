@@ -1,0 +1,172 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "slcfDM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Organic FabricsI JiPi",
+  "description": "Unnamed organic shape\nnew: add mouse click interaction",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "procedural",
+   "tree",
+   "grow",
+   "fabric"
+  ],
+  "hasliked": 0,
+  "parentid": "flX3Wr",
+  "parentname": "Organic Fabrics I"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = pow( texture(iChannel0, fragCoord/iResolution.xy),vec4(0.8));\n    // try this different appearance \n    //fragColor = 1.-pow( texture(iChannel0, fragCoord/iResolution.xy),vec4(2.2));\n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\nconst float PHI = 1.61803398874989484820459; // Φ = Golden Ratio \n\n\nconst vec2 startPos = vec2(0.5,0.5);\nconst float TreeThickness = 3.;\nconst float speed =64.*0.016;\nconst float TreeSpread = 0.1;\nconst int BrancSpacing = 0;\nconst float TurnSpeed = 0.2;\nconst int MinBrancingCondition = 1;\nconst float InitialBranches = 1.;\nconst float BrancingProbability = 0.94;\n\n\nconst vec4 BrightColor1 = vec4(0.820,0.906,0.773,1.);\nconst vec4 DarkColor1 = vec4(0.392,0.725,0.631,1.);\n\n\nconst vec4 BrightColor2 = vec4(0.686,0.655,0.843,1.);   \nconst vec4 DarkColor2 = vec4(0.439,0.400,0.220,1.);\nconst vec4 BgColor1 = vec4(0.204,0.212,0.294,0.1);\nconst vec4 BgColor2 = vec4(0.310,0.490,0.631,0.1);\n    \n\nfloat gold_noise(in vec2 xy, in float seed)\n{\n    return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);\n}\nvec2 randomDir2(vec2 uv, float seed )\n{\n    float x = gold_noise(uv, seed+1.0);\n    float y = gold_noise(uv, seed-2.0);\n    return normalize(vec2(x,y)-0.5);\n}\n\n\nvec2 quantizevec2( vec2 o )\n{\n    float angle = atan(o.y, o.x);\n    float minRad = 3.1415926*0.25;\n    angle = floor(angle/minRad)*minRad;\n    return vec2(cos(angle), sin(angle));\n}\n\nvec2 rotvec2(vec2 o, float rad)\n{\n    return mat2x2(vec2(cos(rad), -sin(rad)),vec2(sin(rad),cos(rad))) * o;\n}\n\n\n\n\nvec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )\n{\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "int sense( vec2 pos, int range)\n{\n    pos /= 2.;\n    int count  = 0;\n    for ( int i = -range; i <=range; i++)\n    {\n        for (int j = -range; j <=range; j++)\n        {\n            vec4 data = texelFetch( iChannel2, ivec2(pos)+ivec2(i,j), 0);\n            //if ( length(data.zw) > 0. )\n                count +=int(data.x);\n        }\n    }\n    return count;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = vec4(0.0,0.0,0.0,0.0);\n    vec2 uv = fragCoord / iResolution.y;\n\n    if ( iFrame == 0)\n    {\n     \n         vec2 center =  iResolution.xy*0.5/iResolution.y;\n         vec2 p = fragCoord/iResolution.y;\n         vec2 dir = vec2(p - center)*50.;\n         float l = length(dir);\n         dir = normalize(dir);\n        fragColor = vec4(fragCoord,vec2(dir.x, dir.y) )* step(l, 1.0);\n    }\n    else \n    {\n    \n   \n        int count = 0;\n        int range = BrancSpacing;\n\n        for ( int i = -2; i <=2; i++)\n        {\n            for (int j = -2; j <=2; j++)\n            {\n                \n                vec4 dataOld = texelFetch( iChannel0, ivec2(fragCoord)+ivec2(i,j), 0);\n                vec2 previousPos = dataOld.xy + dataOld.zw*-speed;\n                vec4 dataNew = dataOld;\n                dataNew.xy += dataNew.zw*speed;\n                \n\n                if ( length(dataNew.zw) > 0. && int(fragCoord.x) == int(dataNew.x) && int(fragCoord.y) == int(dataNew.y))\n                {\n                    // randomly nudge the dir\n                    dataNew.zw = normalize(dataNew.zw + randomDir2(fragCoord,iTime)*TreeSpread);\n\n                    fragColor = dataNew;\n                }\n                float bp = BrancingProbability ;\n\n\n                if ( int(previousPos.x) == int(fragCoord.x) && int(previousPos.y) == int(fragCoord.y)  && gold_noise(fragCoord,iTime+4.3) > bp )\n                {\n                    fragColor = dataOld;\n\n                }\n            }\n        }\n        \n        if (length(fragColor.zw) > 0.)\n        {\n            // new dir based on sense\n            int senseRange = 5;\n            float senseDist = float(senseRange)*4.+2.;\n            vec2 turnL = rotvec2(fragColor.zw, 3.1415/3.);\n            vec2 turnR = rotvec2(fragColor.zw, -3.1415/3.);\n            int fc = sense(fragCoord+fragColor.zw*senseDist, senseRange);\n            int lc = sense(fragCoord+turnL*senseDist, senseRange);\n            int rc = sense(fragCoord+turnR*senseDist, senseRange);\n\n            if (fc >= lc && fc >= rc )\n            {\n                //keep moving\n            }\n            else if ( lc > rc )\n            {\n                fragColor.zw = normalize(fragColor.zw + turnL*TurnSpeed);\n            }\n            else\n                fragColor.zw = normalize(fragColor.zw + turnR*TurnSpeed);\n        }  \n        \n        if (length (fragCoord - iMouse.zw) < 5. && length(iMouse.zw )> 1.)\n        {\n            vec2 dir = normalize(fragCoord - iMouse.xy);\n            fragColor = vec4(fragCoord,vec2(dir.x, dir.y) );\n        }\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    float scale = 1.;//+12.*((sin(iTime*5.)+1.)*0.5);\n    \n    int kernelSize = int(TreeThickness);\n\n    if (kernelSize <1)\n        kernelSize = 1;\n\n    \n    \n        bool found = false;\n        float foundDist = 10000.;\n        vec2 angle ;\n\n        for ( int i = -kernelSize; i <=kernelSize; i++)\n        {\n            if (found )\n                break;\n            for (int j = -kernelSize; j <=kernelSize; j++)\n            {\n                if (j*j + i*i < kernelSize*kernelSize )\n                {\n                    if (length(texture(iChannel0, (fragCoord+vec2(float(i),float(j)))/iResolution.xy).zw ) > 0.)\n                    {\n                        found = true;\n                        float dist = length(vec2(float(i),float(j)));\n                        if ( dist < foundDist )\n                            foundDist = dist;\n                        angle = normalize(vec2(float(i),float(j)));\n\n                        break;\n                    }\n                }\n                \n            }\n        }\n\n        vec4 oldColor = pow(texture(iChannel1, fragCoord/iResolution.xy),vec4(1.011));\n        \n        if (found)\n        {\n            float a = 0.5*(dot(angle, normalize(vec2(1.,0.))) + 1.)*smoothstep(0.,float(kernelSize),foundDist);\n            a = clamp(a,0.,1.);\n            \n            float ga = 0.0;\n            vec4 darkColor =  pal( 59./30., vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.10,0.20) ).xyzz;//mix(DarkColor1, DarkColor2, ga);\n            vec4 brightColor = pal( 59./30., vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,0.7,0.4),vec3(0.0,0.15,0.20) ).xyzz;// mix(BrightColor1, BrightColor2, ga);\n             \n            float blendIn = smoothstep(float(kernelSize),0.,foundDist);\n            blendIn = clamp(blendIn, 0.,1.);\n            fragColor = mix(oldColor,mix(darkColor, brightColor,a),blendIn );\n        }\n        else\n            fragColor = oldColor;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragCoord *=2.;\n    fragColor.x = sign(length(texelFetch(iChannel0, ivec2(fragCoord) + ivec2(0,0),0).zw));\n    fragColor.x += sign(length(texelFetch(iChannel0, ivec2(fragCoord) + ivec2(0,1),0).zw));\n    fragColor.x += sign(length(texelFetch(iChannel0, ivec2(fragCoord) + ivec2(1,0),0).zw));\n    fragColor.x += sign(length(texelFetch(iChannel0, ivec2(fragCoord) + ivec2(1,1),0).zw));\n    \n    \n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

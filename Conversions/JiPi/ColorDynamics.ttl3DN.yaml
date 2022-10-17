@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: ColorDynamics
+  id: ColorDynamics
+  kernel: ColorDynamics
+  name: ColorDynamics
+shader:
+  author: wyatt
+  description: another wave displacement experiment (meaning the velocity is stored
+    in the displacement of the particle and its wave, not in a vector). The dynamics
+    are mediated by 4 color charges. Still thanking rory for thinking to use distance
+    functions to sort
+  id: ttl3DN
+  name: Color Dynamics
+  tags:
+  - particles
+  url: https://www.shadertoy.com/view/ttl3DN

@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: D2DParticl
+  id: D2DParticl
+  kernel: D2DParticl
+  name: D2DParticl
+shader:
+  author: N.N.
+  description: Messing around with the Multipass capabilities! Started this ages ago,
+    but only finished it now&amp;hellip; The math is a huge kludge, but isn't that
+    half the fun of ShaderToy ;) [b]Press+hold to move the slime.[/b]
+  id: fsjcD3
+  name: Fork 2d particl JiPi 127
+  parent:
+    id: MdtGD2
+    name: 2d particle fluid test
+    url: https://www.shadertoy.com/view/MdtGD2
+  tags:
+  - 2d
+  - fluid
+  - blob
+  - slime
+  - goo
+  - physics
+  - particle
+  - multipass
+  url: https://www.shadertoy.com/view/fsjcD3

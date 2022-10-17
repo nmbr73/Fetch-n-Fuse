@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  name: SimpleTEST
+shader:
+  author: JiPi
+  description: 'A simple TestShader
+
+    Just to test the Incubation.fuse
+
+    and the Fuse generation.
+    '
+  id: JiPi
+  name: SimpleTEST
+  tags:
+  - test
+  - incubation
+  url: https://www.shadertoy.com/TEST

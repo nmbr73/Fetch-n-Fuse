@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: Happy2016Jipi964
+  id: Happy2016Jipi964
+  kernel: Happy2016Jipi964
+  name: Happy2016Jipi964
+shader:
+  author: N.N.
+  description: Happy 2016 my fellow shadertoyers! Use the mouse to rotate. Use the
+    defines to change number of particles etc. It needs a pretty beastly GPU. But
+    if you have one, then put fullscreen, and enjoy! ;)
+  id: stsBRS
+  name: HAPPY2016 JiPi964
+  parent:
+    id: lsd3RX
+    name: HAPPY 2016!
+    url: https://www.shadertoy.com/view/lsd3RX
+  tags:
+  - bokeh
+  - fireworks
+  - sparkles
+  - '2016'
+  - newyears
+  url: https://www.shadertoy.com/view/stsBRS

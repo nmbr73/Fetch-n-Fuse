@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: LiquidCrystalLabyrinth
+  id: LiquidCrystalLabyrinth
+  kernel: LiquidCrystalLabyrinth
+  name: LiquidCrystalLabyrinth
+shader:
+  author: tomachi
+  description: 'Fluid-like continuous cellular automata by  cornusammonis in 2016:  [url]https://shadertoy.com/view/Xst3Dj[/url]
+
+    WebGL2 cleansing by FabriceNeyret2 in 2019:  [url] https://www.shadertoy.com/view/ttjXzR[/url]
+
+    in 2022 I add colour and crystalisation.'
+  id: 7tScDW
+  name: Liquid Crystal Labyrinth
+  tags:
+  - diffusion
+  - feedback
+  - reaction
+  url: https://www.shadertoy.com/view/7tScDW

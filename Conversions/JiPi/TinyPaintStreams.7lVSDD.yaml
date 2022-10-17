@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: TinyPaintStreams530Char
+  id: TinyPaintStreams530Char
+  kernel: TinyPaintStreams530Char
+  name: TinyPaintStreams530Char
+shader:
+  author: davidar
+  description: Not as physically accurate as [url]https://www.shadertoy.com/view/WtfyDj[/url],
+    but 10x smaller
+  id: 7lVSDD
+  name: Tiny paint streams (530char)
+  tags:
+  - simulation
+  - fluid
+  - convolution
+  - 2tweets
+  - golf
+  url: https://www.shadertoy.com/view/7lVSDD

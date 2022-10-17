@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: CubeLines
+  id: CubeLines
+  kernel: CubeLines
+  name: CubeLines
+shader:
+  author: morimea
+  description: 'Art shader.
+
+
+    Cineshader support [url]https://cineshader.com/view/NslGRN[/url]
+
+
+    This shader as Desktop wallpaper in linux:
+
+    [b]for KDE[/b] [url]https://store.kde.org/p/1505365[/url]
+
+    [b]for Gnome[/b] [url]https://www.gnome-look.org/p/1505898/[/url]'
+  id: NslGRN
+  name: Cube lines
+  tags:
+  - 3d
+  - intersection
+  - art
+  - cineshader
+  url: https://www.shadertoy.com/view/NslGRN

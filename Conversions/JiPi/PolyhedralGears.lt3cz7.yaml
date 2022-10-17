@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: PolyhedralGears
+  id: PolyhedralGears
+  kernel: PolyhedralGears
+  name: PolyhedralGears
+shader:
+  author: Shane
+  description: Interlocked animated gears mapped onto the surface of a sphere via
+    a polyhedral Goldberg arrangement.
+  id: lt3cz7
+  name: Polyhedral Gears
+  tags:
+  - sphere
+  - animation
+  - icosahedron
+  - dodecahedron
+  - gear
+  - cog
+  - polyhedron
+  - goldberg
+  url: https://www.shadertoy.com/view/lt3cz7

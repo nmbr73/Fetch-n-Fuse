@@ -1,0 +1,1881 @@
+--[[--/*
+
+  MetaCrtSinglePass.fuse
+
+  Based on https://www.shadertoy.com/view/NljGR1 a WebGL shader created by P_Malin.
+  Converted to DCTL and embeddet into a Lua Fuse by JiPi (https://www.youtube.com/c/JiPi_YT).
+  Place this file in your Fusion's and/or DaVinci Resolve's 'Fuses/' folder to use it.
+
+*/--]]--
+
+
+
+
+-- /*
+-- MANDATORY -----------------------------------------------------------------
+local shadertoy_name       = "Meta CRT - Single Pass"
+local shadertoy_author     = "P_Malin"
+local shadertoy_id         = "NljGR1"
+local shadertoy_license    = ""
+local dctlfuse_category    = "Incubator"
+local dctlfuse_name        = "MetaCrtSinglePass"
+local dctlfuse_author      = "JiPi"
+-- OPTIONAL ------------------------------------------------------------------
+local dctlfuse_versionNo   = 1
+local dctlfuse_versionDate = "August 27, 2022"
+local dctlfuse_authorurl   = "https://www.youtube.com/c/JiPi_YT"
+local dctlfuse_authorlogo  = 'width="259" height="60" src="data:image/png;base64,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"'
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Registry declaration
+-- // ------------------------------------------------------------------------
+
+FuRegisterClass(
+
+-- >>> SCHNIPP::FUREGISTERCLASS.version="MonumentsAndSites"
+   (FC_PREFIX==nil and "ST_" or (FC_PREFIX=="" and "" or FC_PREFIX.."_"))..dctlfuse_name, CT_SourceTool, { REGS_Category = (FC_SUBMENU==nil and "Shadertoys (dev)" or (FC_SUBMENU=="" and "Fuses" or FC_SUBMENU))..(FC_CATEGORY==nil and "\\"..dctlfuse_category or ( FC_CATEGORY ~= "" and "\\"..FC_CATEGORY or "")), REGS_OpIconString = (FC_SCPREFIX==nil and "ST-" or (SC_SCPREFIX=="" and "" or FC_SCPREFIX.."-"))..shadertoy_id,
+   REGS_OpDescription = "Shadertoy '"..shadertoy_name.."' (ID: "..shadertoy_id..") created by "..shadertoy_author.." and ported by "..dctlfuse_author..(shadertoy_license == "" and ". Copyright "..shadertoy_author.." (CC BY-NC-SA 3.0)" or ". "..shadertoy_license)..". This port is by no means meant to take advantage of anyone or to do anyone wrong : Contact us on Discord (https://discord.gg/75FUn4N4pv) and/or GitHub (https://github.com/nmbr73/Shadertoys) if you see your rights abused or your intellectual property violated by this work.",
+   REG_Fuse_NoEdit = not(FC_DEVELOP==nil or FC_DEVELOP==true), REG_Fuse_NoReload = not(FC_DEVELOP==nil or FC_DEVELOP==true), REG_Fuse_TilePic = FC_TITLEPIC, REGS_Company = dctlfuse_company==nil and dctlfuse_author or dctlfuse_company, REGS_URL = dctlfuse_authorurl==nil and "https://nmbr73.github.io/Shadertoys/" or dctlfuse_authorurl,
+   REG_Version = FC_VERSIONNO~=nil and FC_VERSIONNO or (dctlfuse_versionNo==nil and 1 or dctlfuse_versionNo),
+-- <<< SCHNAPP::FUREGISTERCLASS
+
+  REG_NoObjMatCtrls      = true,
+  REG_NoMotionBlurCtrls  = true,
+  REG_Source_GlobalCtrls = false,
+  REG_Source_SizeCtrls   = true,
+  REG_Source_AspectCtrls = true,
+  REG_Source_DepthCtrls  = true,
+  REG_OpNoMask           = true,
+  REG_TimeVariant        = true,
+  })
+
+
+
+-- // ------------------------------------------------------------------------
+-- // DCTL kernel parameters
+-- // ------------------------------------------------------------------------
+
+-- */
+ShaderParameters =
+[[
+
+  float  iResolution[2];
+  float  iTime;
+  float  iMouse[4];
+  float  Color[4];
+  bool   BT709;
+  bool   MouseRotation;
+  float  ZoomMouse;
+  int    FIXED_CAMERA_INDEX;
+  float  UV[2];
+  float  FocusZ;
+  float  fSequenceSegLength;
+  float  VignetteScale;
+  float  VignettePower;
+  float  VignetteStrength;
+
+  int    width,height;
+  int    compOrder;
+
+]]
+-- /*
+
+
+
+-- // ------------------------------------------------------------------------
+-- DCTL kernel compatibility code
+-- // ------------------------------------------------------------------------
+
+-- */
+ShaderCompatibilityCode =
+[[
+
+
+#if defined(DEVICE_IS_METAL)
+  #define in
+  #define out thread
+  #define inout thread
+#else
+  #define in
+  #define out
+  #define inout
+#endif
+
+#undef USE_NATIVE_METAL_IMPL
+#undef USE_NATIVE_CUDA_IMPL
+#undef USE_NATIVE_OPENCL_IMPL
+
+  // 0 to use the generic implementations; 1 for Metal, OpenCL, Cuda specific code if existing
+
+  #if 1
+    #if defined(DEVICE_IS_METAL)
+      #define USE_NATIVE_METAL_IMPL   1
+    #elif defined(DEVICE_IS_CUDA)
+      #define USE_NATIVE_CUDA_IMPL    1
+    #elif defined(DEVICE_IS_OPENCL)
+      #define USE_NATIVE_OPENCL_IMPL  1
+    #endif
+  #endif
+
+  #if defined(USE_NATIVE_METAL_IMPL)
+
+    #define swi2(A,a,b)     (A).a##b
+    #define swi3(A,a,b,c)   (A).a##b##c
+
+    #define swi2S(a,b,c,d)   a.b##c = d
+    #define swi3S(a,b,c,d,e) a.b##c##d = e
+
+  #else
+
+    #define swi2(A,a,b)     to_float2((A).a,(A).b)
+    #define swi3(A,a,b,c)   to_float3((A).a,(A).b,(A).c)
+
+    #define swi2S(a,b,c,d)   {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;}
+    #define swi3S(a,b,c,d,e) {float3 tmp = e; (a).b = tmp.x; (a).c = tmp.y; (a).d = tmp.z;}
+
+  #endif
+
+// ----------------------------------------------------------------------------------------------------------
+// mat3 implementation
+// ----------------------------------------------------------------------------------------------------------
+
+#if defined(USE_NATIVE_METAL_IMPL)
+
+  typedef float3x3 mat3;
+
+  __DEVICE__ inline mat3 to_mat3_f3( float3 a, float3 b, float3 c ) { return mat3(a,b,c); }
+  __DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) { return (B*A); }
+  __DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) { return (A*B); }
+
+#else
+
+  typedef struct { float3 r0; float3 r1; float3 r2; } mat3;
+
+  __DEVICE__ inline mat3 to_mat3_f3( float3 A, float3 B, float3 C)
+  {
+    mat3 D;
+    D.r0 = A;
+    D.r1 = B;
+    D.r2 = C;
+    return D;
+  }
+
+__DEVICE__ inline float3 mul_mat3_f3( mat3 B, float3 A) {
+    float3 C;
+
+    C.x = A.x * B.r0.x + A.y * B.r1.x + A.z * B.r2.x;
+    C.y = A.x * B.r0.y + A.y * B.r1.y + A.z * B.r2.y;
+    C.z = A.x * B.r0.z + A.y * B.r1.z + A.z * B.r2.z;
+    return C;
+  }
+
+__DEVICE__ inline float3 mul_f3_mat3( float3 A, mat3 B) {
+    float3 C;
+
+    C.x = A.x * B.r0.x + A.y * B.r0.y + A.z * B.r0.z;
+    C.y = A.x * B.r1.x + A.y * B.r1.y + A.z * B.r1.z;
+    C.z = A.x * B.r2.x + A.y * B.r2.y + A.z * B.r2.z;
+    return C;
+  }
+
+#endif // end of mat3 implementation
+
+#if defined(USE_NATIVE_METAL_IMPL)
+
+ #define fract_f2(A) fract(A)
+ #define fract_f3(A) fract(A)
+
+ #define abs_f2(a) _fabs(a)
+ #define abs_f3(a) _fabs(a)
+ #define sqrt_f3(a) _sqrtf(a)
+ #define log2_f3(a) log2(a)
+
+#else
+
+  #if defined(USE_NATIVE_OPENCL_IMPL)
+
+    #define reflect(I,N) (I-2.0f*dot(N,I)*N)
+
+    #define fract(a) ((a)-_floor(a))  // oder Pointer bauen: gentype fract(gentype x, gentype *itpr)
+
+ #define fract_f2(A) to_float2(fract((A).x),fract((A).y))
+ #define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
+ #define abs_f2(a) fabs(a)
+ #define abs_f3(a) fabs(a)
+ #define sqrt_f3(a) _sqrtf(a)
+ #define log2_f3(a) log2(a)
+
+ #else // Generic
+
+ #if defined(DEVICE_IS_OPENCL)
+   __DEVICE__ float3 reflect(float3 I, float3 N) {return I - 2.0f * dot(N, I) * N;}
+ #endif
+
+ #if defined(DEVICE_IS_CUDA)
+   #define radians(a) a * M_PI/180.0f
+ #endif
+
+    #define fract(a) ((a)-_floor(a))
+
+ #define fract_f2(A) to_float2(fract((A).x),fract((A).y))
+ #define fract_f3(A) to_float3(fract((A).x),fract((A).y),fract((A).z))
+ #define abs_f2(a) to_float2(_fabs((a).x), _fabs((a).y))
+ #define abs_f3(a) to_float3(_fabs((a).x), _fabs((a).y),_fabs((a).z))
+ #define sqrt_f3(a) to_float3(_sqrtf((a).x),_sqrtf((a).y),_sqrtf((a).z))
+ #define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))
+
+  #endif
+
+#endif
+
+__DEVICE__ float4 decube_f3(__TEXTURE2D__ t, float3 xyz)
+{
+  float ax=_fabs(xyz.x);
+  float ay=_fabs(xyz.y);
+  float az=_fabs(xyz.z);
+
+  if (xyz.x>0.0f && ax>=ay && ax>=az) // +X, Face 0, right
+    return _tex2DVecN(t,(-xyz.z/ax+1.0f)/8.0f + 0.5f,(xyz.y/ax+1.0f)/6.0f + (1.0f/3.0f),15);
+
+  if (xyz.y>0.0f && ay>=ax && ay>=az) // +Y, Face 2, top
+    return _tex2DVecN(t,(xyz.x/ay+1.0f)/8.0f + 0.25f,(-xyz.z/ay+1.0f)/6.0f + (2.0f/3.0f),15);
+
+  if (xyz.z>0.0f && az>=ax && az>=ay) // +Z, Face 4, front
+    return _tex2DVecN(t,(xyz.x/az+1.0f)/8.0f + 0.25f,(xyz.y/az+1.0f)/6.0f + (1.0f/3.0f),15);
+
+  if (xyz.x<0.0f && ax>=ay && ax>=az) // -X, Face 1, left
+    return _tex2DVecN(t,(xyz.z/ax+1.0f)/8.0f,(xyz.y/ax+1.0f)/6.0f + (1.0f/3.0f),15);
+
+  if (xyz.y<0.0f && ay>=ax && ay>=az) // -Y, Face 3, bottom
+    return _tex2DVecN(t,(xyz.x/ay+1.0f)/8.0f + 0.25f,(xyz.z/ay+1.0f)/6.0f,15);
+
+  if (xyz.z<0.0f && az>=ax && az>=ay) // -Z, Face 5, back
+    return _tex2DVecN(t,(-xyz.x/az+1.0f)/8.0f + 0.75f,(xyz.y/az+1.0f)/6.0f + (1.0f/3.0f),15);
+
+  return to_float4(1.0f,0.0f,0.0f,1.0f); // error
+}
+
+
+]]
+-- /*
+
+
+
+-- // ------------------------------------------------------------------------
+-- DCTL kernel implementation
+-- // ------------------------------------------------------------------------
+
+-- */
+ShaderKernelCode =
+[[
+
+// ----------------------------------------------------------------------------------
+// - Image                                                                          -
+// ----------------------------------------------------------------------------------
+// Connect Image '/presets/webcam.png' to iChannel0
+
+#define texture(ch,uv) _tex2DVecN(ch, (uv).x, (uv).y, 15)
+
+// Meta CRT - Single Pass - @P_Malin
+// A single pass version of Meta CRT : https://www.shadertoy.com/view/4dlyWX
+
+// This can be used as a webcam fiter in Memix
+// See github here : https://github.com/pmalin/pmalin-memix-shaders
+
+//#define FIXED_CAMERA_INDEX 2
+
+#define FLIP_V 0
+
+#define USE_MOUSE 1
+
+
+#define PI 3.141592654f
+
+
+///////////////////////////
+// Hash Functions
+///////////////////////////
+
+// From: Hash without Sine by Dave Hoskins
+// https://www.shadertoy.com/view/4djSRW
+
+// *** Use this for integer stepped ranges, ie Value-Noise/Perlin noise functions.
+//#define HASHSCALE1 .1031
+//#define HASHSCALE3 to_float3(0.1031f, 0.1030f, 0.0973f)
+//#define HASHSCALE4 to_float4(1031, 0.1030f, 0.0973f, 0.1099f)
+
+// For smaller input rangers like audio tick or 0-1 UVs use these...
+#define HASHSCALE1 443.8975f
+#define HASHSCALE3 to_float3(443.897f, 441.423f, 437.195f)
+#define HASHSCALE4 to_float3(443.897f, 441.423f, 437.195f, 444.129f)
+
+
+//----------------------------------------------------------------------------------------
+//  1 out, 1 in...
+__DEVICE__ float hash11(float p)
+{
+  float3 p3  = fract_f3(to_float3_s(p) * HASHSCALE1);
+  p3 += dot(p3, swi3(p3,y,z,x) + 19.19f);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+//  2 out, 1 in...
+__DEVICE__ float2 hash21(float p)
+{
+  float3 p3 = fract_f3(to_float3_s(p) * HASHSCALE3);
+  p3 += dot(p3, swi3(p3,y,z,x) + 19.19f);
+  return fract_f2((swi2(p3,x,x)+swi2(p3,y,z))*swi2(p3,z,y));
+
+}
+
+///  2 out, 3 in...
+__DEVICE__ float2 hash23(float3 p3)
+{
+  p3 = fract_f3(p3 * HASHSCALE3);
+  p3 += dot(p3, swi3(p3,y,z,x)+19.19f);
+  return fract_f2((swi2(p3,x,x)+swi2(p3,y,z))*swi2(p3,z,y));
+}
+
+//  1 out, 3 in...
+__DEVICE__ float hash13(float3 p3)
+{
+  p3  = fract_f3(p3 * HASHSCALE1);
+  p3 += dot(p3, swi3(p3,y,z,x) + 19.19f);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+
+#define kMaxTraceDist 1000.0f
+#define kFarDist      1100.0f
+
+#define MAT_FG_BEGIN  10
+
+///////////////////////////
+// Scene
+///////////////////////////
+
+struct SceneResult
+{
+  float fDist;
+  int iObjectId;
+  float3 vUVW;
+};
+
+__DEVICE__ void Scene_Union( inout SceneResult *a, in SceneResult b )
+{
+    if ( b.fDist < (*a).fDist )
+    {
+        *a = b;
+    }
+}
+
+
+__DEVICE__ void Scene_Subtract( inout SceneResult *a, in SceneResult b )
+{
+    if ( (*a).fDist < -b.fDist )
+    {
+        (*a).fDist = -b.fDist;
+        (*a).iObjectId = b.iObjectId;
+        (*a).vUVW = b.vUVW;
+    }
+}
+
+__DEVICE__ SceneResult Scene_GetDistance( float3 vPos );
+
+__DEVICE__ float3 Scene_GetNormal(const in float3 vPos)
+{
+
+    const float fDelta = 0.0001f;
+    float2 e = to_float2( -1, 1 );
+
+    float3 vNormal =
+                      Scene_GetDistance( swi3(e,y,x,x) * fDelta + vPos ).fDist * swi3(e,y,x,x) +
+                      Scene_GetDistance( swi3(e,x,x,y) * fDelta + vPos ).fDist * swi3(e,x,x,y) +
+                      Scene_GetDistance( swi3(e,x,y,x) * fDelta + vPos ).fDist * swi3(e,x,y,x) +
+                      Scene_GetDistance( swi3(e,y,y,y) * fDelta + vPos ).fDist * swi3(e,y,y,y);
+
+    return normalize( vNormal );
+}
+
+__DEVICE__ SceneResult Scene_Trace( const in float3 vRayOrigin, const in float3 vRayDir, float minDist, float maxDist )
+{
+  SceneResult result;
+  result.fDist = 0.0f;
+  result.vUVW = to_float3_s(0.0f);
+  result.iObjectId = -1;
+
+  float t = minDist;
+  const int kRaymarchMaxIter = 128;
+  for(int i=0; i<kRaymarchMaxIter; i++)
+  {
+    float epsilon = 0.0001f * t;
+    result = Scene_GetDistance( vRayOrigin + vRayDir * t );
+    if ( _fabs(result.fDist) < epsilon )
+    {
+      break;
+    }
+
+        if ( t > maxDist )
+        {
+            result.iObjectId = -1;
+          t = maxDist;
+            break;
+        }
+
+        if ( result.fDist > 1.0f )
+        {
+            result.iObjectId = -1;
+        }
+
+        t += result.fDist;
+  }
+
+    result.fDist = t;
+
+    return result;
+}
+
+__DEVICE__ float Scene_TraceShadow( const in float3 vRayOrigin, const in float3 vRayDir, const in float fMinDist, const in float fLightDist )
+{
+    //return 1.0f;
+    //return ( Scene_Trace( vRayOrigin, vRayDir, 0.1f, fLightDist ).fDist < fLightDist ? 0.0f : 1.0f;
+
+    float res = 1.0f;
+    float t = fMinDist;
+    for( int i=0; i<16; i++ )
+    {
+      float h = Scene_GetDistance( vRayOrigin + vRayDir * t ).fDist;
+      res = _fminf( res, 8.0f*h/t );
+      t += clamp( h, 0.02f, 0.10f );
+      if( h<0.0001f || t>fLightDist ) break;
+    }
+    return clamp( res, 0.0f, 1.0f );
+}
+
+__DEVICE__ float Scene_GetAmbientOcclusion( const in float3 vPos, const in float3 vDir )
+{
+    float fOcclusion = 0.0f;
+    float fScale = 1.0f;
+    for( int i=0; i<5; i++ )
+    {
+        float fOffsetDist = 0.001f + 0.1f*float(i)/4.0f;
+        float3 vAOPos = vDir * fOffsetDist + vPos;
+        float fDist = Scene_GetDistance( vAOPos ).fDist;
+        fOcclusion += (fOffsetDist - fDist) * fScale;
+        fScale *= 0.4f;
+    }
+
+    return clamp( 1.0f - 30.0f*fOcclusion, 0.0f, 1.0f );
+}
+
+///////////////////////////
+// Lighting
+///////////////////////////
+
+struct SurfaceInfo
+{
+    float3 vPos;
+    float3 vNormal;
+    float3 vBumpNormal;
+    float3 vAlbedo;
+    float3 vR0;
+    float fSmoothness;
+    float3 vEmissive;
+};
+
+__DEVICE__ SurfaceInfo Scene_GetSurfaceInfo( const in float3 vRayOrigin,  const in float3 vRayDir, SceneResult traceResult, __TEXTURE2D__ iChannel0, float iTime );
+
+struct SurfaceLighting
+{
+    float3 vDiffuse;
+    float3 vSpecular;
+};
+
+__DEVICE__ SurfaceLighting Scene_GetSurfaceLighting( const in float3 vRayDir, in SurfaceInfo surfaceInfo );
+
+__DEVICE__ float Light_GIV( float dotNV, float k)
+{
+  return 1.0f / ((dotNV + 0.0001f) * (1.0f - k)+k);
+}
+
+__DEVICE__ void Light_Add(inout SurfaceLighting *lighting, SurfaceInfo surface, const in float3 vViewDir, const in float3 vLightDir, const in float3 vLightColour)
+{
+  float fNDotL = clamp(dot(vLightDir, surface.vBumpNormal), 0.0f, 1.0f);
+
+  (*lighting).vDiffuse += vLightColour * fNDotL;
+
+  float3 vH = normalize( -1.0f*vViewDir + vLightDir );
+  float fNdotV = clamp(dot(-1.0f*vViewDir, surface.vBumpNormal), 0.0f, 1.0f);
+  float fNdotH = clamp(dot(surface.vBumpNormal, vH), 0.0f, 1.0f);
+
+  float alpha = 1.0f - surface.fSmoothness;
+  // D
+
+  float alphaSqr = alpha * alpha;
+  float denom = fNdotH * fNdotH * (alphaSqr - 1.0f) + 1.0f;
+  float d = alphaSqr / (PI * denom * denom);
+
+  float k = alpha / 2.0f;
+  float vis = Light_GIV(fNDotL, k) * Light_GIV(fNdotV, k);
+
+  float fSpecularIntensity = d * vis * fNDotL;
+  (*lighting).vSpecular += vLightColour * fSpecularIntensity;
+}
+
+__DEVICE__ void Light_AddPoint(inout SurfaceLighting *lighting, SurfaceInfo surface, const in float3 vViewDir, const in float3 vLightPos, const in float3 vLightColour)
+{
+  float3 vPos = surface.vPos;
+  float3 vToLight = vLightPos - vPos;
+
+  float3 vLightDir = normalize(vToLight);
+  float fDistance2 = dot(vToLight, vToLight);
+  float fAttenuation = 100.0f / (fDistance2);
+
+  float fShadowFactor = Scene_TraceShadow( surface.vPos, vLightDir, 0.1f, length(vToLight) );
+
+  Light_Add( lighting, surface, vViewDir, vLightDir, vLightColour * fShadowFactor * fAttenuation);
+}
+
+__DEVICE__ void Light_AddDirectional(inout SurfaceLighting *lighting, SurfaceInfo surface, const in float3 vViewDir, const in float3 vLightDir, const in float3 vLightColour)
+{
+  float fAttenuation = 1.0f;
+  float fShadowFactor = Scene_TraceShadow( surface.vPos, vLightDir, 0.1f, 10.0f );
+
+  Light_Add( lighting, surface, vViewDir, vLightDir, vLightColour * fShadowFactor * fAttenuation);
+}
+
+__DEVICE__ float3 Light_GetFresnel( float3 vView, float3 vNormal, float3 vR0, float fGloss )
+{
+    float NdotV = _fmaxf( 0.0f, dot( vView, vNormal ) );
+
+    return vR0 + (to_float3_s(1.0f) - vR0) * _powf( 1.0f - NdotV, 5.0f ) * _powf( fGloss, 20.0f );
+}
+
+__DEVICE__ void Env_AddPointLightFlare(inout float3 vEmissiveGlow, const in float3 vRayOrigin, const in float3 vRayDir, const in float fIntersectDistance, const in float3 vLightPos, const in float3 vLightColour)
+{
+  float3 vToLight = vLightPos - vRayOrigin;
+  float fPointDot = dot(vToLight, vRayDir);
+  fPointDot = clamp(fPointDot, 0.0f, fIntersectDistance);
+
+  float3 vClosestPoint = vRayOrigin + vRayDir * fPointDot;
+  float fDist = length(vClosestPoint - vLightPos);
+  vEmissiveGlow += sqrt_f3(vLightColour * 0.05f / (fDist * fDist));
+}
+
+__DEVICE__ void Env_AddDirectionalLightFlareToFog(inout float3 *vFogColour, const in float3 vRayDir, const in float3 vLightDir, const in float3 vLightColour)
+{
+  float fDirDot = clamp(dot(vLightDir, vRayDir) * 0.5f + 0.5f, 0.0f, 1.0f);
+  float kSpreadPower = 2.0f;
+  *vFogColour += vLightColour * _powf(fDirDot, kSpreadPower) * 0.25f;
+}
+
+
+///////////////////////////
+// Rendering
+///////////////////////////
+
+__DEVICE__ float4 Env_GetSkyColor( const float3 vViewPos, const float3 vViewDir, __TEXTURE2D__ iChannel1 );
+__DEVICE__ float3 Env_ApplyAtmosphere( const in float3 vColor, const in float3 vRayOrigin,  const in float3 vRayDir, const in float fDist );
+__DEVICE__ float3 FX_Apply( in float3 vColor, const in float3 vRayOrigin,  const in float3 vRayDir, const in float fDist);
+
+__DEVICE__ float4 Scene_GetColorAndDepth( float3 vRayOrigin, float3 vRayDir, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, float iTime )
+{
+  float3 vResultColor = to_float3_s(0.0f);
+
+  SceneResult firstTraceResult;
+
+  float fStartDist = 0.0f;
+  float fMaxDist = 10.0f;
+
+  float3 vRemaining = to_float3_s(1.0f);
+
+  for( int iPassIndex=0; iPassIndex < 3; iPassIndex++ )
+  {
+    SceneResult traceResult = Scene_Trace( vRayOrigin, vRayDir, fStartDist, fMaxDist );
+
+    if ( iPassIndex == 0 )
+    {
+        firstTraceResult = traceResult;
+    }
+
+    float3 vColor = to_float3_s(0);
+    float3 vReflectAmount = to_float3_s(0);
+
+    if( traceResult.iObjectId < 0 )
+    {
+      vColor = swi3(Env_GetSkyColor( vRayOrigin, vRayDir, iChannel1 ),x,y,z);//.rgb;
+    }
+    else
+    {
+
+      SurfaceInfo surfaceInfo = Scene_GetSurfaceInfo( vRayOrigin, vRayDir, traceResult, iChannel0, iTime );
+      SurfaceLighting surfaceLighting = Scene_GetSurfaceLighting( vRayDir, surfaceInfo );
+
+      // calculate reflectance (Fresnel)
+      vReflectAmount = Light_GetFresnel( -vRayDir, surfaceInfo.vBumpNormal, surfaceInfo.vR0, surfaceInfo.fSmoothness );
+
+      vColor = (surfaceInfo.vAlbedo * surfaceLighting.vDiffuse + surfaceInfo.vEmissive) * (to_float3_s(1.0f) - vReflectAmount);
+
+      float3 vReflectRayOrigin = surfaceInfo.vPos;
+      float3 vReflectRayDir = normalize( reflect( vRayDir, surfaceInfo.vBumpNormal ) );
+      fStartDist = 0.001f / _fmaxf(0.0000001f,_fabs(dot( vReflectRayDir, surfaceInfo.vNormal )));
+
+      vColor += surfaceLighting.vSpecular * vReflectAmount;
+
+      vColor = Env_ApplyAtmosphere( vColor, vRayOrigin, vRayDir, traceResult.fDist );
+      vColor = FX_Apply( vColor, vRayOrigin, vRayDir, traceResult.fDist );
+
+      vRayOrigin = vReflectRayOrigin;
+      vRayDir = vReflectRayDir;
+    }
+
+    vResultColor += vColor * vRemaining;
+    vRemaining *= vReflectAmount;
+  }
+
+  return to_float4_aw( vResultColor, firstTraceResult.fDist );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////
+// Scene Description
+/////////////////////////
+
+// Materials
+
+#define MAT_SKY       -1
+#define MAT_DEFAULT    0
+#define MAT_SCREEN     1
+#define MAT_TV_CASING    2
+#define MAT_TV_TRIM      3
+#define MAT_CHROME       4
+
+
+__DEVICE__ float3 PulseIntegral( float3 x, float s1, float s2 )
+{
+  // Integral of function where result is 1.0f between s1 and s2 and 0 otherwise
+
+  // V1
+  //if ( x > s2 ) return s2 - s1;
+  //else if ( x > s1 ) return x - s1;
+  //return 0.0f;
+
+  // V2
+  //return clamp( (x - s1), 0.0f, s2 - s1);
+  //return t;
+
+  return clamp( (x - s1), to_float3_s(0.0f), to_float3_s(s2 - s1));
+}
+
+__DEVICE__ float PulseIntegral( float x, float s1, float s2 )
+{
+  // Integral of function where result is 1.0f between s1 and s2 and 0 otherwise
+
+  // V1
+  //if ( x > s2 ) return s2 - s1;
+  //else if ( x > s1 ) return x - s1;
+  //return 0.0f;
+
+  // V2
+  //return clamp( (x - s1), 0.0f, s2 - s1);
+  //return t;
+
+  return clamp( (x - s1), (0.0f), (s2 - s1));
+}
+
+__DEVICE__ float3 Bayer( float2 vUV, float2 vBlur )
+{
+    float3 x = to_float3_s(vUV.x);
+    float3 y = to_float3_s(vUV.y);
+
+    x += to_float3(0.66f, 0.33f, 0.0f);
+    y += 0.5f * step( fract_f3( x * 0.5f ), to_float3_s(0.5f) );
+
+    //x -= 0.5f;
+    //y -= 0.5f;
+
+    x = fract_f3( x );
+    y = fract_f3( y );
+
+    // cell centered at 0.5
+
+    float2 vSize = to_float2(0.16f, 0.75f);
+
+    float2 vMin = 0.5f - vSize * 0.5f;
+    float2 vMax = 0.5f + vSize * 0.5f;
+
+    float3 vResult= to_float3_s(0.0f);
+
+    float3 vResultX = (PulseIntegral( x + vBlur.x, vMin.x, vMax.x) - PulseIntegral( x - vBlur.x, vMin.x, vMax.x)) / _fminf( vBlur.x, 1.0f);
+    float3 vResultY = (PulseIntegral(y + vBlur.y, vMin.y, vMax.y) - PulseIntegral(y - vBlur.y, vMin.y, vMax.y))  / _fminf( vBlur.y, 1.0f);
+
+    vResult = _fminf(vResultX,vResultY)  * 5.0f;
+
+    //vResult = to_float3_s(1.0f);
+
+    return vResult;
+}
+
+__DEVICE__ float3 GetPixelMatrix( float2 vUV )
+{
+#if 0
+    float2 dx = dFdx( vUV );
+    float2 dy = dFdy( vUV );
+    float dU = length( to_float2( dx.x, dy.x ) );
+    float dV = length( to_float2( dx.y, dy.y ) );
+    if (dU <= 0.0f || dV <= 0.0f ) return to_float3_s(1.0f);
+    return Bayer( vUV, to_float2(dU, dV) * 1.0f);
+#else
+    return to_float3_s(1.0f);
+#endif
+}
+
+__DEVICE__ float Scanline( float y, float fBlur )
+{
+    float fResult = _sinf( y * 10.0f ) * 0.45f + 0.55f;
+    return _mix( fResult, 1.0f, _fminf( 1.0f, fBlur ) );
+}
+
+
+__DEVICE__ float GetScanline( float2 vUV )
+{
+#if 0
+    vUV.y *= 0.25f;
+    float2 dx = dFdx( vUV );
+    float2 dy = dFdy( vUV );
+    float dV = length( to_float2( dx.y, dy.y ) );
+    if (dV <= 0.0f ) return 1.0f;
+    return Scanline( vUV.y, dV * 1.3f );
+#else
+    return 1.0f;
+#endif
+}
+
+
+__DEVICE__ float2 kScreenRsolution = {480.0f, 576.0f};
+
+struct Interference
+{
+    float noise;
+    float scanLineRandom;
+};
+
+__DEVICE__ float InterferenceHash(float p)
+{
+    float hashScale = 0.1031f;
+
+    float3 p3  = fract_f3(to_float3(p, p, p) * hashScale);
+    p3 += dot(p3, swi3(p3,y,z,x) + 19.19f);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+
+__DEVICE__ float InterferenceSmoothNoise1D( float x )
+{
+    float f0 = _floor(x);
+    float fr = fract(x);
+
+    float h0 = InterferenceHash( f0 );
+    float h1 = InterferenceHash( f0 + 1.0f );
+
+    return h1 * fr + h0 * (1.0f - fr);
+}
+
+
+__DEVICE__ float InterferenceNoise( float2 uv, float iTime )
+{
+  float displayVerticalLines = 483.0f;
+  float scanLine = _floor(uv.y * displayVerticalLines);
+  float scanPos = scanLine + uv.x;
+  float timeSeed = fract( iTime * 123.78f );
+
+  return InterferenceSmoothNoise1D( scanPos * 234.5f + timeSeed * 12345.6f );
+}
+
+__DEVICE__ Interference GetInterference( float2 vUV, float iTime )
+{
+    Interference interference;
+
+    interference.noise = InterferenceNoise( vUV, iTime );
+    interference.scanLineRandom = InterferenceHash(vUV.y * 100.0f + fract(iTime * 1234.0f) * 12345.0f);
+
+    return interference;
+}
+
+__DEVICE__ float3 SampleScreen( float3 vUVW, __TEXTURE2D__ iChannel0, float iTime )
+{
+    float3 vAmbientEmissive = to_float3_s(0.1f);
+    float3 vBlackEmissive = to_float3_s(0.02f);
+    float fBrightness = 1.75f;
+    float2 vResolution = to_float2(480.0f, 576.0f);
+    float2 vPixelCoord = swi2(vUVW,x,y) * vResolution;
+
+    float3 vPixelMatrix = GetPixelMatrix( vPixelCoord );
+    float fScanline = GetScanline( vPixelCoord );
+
+    float2 vTextureUV = swi2(vUVW,x,y);
+    //vec2 vTextureUV = vPixelCoord;
+    vTextureUV = _floor(vTextureUV * vResolution * 2.0f) / (vResolution * 2.0f);
+
+
+    Interference interference = GetInterference( vTextureUV, iTime );
+
+    float noiseIntensity = 0.1f;
+
+    //vTextureUV.x += (interference.scanLineRandom * 2.0f - 1.0f) * 0.025f * noiseIntensity;
+
+    float2 vSampleUV = vTextureUV;
+    #if FLIP_V
+    vSampleUV.y = 1.0f - vSampleUV.y;
+    #endif
+
+    float3 vPixelEmissive = swi3(texture( iChannel0, swi2(vSampleUV,x,y)),x,y,z);//.rgb;
+
+    vPixelEmissive = vPixelEmissive * vPixelEmissive;
+
+    vPixelEmissive = clamp( vPixelEmissive + (interference.noise - 0.5f) * 2.0f * noiseIntensity, 0.0f, 1.0f );
+
+    float3 vResult = (vPixelEmissive * fBrightness + vBlackEmissive) * vPixelMatrix * fScanline + vAmbientEmissive;
+
+    // TODO: feather edge?
+    //if( any( greaterThanEqual( swi2(vUVW,x,y), to_float2_s(1.0f) ) ) || any ( lessThan( swi2(vUVW,x,y), to_float2_s(0.0f) ) ) || ( vUVW.z > 0.0f ) )
+
+    if((vUVW.x >= 1.0f || vUVW.y >= 1.0f)  ||  (vUVW.x < 0.0f || vUVW.y < 0.0f) || ( vUVW.z > 0.0f ) )
+    {
+      return to_float3_s(0.0f);
+    }
+
+    return vResult;
+
+}
+
+__DEVICE__ float Checker(float2 vUV)
+{
+  return step(fract((_floor(vUV.x) + _floor(vUV.y)) * 0.5f), 0.25f);
+}
+
+__DEVICE__ SurfaceInfo Scene_GetSurfaceInfo( const in float3 vRayOrigin,  const in float3 vRayDir, SceneResult traceResult, __TEXTURE2D__ iChannel0, float iTime )
+{
+    SurfaceInfo surfaceInfo;
+
+    surfaceInfo.vPos = vRayOrigin + vRayDir * (traceResult.fDist);
+
+    surfaceInfo.vNormal = Scene_GetNormal( surfaceInfo.vPos );
+    surfaceInfo.vBumpNormal = surfaceInfo.vNormal;
+    surfaceInfo.vAlbedo = to_float3_s(1.0f);
+    surfaceInfo.vR0 = to_float3_s( 0.02f );
+    surfaceInfo.fSmoothness = 1.0f;
+    surfaceInfo.vEmissive = to_float3_s( 0.0f );
+    //return surfaceInfo;
+
+    if ( traceResult.iObjectId == MAT_DEFAULT )
+    {
+      surfaceInfo.vR0 = to_float3_s( 0.02f );
+      float checker = Checker(swi2(traceResult.vUVW,x,z) * 4.0f);
+      surfaceInfo.vAlbedo = _mix( to_float3(0.9f,0.2f,0.2f),to_float3(0.2f,0.2f,0.9f), checker );
+      surfaceInfo.fSmoothness = clamp( 1.0f - surfaceInfo.vAlbedo.x * surfaceInfo.vAlbedo.x * 2.0f, 0.0f, 1.0f);
+
+    }
+
+    if ( traceResult.iObjectId == MAT_SCREEN )
+    {
+      surfaceInfo.vAlbedo = to_float3_s(0.02f);
+      surfaceInfo.vEmissive = SampleScreen( traceResult.vUVW, iChannel0, iTime );
+    }
+
+    if ( traceResult.iObjectId == MAT_TV_CASING )
+    {
+      surfaceInfo.vAlbedo = to_float3(0.5f, 0.4f, 0.3f);
+      surfaceInfo.fSmoothness = 0.4f;
+    }
+
+    if ( traceResult.iObjectId == MAT_TV_TRIM )
+    {
+      surfaceInfo.vAlbedo = to_float3(0.03f, 0.03f, 0.05f);
+      surfaceInfo.fSmoothness = 0.5f;
+    }
+
+    if ( traceResult.iObjectId == MAT_CHROME )
+    {
+      surfaceInfo.vAlbedo = to_float3(0.01f, 0.01f, 0.01f);
+      surfaceInfo.fSmoothness = 0.9f;
+      surfaceInfo.vR0 = to_float3_s( 0.8f );
+    }
+
+    return surfaceInfo;
+}
+
+// Scene Description
+
+__DEVICE__ float SmoothMin( float a, float b, float k )
+{
+  //return _fminf(a,b);
+
+
+  //float k = 0.06f;
+  float h = clamp( 0.5f + 0.5f*(b-a)/k, 0.0f, 1.0f );
+  return _mix( b, a, h ) - k*h*(1.0f-h);
+}
+
+__DEVICE__ float UdRoundBox( float3 p, float3 b, float r )
+{
+    //vec3 vToFace = _fabs(p) - b;
+    //vec3 vConstrained = _fmaxf( vToFace, 0.0f );
+    //return length( vConstrained ) - r;
+    return length(_fmaxf(abs_f3(p)-b, to_float3_s(0.0f)))-r;
+}
+
+__DEVICE__ SceneResult Scene_GetCRT( float3 vScreenDomain, float2 vScreenWH, float fScreenCurveRadius, float fBevel, float fDepth )
+{
+    SceneResult resultScreen;
+#if 1
+    float3 vScreenClosest;
+    swi2S(vScreenClosest,x,y, _fmaxf(abs_f2(swi2(vScreenDomain,x,y))-vScreenWH, to_float2_s(0.0f)));
+    float2 vCurveScreenDomain = swi2(vScreenDomain,x,y);
+    vCurveScreenDomain = clamp( vCurveScreenDomain, -vScreenWH, vScreenWH );
+    float fCurveScreenProjection2 = fScreenCurveRadius * fScreenCurveRadius - vCurveScreenDomain.x * vCurveScreenDomain.x - vCurveScreenDomain.y * vCurveScreenDomain.y;
+    float fCurveScreenProjection = _sqrtf( fCurveScreenProjection2 ) - fScreenCurveRadius;
+    vScreenClosest.z = vScreenDomain.z - clamp( vScreenDomain.z, -fCurveScreenProjection, fDepth );
+    resultScreen.vUVW.z = vScreenDomain.z + fCurveScreenProjection;
+    resultScreen.fDist = (length( vScreenClosest ) - fBevel) * 0.95f;
+    //resultScreen.fDist = (length( vScreenDomain - to_float3(0,0,fScreenCurveRadius)) - fScreenCurveRadius - fBevel);
+#endif
+
+#if 0
+    float3 vScreenClosest;
+    swi3S(vScreenClosest,x,y,z, _fmaxf(_fabs(swi3(vScreenDomain,x,y,z))-to_float3_aw(vScreenWH, fDepth),0.0f));
+    float fRoundDist = length( swi3(vScreenClosest,x,y,z) ) - fBevel;
+    float fSphereDist = length( vScreenDomain - to_float3(0,0,fScreenCurveRadius) ) - (fScreenCurveRadius + fBevel);
+    resultScreen.fDist = _fmaxf(fRoundDist, fSphereDist);
+#endif
+
+    swi2S(resultScreen.vUVW,x,y, (swi2(vScreenDomain,x,y) / vScreenWH) * 0.5f + 0.5f);
+    resultScreen.iObjectId = MAT_SCREEN;
+    return resultScreen;
+}
+
+__DEVICE__ SceneResult Scene_GetComputer( float3 vPos )
+{
+    SceneResult resultComputer;
+    resultComputer.vUVW = swi3(vPos,x,z,y);
+
+    float fXSectionStart = -0.2f;
+    float fXSectionLength = 0.15f;
+    float fXSectionT = clamp( (vPos.z - fXSectionStart) / fXSectionLength, 0.0f, 1.0f);
+    float fXSectionR1 = 0.03f;
+    float fXSectionR2 = 0.05f;
+    float fXSectionR = _mix( fXSectionR1, fXSectionR2, fXSectionT );
+    float fXSectionZ = fXSectionStart + fXSectionT * fXSectionLength;
+
+    float2 vXSectionCentre = to_float2(fXSectionR, fXSectionZ );
+    float2 vToPos = swi2(vPos,y,z) - vXSectionCentre;
+    float l = length( vToPos );
+    if ( l > fXSectionR ) l = fXSectionR;
+    float2 vXSectionClosest = vXSectionCentre + normalize(vToPos) * l;
+    //float fXSectionDist = length( vXSectionClosest ) - fXSectionR;
+
+    float x = _fmaxf( _fabs( vPos.x ) - 0.2f, 0.0f );
+
+    //resultComputer.fDist = length( to_float3(x, vXSectionClosest - swi2(vPos,y,z)) )-0.01f;
+    resultComputer.fDist = length( to_float3(x, vXSectionClosest.x-vPos.y, vXSectionClosest.x-vPos.z) )-0.01f;
+    //resultComputer.fDist = x;
+
+    resultComputer.iObjectId = MAT_TV_CASING;
+//
+    float3 vKeyPos = swi3(vPos,x,y,z) - to_float3(0,0.125f,0);
+    vKeyPos.y -= vKeyPos.z * (fXSectionR2 - fXSectionR1) * 2.0f / fXSectionLength;
+    float fDomainRepeatScale = 0.02f;
+    if ( fract(vKeyPos.z * 0.5f / fDomainRepeatScale + 0.25f) > 0.5f) vKeyPos.x += fDomainRepeatScale * 0.5f;
+    float2 vKeyIndex = round(swi2(vKeyPos,x,z) / fDomainRepeatScale);
+    vKeyIndex.x = clamp( vKeyIndex.x, -8.0f, 8.0f );
+    vKeyIndex.y = clamp( vKeyIndex.y, -10.0f, -5.0f );
+    //swi2(vKeyPos,x,z) = (fract( swi2(vKeyPos,x,z) / fDomainRepeatScale ) - 0.5f) * fDomainRepeatScale;
+    swi2S(vKeyPos,x,z, (swi2(vKeyPos,x,z) - (vKeyIndex) * fDomainRepeatScale));
+    swi2S(vKeyPos,x,z, swi2(vKeyPos,x,z) / 0.7f + vKeyPos.y);
+    SceneResult resultKey;
+    resultKey.vUVW = swi3(vPos,x,z,y);
+    resultKey.fDist = UdRoundBox( vKeyPos, to_float3_s(0.01f), 0.001f );
+    resultKey.iObjectId = MAT_TV_TRIM;
+    Scene_Union( &resultComputer, resultKey );
+//
+    return resultComputer;
+}
+
+__DEVICE__ SceneResult Scene_GetDistance( float3 vPos )
+{
+    SceneResult result;
+
+    //result.fDist = vPos.y;
+    float fBenchBevel = 0.01f;
+    result.fDist = UdRoundBox( vPos - to_float3(0,-0.02f-fBenchBevel,0.0f), to_float3(2.0f, 0.02f, 1.0f), fBenchBevel );
+    result.vUVW = vPos;
+    result.iObjectId = MAT_DEFAULT;
+
+    float3 vSetPos = to_float3(0.0f, 0.0f, 0.0f);
+    float3 vScreenPos = vSetPos + to_float3(0.0f, 0.25f, 0.00f);
+
+    //vPos.x = fract( vPos.x - 0.5f) - 0.5f;
+
+    float2 vScreenWH = to_float2(4.0f, 3.0f) / 25.0f;
+
+    SceneResult resultSet;
+    resultSet.vUVW = swi3(vPos,x,z,y);
+    resultSet.fDist = UdRoundBox( vPos - vScreenPos - to_float3(0.0f,-0.01f,0.2f), to_float3(0.21f, 0.175f, 0.18f), 0.01f );
+    resultSet.iObjectId = MAT_TV_CASING;
+    Scene_Union( &result, resultSet );
+
+    SceneResult resultSetRecess;
+    resultSetRecess.vUVW = swi3(vPos,x,z,y);
+    resultSetRecess.fDist = UdRoundBox( vPos - vScreenPos - to_float3(0.0f,-0.0f, -0.05f), to_float3_aw(vScreenWH + 0.01f, 0.05f) + 0.005f, 0.015f );
+    resultSetRecess.iObjectId = MAT_TV_TRIM;
+    Scene_Subtract( &result, resultSetRecess );
+
+    SceneResult resultSetBase;
+    resultSetBase.vUVW = swi3(vPos,x,z,y);
+    float fBaseBevel = 0.03f;
+    resultSetBase.fDist = UdRoundBox( vPos - vSetPos - to_float3(0.0f,0.04f,0.22f), to_float3(0.2f, 0.04f, 0.17f) - fBaseBevel, fBaseBevel );
+    resultSetBase.iObjectId = MAT_TV_CASING;
+    Scene_Union( &result, resultSetBase );
+
+    SceneResult resultScreen = Scene_GetCRT( vPos - vScreenPos, vScreenWH, 0.75f, 0.02f, 0.1f );
+    Scene_Union( &result, resultScreen );
+
+      //SceneResult resultComputer = Scene_GetComputer( vPos - to_float3(0.0f, 0.0f, -0.1f) );
+      //Scene_Union( &result, resultComputer );
+
+    SceneResult resultSphere;
+    resultSet.vUVW = swi3(vPos,x,z,y);
+    resultSet.fDist = length(vPos - to_float3(0.35f,0.075f,-0.1f)) - 0.075f;
+    resultSet.iObjectId = MAT_CHROME;
+    Scene_Union( &result, resultSet );
+
+    return result;
+}
+
+
+
+// Scene Lighting
+
+//__DEVICE__ float3 g_vSunDir = normalize(to_float3(0.3f, 0.4f, -0.5f));
+__DEVICE__ float3 g_vSunColor = {1.0f*3.0f, 0.95f *3.0f, 0.8f * 3.0f};//to_float3(1, 0.95f, 0.8f) * 3.0f;
+__DEVICE__ float3 g_vAmbientColor = {0.8f, 0.8f, 0.8f}; // * 1.0f;
+
+__DEVICE__ SurfaceLighting Scene_GetSurfaceLighting( const in float3 vViewDir, in SurfaceInfo surfaceInfo )
+{
+    float3 g_vSunDir = normalize(to_float3(0.3f, 0.4f, -0.5f));
+
+    SurfaceLighting surfaceLighting;
+
+    surfaceLighting.vDiffuse = to_float3_s(0.0f);
+    surfaceLighting.vSpecular = to_float3_s(0.0f);
+
+    Light_AddDirectional( &surfaceLighting, surfaceInfo, vViewDir, g_vSunDir, g_vSunColor );
+
+    Light_AddPoint( &surfaceLighting, surfaceInfo, vViewDir, to_float3(1.4f, 2.0f, 0.8f), to_float3(1,1,1) * 0.2f );
+
+    float fAO = Scene_GetAmbientOcclusion( surfaceInfo.vPos, surfaceInfo.vNormal );
+    // AO
+    surfaceLighting.vDiffuse += fAO * (surfaceInfo.vBumpNormal.y * 0.5f + 0.5f) * g_vAmbientColor;
+
+    return surfaceLighting;
+}
+
+// Environment
+
+__DEVICE__ float4 Env_GetSkyColor( const float3 vViewPos, const float3 vViewDir, __TEXTURE2D__ iChannel1 )
+{
+  float4 vResult = to_float4( 0.0f, 0.0f, 0.0f, kFarDist );
+
+#if 1
+    float3 vEnvMap = swi3(decube_f3( iChannel1, swi3(vViewDir,z,y,x)),x,y,z);//.rgb;
+    swi3S(vResult,x,y,z, vEnvMap);
+#endif
+
+#if 0
+    float3 vEnvMap = swi3(decube_f3( iChannel1, swi3(vViewDir,z,y,x)),x,y,z);//.rgb;
+    vEnvMap = vEnvMap * vEnvMap;
+    float kEnvmapExposure = 0.999f;
+    swi3S(vResult,x,y,z, -1.0f * log2_f3(to_float3_s(1.0f) - vEnvMap * kEnvmapExposure));
+
+#endif
+
+//    swi3S(vResult,x,y,z, _mix( to_float3(0.3f,0.8f,0.9f),to_float3(0.3f,0.4f,0.9f), vViewDir.y ));
+
+    // Sun
+    float3 g_vSunDir = normalize(to_float3(0.3f, 0.4f, -0.5f));
+    float NdotV = dot( g_vSunDir, vViewDir );
+    swi3S(vResult,x,y,z, swi3(vResult,x,y,z) + smoothstep( _cosf(radians(0.7f)), _cosf(radians(0.5f)), NdotV ) * g_vSunColor * 100.0f);
+
+    return vResult;
+}
+
+__DEVICE__ float Env_GetFogFactor(const in float3 vRayOrigin,  const in float3 vRayDir, const in float fDist )
+{
+  float kFogDensity = 0.00001f;
+  return _expf(fDist * -kFogDensity);
+}
+
+__DEVICE__ float3 Env_GetFogColor(const in float3 vDir)
+{
+  return to_float3(0.2f, 0.5f, 0.6f) * 2.0f;
+}
+
+__DEVICE__ float3 Env_ApplyAtmosphere( const in float3 vColor, const in float3 vRayOrigin,  const in float3 vRayDir, const in float fDist )
+{
+  //return vColor;
+  float3 vResult = vColor;
+
+
+  float fFogFactor = Env_GetFogFactor( vRayOrigin, vRayDir, fDist );
+  float3 vFogColor = Env_GetFogColor( vRayDir );
+
+  //float3 g_vSunDir = normalize(to_float3(0.3f, 0.4f, -0.5f));
+  //Env_AddDirectionalLightFlareToFog( &vFogColor, vRayDir, g_vSunDir, g_vSunColor * 3.0f);
+
+  vResult = _mix( vFogColor, vResult, fFogFactor );
+
+  return vResult;
+}
+
+
+__DEVICE__ float3 FX_Apply( in float3 vColor, const in float3 vRayOrigin,  const in float3 vRayDir, const in float fDist)
+{
+  return vColor;
+}
+
+
+__DEVICE__ float4 MainCommon( float3 vRayOrigin, float3 vRayDir, __TEXTURE2D__ iChannel0, __TEXTURE2D__ iChannel1, float iTime )
+{
+  float4 vColorLinAndDepth = Scene_GetColorAndDepth( vRayOrigin, vRayDir, iChannel0, iChannel1, iTime );
+  swi3S(vColorLinAndDepth,x,y,z, _fmaxf( swi3(vColorLinAndDepth,x,y,z), to_float3_s(0.0f) ));
+
+  float4 vFragColor = vColorLinAndDepth;
+
+  float fExposure = 2.0f;
+
+  swi3S(vFragColor,x,y,z, swi3(vFragColor,x,y,z) * fExposure);
+
+  vFragColor.w = vColorLinAndDepth.w;
+
+  return vFragColor;
+}
+
+///////////////////////////
+// Camera
+///////////////////////////
+
+struct CameraState
+{
+    float3 vPos;
+    float3 vTarget;
+    float fFov;
+    float2 vJitter;
+    float fPlaneInFocus;
+};
+
+__DEVICE__ mat3 Cam_GetWorldToCameraRotMatrix( const CameraState cameraState )
+{
+
+  float3 vForward = normalize( cameraState.vTarget - cameraState.vPos );
+  float3 vRight = normalize( cross(to_float3(0, 1, 0), vForward) );
+  float3 vUp = normalize( cross(vForward, vRight) );
+
+  return to_mat3_f3( vRight, vUp, vForward );
+}
+
+__DEVICE__ float2 Cam_GetViewCoordFromUV( float2 vUV, float2 res )
+{
+  float2 vWindow = vUV * 2.0f - 1.0f;
+  vWindow.x *= res.x / res.y;
+
+  return vWindow;
+}
+
+__DEVICE__ void Cam_GetCameraRay( float2 vUV, float2 res, CameraState cam, out float3 *vRayOrigin, out float3 *vRayDir )
+{
+    float2 vView = Cam_GetViewCoordFromUV( vUV, res );
+    *vRayOrigin = cam.vPos;
+    float fPerspDist = 1.0f / _tanf( radians( cam.fFov ) );
+    *vRayDir = normalize( mul_mat3_f3(Cam_GetWorldToCameraRotMatrix( cam ) , to_float3_aw( vView, fPerspDist ) ));
+}
+
+__DEVICE__ float2 Cam_GetUVFromWindowCoord( float2 vWindow, float2 res )
+{
+    float2 vScaledWindow = vWindow;
+    vScaledWindow.x *= res.y / res.x;
+
+    return (vScaledWindow * 0.5f + 0.5f);
+}
+
+__DEVICE__ float2 Cam_WorldToWindowCoord(const in float3 vWorldPos, const in CameraState cameraState )
+{
+    float3 vOffset = vWorldPos - cameraState.vPos;
+    float3 vCameraLocal;
+
+    vCameraLocal = mul_f3_mat3(vOffset , Cam_GetWorldToCameraRotMatrix( cameraState ));
+
+    float2 vWindowPos = swi2(vCameraLocal,x,y) / (vCameraLocal.z * _tanf( radians( cameraState.fFov ) ));
+
+    return vWindowPos;
+}
+
+
+__DEVICE__ CameraState GetCameraPosition( int index, int FIXED_CAMERA_INDEX, float3 vFocus )
+{
+    CameraState cam = { to_float3_s(0.0f), to_float3_s(0.0f), 0.0f, to_float2_s(0.0f), 0.0f };
+
+    //float3 vFocus = to_float3(0,0.25f,-0.012f);
+
+    if ( index > 9 )
+    {
+      index = (int)(hash11((float)(index) / 10.234f) * 100.0f);
+      index = index % 10;
+    }
+
+    //#ifdef FIXED_CAMERA_INDEX
+    if (FIXED_CAMERA_INDEX)
+      index = FIXED_CAMERA_INDEX; // Force a camera position
+    //#endif
+
+    if ( index == 0 )
+    {
+        cam.vPos = to_float3(-0.1f,0.24f,-0.08f);
+        cam.vTarget = to_float3(0.15f,0.25f,0.1f);
+        cam.fFov = 10.0f;
+    }
+    if ( index == 1 )
+    {
+        cam.vPos = to_float3(0.01f,0.25f,-0.8f);
+        cam.vTarget = to_float3(0,0.25f,0.1f);
+        cam.fFov = 10.0f;
+    }
+    if ( index == 2 )
+    {
+        cam.vPos = to_float3(-0.4f,0.3f,-1.0f);
+        cam.vTarget = to_float3(0.25f,0.18f,0.5f);
+        cam.fFov = 10.0f;
+    }
+    if ( index == 3 )
+    {
+        cam.vPos = to_float3(-0.8f,0.5f,-1.5f);
+        cam.vTarget = to_float3(0.2f,0.1f,0.5f);
+        cam.fFov = 8.0f;
+    }
+    if ( index == 4 )
+    {
+        cam.vPos = to_float3(0.5f,0.3f,-0.5f);
+        cam.vTarget = to_float3(-0.4f,0.1f,0.5f);
+        cam.fFov = 16.0f;
+    }
+    if ( index == 5 )
+    {
+        cam.vPos = to_float3(-0.244f,0.334f,-0.0928f);
+        cam.vTarget = to_float3(0,0.25f,0.1f);
+        cam.fFov = 20.0f;
+    }
+    if ( index == 6 )
+    {
+        cam.vPos = to_float3(0.0f,0.1f,-0.5f);
+        cam.vTarget = to_float3(0.08f,0.2f,-0.1f);
+        vFocus = cam.vTarget;
+        cam.fFov = 20.0f;
+    }
+    if ( index == 7 )
+    {
+        cam.vPos = to_float3(-0.01f,0.01f,-0.25f);
+        cam.vTarget = to_float3(0.01f,0.27f,0.1f);
+        vFocus = cam.vTarget;
+        cam.fFov = 23.0f;
+    }
+    if ( index == 8 )
+    {
+        cam.vPos = to_float3(-0.23f,0.3f,-0.05f);
+        cam.vTarget = to_float3(0.1f,0.2f,0.1f);
+        cam.fFov = 15.0f;
+    }
+    if ( index == 9 )
+    {
+        cam.vPos = to_float3(0.4f,0.2f,-0.2f);
+        cam.vTarget = to_float3(-0.1f,0.25f,0.1f);
+        cam.fFov = 12.0f;
+    }
+
+    cam.fPlaneInFocus = length( vFocus - cam.vPos);
+    cam.vJitter = to_float2_s(0.0f);
+
+    return cam;
+}
+
+
+__DEVICE__ float3 Tonemap( float3 x, bool BT709 )
+{
+  if ( BT709 )
+  {
+    float3 luminanceCoeffsBT709 = to_float3( 0.2126f, 0.7152f, 0.0722f );
+    float f = dot( x, luminanceCoeffsBT709 );
+    x /= f;
+    f = 1.0f - _expf(-f);
+    x *= f;
+    x = _mix( x, to_float3_s(f), f*f );
+
+    return x;
+  }
+  else
+  {
+    float a = 0.010f;
+    float b = 0.132f;
+    float c = 0.010f;
+    float d = 0.163f;
+    float e = 0.101f;
+
+    return ( x * ( a * x + b ) ) / ( x * ( c * x + d ) + e );
+  }
+}
+
+
+__DEVICE__ float GetVignetting( const in float2 vUV, float fScale, float fPower, float fStrength )
+{
+  float2 vOffset = (vUV - 0.5f) * _sqrtf(2.0f) * fScale;
+  float fDist = _fmaxf( 0.0f, 1.0f - length( vOffset ) );
+  float fShade = 1.0f - _powf( fDist, fPower );
+  fShade = 1.0f - fShade * fStrength;
+
+  return fShade;
+}
+
+
+__KERNEL__ void MetaCrtSinglePassFuse(__CONSTANTREF__ Params*  params,  __TEXTURE2D__ iChannel0,  __TEXTURE2D__ iChannel1, __TEXTURE2D_WRITE__ destinationTexture)
+{
+   DEFINE_KERNEL_ITERATORS_XY(fusion_x, fusion_y);
+
+   if (fusion_x >= params->width || fusion_y >= params->height)
+     return;
+
+  float2 iResolution = to_float2(params->iResolution[0], params->iResolution[1]);
+  float  iTime       = params->iTime;
+  float4 iMouse      = to_float4(params->iMouse[0],params->iMouse[1],params->iMouse[2],params->iMouse[3]);
+  float4 vFragColor   = to_float4_s(0.0f);
+  float2 vFragCoord   = to_float2(fusion_x,fusion_y);
+
+
+  float4 Color = to_float4(params->Color[0], params->Color[1], params->Color[2], params->Color[3]);
+  bool   BT709 = params->BT709;
+  bool   MouseRotation = params->MouseRotation;
+  float  ZoomMouse = params->ZoomMouse;
+  int    FIXED_CAMERA_INDEX = params->FIXED_CAMERA_INDEX;
+  float2 UV = to_float2(params->UV[0], params->UV[1]);
+  float  FocusZ = params->FocusZ;
+  float  fSequenceSegLength = params->fSequenceSegLength;
+  float  VignetteScale = params->VignetteScale;
+  float  VignettePower = params->VignettePower;
+  float  VignetteStrength = params->VignetteStrength;
+
+  // --------
+
+
+
+
+
+
+
+
+
+
+    //CONNECT_SLIDER6(UVX, -5.0f, 5.0f, 0.0f);
+    //CONNECT_SLIDER7(UVY, -5.0f, 5.0f, 0.0f);
+
+
+    float3 vFocus = to_float3(0,0.25f,-0.012f);// + to_float3_aw(FocusXY, FocusZ);
+
+    float2 vUV = vFragCoord / iResolution;///2.0f;
+
+    //vUV.x *= iResolution.x/iResolution.y;//1.777f;
+
+    vUV -= UV;//to_float2(UVX, UVY);     // durch Verwendung von UV wird Bild verzerrt, warum auch immer
+
+    vUV -= to_float2_s(0.5f);
+    vUV *= FocusZ;
+    vUV += to_float2_s(0.5f);
+
+    CameraState cam = { to_float3_s(0.0f), to_float3_s(0.0f), 0.0f, to_float2_s(0.0f), 0.0f };
+
+
+      CameraState camA = { to_float3_s(0.0f), to_float3_s(0.0f), 0.0f, to_float2_s(0.0f), 0.0f };;
+      CameraState camB = { to_float3_s(0.0f), to_float3_s(0.0f), 0.0f, to_float2_s(0.0f), 0.0f };;
+
+      float fSeqTime = iTime;
+      //float fSequenceSegLength = 5.0f;
+      float fSeqIndex = _floor(fSeqTime / fSequenceSegLength);
+      float fSeqPos = fract(fSeqTime / fSequenceSegLength);
+      int iIndex = (int)(fSeqIndex);
+      int iIndexNext = (int)(fSeqIndex) + 1;
+      camA = GetCameraPosition(iIndex, FIXED_CAMERA_INDEX, vFocus);
+      camB = GetCameraPosition(iIndexNext, FIXED_CAMERA_INDEX, vFocus);
+
+      float t = smoothstep(0.3f, 1.0f, fSeqPos);
+      cam.vPos = _mix(camA.vPos, camB.vPos, t );
+      cam.vTarget = _mix(camA.vTarget, camB.vTarget, t );
+      cam.fFov = _mix(camA.fFov, camB.fFov, t );
+      cam.fPlaneInFocus = _mix(camA.fPlaneInFocus, camB.fPlaneInFocus, t );
+
+
+#if USE_MOUSE
+    if ( iMouse.z > 0.0f )
+    {
+      //float fDist = 0.01f + 3.0f * (iMouse.y / iResolution.y);
+      float fDist = 0.01f + 3.0f * ZoomMouse;
+
+      float fAngle = (iMouse.x / iResolution.x) * radians(360.0f);
+      float fElevation = (iMouse.y / iResolution.y) * radians(90.0f);
+      //float fElevation = 0.15f * radians(90.0f);
+
+      cam.vPos = to_float3(_sinf(fAngle) * fDist * _cosf(fElevation),_sinf(fElevation) * fDist,_cosf(fAngle) * fDist * _cosf(fElevation));
+      cam.vTarget = to_float3(0,0.25f,0.1f);
+      cam.vPos += cam.vTarget;
+      cam.fFov = 20.0f / (1.0f + fDist * 0.5f);
+      //float3 vFocus = to_float3(0,0.25f,-0.012f);
+      cam.fPlaneInFocus = length( vFocus - cam.vPos );
+    }
+    else
+    {
+      if(MouseRotation)
+      {
+        float fAngle = (iMouse.x / iResolution.x) * radians(360.0f);
+        float fElevation = (iMouse.y / iResolution.y) * radians(90.0f);
+        cam.vPos += to_float3(_sinf(fAngle) * _cosf(fElevation), _sinf(fElevation), _cosf(fAngle) * _cosf(fElevation));
+      }
+    }
+
+#endif
+
+#if 0
+    {
+      float fDist = 0.5f;
+
+      float fAngle = 0.6f * PI * 2.0f;
+      float fElevation = 0.2f;
+
+      cam.vPos = to_float3(_sinf(fAngle) * fDist * _cosf(fElevation),_sinf(fElevation) * fDist,_cosf(fAngle) * fDist * _cosf(fElevation));
+      cam.vTarget = to_float3(0.05f,0.25f,0.1f);
+      cam.vPos +=cam.vTarget;
+      cam.fFov = 22.0f;
+      //float3 vFocus = to_float3(0,0.25f,-0.012f);
+      cam.fPlaneInFocus = length( vFocus - cam.vPos );
+    }
+#endif
+
+//#define ENABLE_TAA_JITTER
+#ifdef ENABLE_TAA_JITTER
+    cam.vJitter = hash21( fract( iTime ) ) - 0.5f;
+#endif
+
+
+    float3 vRayOrigin, vRayDir;
+    float2 vJitterUV = vUV + cam.vJitter / iResolution;
+    Cam_GetCameraRay( vJitterUV, iResolution, cam, &vRayOrigin, &vRayDir );
+
+    float fHitDist = 0.0f;
+    vFragColor = MainCommon( vRayOrigin, vRayDir, iChannel0, iChannel1, iTime );
+
+    //float fShade = GetVignetting( vUV, 0.7f, 2.0f, 1.0f );
+    float fShade = GetVignetting( vUV, VignetteScale, VignettePower, VignetteStrength );
+
+    swi3S(vFragColor,x,y,z, swi3(vFragColor,x,y,z) * fShade);
+
+    swi3S(vFragColor,x,y,z, Tonemap( swi3(vFragColor,x,y,z), BT709 ));
+
+    vFragColor += Color-0.5f;
+    vFragColor.w = Color.w;
+
+  _tex2DVec4Write(destinationTexture, fusion_x, fusion_y, vFragColor);
+}
+]]
+-- /*
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Create
+-- // ------------------------------------------------------------------------
+
+function Create()
+
+  StandardShaderFuseTopControls();
+
+  ----- In/Out
+
+  InChannel0 = self:AddInput( "iChannel0",  "iChannel0",  { LINKID_DataType = "Image", LINK_Main = 1, INP_Required = false  })
+  InChannel1 = self:AddInput( "iChannel1",  "iChannel1",  { LINKID_DataType = "Image", LINK_Main = 2, INP_Required = false  })
+
+  OutImage = self:AddOutput("Output", "Output", {
+    LINKID_DataType = "Image",
+    LINK_Main       = 1,
+  })
+
+  ----- Inspector Panel Controls
+
+  
+  -- Speed Slider
+  
+  InFrequency = self:AddInput("Speedup", "speed", {
+    LINKID_DataType    = "Number",
+    INPID_InputControl = "SliderControl",
+    INP_Default        = 1.0,
+    INP_MinScale 	     = 0.0,
+    INP_MaxScale 	     = 5.0,
+    SLCS_LowName       = "stop",
+    SLCS_HighName      = "5x",
+  })
+  
+  -- iMouse Controls
+  
+  InMouseXY = self:AddInput("iMouse.xy", "iMouseXY", {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+    INP_DoNotifyChanged  = false,
+    --INP_Passive = true,
+    INPID_PreviewControl = "CrosshairControl",
+  })
+  
+  InMouseZW = self:AddInput("iMouse.zw", "iMouseZW", {
+    LINKID_DataType = "Point",
+    INPID_InputControl = "OffsetControl",
+    INP_DoNotifyChanged  = false,
+    --INP_Passive = true,
+    INPID_PreviewControl = "CrosshairControl",
+    INP_Disabled = true,
+  })
+  
+  InMouseDrag = self:AddInput("Mouse Button Pressed", "iMouseClick", {
+    LINKID_DataType = "Number",
+    INPID_InputControl = "CheckboxControl",
+    INP_DoNotifyChanged  = false,
+    --INP_Passive = true,
+    INP_MinScale = 0,
+    INP_MaxScale = 1,
+    INP_Default = 0,
+  })
+  self:BeginControlNest("Color", "Color", true, {})
+
+    ctrl_grp_cnt = (ctrl_grp_cnt==nil) and 1 or (ctrl_grp_cnt+1)
+
+    attrs = {
+      ICS_Name = "Color",
+      LINKID_DataType = "Number",
+      INPID_InputControl = "ColorControl",
+      INP_MinScale = 0.0,
+      INP_MaxScale = 1.0,
+      IC_ControlGroup = ctrl_grp_cnt,
+    }
+
+    InColorColorR = self:AddInput("Red",   "ColorRed",   { INP_Default  = 0.5, IC_ControlID = 0, attrs})
+    InColorColorG = self:AddInput("Green", "ColorGreen", { INP_Default  = 0.5, IC_ControlID = 1, attrs})
+    InColorColorB = self:AddInput("Blue",  "ColorBlue",  { INP_Default  = 0.5, IC_ControlID = 2, attrs})
+    InColorColorA = self:AddInput("Alpha", "ColorAlpha", { INP_Default  = 1.0, IC_ControlID = 3, attrs})
+
+  self:EndControlNest()
+
+  InBT709Checkbox = self:AddInput("BT709", "BT709", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 0,
+  })
+
+  InMouseRotationCheckbox = self:AddInput("MouseRotation", "MouseRotation", {
+    LINKID_DataType     = "Number",
+    INPID_InputControl  = "CheckboxControl",
+    INP_Integer         = true,
+    INP_Default         = 0,
+  })
+
+  InZoomMouseSlider = self:AddInput("ZoomMouse", "ZoomMouse", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = -20.0,
+      INP_MaxScale       = 20.0,
+      INP_Default        = 0.0,
+  })
+
+  InFIXED_CAMERA_INDEXSlider = self:AddInput("FIXED_CAMERA_INDEX", "FIXED_CAMERA_INDEX", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = 0,
+      INP_MaxScale       = 9,
+      INP_Default        = 0,
+      INP_Integer        = true,
+  })
+
+  InUVPoint = self:AddInput("UV", "UV", {
+      LINKID_DataType    = "Point",
+      INPID_InputControl = "OffsetControl",
+      INPID_PreviewControl  = "CrosshairControl",
+      INP_DefaultX          = 0.0,
+      INP_DefaultY          = 0.0,
+  })
+
+  InFocusZSlider = self:AddInput("FocusZ", "FocusZ", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = -10.0,
+      INP_MaxScale       = 10.0,
+      INP_Default        = 1.0,
+  })
+
+  InfSequenceSegLengthSlider = self:AddInput("fSequenceSegLength", "fSequenceSegLength", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = 0.0,
+      INP_MaxScale       = 30.0,
+      INP_Default        = 5.0,
+  })
+
+  InVignetteScaleSlider = self:AddInput("VignetteScale", "VignetteScale", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = 0.0,
+      INP_MaxScale       = 5.0,
+      INP_Default        = 0.7,
+  })
+
+  InVignettePowerSlider = self:AddInput("VignettePower", "VignettePower", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = 0.0,
+      INP_MaxScale       = 10.0,
+      INP_Default        = 2.0,
+  })
+
+  InVignetteStrengthSlider = self:AddInput("VignetteStrength", "VignetteStrength", {
+      LINKID_DataType    = "Number",
+      INPID_InputControl = "SliderControl",
+      INP_MinScale       = -1.0,
+      INP_MaxScale       = 5.0,
+      INP_Default        = 1.0,
+  })
+
+
+
+  StandardShaderFuseBottomControls();
+
+end
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Process
+-- // ------------------------------------------------------------------------
+
+function Process(req)
+
+  local imgattrs = {
+    IMG_Document = self.Comp,
+    { IMG_Channel = "Red", },
+    { IMG_Channel = "Green", },
+    { IMG_Channel = "Blue", },
+    { IMG_Channel = "Alpha", },
+    IMG_Width  = Width,
+    IMG_Height = Height,
+    IMG_XScale = XAspect,
+    IMG_YScale = YAspect,
+    IMAT_OriginalWidth  = realwidth, -- nil !?!
+    IMAT_OriginalHeight = realheight, -- nil !?!
+    IMG_Quality = not req:IsQuick(),
+    IMG_MotionBlurQuality = not req:IsNoMotionBlur(),
+    IMG_DeferAlloc = true,
+    IMG_ProxyScale = ( (not req:IsStampOnly()) and 1 or nil),
+    IMG_Depth = ( (SourceDepth~=0) and SourceDepth or nil   )
+  }
+
+  local dst   = Image(imgattrs)
+  local black = Pixel({R=0,G=0,B=0,A=0})
+  dst:Fill(black)
+
+  if req:IsPreCalc() then
+    local out = Image({IMG_Like = dst, IMG_NoData = true})
+    OutImage:Set(req, out)
+    return
+  end
+
+  local node = DVIPComputeNode(req,
+    "MetaCrtSinglePassFuse", ShaderCompatibilityCode..ShaderKernelCode,
+    "Params", ShaderParameters
+  )
+
+  -- Extern texture or create a new one
+
+  iChannel0 = InChannel0:GetValue(req)
+
+  if iChannel0==nil then
+    iChannel0 = Image(imgattrs)
+    iChannel0:Fill(black)
+  end
+
+  iChannel1 = InChannel1:GetValue(req)
+
+  if iChannel1==nil then
+    iChannel1 = Image(imgattrs)
+    iChannel1:Fill(black)
+  end
+
+  -- DCTL parameters
+
+  local framerate = self.Comp:GetPrefs("Comp.FrameFormat.Rate")
+
+  local params = {}
+
+  params = node:GetParamBlock(ShaderParameters)
+
+  params.iResolution[0] = dst.Width
+  params.iResolution[1] = dst.Height
+  params.iTime = (req.Time / framerate) * InFrequency:GetValue(req).Value
+  
+  -- iMouse
+  
+  local mouse_xy  = InMouseXY:GetValue(req)
+  local mouse_zw  = InMouseZW:GetValue(req)
+  
+  params.iMouse[0] = mouse_xy.X
+  params.iMouse[1] = mouse_xy.Y
+  params.iMouse[2] = mouse_zw.X
+  params.iMouse[3] = mouse_zw.Y
+  
+  if InMouseDrag:GetValue(req).Value ~= 0 then
+    if params.iMouse[2]==-1 and params.iMouse[3]==-1 then
+      params.iMouse[2]=params.iMouse[0]
+      params.iMouse[3]=params.iMouse[1]
+    end
+  else
+    params.iMouse[2] = -1
+    params.iMouse[3] = -1
+  end
+  
+  if mouse_zw.X ~= params.iMouse[2] or mouse_zw.Y ~= params.iMouse[3] then
+    InMouseZW:SetAttrs({INP_Disabled=false})
+    InMouseZW:SetSource(Point(params.iMouse[2],params.iMouse[3]),0,0)
+    InMouseZW:SetAttrs({INP_Disabled=true})
+  end
+  
+  params.iMouse[0] = params.iMouse[0] * Width
+  params.iMouse[1] = params.iMouse[1] * Height
+  if params.iMouse[2] == -1 and params.iMouse[3] == -1 then
+    params.iMouse[2] = 0
+    params.iMouse[3] = 0
+  else
+    params.iMouse[2] = params.iMouse[2] * Width
+    params.iMouse[3] = params.iMouse[3] * Height
+  end
+
+  params.Color = {
+    InColorColorR:GetValue(req).Value,
+    InColorColorG:GetValue(req).Value,
+    InColorColorB:GetValue(req).Value,InColorColorA:GetValue(req).Value
+  }
+  params.BT709 = InBT709Checkbox:GetValue(req).Value
+  params.MouseRotation = InMouseRotationCheckbox:GetValue(req).Value
+  params.ZoomMouse = InZoomMouseSlider:GetValue(req).Value
+  params.FIXED_CAMERA_INDEX = InFIXED_CAMERA_INDEXSlider:GetValue(req).Value
+  params.UV = {InUVPoint:GetValue(req).X,InUVPoint:GetValue(req).Y}
+  params.FocusZ = InFocusZSlider:GetValue(req).Value
+  params.fSequenceSegLength = InfSequenceSegLengthSlider:GetValue(req).Value
+  params.VignetteScale = InVignetteScaleSlider:GetValue(req).Value
+  params.VignettePower = InVignettePowerSlider:GetValue(req).Value
+  params.VignetteStrength = InVignetteStrengthSlider:GetValue(req).Value
+  -- Resolution
+
+  params.width  = dst.Width
+  params.height = dst.Height
+
+  -- Per channel time and resolution
+
+
+  -- Set parameters and add I/O
+
+  node:SetParamBlock(params)
+  node:AddSampler("RowSampler", TEX_FILTER_MODE_LINEAR,TEX_ADDRESS_MODE_MIRROR, TEX_NORMALIZED_COORDS_TRUE)
+  node:AddInput("iChannel0",iChannel0) -- TODO: add a better channel name
+  node:AddInput("iChannel1",iChannel1) -- TODO: add a better channel name
+  node:AddOutput("dst", dst)
+
+  local ok = node:RunSession(req)
+
+	if (not ok) then
+		dst = nil
+    dump(node:GetErrorLog())
+	end
+
+  OutImage:Set(req,dst)
+end
+
+
+
+-- // ------------------------------------------------------------------------
+-- // Callback
+-- // ------------------------------------------------------------------------
+
+-- function NotifyChanged(inp, param, time)
+-- 	if (param ~= nil) then
+-- 		if (param.Value == 1) then
+-- 			if (inp == ...) then
+--         ...
+-- 			end
+-- 		end
+-- 	end
+-- end
+
+
+-- */
+
+-- /* ====================== DO NOT TOUCH OR APPEND ANY CODE HERE ===========================================
+
+-- >>> SCHNIPP::SHADERFUSECONTROLS.version="MonumentsAndSites"
+
+function ShaderFuseControls_AuthImg() if FC_AUTHIMG ~= nil and FC_AUTHIMG ~= ""  then self:AddInput('<p align="'..FC_AUTHIMGALIGN..'"><a href="https://github.com/nmbr73/Shadertoys"><img '..FC_AUTHIMG..' /></a></p>',"DctlFuseLogoLabel", {ICS_ControlPage = (FC_AUTHIMGPOS == 2 and 'Info' or nil),IC_ControlPage=(FC_AUTHIMGPOS == 2 and 1 or FC_AUTHIMGPOS),LINKID_DataType = "Text",INPID_InputControl = "LabelControl",LBLC_MultiLine = true,IC_NoLabel = true,IC_NoReset = true,INP_External = false,INP_Passive = true,}) end end
+function ShaderFuseControls_InfoBtn() self:AddInput(dctlfuse_name.." Info ...", "DctlFuseInfoButton", {ICS_ControlPage = (FC_INFOBTNPOS == 2 and 'Info' or nil),IC_ControlPage = (FC_INFOBTNPOS == 2 and 1 or FC_INFOBTNPOS),LINKID_DataType = "Text",INPID_InputControl = "ButtonControl",INP_DoNotifyChanged = false,INP_External = false,BTNCS_Execute = 'bmd.openurl("'..(dctlfuse_infourl~=nil and dctlfuse_infourl or 'https://nmbr73.github.io/Shadertoys/Shaders/'..dctlfuse_category..'/'..dctlfuse_name..'.html')..'")'}) end
+function ShaderFuseControls_BandImg() if FC_SHOWBRANDIMG then self:AddInput('<p align="center"><a href="https://github.com/nmbr73/Shadertoys"><img height="18" src="data:image/png;base64,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" /></a></p>', "DctlFuseBrandLabel",{ IC_ControlPage = -1 ,LINKID_DataType = "Text",INPID_InputControl = "LabelControl",LBLC_MultiLine = true,IC_NoLabel = true,IC_NoReset = true,INP_External = false,INP_Passive = true,}) end end
+
+function ShaderFuseControls_InfoTxt()
+  self:AddInput('<p align="'..FC_INFOTXTALIGN ..'">'
+    ..'Shadertoy <a href="https://www.shadertoy.com/view/'..shadertoy_id..'" style="color:white; text-decoration:none; ">'..shadertoy_name..'</a> by <a href="https://www.shadertoy.com/user/'..shadertoy_author..'" style="color:yellow; text-decoration:none; ">'..shadertoy_author..'</a><br />'
+    ..'<span style="color:#ff6060; ">'..(shadertoy_license == "" and '&copy; '..shadertoy_author..' (CC BY-NC-SA 3.0)' or shadertoy_license)..'</span><br />'
+    ..'DCTLified and DaFused by <a href="'..(dctlfuse_authorurl==nil and "https://nmbr73.github.io/Shadertoys/" or dctlfuse_authorurl)..'" style="color:yellow; text-decoration:none; ">'..dctlfuse_author..'</a><br />'
+    ..'<span style="color:#4060ff; ">'..(FC_VERSIONNO==nil and '' or 'Version '..FC_VERSIONNO)..(FC_VERSIONNO~=nil and FC_VERSIONDATE~=nil and ' - ' or '')..(FC_VERSIONDATE==nil and '' or FC_VERSIONDATE)..(FC_VERSIONNO~=nil and FC_VERSIONDATE~=nil and '<br />' or '')..'</span></p>'
+    ,"DctlFuseInfoLabel", {ICS_ControlPage =(FC_INFOTXTPOS == 2 and 'Info' or nil),IC_ControlPage = (FC_INFOTXTPOS == 2 and 1 or FC_INFOTXTPOS),LINKID_DataType="Text",INPID_InputControl="LabelControl",LBLC_MultiLine=true,IC_NoLabel=true,IC_NoReset=true,INP_External=false,INP_Passive=true})
+end
+
+function StandardShaderFuseTopControls()
+  if FC_ITEMORDER         == nil then FC_ITEMORDER       = {ShaderFuseControls_InfoTxt,ShaderFuseControls_BandImg,ShaderFuseControls_InfoBtn,ShaderFuseControls_AuthImg} end
+  if FC_SHOWBRANDIMG      == nil then FC_SHOWBRANDIMG    = true                  end
+  if FC_AUTHBASEDLAYOUT   == nil then FC_AUTHBASEDLAYOUT = true                  end
+  if FC_INFOBTNPOS        == nil then FC_INFOBTNPOS      = 2                     end
+  if FC_INFOTXTPOS        == nil then FC_INFOTXTPOS      = 2                     end
+  if FC_INFOTXTALIGN      == nil then FC_INFOTXTALIGN    = 'center'              end
+  if FC_AUTHIMGPOS        == nil then FC_AUTHIMGPOS      = 2                     end
+  if FC_AUTHIMGALIGN      == nil then FC_AUTHIMGALIGN    = 'center'              end
+  if FC_VERSIONNO         == nil then FC_VERSIONNO       = dctlfuse_versionNo    end
+  if FC_VERSIONDATE       == nil then FC_VERSIONDATE     = dctlfuse_versionDate  end
+  if FC_AUTHIMG           == nil then FC_AUTHIMG         = ''                    end
+  if dctlfuse_authorlogo  ~= nil then FC_AUTHIMG         = dctlfuse_authorlogo   end
+  if FC_AUTHBASEDLAYOUT then
+    if dctlfuse_author=='JiPi' then
+    --FC_SHOWBRANDIMG=false
+      FC_ITEMORDER  = {ShaderFuseControls_BandImg, ShaderFuseControls_AuthImg,ShaderFuseControls_InfoBtn,ShaderFuseControls_InfoTxt}
+      FC_INFOBTNPOS = 1; FC_AUTHIMGPOS = -1; FC_AUTHIMGALIGN = 'center'; FC_INFOTXTPOS = 1; FC_INFOTXTALIGN = 'center'
+    elseif dctlfuse_author=='nmbr73' then
+      FC_ITEMORDER = {ShaderFuseControls_InfoBtn,ShaderFuseControls_BandImg,ShaderFuseControls_InfoTxt,ShaderFuseControls_AuthImg}
+      FC_INFOBTNPOS = -1; FC_AUTHIMGPOS = 1; FC_AUTHIMGALIGN = 'right'; FC_INFOTXTPOS = 1; FC_INFOTXTALIGN = 'left'
+    end
+  end
+end
+
+function StandardShaderFuseBottomControls()
+  if FC_INFOBTNPOS == 1 or FC_INFOTXTPOS == 1 or FC_AUTHIMGPOS==1 then
+    self:AddInput( '<br />',"DctlFuseSeparatorLabel",{LINKID_DataType="Text",INPID_InputControl="LabelControl",LBLC_MultiLine=true,IC_NoLabel=true,IC_NoReset=true,INP_External=false,INP_Passive=true})
+  end
+  FC_ITEMORDER[1](); FC_ITEMORDER[2](); FC_ITEMORDER[3](); FC_ITEMORDER[4]();
+end
+-- <<< SCHNAPP::SHADERFUSECONTROLS
+-- */

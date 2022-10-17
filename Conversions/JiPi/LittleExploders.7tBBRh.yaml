@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: LittleExploders
+  id: LittleExploders
+  kernel: LittleExploders
+  name: LittleExploders
+shader:
+  author: eiffie
+  description: little exploding things
+  id: 7tBBRh
+  name: little exploders
+  tags:
+  - simulation
+  url: https://www.shadertoy.com/view/7tBBRh

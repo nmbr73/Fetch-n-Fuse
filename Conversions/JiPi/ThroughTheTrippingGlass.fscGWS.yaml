@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ThroughTheTrippingGlass
+  id: ThroughTheTrippingGlass
+  kernel: ThroughTheTrippingGlass
+  name: ThroughTheTrippingGlass
+shader:
+  author: xenn
+  description: Code mashup of three of my favourite shaders. Sorry about being so
+    lazy with my commenting and credits. Just enjoy
+  id: fscGWS
+  name: Through the tripping glass
+  tags:
+  - displacement
+  - chromatic
+  - aberration
+  - mapping
+  - dispersion
+  url: https://www.shadertoy.com/view/fscGWS

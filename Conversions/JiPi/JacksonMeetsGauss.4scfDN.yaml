@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: JacksonMeetsGauss
+  id: JacksonMeetsGauss
+  kernel: JacksonMeetsGauss
+  name: JacksonMeetsGauss
+shader:
+  author: dr2
+  description: Random walk (could be valuable if a genuine Pollock)
+  id: 4scfDN
+  name: Jackson Meets Gauss
+  tags:
+  - random
+  - paint
+  - pollock
+  url: https://www.shadertoy.com/view/4scfDN

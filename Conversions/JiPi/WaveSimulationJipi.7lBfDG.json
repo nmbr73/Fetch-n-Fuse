@@ -1,0 +1,78 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7lBfDG",
+  "date": "0",
+  "viewed": 0,
+  "name": "Wave Simulation JiPi",
+  "description": "Click to draw waves. Blue and red waves are independent and travel at slightly different speeds.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "waves",
+   "simulation"
+  ],
+  "hasliked": 0,
+  "parentid": "slBBR3",
+  "parentname": "Wave Simulation"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    // Output to screen\n    vec4 col = vec4(texture(iChannel0,uv));\n    col *= col;\n    col.g += col.w;\n    col.g *= 5.;\n    \n    if(abs(distance(iMouse.xy, fragCoord)-10.)<.5 && iMouse.z > 0.0) col = vec4(100);\n    \n    fragColor = tanh(col/3.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define T(p) texture(iChannel0,(p)/iResolution.xy)\n#define dt 0.1\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 c   = vec2(1,0.95);\n    \n    float x  = fragCoord.x;\n    float y  = fragCoord.y;\n    \n    float xp = mod(fragCoord.x + 1.0, iResolution.x);\n    float xm = mod(fragCoord.x - 1.0, iResolution.x);\n    float yp = mod(fragCoord.y + 1.0, iResolution.y);\n    float ym = mod(fragCoord.y - 1.0, iResolution.y);\n    \n    vec2 X   = vec2(T(vec2(x,y)).x, T(vec2(x,y)).z);\n    \n    vec2 Xp0 = vec2(T(vec2(xp,y)).x, T(vec2(xp,y)).z);\n    vec2 Xm0 = vec2(T(vec2(xm,y)).x, T(vec2(xm,y)).z);\n    vec2 X0p = vec2(T(vec2(x,yp)).x, T(vec2(x,yp)).z);\n    vec2 X0m = vec2(T(vec2(x,ym)).x, T(vec2(x,ym)).z);\n    \n    vec2 V   = vec2(T(vec2(x,y)).y, T(vec2(x,y)).w);\n    \n    vec2 A   = c*c * (Xp0 + Xm0 + X0p + X0m - 4.0*X);\n    \n    X += V * dt + 0.5 * A * dt * dt;\n    X += A * dt * 0.08;\n    X -= X * dt * 0.001;\n    \n    V += A * dt;\n    \n    if(iMouse.z > 0.0)\n    {\n        X += 50.*dt*exp(-distance(iMouse.xy, fragCoord)*distance(iMouse.xy, fragCoord)/30.);\n    }\n    \n    if (iTime > 0.1)\n    {\n        fragColor = vec4(X.x,V.x,X.y,V.y);\n    }\n    else\n    {\n        float r = length(fragCoord - iResolution.xy/2.0);\n        float q = 10.0*exp(-r*r/300.0);\n        fragColor = vec4(q,0,q,0);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

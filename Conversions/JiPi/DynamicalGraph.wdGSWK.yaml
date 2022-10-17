@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: DynamicalGraph
+  id: DynamicalGraph
+  kernel: DynamicalGraph
+  name: DynamicalGraph
+shader:
+  author: wyatt
+  description: cellular automata fueled graph generator
+  id: wdGSWK
+  name: Dynamical Graph
+  tags:
+  - graph
+  url: https://www.shadertoy.com/view/wdGSWK

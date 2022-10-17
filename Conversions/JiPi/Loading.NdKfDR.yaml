@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: Loading
+  id: Loading
+  kernel: Loading
+  name: Loading
+shader:
+  author: manu210404
+  description: 'I tried my best to recreate this amazing post on r/loadingicon:
+
+    [url]https://www.reddit.com/r/loadingicon/comments/ets3a9/everything_is_awesome_about_this_loading_animation/[/url]
+
+    '
+  id: NdKfDR
+  name: LOADING
+  tags:
+  - loading
+  - arc
+  - loadinganimation
+  url: https://www.shadertoy.com/view/NdKfDR

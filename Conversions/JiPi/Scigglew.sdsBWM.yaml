@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: Scigglew
+  id: Scigglew
+  kernel: Scigglew
+  name: Scigglew
+shader:
+  author: SnoopethDuckDuck
+  description: absolute mess. looked really cool then closed the tab and had to redo
+    it
+  id: sdsBWM
+  name: SCIGGLEW
+  tags:
+  - raymarching
+  - template
+  - artofcode
+  url: https://www.shadertoy.com/view/sdsBWM

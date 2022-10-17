@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: Ichwerdeirre
+  id: Ichwerdeirre
+  kernel: Ichwerdeirre
+  name: Ichwerdeirre
+shader:
+  author: N.N.
+  description: Auf der Suche nach einem Bug - warum kann ich den Shader nicht verÃ¤ndern
+    uind bekomme immer wider den gleichen Dreck als Export
+  id: Nl2yz1
+  name: IchWerdeIrre
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - bug
+  url: https://www.shadertoy.com/view/Nl2yz1

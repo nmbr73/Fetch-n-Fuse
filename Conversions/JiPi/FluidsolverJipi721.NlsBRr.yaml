@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FluidsolverJipi721
+  id: FluidsolverJipi721
+  kernel: FluidsolverJipi721
+  name: FluidsolverJipi721
+shader:
+  author: N.N.
+  description: Single-pass Navier-Stokes solver, from [url=https://hal.inria.fr/inria-00596050/document]Simple
+    and Fast Fluids[/url]
+  id: NlsBRr
+  name: FluidSolver JiPi721
+  parent:
+    id: XlsBDf
+    name: Fluid solver
+    url: https://www.shadertoy.com/view/XlsBDf
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/NlsBRr

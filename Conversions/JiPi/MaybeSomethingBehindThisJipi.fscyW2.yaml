@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: MaybeSomethingBehindThisJipi
+  id: MaybeSomethingBehindThisJipi
+  kernel: MaybeSomethingBehindThisJipi
+  name: MaybeSomethingBehindThisJipi
+shader:
+  author: N.N.
+  description: A 2D fractal with a 3D lighting technique
+  id: fscyW2
+  name: maybe something behind this JiPi
+  parent:
+    id: flSfWV
+    name: maybe something behind this
+    url: https://www.shadertoy.com/view/flSfWV
+  tags:
+  - 2d
+  - fractal
+  url: https://www.shadertoy.com/view/fscyW2

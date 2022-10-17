@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: LocalInteraction
+  id: LocalInteraction
+  kernel: LocalInteraction
+  name: LocalInteraction
+shader:
+  author: wyatt
+  description: 'Directional feedback system. '
+  id: ttXXzf
+  name: Local Interaction
+  tags:
+  - automata
+  url: https://www.shadertoy.com/view/ttXXzf

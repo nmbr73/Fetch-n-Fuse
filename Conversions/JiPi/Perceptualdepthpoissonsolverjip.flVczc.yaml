@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Perceptualdepthpoissonsolverjip
+  id: Perceptualdepthpoissonsolverjip
+  kernel: Perceptualdepthpoissonsolverjip
+  name: Perceptualdepthpoissonsolverjip
+shader:
+  author: N.N.
+  description: Rebuild
+  id: flVczc
+  name: 'PerceptualDepthPoissonSolverJiP '
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - perceptual
+  url: https://www.shadertoy.com/view/flVczc

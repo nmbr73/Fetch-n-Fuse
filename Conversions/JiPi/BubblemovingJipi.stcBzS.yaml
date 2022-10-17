@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: BubblemovingJipi
+  id: BubblemovingJipi
+  kernel: BubblemovingJipi
+  name: BubblemovingJipi
+shader:
+  author: N.N.
+  description: ' bubbles with sampler2d texture'
+  id: stcBzS
+  name: BubbleMoving JiPi
+  parent:
+    id: sdt3zH
+    name: bubble moving
+    url: https://www.shadertoy.com/view/sdt3zH
+  tags:
+  - 2d
+  - bubble
+  - motion
+  - moving
+  url: https://www.shadertoy.com/view/stcBzS

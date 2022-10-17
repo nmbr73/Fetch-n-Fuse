@@ -1,0 +1,80 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flcyWH",
+  "date": "0",
+  "viewed": 0,
+  "name": "Broken Screen JiPi",
+  "description": "perhaps with something that drives the position of mouse",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "experimental",
+   "fluorescent",
+   "xenomorph"
+  ],
+  "hasliked": 0,
+  "parentid": "NdKXDd",
+  "parentname": "Broken Screen"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{  \n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 ok = texture(iChannel0,uv);\n    fragColor = vec4(vec3(0.02,0.1,0.4) * (ok.b * 10.) +vec3(ok.b),3.);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\t\n    vec2 dvec;\n    if (iMouse.x<20.0)\n    {\n     \tfloat r =  0.2 + 0.6 * sin(iTime* 0.62);\n        dvec = vec2( (iResolution.x/2. + r *iResolution.y/2. * sin(iTime*2.2)), ( iResolution.y/2. + r*iResolution.y/2. * cos( iTime*2.2)));\n    }else{\n    \tdvec = iMouse.xy;\n    }\n     \t\n    \n    \n    vec2 uv = fragCoord.xy/iResolution.xy;\n    vec2 tc = fragCoord.xy - dvec.xy;\n    tc/=iResolution.x;\n    float o= length(tc);\n    \n    float b = pow(max(1.-o*5.,0.),16.);\n    vec3 nv = vec3(tc.x * b * 6.,tc.y * b * 6.,b);\n    \n    vec3 oldervec = texture(iChannel0, uv).xyz;\n    vec3 oldvec = texture(iChannel0, uv).xyz;\n    vec2 old2d = oldvec.xy;\n    if (length(old2d)>1.)\n    {\n        old2d = normalize(old2d);\n        oldvec = vec3(old2d, oldvec.z);       \n    }\n    vec3 oldervecnev = texture(iChannel0, uv - oldvec.xy * 0.5).xyz;\n    \n    \n    fragColor = vec4(nv + vec3(oldvec.xy *  0.999, oldervecnev.z * 0.9), 1.0 );\n\n\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

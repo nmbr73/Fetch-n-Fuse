@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: PourYann
+  id: PourYann
+  kernel: PourYann
+  name: PourYann
+shader:
+  author: wyatt
+  description: Collaboration with the great artist Yann Nguema
+  id: tdKBz3
+  name: 'Pour Yann '
+  tags:
+  - secretproject
+  url: https://www.shadertoy.com/view/tdKBz3

@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "slVyzt",
+  "date": "0",
+  "viewed": 0,
+  "name": "Burning Runes JiPi",
+  "description": "Just playing with [url=https://www.shadertoy.com/view/MsXSRn]runes generation algorithm (by Otavio Good)[/url] and some turbulent noise.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fire",
+   "font",
+   "runes",
+   "pseudofont"
+  ],
+  "hasliked": 0,
+  "parentid": "MtSSRz",
+  "parentname": "Burning Runes"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/**\n * Created by Kamil Kolaczynski (revers) - 2015\n * Licensed under Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n *\n * This shader uses code written by: \n * - iq (raymarching, hash, noise)\n * - otaviogood (runes, https://www.shadertoy.com/view/MsXSRn)\n * Thanks for sharing it guys!\n * \n * The shader was created and exported from Synthclipse (http://synthclipse.sourceforge.net/)\n */\n\nconst float MarchDumping = 1.0;\nconst float Far = 62.82;\nconst int MaxSteps = 32;\nconst float FOV = 0.4;\nconst vec3 Eye = vec3(0.14, 0.0, 3.4999998);\nconst vec3 Direction = vec3(0.0, 0.0, -1.0);\nconst vec3 Up = vec3(0.0, 1.0, 0.0);\n\n// Noise settings:\nconst float Power = 5.059;\nconst float MaxLength = 0.9904;\nconst float Dumping = 10.0;\n\n#define PI 3.141592\n#define HALF_PI 1.57079632679\n\nconst float DEG_TO_RAD = PI / 180.0;\nconst float TIME_FACTOR = 0.3;\nconst float ROTATION_DIST = 16.0;\n\nvec3 hash3(vec3 p) {\n\tp = vec3(dot(p, vec3(127.1, 311.7, 74.7)),\n\t\t\tdot(p, vec3(269.5, 183.3, 246.1)),\n\t\t\tdot(p, vec3(113.5, 271.9, 124.6)));\n\n\treturn -1.0 + 2.0 * fract(sin(p) * 43758.5453123);\n}\n\nfloat noise(vec3 p) {\n\tvec3 i = floor(p);\n\tvec3 f = fract(p);\n\n\tvec3 u = f * f * (3.0 - 2.0 * f);\n\n\tfloat n0 = dot(hash3(i + vec3(0.0, 0.0, 0.0)), f - vec3(0.0, 0.0, 0.0));\n\tfloat n1 = dot(hash3(i + vec3(1.0, 0.0, 0.0)), f - vec3(1.0, 0.0, 0.0));\n\tfloat n2 = dot(hash3(i + vec3(0.0, 1.0, 0.0)), f - vec3(0.0, 1.0, 0.0));\n\tfloat n3 = dot(hash3(i + vec3(1.0, 1.0, 0.0)), f - vec3(1.0, 1.0, 0.0));\n\tfloat n4 = dot(hash3(i + vec3(0.0, 0.0, 1.0)), f - vec3(0.0, 0.0, 1.0));\n\tfloat n5 = dot(hash3(i + vec3(1.0, 0.0, 1.0)), f - vec3(1.0, 0.0, 1.0));\n\tfloat n6 = dot(hash3(i + vec3(0.0, 1.0, 1.0)), f - vec3(0.0, 1.0, 1.0));\n\tfloat n7 = dot(hash3(i + vec3(1.0, 1.0, 1.0)), f - vec3(1.0, 1.0, 1.0));\n\n\tfloat ix0 = mix(n0, n1, u.x);\n\tfloat ix1 = mix(n2, n3, u.x);\n\tfloat ix2 = mix(n4, n5, u.x);\n\tfloat ix3 = mix(n6, n7, u.x);\n\n\tfloat ret = mix(mix(ix0, ix1, u.y), mix(ix2, ix3, u.y), u.z) * 0.5 + 0.5;\n\treturn ret * 2.0 - 1.0;\n}\n\nfloat sdBox(vec3 p, vec3 b) {\n\tvec3 d = abs(p) - b;\n\treturn min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));\n}\n\nvec3 rotateY(vec3 p, float a) {\n\tfloat sa = sin(a);\n\tfloat ca = cos(a);\n\treturn vec3(ca * p.x + sa * p.z, p.y, ca * p.z - sa * p.x);\n}\n\nfloat getAngle(float x) {\n\treturn ((1.0 - x) * 100.0 - 15.0) * DEG_TO_RAD;\n}\n\nfloat tween(float time) {\n\tfloat t = fract(time * TIME_FACTOR);\n\n\tfloat stop = 0.25;\n\tfloat range = 1.0 - stop;\n\tfloat k = sin((sin(sin(HALF_PI) * HALF_PI)) * HALF_PI) * 0.9;\n\n\tfloat ret = sin((sin(sin(t / range * HALF_PI) * HALF_PI)) * HALF_PI) * 0.9;\n\tfloat stp = step(range, t);\n\n\treturn ret * (1.0 - stp) + stp * mix(k, 1.0, (t - range) / (1.0 - range));\n}\n\nvec3 transformCube(vec3 p) {\n\tp.x -= ROTATION_DIST;\n\n\tp = rotateY(p, getAngle(tween(iTime)));\n\tp.x += ROTATION_DIST;\n\treturn p;\n}\n\nfloat map(vec3 p) {\n\tvec3 q = transformCube(p);\n\treturn sdBox(q, vec3(1.0, 1.0, 0.0001));\n}\n\nvec2 castRay(vec3 ro, vec3 rd) {\n\tfloat tmin = 0.0;\n\tfloat tmax = Far;\n\n\tfloat precis = 0.002;\n\tfloat t = tmin;\n\tfloat m = -1.0;\n\n\tfor (int i = 0; i < MaxSteps; i++) {\n\t\tfloat res = map(ro + rd * t);\n\t\tif (res < precis || t > tmax) {\n\t\t\tbreak;\n\t\t}\n\t\tt += res * MarchDumping;\n\t\tm = 1.0;\n\t}\n\n\tif (t > tmax) {\n\t\tm = -1.0;\n\t}\n\treturn vec2(t, m);\n}\n\nfloat udSegment(vec2 p, vec2 start, vec2 end) {\n\tvec2 dir = start - end;\n\tfloat len = length(dir);\n\tdir /= len;\n\n\tvec2 proj = clamp(dot(p - end, dir), 0.0, len) * dir + end;\n\treturn distance(p, proj);\n}\n\n/**\n * Rune function by Otavio Good.\n * https://www.shadertoy.com/view/MsXSRn\n */\nfloat rune(vec2 uv, vec2 seed) {\n\tfloat ret = 100.0;\n\n\tfor (int i = 0; i < 4; i++) {\n\t\t// generate seeded random line endPoints - just about any texture_ should work.\n\t\t// Hopefully this randomness will work the same on all GPUs (had some trouble with that)\n\t\tvec2 posA = texture(iChannel0, floor(seed + 0.5) / iChannelResolution[0].xy).xy;\n\t\tvec2 posB = texture(iChannel0, floor(seed + 1.5) / iChannelResolution[0].xy).xy;\n\n\t\tseed += 2.0;\n\t\t// expand the range and mod it to get a nicely distributed random number - hopefully. :)\n\t\tposA = fract(posA * 128.0);\n\t\tposB = fract(posB * 128.0);\n\n\t\t// each rune touches the edge of its box on all 4 sides\n\t\tif (i == 0) {\n\t\t\tposA.y = 0.0;\n\t\t}\n\t\tif (i == 1) {\n\t\t\tposA.x = 0.999;\n\t\t}\n\t\tif (i == 2) {\n\t\t\tposA.x = 0.0;\n\t\t}\n\t\tif (i == 3) {\n\t\t\tposA.y = 0.999;\n\t\t}\n\n\t\t// snap the random line endpoints to a grid 2x3\n\t\tvec2 snaps = vec2(2.0, 3.0);\n\t\tposA = (floor(posA * snaps) + 0.5) / snaps;\t// to center it in a grid cell\n\t\tposB = (floor(posB * snaps) + 0.5) / snaps;\n\n\t\tif (distance(posA, posB) < 0.0001) {\n\t\t\tcontinue; // eliminate dots.\n\t\t}\n\n\t\t// Dots (degenerate lines) are not cross-GPU safe without adding 0.001 - divide by 0 error.\n\t\tfloat d = udSegment(uv, posA, posB + 0.001);\n\t\tret = min(ret, d);\n\t}\n\treturn ret;\n}\n\nfloat distToObject(vec2 p) {\n\tp *= 0.2;\n\n\tvec2 newSeed = vec2(iTime * TIME_FACTOR + 1.0);\n    newSeed.y *= 0.2;\n    newSeed = floor(newSeed);\n    newSeed *= 4.0;\n        \n\treturn rune(p, newSeed - 0.41);\n}\n\nfloat normalizeScalar(float value, float max) {\n\treturn clamp(value, 0.0, max) / max;\n}\n\nvec3 color(vec2 p) {\n\tvec3 coord = vec3(p, iTime * 0.25);\n\tfloat n = abs(noise(coord));\n\tn += 0.5 * abs(noise(coord * 2.0));\n\tn += 0.25 * abs(noise(coord * 4.0));\n\tn += 0.125 * abs(noise(coord * 8.0));\n\n\tn *= (100.001 - Power);\n\tfloat dist = distToObject(p);\n\tfloat k = normalizeScalar(dist, MaxLength);\n\tn *= dist / pow(1.001 - k, Dumping);\n\n\tvec3 col = vec3(1.0, 0.25, 0.08) / n;\n\treturn pow(col, vec3(2.0));\n}\n\nvec3 render(vec3 ro, vec3 rd) {\n\tvec3 col = vec3(0.0);\n\tvec2 res = castRay(ro, rd);\n\n\tfloat t = res.x;\n\tfloat m = res.y;\n\n\tif (m > 0.0) {\n\t\tvec3 pos = ro + t * rd;\n\n\t\tvec3 q = transformCube(pos);\n\t\tvec2 uv = q.xy * 3.0;\n\n\t\tcol = color(uv + 2.5);\n\t}\n\n\treturn vec3(clamp(col, 0.0, 1.0));\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord) {\n\tvec2 q = fragCoord.xy / iResolution.xy;\n\tvec2 coord = 2.0 * q - 1.0;\n\tcoord.x *= iResolution.x / iResolution.y;\n\tcoord *= FOV;\n\n\tvec3 dir = normalize(Direction);\n\tvec3 up = Up;\n\tvec3 upOrtho = normalize(up - dot(dir, up) * dir);\n\tvec3 right = normalize(cross(dir, upOrtho));\n\n\tvec3 ro = Eye;\n\tvec3 rd = normalize(dir + coord.x * right + coord.y * upOrtho);\n\n\tvec3 col = render(ro, rd);\n\tcol = pow(col, vec3(0.4545));\n\n\tfragColor = vec4(col, 1.0);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

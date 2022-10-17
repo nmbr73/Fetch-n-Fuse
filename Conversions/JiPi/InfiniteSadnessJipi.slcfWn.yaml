@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: InfiniteSadnessJipi
+  id: InfiniteSadnessJipi
+  kernel: InfiniteSadnessJipi
+  name: InfiniteSadnessJipi
+shader:
+  author: N.N.
+  description: 'Comment a line somewhere for the yummier version
+
+    Uncomment another for the milky one'
+  id: slcfWn
+  name: Infinite Sadness JiPi
+  parent:
+    id: tldcW7
+    name: Infinite Sadness
+    url: https://www.shadertoy.com/view/tldcW7
+  tags:
+  - fluid
+  - particles
+  url: https://www.shadertoy.com/view/slcfWn

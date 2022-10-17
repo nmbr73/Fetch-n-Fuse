@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: AtomSupernova
+  id: AtomSupernova
+  kernel: AtomSupernova
+  name: AtomSupernova
+shader:
+  author: fpiaggio
+  description: Atom Supernova
+  id: NscyDN
+  name: Atom Supernova
+  tags:
+  - noise
+  - fbm
+  - lights
+  url: https://www.shadertoy.com/view/NscyDN

@@ -1,0 +1,49 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fttyRj",
+  "date": "0",
+  "viewed": 0,
+  "name": "water drops JiPi",
+  "description": "My first shader.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "waterwave"
+  ],
+  "hasliked": 0,
+  "parentid": "XdXGR7",
+  "parentname": "water drops"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "const float PI = 3.14159265359;\n#define time (-iTime*5.0)\n\nconst vec3 eps = vec3(0.01, 0.0, 0.0);\n\nfloat genWave1(float len)\n{\n\tfloat wave = sin(8.0 * PI * len + time);\n\twave = (wave + 1.0) * 0.5; // <0 ; 1>\n\twave -= 0.3;\n\twave *= wave * wave;\n\treturn wave;\n}\n\nfloat genWave2(float len)\n{\n\tfloat wave = sin(7.0 * PI * len + time);\n\tfloat wavePow = 1.0 - pow(abs(wave*1.1), 0.8);\n\twave = wavePow * wave; \n\treturn wave;\n}\n\nfloat scene(float len)\n{\n\t// you can select type of waves\n\treturn genWave1(len);\n}\n\nvec2 normal(float len) \n{\n\tfloat tg = (scene(len + eps.x) - scene(len)) / eps.x;\n\treturn normalize(vec2(-tg, 1.0));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tvec2 so = iMouse.xy / iResolution.xy;\n\tvec2 pos2 = vec2(uv - so); \t  //wave origin\n\tvec2 pos2n = normalize(pos2);\n\n\tfloat len = length(pos2);\n\tfloat wave = scene(len); \n\n\tvec2 uv2 = -pos2n * wave/(1.0 + 5.0 * len);\n\n\tfragColor = vec4(texture(iChannel0, uv + uv2));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

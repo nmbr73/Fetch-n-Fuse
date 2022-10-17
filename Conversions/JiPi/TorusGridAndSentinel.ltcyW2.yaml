@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: TorusGridAndSentinel
+  id: TorusGridAndSentinel
+  kernel: TorusGridAndSentinel
+  name: TorusGridAndSentinel
+shader:
+  author: emh
+  description: Force directed graph layout with help of Z-order sorted particles.
+    60 FPS on Radeon 7870. Key LEFT arrow to reset. Should work also in full screen
+    after reset but prettier windowed (added blur to mitigate sharpness).
+  id: ltcyW2
+  name: Torus, Grid and Sentinel
+  tags:
+  - graph
+  - sort
+  - physics
+  - force
+  - layout
+  url: https://www.shadertoy.com/view/ltcyW2

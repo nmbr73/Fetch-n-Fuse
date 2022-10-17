@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: Parasight
+  id: Parasight
+  kernel: Parasight
+  name: Parasight
+shader:
+  author: xenn
+  description: 'worms? what worms?
+
+
+    whatever warm worms would want,
+
+
+    well, without the wicked wandering ones wobbling away'
+  id: wllfRf
+  name: parasight
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/wllfRf

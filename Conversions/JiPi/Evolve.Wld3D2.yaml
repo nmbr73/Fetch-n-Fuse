@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Evolve
+  id: Evolve
+  kernel: Evolve
+  name: Evolve
+shader:
+  author: wyatt
+  description: 14 billions years of self exploration and I am right now trapped inside
+    an experience of elegant design.
+  id: Wld3D2
+  name: Evolve
+  tags:
+  - blackmagic
+  url: https://www.shadertoy.com/view/Wld3D2

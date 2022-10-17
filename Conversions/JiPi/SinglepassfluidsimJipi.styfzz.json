@@ -1,0 +1,96 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "styfzz",
+  "date": "0",
+  "viewed": 0,
+  "name": "SinglePassFluidSim JiPi",
+  "description": "This is just a variation on Florian Berger's (flockaroo's) single pass CFD method, with (possibly) some optimizations and time- and resolution-dependent stability fixes, a randomized simplex gradient seed for initial color, and mouse interaction.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "flow",
+   "dynamics",
+   "pass",
+   "cfd",
+   "single"
+  ],
+  "hasliked": 0,
+  "parentid": "stdfzl",
+  "parentname": "Single Pass Fluid Sim"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Based on \"spilled\" by florian berger (flockaroo) https://www.shadertoy.com/view/MsGSRd\n// Click and drag to inject color\n// Press I to pick a different start seed\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tfragColor = texture(iChannel0,uv);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Based on \"spilled\" by florian berger (flockaroo) https://www.shadertoy.com/view/MsGSRd\n// Click and drag to inject color\n// Press I to pick a different start seed\n\n// RotNum has to be an odd integer\n#define RotNum 5\n\n#define keyTex iChannel1\n#define KEY_I texture(keyTex,vec2((105.5-32.0)/256.0,(0.5+0.0)/3.0)).x\n\nconst float third = 1.0 / 3.0;\nconst float sixth = 1.0 / 6.0;\nconst float rotFloat = float(RotNum);\nconst float iRotFloat = 1.0 / rotFloat;\nconst float imf = 1.0 / float(0xFFFFFFFFU);\nconst float ang = 2.0 * 3.1415926535 / float(RotNum);\nmat2 m = mat2( cos(ang), sin(ang),\n              -sin(ang), cos(ang));\n\nvec4 permute(vec4 x) {\n    vec4 xm = mod(x, 289.0);\n    return mod(((xm * 34.0) + 10.0) * xm, 289.0);\n}\n\n// Stefan Gustavson's and Ian McEwan's implementation of simplex noise (patent is now expired)\n// https://github.com/stegu/psrdnoise\nvec3 psrdnoise(vec3 x) {\n    vec3 uvw = x + dot(x, vec3(third));\n    vec3 i0 = floor(uvw);\n    vec3 f0 = fract(uvw);\n    vec3 g_ = step(f0.xyx, f0.yzz);\n    vec3 l_ = 1.0 - g_;\n    vec3 g = vec3(l_.z, g_.xy);\n    vec3 l = vec3(l_.xy, g_.z);\n    vec3 o1 = min(g, l);\n    vec3 o2 = max(g, l);\n    vec3 i1 = i0 + o1;\n    vec3 i2 = i0 + o2;\n    vec3 i3 = i0 + 1.0;\n    vec3 v0 = i0 - dot(i0, vec3(sixth));\n    vec3 v1 = i1 - dot(i1, vec3(sixth));\n    vec3 v2 = i2 - dot(i2, vec3(sixth));\n    vec3 v3 = i3 - dot(i3, vec3(sixth));\n    vec3 x0 = x - v0;\n    vec3 x1 = x - v1;\n    vec3 x2 = x - v2;\n    vec3 x3 = x - v3;\n    vec4 hash = permute(permute(permute(\n                  vec4(i0.z, i1.z, i2.z, i3.z))\n                + vec4(i0.y, i1.y, i2.y, i3.y))\n                + vec4(i0.x, i1.x, i2.x, i3.x));\n    vec4 theta = hash * 3.883222077;\n    vec4 sz = hash * -0.006920415 + 0.996539792;\n    vec4 psi = hash * 0.108705628;\n    vec4 Ct = cos(theta);\n    vec4 St = sin(theta);\n    vec4 sz_prime = sqrt(1.0 - sz * sz);\n    vec4 gx = Ct * sz_prime;\n    vec4 gy = St * sz_prime;\n    vec3 g0 = vec3(gx.x, gy.x, sz.x);\n    vec3 g1 = vec3(gx.y, gy.y, sz.y);\n    vec3 g2 = vec3(gx.z, gy.z, sz.z);\n    vec3 g3 = vec3(gx.w, gy.w, sz.w);\n    vec4 w = 0.5 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3));\n    w = max(w, 0.0);\n    vec4 w2 = w * w;\n    vec4 w3 = w2 * w;\n    vec4 gdotx = vec4(dot(g0, x0), dot(g1, x1), dot(g2, x2), dot(g3, x3));\n    vec4 dw = -6.0 * w2 * gdotx;\n    vec3 dn0 = w3.x * g0 + dw.x * x0;\n    vec3 dn1 = w3.y * g1 + dw.y * x1;\n    vec3 dn2 = w3.z * g2 + dw.z * x2;\n    vec3 dn3 = w3.w * g3 + dw.w * x3;\n    return 39.5 * (dn0 + dn1 + dn2 + dn3);\n}\n\n// Chris Wellons' and TheIronBorn's best 32-bit two-round integer hash\n// https://github.com/skeeto/hash-prospector\n// flockaroo used 2D noise, but it was only sampled along one dimension\n// and only used one output value, so I replaced it with 1D noise\nfloat hash32(int x) {\n    // since the frame number is an int seed, convert to uint for bitwise ops\n    uint p = uint(x);\n    p ^= p >> 16;\n    p *= 0x21F0AAADU;\n    p ^= p >> 15;\n    p *= 0xD35A2D97U;\n    p ^= p >> 15;\n    // normalize float and shift range to -0.5, 0.5 to cover whole period with ang\n    return float(p) * imf - 0.5;\n}\n\nfloat circleSDF(vec2 p, vec2 c, float r) {\n    return length(p + c) - r;\n}\n\n// basically tried to eliminate as many dot products and divisions as possible\nfloat getRot(vec2 invRes, vec2 pos, vec2 b, float idb) {\n    vec2 p = b;\n    float rot = 0.0;\n    for(int i = 0; i < RotNum; i++) {\n        rot += dot(texture(iChannel0, fract((pos + p) * invRes)).xy - 0.5,\n                   vec2(p.y, -p.x));\n        p = m * p;\n    }\n    return rot * iRotFloat * idb;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    // use screen resolution in all calculations\n    // since buffer and image resolution are the same\n    \n    // eliminate division where possible\n    vec2 invRes = 1.0 / iResolution.xy;\n    \n    // proportionally squared and zero-centered uvs\n    // to keep simplex seed color grid coords from stretching\n    vec2 uv = (fragCoord - 0.5 * iResolution.xy) * invRes.y;\n    float rnd = hash32(iFrame);\n    \n    // do ang * rnd once instead of twice\n    float angrnd = ang * rnd;\n    vec2 b = vec2(cos(angrnd), sin(angrnd));\n    \n    // calculate dot product and its inverse only once\n    float db = dot(b, b);\n    float idb = 1.0 / db;\n    vec2 v = vec2(0.0);\n    \n    // abort loop later for bigger vortices (for long-term stability)\n    // this makes it less dependent on certain resolutions for stability\n    float bbMax = iResolution.y;\n    bbMax *= bbMax;\n    \n    // reduced the number of rounds the velocity is summed over\n    for(int l = 0; l < 9; l++) {\n        if(db > bbMax) break;\n        vec2 p = b;\n        for(int i = 0; i < RotNum; i++) {\n            v += p.yx * getRot(invRes, fragCoord.xy + p, b, idb);\n            p = m * p;\n        }\n        b *= 2.0;\n        // do multiplications for dot product optimizations\n        db *= 4.0;\n        idb *= 0.25;\n    }\n    \n    fragColor=texture(iChannel0,fract((fragCoord.xy + v * vec2(-1, 1) * 2.0) / iResolution.xy));\n\n    vec2 scr = fragCoord.xy * invRes - 0.5;\n    // added an extra blue color \"fountain\"\n    // since velocity is driven by red and green channels, blue is initially stationary (like black)\n    // but starts moving when red and green accumulate in the blue pixels\n    // slowed down color accumulation a bit to accomodate for an extra channel being used\n    fragColor.xyz += (0.009 * vec3(scr.xy, -0.5 * (scr.x + scr.y)) / (dot(scr, scr) * 10.0 + 0.3));\n    \n    if(iFrame < 1 || KEY_I > 0.5) {\n        float srv = iDate.x + iDate.y + iDate.z + iDate.w; \n        vec3 n = psrdnoise(vec3(uv * 4.0, srv));\n        n = normalize(n) * 0.5 + 0.5;\n        fragColor = vec4(n, 1.0);\n    }\n    \n    if(iMouse.z > 0.0) {\n        float t = iTime;\n        vec2 ppos = -(iMouse.xy - 0.5 * iResolution.xy) * invRes.y;\n        vec3 pcol = 0.5 * (sin(vec3(t, t + 2.1, t + 4.2)) + 1.0);\n        float dist = circleSDF(uv, ppos, 0.1);\n        if(dist < 0.0) fragColor = vec4(pcol, 1.0);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

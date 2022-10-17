@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: CubicDispersalBrokeTheScene
+  id: CubicDispersalBrokeTheScene
+  kernel: CubicDispersalBrokeTheScene
+  name: CubicDispersalBrokeTheScene
+shader:
+  author: iapafoto
+  description: 'Inspired by  Tater [Cubic Dispersal] https://www.shadertoy.com/view/fldXWS
+
+
+    The goal of this Shader was to show that we can create a very simple Cut dispersal
+    operator applicable to any scene with a simple function call (opCutDispersal).
+
+
+    '
+  id: 7t2fRK
+  name: Cubic Dispersal broke the scene
+  tags:
+  - text
+  - effect
+  - font
+  - slice
+  - cubic
+  - cut
+  - operator
+  - dispersal
+  url: https://www.shadertoy.com/view/7t2fRK

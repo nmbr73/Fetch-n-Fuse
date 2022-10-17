@@ -1,0 +1,73 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "dssGz4",
+  "date": "0",
+  "viewed": 0,
+  "name": "CatVolleyball JiPi",
+  "description": "Cat Volleyball",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cat",
+   "pbr",
+   "volleyball"
+  ],
+  "hasliked": 0,
+  "parentid": "7ll3zS",
+  "parentname": "Cat Volleyball"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsX3zn",
+     "filepath": "/media/a/94284d43be78f00eb6b298e6d78656a1b34e2b91b34940d02f1ca8b22310e8a0.png",
+     "type": "cubemap",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\n#define FOV (60.0)\n#define LIGHT_DIR vec3(-1.0, 1.0, -1.0)\n#define STEPS (64)\n#define GRID_SIZE (2.0)\n#define RAY_LEN (float(STEPS) * GRID_SIZE * 0.25)\n\nfloat pow2(float x) {return x * x;}\nfloat pow4(float x) {return pow2(x) * pow2(x);}\nfloat pow5(float x) {return pow4(x) * x;}\n\nCamera GetCamera()\n{\n    vec3 forward;\n    if (iMouse.z > 0.5)\n    {\n        forward = MouseRotation(iMouse.xy, iResolution.xy);\n    }\n    else\n    {\n        const float speed = 0.125;\n        forward.y = sin(0.618 * speed * iTime) * 0.35;\n        forward.xz = vec2(-sin(iTime * speed), cos(iTime * speed));\n        forward = normalize(forward);\n    }\n    Camera cam;\n    cam.forward = forward;\n    cam.up = vec3(0.0, 1.0, 0.0);\n    cam.position = -(GRID_SIZE * 2.0) * cam.forward;\n    return cam;\n}\n\nvec3 GetFogColor(vec3 rd)\n{\n    return mix(vec3(0.0), vec3(1.0), rd.y * 0.5 + 0.5);\n}\n\nfloat GetFogIntensity(float t, float start, float decay)\n{\n    return 1.0 - pow(1.0 - pow2(max((t - start) / (1.0 - start), 0.0)), decay);\n}\n\nvec4 SampleVolleyball(vec3 dirVec)\n{\n    vec2 uv0 = dirVec.xy;\n    vec2 uv1 = dirVec.yz;\n    vec2 uv2 = dirVec.zx;\n    uv0.x = (uv0.x * 0.3 + 0.5) * sign(dirVec.z) + iTime * -0.125;\n    uv1.x = (uv1.x * 0.3 + 0.5) * sign(dirVec.x) + iTime * -0.125;\n    uv2.x = (uv2.x * 0.3 + 0.5) * sign(dirVec.y) + iTime * -0.125;\n    uv0.y = (uv0.y * 0.8 + 0.5);\n    uv1.y = (uv1.y * 0.8 + 0.5);\n    uv2.y = (uv2.y * 0.8 + 0.5);\n    vec4 col0 = texture(iChannel0, uv0);\n    vec4 col1 = texture(iChannel0, uv1);\n    vec4 col2 = texture(iChannel0, uv2);\n    col0.rgb = pow(col0.rgb, vec3(2.2));\n    col1.rgb = pow(col1.rgb, vec3(2.2));\n    col2.rgb = pow(col2.rgb, vec3(2.2));\n    //col0 *= pow2(dirVec.z);\n    //col1 *= pow2(dirVec.x);\n    //col2 *= pow2(dirVec.y);\n    col0 *= smoothstep(0.577350, 0.6, abs(dirVec.z)) * smoothstep(0.577350, 0.55, abs(dirVec.y));\n    col1 *= smoothstep(0.577350, 0.6, abs(dirVec.x)) * smoothstep(0.577350, 0.55, abs(dirVec.z));\n    col2 *= smoothstep(0.577350, 0.6, abs(dirVec.y)) * smoothstep(0.577350, 0.55, abs(dirVec.x));\n    return col0 + col1 + col2;\n}\n\nvoid SampleMaterial(vec3 N, vec3 C, out vec3 D, out vec3 S, out float R)\n{\n    vec4 mainTex = SampleVolleyball(N);\n    vec3 albedo = mainTex.rgb * C;\n    float metallic = smoothstep(0.0, 1.0, 1.0 - mainTex.b);\n    D = albedo * (1.0 - metallic);\n    S = mix(vec3(0.04), albedo, metallic);\n    R = 1.0 - mainTex.r;\n    R = max(R, 0.04);\n}\n\nfloat Geometry(float NoV, float NoL, float k)\n{\n    float gv = 0.5 / (NoV * (1.0 - k) + k);\n    float gl = 0.5 / (NoL * (1.0 - k) + k);\n    return gv * gl;\n}\n\nfloat Distribution(float NoH, float alpha)\n{\n    float a2 = alpha * alpha;\n    float denom = NoH * NoH * (a2 - 1.0) + 1.0;\n    return a2 / (denom * denom);\n}\n\nvec3 Fresnel(float NoV, vec3 F0)\n{\n    return F0 + (1.0 - F0) * pow5(1.0 - NoV);\n}\n\nvec3 DirectSpecular(float NoV, float NoL, float NoH, float HoV, vec3 F0, float R)\n{\n    float k = pow2(R + 1.0) / 8.0;\n    float G = Geometry(NoV, NoL, k);\n    float D = Distribution(NoH, R * R);\n    vec3 F = Fresnel(HoV, F0);\n    return G * D * F;\n}\n\nvec3 DirectRadiance(vec3 N, vec3 V, vec3 L, vec3 D, vec3 S, float R)\n{\n    vec3 H = normalize(V + L);\n    float NoV = max(dot(N, V), 0.0);\n    float NoL = max(dot(N, L), 0.0);\n    float NoH = max(dot(N, H), 0.0);\n    float HoV = max(dot(H, V), 0.0);\n    vec3 radiance = D;\n    radiance += DirectSpecular(NoV, NoL, NoH, HoV, S, R);\n    radiance *= NoL;\n    return radiance;\n}\n\nvec3 IndirectRadiance(vec3 N, vec3 V, vec3 D, vec3 S, float R)\n{\n    vec3 reflVec = reflect(-V, N);\n    float NoV = max(dot(N, V), 0.0);\n    vec3 F = Fresnel(NoV, S);\n    float lod = sqrt(R);\n    lod = 1.0 - (1.0 - lod) * sqrt(NoV);\n    vec3 radiance = vec3(0.0);\n    radiance += F * pow(textureLod(iChannel1, reflVec, lod * 8.0).rgb, vec3(2.2));\n    radiance += D * pow(textureLod(iChannel1, N, 8.0).rgb, vec3(2.2));\n    return radiance;\n}\n\nfloat RayCastSphere(vec3 ro, vec3 rd, vec4 sphere, out vec3 N)\n{\n    vec3 p = sphere.xyz - ro;\n    float a = dot(rd, rd);\n    float b = dot(rd, p);\n    float c = dot(p, p) - pow2(sphere.w);\n    float delta = b * b - a * c;\n    if (delta < 0.0) return -1.0;\n    float t = (b - sqrt(delta)) / a;\n    vec3 P = ro + rd * t;\n    N = normalize(P - sphere.xyz);\n    return t;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    float aspect = iResolution.x / iResolution.y;\n    Camera cam = GetCamera();\n    \n    vec3 ro = cam.position;\n    vec3 rd = MakeWorldRay(uv, aspect, FOV, cam);\n    \n    vec4 sphere = vec4(0.0, 0.0, 0.0, 0.5);\n    \n    vec3 col = vec3(0.0);\n    \n    float hitDist = -1.0;\n    vec3 hitNormal = vec3(0.0);\n    for (int i = 0; i < STEPS; ++i)\n    {\n        float t = (float(i) + 0.5) / float(STEPS);\n        vec3 pos = ro + rd * (t * RAY_LEN);\n\n        vec3 gpos = fract(pos / GRID_SIZE + 0.5);\n        gpos -= 0.5;\n        gpos *= GRID_SIZE;\n\n        hitDist = RayCastSphere(gpos, rd, sphere, hitNormal);\n        if (hitDist > 0.0)\n        {\n            hitDist += (t * RAY_LEN);\n            hitDist = clamp(hitDist, 0.0, RAY_LEN);\n            break;\n        }\n    }\n    \n    if (hitDist > 0.0)\n    {\n        vec3 lightDir = normalize(LIGHT_DIR);\n        vec3 D, S;\n        float R;\n        SampleMaterial(hitNormal, vec3(1.0), D, S, R);\n        vec3 sphCol = vec3(0.0);\n        sphCol += DirectRadiance(hitNormal, -rd, lightDir, D, S, R);\n        sphCol += IndirectRadiance(hitNormal, -rd, D, S, R);\n        \n        float t = hitDist / RAY_LEN;\n        col = mix(sphCol, GetFogColor(rd), GetFogIntensity(t, 0.1, 0.5));\n    }\n    else\n    {\n        col = GetFogColor(rd);\n    }\n\n    col = pow(col, vec3(1.0 / 2.2));\n    fragColor = vec4(col, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\n#define PI (3.14159265359)\n#define HALF_PI (PI * 0.5)\n#define DOUBLE_PI (PI * 2.0)\n#define DEG2RAD (PI / 180.0)\n\nstruct Camera\n{\n    vec3 position;\n    vec3 forward;\n    vec3 up;\n};\n\nmat3 LookAt(vec3 forward, vec3 up)\n{\n    mat3 m;\n    m[2] = forward;\n    m[0] = normalize(cross(up, m[2]));\n    m[1] = cross(m[2], m[0]);\n    return m;\n}\n\nvec3 MakeViewRay(vec2 uv, float aspect, float fov)\n{\n    vec3 ray = vec3(uv * 2.0 - 1.0, 1.0);\n    ray.x *= aspect;\n    ray.xy *= tan(fov * 0.5 * DEG2RAD);\n    return normalize(ray);\n}\n\nvec3 MakeWorldRay(vec2 uv, float aspect, float fov, Camera cam)\n{\n    vec3 ray = MakeViewRay(uv, aspect, fov);\n    return LookAt(cam.forward, cam.up) * ray;\n}\n\nvec3 MouseRotation(vec2 screenPos, vec2 screenSize)\n{\n    vec2 muv = screenPos / screenSize;\n    muv = muv * 2.0 - 1.0;\n    muv.x *= screenSize.x / screenSize.y;\n    muv *= vec2(PI, HALF_PI);\n    muv.y = clamp(muv.y, -0.99 * HALF_PI, 0.99 * HALF_PI);\n    vec4 rot = vec4(cos(muv.x), sin(muv.x), cos(muv.y), sin(muv.y));\n    return normalize(vec3(rot.y * rot.z, rot.w, rot.x * rot.z));\n}\n\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: OrganicGrowthWConvolution
+  id: OrganicGrowthWConvolution
+  kernel: OrganicGrowthWConvolution
+  name: OrganicGrowthWConvolution
+shader:
+  author: ninofiliu
+  description: 'Paint by dragging your mouse across!
+
+
+    Used a convolution matrix that accentuates certain frequencies in order to smooth
+    out a bunch of lines that can be drawn w/ your mouse'
+  id: ssGBRz
+  name: Organic growth w/ convolution
+  tags:
+  - convolution
+  - smooth
+  - backbuffer
+  url: https://www.shadertoy.com/view/ssGBRz

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: MarblePaintingJipi908
+  id: MarblePaintingJipi908
+  kernel: MarblePaintingJipi908
+  name: MarblePaintingJipi908
+shader:
+  author: N.N.
+  description: Mouse to paint ! Thanks to Flexi for the inspiration
+  id: fdjBDt
+  name: Marble Painting JiPi 908
+  parent:
+    id: ss2Xzh
+    name: Marble Painting
+    url: https://www.shadertoy.com/view/ss2Xzh
+  tags:
+  - fluid
+  - automata
+  url: https://www.shadertoy.com/view/fdjBDt

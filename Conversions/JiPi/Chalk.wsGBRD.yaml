@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Chalk
+  id: Chalk
+  kernel: Chalk
+  name: Chalk
+shader:
+  author: flockaroo
+  description: chalk drawing on blackboard
+  id: wsGBRD
+  name: chalk
+  tags:
+  - effect
+  - chalk
+  - npr
+  url: https://www.shadertoy.com/view/wsGBRD

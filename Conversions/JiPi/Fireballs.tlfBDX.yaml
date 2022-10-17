@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Fireballs
+  id: Fireballs
+  kernel: Fireballs
+  name: Fireballs
+shader:
+  author: michael0884
+  description: SPACE to restart
+  id: tlfBDX
+  name: Fireballs
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/tlfBDX

@@ -1,0 +1,92 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7l3fWl",
+  "date": "0",
+  "viewed": 0,
+  "name": "GiantClockwork JiPi",
+  "description": "giant clockwork",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "gears",
+   "truchet"
+  ],
+  "hasliked": 0,
+  "parentid": "WddXWB",
+  "parentname": "giant clockwork"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2019\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// giant clockwork\n\n#define MIST\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv=fragCoord/iResolution.xy;\n    #ifdef MIST\n    fragColor=1.5*texture(iChannel0,uv,.5);\n    fragColor+=1.*texture(iChannel0,uv,2.5);\n    fragColor+=.75*texture(iChannel0,uv,4.5);\n    \n    fragColor.xyz/=3.25;\n    #else\n    fragColor=1.*texture(iChannel0,uv,0.);\n    #endif\n        \n    fragColor.w=1.;\n}\n\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sfGzn",
+     "filepath": "/media/a/793a105653fbdadabdc1325ca08675e1ce48ae5f12e37973829c87bea4be3232.png",
+     "type": "cubemap",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2019\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// giant clockwork\n\n//uncomment this to get some periodiv dynamc dolly-zoom\n//#define DOLLY_ZOOM\n\nvec3 lightCol = vec3(1.1,1.,.9);\nvec3 ambCol   = vec3(.2,.6,1.)*.25;\nvec3 diffCol  = vec3(1.,.85,.7);\nvec3 lightDir = normalize(vec3(.2,.5,1));\n\n#define Res0 vec2(textureSize(iChannel0,0))\n\n#ifndef PI2\n#define PI2 6.28318530718\n#endif\n#define GEAR_W .27\n\nfloat gear(vec3 p, int numTeeth, float w)\n{\n    float lpxy=length(p.xy);\n    float d=10000.;\n    float ang=atan(p.y,p.x);\n    d=min(d,length(p+vec3(p.xy/lpxy,0)*.1*sin(ang*float(numTeeth)))-1.);\n    d=max(d,abs(p.z)-GEAR_W*w);\n    d=max(d,.75-lpxy);\n    return d;\n}\n\nvec4 inverseQuat(vec4 q)\n{\n    //return vec4(-q.xyz,q.w)/length(q);\n    // if already normalized this is enough\n    return vec4(-q.xyz,q.w);\n}\n\nvec4 multQuat(vec4 a, vec4 b)\n{\n    return vec4(cross(a.xyz,b.xyz) + a.xyz*b.w + b.xyz*a.w, a.w*b.w - dot(a.xyz,b.xyz));\n}\n\nvec3 transformVecByQuat( vec3 v, vec4 q )\n{\n    return v + 2.0 * cross( q.xyz, cross( q.xyz, v ) + q.w*v );\n}\n\nvec4 axAng2Quat(vec3 ax, float ang)\n{\n    return vec4(normalize(ax),1)*sin(vec2(ang*.5)+vec2(0,PI2*.25)).xxxy;\n}\n\nfloat allGears(vec3 p, float rot, float tilt)\n{\n    //gears in to 1st quadrant\n    //...we need those only if the truchet cell is rotated\n    //if(p.x<0.) p.xy=p.yx*vec2(1,-1);\n    //if(p.x<0.) p.xy=p.yx*vec2(1,-1);\n    \n    float r0=.205;\n    vec4 quat=vec4(0,0,0,1);\n    float d=1000.;\n    int N=2;\n    int numTeeth=16;\n    vec3 p0=p;\n    for(int i=0;i<N+1;i++)\n    {\n        float ang=PI2/4.*float(i)/float(N);\n        float c2=-cos(ang*4.)*.5+.5;\n        vec3 pos0=vec3(cos(ang-vec2(0,PI2/4.)),0.)*.5;\n        pos0-=normalize(pos0)*c2*.05*(.5+.5*cos(tilt)*cos(tilt));\n        pos0+=vec3(0,0,1)*c2*.02*sin(tilt)*sin(tilt);\n        int nteeth=numTeeth-3*(i%2);\n        float r=r0*float(nteeth)/float(numTeeth);\n        float gearAng=iTime*(float(i%2)*2.-1.)*r0/r-c2*.25;\n        quat=axAng2Quat(vec3(0,0,1),rot*gearAng);\n        quat=multQuat(quat,axAng2Quat(vec3(0,1,0),tilt));\n        quat=multQuat(quat,axAng2Quat(vec3(0,0,1),-ang));\n        p=fract(p0)-vec3(0,0,.5);\n        d=min(d,gear(transformVecByQuat(p-pos0,quat)/r,nteeth,r/r0)*r);\n        p=fract(p0.zxy*vec3( 1,-1, 1))-vec3(0,0,.5);\n        d=min(d,gear(transformVecByQuat(p-pos0,quat)/r,nteeth,r/r0)*r);\n        p=fract(p0.yzx*vec3(-1,-1, 1))-vec3(0,0,.5);\n        d=min(d,gear(transformVecByQuat(p-pos0,quat)/r,nteeth,r/r0)*r);\n    }\n    return d;\n}\n\n#ifndef RandTex \n#define RandTex iChannel0\n#endif\n\nvec4 myenv(vec3 pos, vec3 dir, float period)\n{\n    #ifndef SHADEROO\n    return texture(iChannel1,dir.xzy);\n    #else\n    float azim = atan(dir.y,dir.x);\n    float thr  = .5*.5*(.7*sin(2.*azim*5.)+.3*sin(2.*azim*7.));\n    float thr2 = .5*.125*(.7*sin(2.*azim*13.)+.3*sin(2.*azim*27.));\n    float thr3 = .5*.05*(.7*sin(2.*azim*32.)+.3*sin(2.*azim*47.));\n    float br  = smoothstep(thr-.2, thr+.2, dir.z+.25);\n    float br2 = smoothstep(thr2-.2,thr2+.2,dir.z+.15);\n    float br3 = smoothstep(thr3-.2,thr3+.2,dir.z);\n    vec4 r1 = .5*(texture(RandTex,dir.xy*.01)-texture(RandTex,dir.xy*.017+.33));\n    vec3 skyCol=vec3(.9,1,1.1)+.3*(r1.xxx*.5+r1.xyz*.5);\n    //skyCol*=2.5;\n    vec4 r2 = .5*(texture(RandTex,dir.xy*.1)-texture(RandTex,dir.xy*.07-.33));\n    vec3 floorCol = vec3(.9,1.1,1.)*.8+.5*(r2.xxx*.7+r2.xyz*.3);\n    vec3 col=mix(floorCol.zyx,skyCol,br3);\n    col=mix(floorCol.yzx*.7,col,br2);\n    col=mix(floorCol.xyz*.7*.7,col,br);\n    vec3 r=texture(RandTex,vec2(azim/PI2*.125,.5)).xyz;\n    col*= 1.-clamp(((r.xxx*.7+r.xzz*.3)*2.-1.)*clamp(1.-abs(dir.z*1.6),0.,1.),0.,1.);\n    return vec4(col*col*vec3(1.1,1,.9)/**clamp(1.+dir.x*.3,.9,1.2)*/,1);\n    #endif\n}\n\n// only 2 configurations per cell: all wheels either \"standing\" (meshing fully) or \"lying\" (meshing 45°)\n// in either configuration every other cell (3d checkerboard) has to be point-mirrored\n// so 4 cell configurations are possible - but only in certain conditions\n// here: every second layer in x-dir \"lying\" configuration\nfloat truchetDist(vec3 pos)\n{\n    //float rnd=textureLod(iChannel0,(floor(pos.xy)+.5+vec2(7,13)*floor(pos.z))/Res0,0.).x;\n    vec3 mp=floor(mod(pos,2.))*2.-1.;\n    float fact=mp.x*mp.y*mp.z;\n    return allGears(pos*fact*mp.x,1.,PI2*.25*(mp.x*.5+.5));\n}\n\nfloat getTime()\n{\n    return texelFetch(iChannel0,ivec2(0,0),0).x;\n}\n\nfloat getDistance(vec3 pos)\n{\n    return truchetDist(pos);\n}\n\nvec3 getGrad(vec3 pos, float delta)\n{\n    delta*=2.0;\n    vec3 eps=vec3(delta,0,0);\n    float d=getDistance(pos);\n    return vec3(getDistance(pos+eps.xyy)-d, getDistance(pos+eps.yxy)-d, getDistance(pos+eps.yyx)-d)/delta;\n}\n\n#define RaytraceMaxStepNum 100\n\nfloat march(inout vec3 pos, vec3 dir)\n{\n    float eps=0.002;\n    for( int i=0 ; i<RaytraceMaxStepNum ; i++ )\n    {\n        float d=getDistance(pos);\n        pos+=d*dir*.7;\n        if(d<eps) return 1.;\n    }\n    return 0.;\n}\n\n\nvoid calcDollyZoom(inout vec3 pos, vec3 dir0, inout vec3 dir, float fact)\n{\n    dir=mix(dir,dir0,fact);\n    pos-=fact*dir0;\n    pos+=fact*dir;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float motion=1.;\n    vec2 myRes=iResolution.xy;\n    vec3 pos=vec3(iTime*.4*motion-.5,0,0);\n    vec2 scoord=(fragCoord.xy-myRes*.5)/myRes.x;\n    float phi = iTime*.333*.3*motion;\n    float th = cos(iTime*.23423*.3)*motion;\n    if(iMouse.x>.5) \n    {\n        phi+=-iMouse.x/iResolution.x*PI2/2.*3.;\n        th+=PI2/4.-iMouse.y/iResolution.y*PI2/2.*3.;\n    }\n    \n    // calc view\n    vec4 quat=vec4(0,0,0,1);\n    quat=multQuat(quat,axAng2Quat(vec3(0,0,1),phi));\n    quat=multQuat(quat,axAng2Quat(vec3(1,0,0),th));\n    vec3 dir0 = transformVecByQuat(vec3( 0,1,0),quat);\n    vec3 left = transformVecByQuat(vec3(-1,0,0),quat);\n    vec3 up   = transformVecByQuat(vec3( 0,0,1),quat);\n    vec3 dir=left*scoord.x*2.+up*scoord.y*2.;\n    dir=normalize(dir0+dir);\n    #ifdef DOLLY_ZOOM\n    calcDollyZoom(pos,dir0,dir,.6*clamp(-cos(iTime*.1)*5.+.5,0.,1.));\n    #endif\n    \n    // do the actual raymarching\n    vec3 pos0=pos;\n    march(pos,dir);\n    \n    vec3 bg=mix(ambCol,lightCol,clamp(dot(pos-pos0,lightDir)*.2,-.5,1.5));\n    \n    // reflection\n    vec3 n=normalize(getGrad(pos,0.0015));\n    vec3 R=normalize(reflect(pos-pos0,n));\n    vec4 refl=myenv(pos,R,1.);\n    \n    vec3 col=vec3(1);\n    \n    // ambient occlusion\n    float ao=1.;\n    ao=min(ao,getDistance(pos+n*.08)/.08);\n    ao=min(ao,getDistance(pos+n*.04)/.04);\n    ao=min(ao,getDistance(pos+n*.02)/.02);\n    ao=ao*.8+.2;\n    \n    float diff=clamp(dot(n,lightDir),0.,1.);\n    \n    // mix diffuse, ambient, ao\n    col *= diffCol-.1+.1*(n*.5+.5);\n    col *= ao;\n    col *= lightCol*diff*(1.-ambCol)+ambCol;\n    //col+=.1*cnt/50.;\n    col+=.2*refl.xyz;\n    \n    // depth fog\n    col = mix(bg,col,exp(-length(pos-pos0)/7.));\n    fragColor.xyz=col;\n        \n    fragColor.w=1.;\n}\n\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

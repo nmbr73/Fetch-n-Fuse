@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: StrangerTidesJipi742
+  id: StrangerTidesJipi742
+  kernel: StrangerTidesJipi742
+  name: StrangerTidesJipi742
+shader:
+  author: N.N.
+  description: 'Eon flux from stranger tides #mood'
+  id: 7sSBRz
+  name: Stranger Tides JiPi 742
+  parent:
+    id: ssBfzR
+    name: Stranger Tides
+    url: https://www.shadertoy.com/view/ssBfzR
+  tags:
+  - voronoi
+  - particles
+  - bubbles
+  - abstractwater
+  url: https://www.shadertoy.com/view/7sSBRz

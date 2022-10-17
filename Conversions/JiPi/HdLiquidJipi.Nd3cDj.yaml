@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: HdLiquidJipi
+  id: HdLiquidJipi
+  kernel: HdLiquidJipi
+  name: HdLiquidJipi
+shader:
+  author: N.N.
+  description: this would look sick with audio driving mouse position
+  id: Nd3cDj
+  name: HD LIQUID  JiPi
+  parent:
+    id: sdVXWt
+    name: 'HD LIQUID '
+    url: https://www.shadertoy.com/view/sdVXWt
+  tags:
+  - metal
+  - liquid
+  url: https://www.shadertoy.com/view/Nd3cDj

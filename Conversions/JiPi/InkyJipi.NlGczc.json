@@ -1,0 +1,92 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NlGczc",
+  "date": "0",
+  "viewed": 0,
+  "name": "Inky JiPi",
+  "description": "A happy accident while trying to make Wriggly! https://www.shadertoy.com/view/ld3SW7 (the blots are generated from a broken version of the code that separates the tentacles)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "ink",
+   "accumulation"
+  ],
+  "hasliked": 0,
+  "parentid": "4d3SD8",
+  "parentname": "Inky"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xtf3z8",
+     "filepath": "https://soundcloud.com/majikband/save-me-majik-2",
+     "type": "musicstream",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 0
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Music is Save Me by Majik: https://soundcloud.com/majikband/save-me-majik-2\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    \n    // read for accum buffer\n    fragColor = 1. - textureLod( iChannel0, uv, 0. );\n    \n    // tint\n    fragColor.xyz *= .8;\n    fragColor.xyz += 1.5*vec3(.15,.3,.8);\n    \n    // vign, treatment\n    fragColor *= 1. - .17*length(2. * uv - 1.);\n    fragColor.xyz = clamp(fragColor.xyz,0.,1.);\n    fragColor.xyz *= 0.5 + 0.5*pow( 16.0*uv.x*uv.y*(1.0-uv.x)*(1.0-uv.y), 0.1 );\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// sorry this is a mess right now! i will write up a blog post about what the code\n// below was written to do and update this later.\n\nfloat ten_r = 0.04;\n\nfloat GetAngle( float i, float t )\n{\n    //float amp = .75; //.25 is subtle wriggling\n\t//t += amp*sin(1.*t + 4.*iTime + float(i));\n    float dir = mod(i,2.) < 0.5 ? 1. : -1.;\n    return dir * (1./(.5*i+1.)+1.) * t + i/2.;\n}\n\n#define POS_CNT 5\nvec2 pos[POS_CNT];\n\nfloat Potential( int numNodes, vec2 x )\n{\n    if( numNodes == 0 ) return 0.;\n    \n    float res = 0.;\n    float k = 16.;\n    for( int i = 0; i < POS_CNT; i++ )\n    {\n        if( i == numNodes ) break;\n        res += exp( -k * length( pos[i]-x ) );\n    }\n    return -log(res) / k;\n}\n\nvoid ComputePos_Soft( float t )\n{\n    for( int i = 0; i < POS_CNT; i++ )\n    {\n        float a = GetAngle( float(i), t );\n        vec2 d = vec2(cos(a),sin(a));\n        float r = ten_r;\n        \n        for( int j = 0; j < 3; j++ )\n        {\n            r += ten_r-Potential(i,r*d);\n        }\n        \n        pos[i] = r * d;\n    }\n}\n\n\nvec3 drawSlice( vec2 uv )\n{\n    float t = iTime/2.;\n    ComputePos_Soft(t);\n    float pot = Potential(POS_CNT,uv);\n    return vec3(smoothstep(0.03,0.01,pot));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    \n    // sample from previous frame, with slight offset for advection\n    fragColor = textureLod( iChannel0, uv*.992, 0. );\n    \n    // clear on first frame (dont know if this is required)\n    if( iFrame == 0 ) fragColor = vec4(0.);\n    \n    // camera\n    uv.x += .1*sin(.7*iTime);\n    uv.y += .05*sin(.3*iTime);\n    uv = 2. * uv - 1.;\n    uv.x *= iResolution.x/iResolution.y;\n    \n    // draw spots\n    vec3 spots = drawSlice( uv );\n    \n    // accumulate\n    fragColor.rgb = fragColor.rgb*.95 + spots;\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

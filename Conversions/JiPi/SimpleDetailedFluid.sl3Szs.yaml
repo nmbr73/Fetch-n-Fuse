@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SimpleDetailedFluid
+  id: SimpleDetailedFluid
+  kernel: SimpleDetailedFluid
+  name: SimpleDetailedFluid
+shader:
+  author: lomateron
+  description: made the simples possible code to make a fluid using only convolutions
+  id: sl3Szs
+  name: simple detailed fluid
+  tags:
+  - convolution
+  url: https://www.shadertoy.com/view/sl3Szs

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: LavaBlaster
+  id: LavaBlaster
+  kernel: LavaBlaster
+  name: LavaBlaster
+shader:
+  author: michael0884
+  description: Using the voronoi fluid to make nice lava. Playing with voronoi particle
+    tracking
+  id: WdtXzs
+  name: Lava blaster
+  tags:
+  - fast
+  - fluid
+  - particles
+  - lava
+  url: https://www.shadertoy.com/view/WdtXzs

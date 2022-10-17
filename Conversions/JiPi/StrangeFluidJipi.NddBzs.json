@@ -1,0 +1,72 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NddBzs",
+  "date": "0",
+  "viewed": 0,
+  "name": "strange fluid JiPi",
+  "description": "draw fluid with mouse",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "XdcGW2",
+  "parentname": "strange fluid"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float val = texture(iChannel0, fragCoord/iResolution.xy).r;\n \n   \t//{fragColor = vec4(val,val,val,1.0); return;}\n    fragColor = vec4(val, val, val, 1.0);\n        \n    vec4 color = pow(vec4(cos(val), tan(val), sin(val), 1.0) * 0.5 + 0.5, vec4(0.5));\n    \n    // code below taken from\n    //https://www.shadertoy.com/view/Xsd3DB\n    \n    vec2 q = fragCoord.xy/iResolution.xy;\n    \n    vec3 e = vec3(vec2(1.0)/iResolution.xy,0.);\n    float p10 = texture(iChannel0, q-e.zy).x;\n    float p01 = texture(iChannel0, q-e.xz).x;\n    float p21 = texture(iChannel0, q+e.xz).x;\n    float p12 = texture(iChannel0, q+e.zy).x;\n        \n    vec3 grad = normalize(vec3(p21 - p01, p12 - p10, 1.));\n    vec3 light = normalize(vec3(.2,-.25,.7));\n    float diffuse = dot(grad,light);\n    float spec = pow(max(0.,-reflect(light,grad).z),32.0);\n    \n    fragColor = (color * diffuse) + spec;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const float pi = 3.1415;\nconst float pi2 = pi/2.0;\n\nfloat random()\n{\n\treturn fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453);  \n}\n\nvec4 get_pixel(float x_offset, float y_offset)\n{\n\treturn texture(iChannel0, (gl_FragCoord.xy / iResolution.xy) + (vec2(x_offset, y_offset) / iResolution.xy));\n}\n\nfloat step_simulation()\n{\n\tfloat val = get_pixel(0.0, 0.0).r;\n    \n    val += random()*val*0.15; // errosion\n    \n  \tval = get_pixel(\n    \tsin(get_pixel(val, 0.0).r  - get_pixel(-val, 0.0) + pi).r  * val * 0.4, \n        cos(get_pixel(0.0, -val).r - get_pixel(0.0 , val) - pi2).r * val * 0.4\n   \t).r;\n    \n    val *= 1.0001;\n    \n    return val;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{    \n    float val = step_simulation();\n \n    if(iFrame == 0)\n        val = \n        \trandom()*length(iResolution.xy)/100.0 + \n        \tsmoothstep(length(iResolution.xy)/2.0, 0.5, length(iResolution.xy * 0.5 - fragCoord.xy))*25.0;\n    \n    if (iMouse.z > 0.0) \n        val += smoothstep(length(iResolution.xy)/10.0, 0.5, length(iMouse.xy - fragCoord.xy));\n        \n    fragColor.r = val;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

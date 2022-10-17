@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: WeirdObject
+  id: WeirdObject
+  kernel: WeirdObject
+  name: WeirdObject
+shader:
+  author: SnoopethDuckDuck
+  description: Very laggy (I think some parts are very thin from where I've distorted
+    space - had to use very small distances to remove artifacts)
+  id: fssfDM
+  name: Weird Object
+  tags:
+  - raymarching
+  - template
+  - artofcode
+  url: https://www.shadertoy.com/view/fssfDM

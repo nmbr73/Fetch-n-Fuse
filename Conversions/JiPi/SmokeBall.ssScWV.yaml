@@ -1,0 +1,31 @@
+fuse:
+  author: JiPi
+  file: SmokeBall
+  id: SmokeBall
+  kernel: SmokeBall
+  name: SmokeBall
+shader:
+  author: N.N.
+  description: 'Shows how to use Bitangent Noise (a fast divergence-free noise generator)
+    to mimic fluid motion.
+
+    Details: https://atyuwen.github.io/posts/bitangent-noise/
+
+    Source: https://github.com/atyuwen/bitangent_noise/
+
+
+
+
+    '
+  id: ssScWV
+  name: Fork Smoke ball JiPi 871
+  parent:
+    id: ftl3zN
+    name: Smoke ball
+    url: https://www.shadertoy.com/view/ftl3zN
+  tags:
+  - noise
+  - fluid
+  - smoke
+  - bitangentnoise
+  url: https://www.shadertoy.com/view/ssScWV

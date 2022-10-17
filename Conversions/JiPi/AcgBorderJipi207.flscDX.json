@@ -1,0 +1,35 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flscDX",
+  "date": "0",
+  "viewed": 0,
+  "name": "ACG Border JiPi 207",
+  "description": "The pink portion moves as if it's a circle moving along the perimeter of the screen. The moving and background colors are blended with a sin function that's horizontal at both the center and the edge of the circle as to not have any harsh transitions.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "blending",
+   "border"
+  ],
+  "hasliked": 0,
+  "parentid": "7tXyWX",
+  "parentname": "Animated Color Gradient Border"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "struct Rect\n{\n    vec2 bottom_left, top_right;\n};\n\nbool IsPointInsideRect(vec2 point, Rect rect)\n{\n    return (rect.bottom_left.x <= point.x && point.x <= rect.top_right.x &&\n        rect.bottom_left.y <= point.y && point.y <= rect.top_right.y);\n}\n\nvec2 WalkPointOnRectPerimeter(vec2 dim, float t)\n{\n    float aspect = dim.x / dim.y;\n    float height = 1.0 / (2.0 * (aspect + 1.0));\n    float width = height * aspect;\n    \n    float tx = mod(t, 1.0);\n    float ty = mod(t + height, 1.0);\n    \n    return vec2(\n        tx < 0.5 ?\n        min(tx, width) :\n        max(width + 0.5 - tx, 0.0),\n        \n        ty < 0.5 ?\n        min(ty, height) :\n        max(height + 0.5 - ty, 0.0)\n    ) * dim.x / width;\n}\n\nvoid mainImage( out vec4 frag_color, in vec2 frag_coord )\n{\n    const float pi = 3.1415926535;\n    const vec4 center_color = vec4(0.1, 0.1, 0.1, 1.0);\n    const vec4 border_color1 = vec4(0.8, 0.2, 0.3, 1.0);\n    const vec4 border_color2 = vec4(0.4, 0.1, 0.8, 1.0);\n    \n    float radius = (iResolution.x + iResolution.y) * 0.5;\n    float border = iResolution.y * 0.0154 + 13.33;\n    \n    Rect center_rect = Rect(vec2(0.0) + vec2(border), iResolution.xy - vec2(border));\n    vec2 circle_center = WalkPointOnRectPerimeter(iResolution.xy, iTime / 4.0);\n    \n    frag_color = center_color;\n    if (!IsPointInsideRect(frag_coord, center_rect))\n    {\n        float mix_factor = min(1.0, distance(circle_center, frag_coord) / radius);\n        mix_factor = (1.0 - sin((mix_factor + 0.5) * pi)) * 0.5;\n        frag_color = mix(border_color1, border_color2, mix_factor);\n    }\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

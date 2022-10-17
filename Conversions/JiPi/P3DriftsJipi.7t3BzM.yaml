@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: P3DriftsJipi
+  id: P3DriftsJipi
+  kernel: P3DriftsJipi
+  name: P3DriftsJipi
+shader:
+  author: N.N.
+  description: 'Per-pixel particles again. Might be good for gaming, but they annihilate
+    each another too often :/
+
+    Click & hold mouse to zoom, press R to fill field with noise.'
+  id: 7t3BzM
+  name: p3 - drifts JiPi
+  parent:
+    id: 4sGGR1
+    name: p3 - drifts
+    url: https://www.shadertoy.com/view/4sGGR1
+  tags:
+  - 2d
+  - simulation
+  - pixel
+  - particles
+  - dynamics
+  - per
+  url: https://www.shadertoy.com/view/7t3BzM

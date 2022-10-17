@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: TexPuffBallJipi
+  id: TexPuffBallJipi
+  kernel: TexPuffBallJipi
+  name: TexPuffBallJipi
+shader:
+  author: N.N.
+  description: A little cool little thing that's little. Switch the textures, its
+    cool.
+  id: fsdyRB
+  name: Tex Puff Ball JiPi
+  parent:
+    id: 7d3czS
+    name: Tex Puff Ball
+    url: https://www.shadertoy.com/view/7d3czS
+  tags:
+  - raytracing
+  - sdf
+  url: https://www.shadertoy.com/view/fsdyRB

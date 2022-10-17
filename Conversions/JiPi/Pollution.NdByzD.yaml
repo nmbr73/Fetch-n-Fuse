@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: Pollution
+  id: Pollution
+  kernel: Pollution
+  name: Pollution
+shader:
+  author: N.N.
+  description: Single-pass Navier-Stokes solver, from [url=https://hal.inria.fr/inria-00596050/document]Simple
+    and Fast Fluids[/url]
+  id: NdByzD
+  name: Fork pollution  JiPi 879
+  parent:
+    id: NtySDc
+    name: pollution mask test
+    url: https://www.shadertoy.com/view/NtySDc
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/NdByzD

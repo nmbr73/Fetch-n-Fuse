@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: MaterialPointMethod
+  id: MaterialPointMethod
+  kernel: MaterialPointMethod
+  name: MaterialPointMethod
+shader:
+  author: wyatt
+  description: 'Material point method (uses gaussian interpolation to go between grid
+    and particles) '
+  id: fssyDs
+  name: Material Point Method
+  tags:
+  - mpm
+  url: https://www.shadertoy.com/view/fssyDs

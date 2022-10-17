@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: FrozenWasteland
+  id: FrozenWasteland
+  kernel: FrozenWasteland
+  name: FrozenWasteland
+shader:
+  author: Dave_Hoskins
+  description: Frozen wasteland. Built on nimitz's model, although I didn't use his
+    fog stuff after all. It uses fog ray tracing included within the main ray march.
+    Which means it tends to be thicker in the smaller ray incremental areas near objects.
+  id: Xls3D2
+  name: Frozen wasteland
+  tags:
+  - 3d
+  - raymarching
+  - clouds
+  - fog
+  - frozenwasteland
+  url: https://www.shadertoy.com/view/Xls3D2

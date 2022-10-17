@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: D2DVaryingReactionDiffusion
+  id: D2DVaryingReactionDiffusion
+  kernel: D2DVaryingReactionDiffusion
+  name: D2DVaryingReactionDiffusion
+shader:
+  author: NBickford
+  description: Writing a Gray-Scott reaction-diffusion shader, since I've never written
+    one before! Reaction-diffusion parameters vary over the screen and are scaled
+    to crop out most of the uninteresting regions. Click and drag to scroll through
+    parameters.
+  id: fdBXzy
+  name: 2D varying reaction-diffusion
+  tags:
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/fdBXzy

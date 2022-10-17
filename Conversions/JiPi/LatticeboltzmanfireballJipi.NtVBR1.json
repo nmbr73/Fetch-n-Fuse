@@ -1,0 +1,129 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtVBR1",
+  "date": "0",
+  "viewed": 0,
+  "name": "LatticeBoltzmanFireball JiPi",
+  "description": "Home made Lattice Boltzmann\nUse mouse to interact\nwip : floating-point precision to be optimized",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fire",
+   "fluid",
+   "lbm"
+  ],
+  "hasliked": 0,
+  "parentid": "7tcyDX",
+  "parentname": "Lattice Boltzmann Fireball"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    vec4 cellData = texelFetch(iChannel1, ivec2(fragCoord), 0);\n    Cell cell = unpack(cellData);\n    \n    float mass = 0.;\n    \n    for(int i=0; i<9; i++) {\n        mass = max(mass, cell.velocities[i]);\n    }\n    \n    mass = max(0., mass - 30.);\n   \n    float r = smoothstep(0., 80., mass);\n    float g = smoothstep(0., 150., mass);\n    float b = smoothstep(80., 300., mass);    \n    \n    fragColor = vec4(r, g, b, 1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Stream Layer\n\nint symdir(int dir) {\n    return (dir == CENTER) ? CENTER : 1 + (dir + 3) % 8;\n}\n\nfloat getVelocity(ivec2 cellCoords, ivec2 neighbourRelative, int direction) {\n\n    int width  = int(iResolution.x);\n    int height = int(iResolution.y);\n    \n    ivec2 neighbourCoords = cellCoords + neighbourRelative;\n    \n    bool top_border    = neighbourCoords.y==0;\n    bool bottom_border = neighbourCoords.y>=height-1;    \n    bool left_border   = neighbourCoords.x==0;\n    bool right_border  = neighbourCoords.x>=width-1;    \n\n    bool border = top_border||bottom_border||left_border||right_border;\n\n    if(!border) {\n       return unpack(texelFetch(iChannel0, neighbourCoords, 0)).velocities[direction];\n    }\n    else {\n    \n        bool diagonal = direction==TOPRIGHT||direction==TOPLEFT||direction==BOTRIGHT||direction==BOTLEFT;\n    \n        if(!diagonal) {\n            return unpack(texelFetch(iChannel0, cellCoords, 0)).velocities[symdir(direction)];\n        }\n\n        switch(direction) {\n            case TOPRIGHT: \n                if(bottom_border) {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(-2, 0), 0)).velocities[BOTRIGHT];            \n                }\n                else {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(0, +2), 0)).velocities[TOPLEFT];            \n                }\n\n            case TOPLEFT:  \n                if(bottom_border) {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(+2, 0), 0)).velocities[BOTLEFT];            \n                }\n                else {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(0, +2), 0)).velocities[TOPRIGHT];            \n                }\n\n            case BOTRIGHT: \n                if(top_border) {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(-2, 0), 0)).velocities[TOPRIGHT];            \n                }\n                else {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(0, -2), 0)).velocities[BOTLEFT];            \n                }\n\n            case BOTLEFT:  \n                if(bottom_border) {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(+2, 0), 0)).velocities[TOPLEFT];            \n                }\n                else {\n                    return unpack(texelFetch(iChannel0, cellCoords+ivec2(0, -2), 0)).velocities[BOTRIGHT];            \n                }\n         }\n    }\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord) {\n\n    ivec2 cellCoords = ivec2(fragCoord);\n    int width  = int(iResolution.x);\n    int height = int(iResolution.y);\n   \n    bool top_border    = cellCoords.y==0;\n    bool bottom_border = cellCoords.y>=height-1;    \n    bool left_border   = cellCoords.x==0;\n    bool right_border  = cellCoords.x>=width-1;    \n\n    bool border = top_border||bottom_border||left_border||right_border;\n \n    Cell cur;\n\n    if(border) {\n        for(int i=0; i<9; i++) {\n            cur.velocities[i] = 0.;\n        }\n    }\n    else {\n        // stream    \n        for(int i=0; i<9; i++) {\n            cur.velocities[i] = getVelocity(cellCoords, ivec2(velocities[symdir(i)]), i);\n        }\n    }\n\n    fragColor = pack(cur); \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Collide Layer\n\nfloat equilibrium(float w, float rho, vec2 u, vec2 c, float cs) {\n    float c_dot_u = dot(c, u);\n    float u_dot_u = dot(u, u);    \n    \n    float eq = w*rho*(1. + c_dot_u/(cs*cs) + (c_dot_u*c_dot_u)/(2.*cs*cs*cs*cs) - u_dot_u/(2.*cs*cs) );\n\n    return eq ;//* 0.999;\n}\n\nfloat getMass(Cell cell) {\n\n    float mass = 0.;\n\n    for(int c=0; c<9; c++) {\n        mass += cell.velocities[c];\n    }\n\n    return mass;\n}\n\nfloat getIntensity(vec2 source, vec2 uv) {\n   float dist = length(source-uv)/iResolution.x;\n   return max(0., 100.*(1. - dist/0.05));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord) {\n\n    ivec2 cellCoords = ivec2(fragCoord);\n    \n    int width  = int(iResolution.x);\n    int height = int(iResolution.y);\n    \n    bool border = (cellCoords.x==0) || (cellCoords.y==0) || (cellCoords.x >= width-1) || (cellCoords.y >= height-1);\n    \n    if(iFrame == 0) {\n\n        Cell c;\n\n        float intensity = border ? 0. : 100.;\n\n        for(int i=0;i<9;i++) {\n            c.velocities[i] = intensity * weight[i];\n        }\n        \n        fragColor = pack(c);\n        return;\n    }\n    else {\n\n        Cell cell = unpack(texelFetch(iChannel0, cellCoords + ivec2(0,1), 0));\n\n        // sources\n        float synchro = float(iFrame) * 1./60.; \n        vec2 source1 = vec2(iResolution.x/2. * (1. + cos(synchro)*0.5), iResolution.y/2. * (1.2 + sin(2.*synchro)*0.5));\n        vec2 source2 = vec2(iResolution.x/2. * (1. - cos(synchro)*0.5), iResolution.y/2. * (1.2 - sin(1.*synchro)*0.5));        \n\n        float intensity = getIntensity(source1, fragCoord) + getIntensity(source2, fragCoord);\n        if(iMouse.z>0.) intensity += getIntensity(iMouse.xy, fragCoord);\n\n        for(int i=0; i<9; i++) cell.velocities[i] += intensity*weight[i];\n\n        // collisions\n        vec2 momentum = vec2(0.);\n\n        float mass = getMass(cell);\n\n        if(mass != 0.) {    \n            for(int c=1; c<9; c++) {\n                momentum += velocities[c] * cell.velocities[c];\n            }\n\n            momentum *= 1./mass;\n        }\n\n        //equilibrium    \n        float tau = 15.;\n\n        for(int i=0; i<9; i++) {\n\n            float w = weight[i];\n            float rho = mass;\n            vec2 u = momentum;\n            vec2 c = velocities[i];\n            float cs = 1./1.73;    \n\n            float eq = equilibrium(w, rho, u, c, cs);\n            cell.velocities[i] = cell.velocities[i] - (1./tau)*(cell.velocities[i] - eq);\n            \n            cell.velocities[i] = max(8., cell.velocities[i]);\n            cell.velocities[i] = min(300., cell.velocities[i]);            \n            \n        }                \n    \n        fragColor = pack(cell);\n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define CENTER 0\n#define RIGHT 1\n#define TOPRIGHT 2\n#define TOP 3\n#define TOPLEFT 4\n#define LEFT 5\n#define BOTLEFT 6\n#define BOTTOM 7\n#define BOTRIGHT 8\n\nconst vec2 velocities[] = vec2[] (vec2(0., 0.), vec2(1., 0.), vec2(1., 1.), vec2(0., 1.), vec2(-1., 1.), vec2(-1., 0.), vec2(-1., -1.), vec2(0., -1.), vec2(1., -1.));\nconst float weight[]    = float[] (4./9., 1./9., 1./36., 1./9., 1./36., 1./9., 1./36., 1./9., 1./36.); \n\nstruct Cell {\n    float velocities[9];\n};\n\nCell unpack(vec4 rgba) {\n\n    Cell cell;\n\n    cell.velocities[CENTER]   = mod(rgba.a, 1000.);\n    cell.velocities[RIGHT]    = floor(rgba.a*0.001);    \n    cell.velocities[TOPRIGHT] = mod(rgba.r, 1000.);\n    cell.velocities[TOP]      = floor(rgba.r*0.001);    \n    cell.velocities[TOPLEFT]  = mod(rgba.g, 1000.);\n    cell.velocities[LEFT]     = floor(rgba.g*0.001);    \n    cell.velocities[BOTLEFT]  = mod(rgba.b, 500.);\n    cell.velocities[BOTTOM]   = mod(floor(rgba.b/500.), 500.);\n    cell.velocities[BOTRIGHT] = floor(rgba.b/(500.*500.));\n    \n    return cell;\n}\n\nvec4 pack(Cell cell) {\n    vec4 rgba;\n    \n    rgba.a = floor(min(999.99, cell.velocities[CENTER]))  + floor(min(999.99, cell.velocities[RIGHT]))  * 1000.;\n    rgba.r = floor(min(999.99, cell.velocities[TOPRIGHT]))+ floor(min(999.99, cell.velocities[TOP]))    * 1000.;\n    rgba.g = floor(min(999.99, cell.velocities[TOPLEFT])) + floor(min(999.99, cell.velocities[LEFT]))   * 1000.;\n    rgba.b = floor(min(499.99, cell.velocities[BOTLEFT])) + floor(min(499.99, cell.velocities[BOTTOM])) * 500. + floor(min(499.99, cell.velocities[BOTRIGHT]))*500.*500.;    \n    \n    return rgba;\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

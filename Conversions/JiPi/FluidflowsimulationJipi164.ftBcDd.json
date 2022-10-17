@@ -1,0 +1,245 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftBcDd",
+  "date": "0",
+  "viewed": 0,
+  "name": "FluidFlowSimulation JiPi164",
+  "description": "Experimenting at 60fps with incompressible-fluid flow simulation. What a time to be alive!\n\nThere's various options to activate on the 'common' buffer.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation",
+   "fluid",
+   "vortex",
+   "incompressible",
+   "foil",
+   "stokes",
+   "naviers"
+  ],
+  "hasliked": 0,
+  "parentid": "ft2czK",
+  "parentname": "Fluid flow simulation"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//   Viscous incompressible fluid solver.\n//\n// Buffer A/D contains {vx, vy, color1, color2}\n// Buffer A is the advected fields U*\n// re-used Buffer C contains the last solved pressure\n// Buffer B contains the divergence ∇.U*\n//\n// Press '1' to show velocity field, \n//       '2' for the pressure,\n//       '3' for the divergence\n// Otherwise the tracers are shown.\n//\n//  There's a 'use_airfoil' bool in common buffer to switch to\n//  an airfoil profile.\n//\n// The solver in 'Buffer C' has 15 iterations of the Jacobi steps,\n// There's a #define to switch to 5 steps only (or even less!).\n// Works ~ok visually. But low number of steps is struggling to cancel the divergence.\n//\n// Heavily inspired by Robert's Schuetze (@trirop)'s shader:\n//   https://www.shadertoy.com/view/MdSczK\n// and follow-up by @ultraviolet:\n//   https://www.shadertoy.com/view/4lScRG\n//\n// Created by Pascal Massimino [skal] (2022)\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n\n#define R iResolution.xy\n\nvoid mainImage(out vec4 fragColor, in vec2 pos) {\n  //if (texelFetch(iChannel3, ivec2(49, 0),0 ).x > 0.5) show_what = 1;\n  //if (texelFetch(iChannel3, ivec2(50, 0),0 ).x > 0.5) show_what = 2;\n  //if (texelFetch(iChannel3, ivec2(51, 0),0 ).x > 0.5) show_what = 3;\n  if (texture(iChannel3, (vec2(ivec2(49, 0))+0.5)/R ).x > 0.5) show_what = 1;\n  if (texture(iChannel3, (vec2(ivec2(50, 0))+0.5)/R ).x > 0.5) show_what = 2;\n  if (texture(iChannel3, (vec2(ivec2(51, 0))+0.5)/R ).x > 0.5) show_what = 3;\n\n  if (IsObstacle(iMouse.xy, pos)) {      // draw the obstacle\n    fragColor = vec4(0.3, 0.7, 0.3, 1.0);\n    return;\n  }\n\n  if (show_what == 2) {  // pressure\n    vec4 t = texture(iChannel1, pos / iResolution.xy);\n    fragColor = vec4(fract(t.www * 0.5), 1.0);\n  } else if (show_what == 1) {  // visualize velocity field\n    vec2 p0 = floor(pos / kCell) * kCell;\n    vec2 p1 = p0 + vec2(0.5 * kCell);\n    vec2 p2 = p1 + kVelocityUnit * texture(iChannel0, p1 / iResolution.xy).xy;\n    float d = 1. - smoothstep(0., 2.0, SegmentDistance(pos, p1, p2));\n    fragColor = vec4(d, d, d, 1.0);\n  } else if (show_what == 3) {  // show divergence\n    vec4 t = texture(iChannel2, pos / iResolution.xy);\n    fragColor = vec4(0.5 - 2.3 * t.www, 1.0);\n  } else if (show_what == 0) {  // show tracers\n    vec4 t = texture(iChannel0, pos / iResolution.xy);\n    fragColor = vec4(mix(vec3(0.7, 0.8, 0.9) * t.z, vec3(1., 1., 0.), t.w), 1.0);\n  }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advects U->U* using the previous velocity field in BufD.\n// bufA will contains advected {vx, vy, color1/2}\n//\n// Created by Pascal Massimino [skal] (2022)\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\nvec4 Advect(vec2 p) { // using 4-order Runge-Kutta\n  vec2 norm = 1. / iResolution.xy;\n  p *= norm;\n  vec2 H = dt * norm;\n  vec2 k1 = H * texture(iChannel0, p           ).xy;\n#if (RUNGE_KUTTA == 4)\n  vec2 k2 = H * texture(iChannel0, p - 0.5 * k1).xy;\n  vec2 k3 = H * texture(iChannel0, p - 0.5 * k2).xy;\n  vec2 k4 = H * texture(iChannel0, p -       k3).xy;\n  vec2 dp = (0.5 * (k1 + k4) + k2 + k3) / 3.0;\n#elif (RUNGE_KUTTA == 2)\n  vec2 k2 = H * texture(iChannel0, p - 0.5 * k1).xy;\n  vec2 dp = k2;\n#else  // RUNGE_KUTTA == 1\n  vec2 dp = k1;\n#endif\nreturn texture(iChannel0, p - dp);\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 pos) {\n  vec4 src = Advect(pos);  // advect backward\n  vec2 v = src.xy;   // velocity\n  vec2 c = src.zw;   // color\n  // force some boundary conditions\n\n// initial field\n  if (iFrame <= 1){\n    v = vec2(Vo, 0.0);\n    c.x = step(sin(242.223 * sin(pos.x * 320.231 + pos.y * 13.92)), -0.4);\n    c.y = 0.;\n  }\n  // in/out flow from left to right\n  if (pos.x < 2. || pos.x >= iResolution.x - 2.) {\n    v = vec2(Vo, 0.0);\n  }\n  // rough canal\n  if (pos.y < 2. || pos.y >= iResolution.y - 2.) {\n    v = vec2(0.0, 0.0);\n  }\n  if (pos.x < 5.) {  // some tracer injection\n    c.x = 1. - step(cos(pos.y * 0.3), .2);\n  }\n  if (IsObstacle(iMouse.xy, pos.xy)) {\n    v = vec2(0., .0);\n    c.x = 0.;\n    c.y = step(sin(pos.y / 2.), .9);  // color tracers from obstacle\n  }\n  fragColor = vec4(v, c);\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Computes D = K.∇.U*   [with K=-dt/(2.rho.dx)]\n//\n// Created by Pascal Massimino [skal] (2022)\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\nfloat Divergence(vec2 p) {\n  vec2 norm = 1. / iResolution.xy;\n  vec2 P = p * norm;\n  vec2 dx = vec2(norm.x,     0.);\n  vec2 dy = vec2(    0., norm.y);  \n  float dv_dx = texture(iChannel0, P + dx).x\n              - texture(iChannel0, P - dx).x;\n  float dv_dy = texture(iChannel0, P + dy).y\n              - texture(iChannel0, P - dy).y;\n  return -0.5 * (dv_dx + dv_dy);\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 pos) {\n  fragColor = vec4(0., 0., 0., Divergence(pos));\n}\n",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Compute pressure for Laplacian equation ∇²P = ∇.U*\n//\n// The Jacobi method would iterate on the array\n//   p_i,j = 1/4 * (div_i,j + p_i+2,j + p_i-2,j + p_i,j+2 + p_i,j-2)\n// But since we work in-place in BufferC, this is more a Gauss-Seidel method!\n//\n// Created by Pascal Massimino [skal] (2022)\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n#define DIV(X, Y) texture(iChannel0, (pos + vec2(X, Y)) * norm).w\n#define P(X, Y)   texture(iChannel1, (pos + vec2(X, Y)) * norm).w  // re-use buf C\n\nvoid mainImage(out vec4 fragColor, in vec2 pos) {\n  vec2 norm = 1. / iResolution.xy;\n#if (KERNEL == 29)\n  float div = 0.;\n  div +=            1. * DIV(  0,-14);\n  div +=           14. * DIV( -1,-13);\n  div +=            4. * DIV(  0,-13);\n  div +=           14. * DIV(  1,-13);\n  div +=           91. * DIV( -2,-12);\n  div +=           52. * DIV( -1,-12);\n  div +=          212. * DIV(  0,-12);\n  div +=           52. * DIV(  1,-12);\n  div +=           91. * DIV(  2,-12);\n  div +=          364. * DIV( -3,-11);\n  div +=          312. * DIV( -2,-11);\n  div +=         1466. * DIV( -1,-11);\n  div +=          740. * DIV(  0,-11);\n  div +=         1466. * DIV(  1,-11);\n  div +=          312. * DIV(  2,-11);\n  div +=          364. * DIV(  3,-11);\n  div +=         1001. * DIV( -4,-10);\n  div +=         1144. * DIV( -3,-10);\n  div +=         6152. * DIV( -2,-10);\n  div +=         4760. * DIV( -1,-10);\n  div +=        10841. * DIV(  0,-10);\n  div +=         4760. * DIV(  1,-10);\n  div +=         6152. * DIV(  2,-10);\n  div +=         1144. * DIV(  3,-10);\n  div +=         1001. * DIV(  4,-10);\n  div +=         2002. * DIV( -5, -9);\n  div +=         2860. * DIV( -4, -9);\n  div +=        17534. * DIV( -3, -9);\n  div +=        18392. * DIV( -2, -9);\n  div +=        48356. * DIV( -1, -9);\n  div +=        33104. * DIV(  0, -9);\n  div +=        48356. * DIV(  1, -9);\n  div +=        18392. * DIV(  2, -9);\n  div +=        17534. * DIV(  3, -9);\n  div +=         2860. * DIV(  4, -9);\n  div +=         2002. * DIV(  5, -9);\n  div +=         3003. * DIV( -6, -8);\n  div +=         5148. * DIV( -5, -8);\n  div +=        35948. * DIV( -4, -8);\n  div +=        47740. * DIV( -3, -8);\n  div +=       144851. * DIV( -2, -8);\n  div +=       137168. * DIV( -1, -8);\n  div +=       231888. * DIV(  0, -8);\n  div +=       137168. * DIV(  1, -8);\n  div +=       144851. * DIV(  2, -8);\n  div +=        47740. * DIV(  3, -8);\n  div +=        35948. * DIV(  4, -8);\n  div +=         5148. * DIV(  5, -8);\n  div +=         3003. * DIV(  6, -8);\n  div +=         3432. * DIV( -7, -7);\n  div +=         6864. * DIV( -6, -7);\n  div +=        54714. * DIV( -5, -7);\n  div +=        88044. * DIV( -4, -7);\n  div +=       307942. * DIV( -3, -7);\n  div +=       376104. * DIV( -2, -7);\n  div +=       744652. * DIV( -1, -7);\n  div +=       620112. * DIV(  0, -7);\n  div +=       744652. * DIV(  1, -7);\n  div +=       376104. * DIV(  2, -7);\n  div +=       307942. * DIV(  3, -7);\n  div +=        88044. * DIV(  4, -7);\n  div +=        54714. * DIV(  5, -7);\n  div +=         6864. * DIV(  6, -7);\n  div +=         3432. * DIV(  7, -7);\n  div +=         3003. * DIV( -8, -6);\n  div +=         6864. * DIV( -7, -6);\n  div +=        62832. * DIV( -6, -6);\n  div +=       118800. * DIV( -5, -6);\n  div +=       479097. * DIV( -4, -6);\n  div +=       719880. * DIV( -3, -6);\n  div +=      1673336. * DIV( -2, -6);\n  div +=      1845224. * DIV( -1, -6);\n  div +=      2622481. * DIV(  0, -6);\n  div +=      1845224. * DIV(  1, -6);\n  div +=      1673336. * DIV(  2, -6);\n  div +=       719880. * DIV(  3, -6);\n  div +=       479097. * DIV(  4, -6);\n  div +=       118800. * DIV(  5, -6);\n  div +=        62832. * DIV(  6, -6);\n  div +=         6864. * DIV(  7, -6);\n  div +=         3003. * DIV(  8, -6);\n  div +=         2002. * DIV( -9, -5);\n  div +=         5148. * DIV( -8, -5);\n  div +=        54714. * DIV( -7, -5);\n  div +=       118800. * DIV( -6, -5);\n  div +=       554232. * DIV( -5, -5);\n  div +=       989664. * DIV( -4, -5);\n  div +=      2696420. * DIV( -3, -5);\n  div +=      3752136. * DIV( -2, -5);\n  div +=      6439522. * DIV( -1, -5);\n  div +=      6179364. * DIV(  0, -5);\n  div +=      6439522. * DIV(  1, -5);\n  div +=      3752136. * DIV(  2, -5);\n  div +=      2696420. * DIV(  3, -5);\n  div +=       989664. * DIV(  4, -5);\n  div +=       554232. * DIV(  5, -5);\n  div +=       118800. * DIV(  6, -5);\n  div +=        54714. * DIV(  7, -5);\n  div +=         5148. * DIV(  8, -5);\n  div +=         2002. * DIV(  9, -5);\n  div +=         1001. * DIV(-10, -4);\n  div +=         2860. * DIV( -9, -4);\n  div +=        35948. * DIV( -8, -4);\n  div +=        88044. * DIV( -7, -4);\n  div +=       479097. * DIV( -6, -4);\n  div +=       989664. * DIV( -5, -4);\n  div +=      3156832. * DIV( -4, -4);\n  div +=      5324000. * DIV( -3, -4);\n  div +=     11031091. * DIV( -2, -4);\n  div +=     13981364. * DIV( -1, -4);\n  div +=     18233940. * DIV(  0, -4);\n  div +=     13981364. * DIV(  1, -4);\n  div +=     11031091. * DIV(  2, -4);\n  div +=      5324000. * DIV(  3, -4);\n  div +=      3156832. * DIV(  4, -4);\n  div +=       989664. * DIV(  5, -4);\n  div +=       479097. * DIV(  6, -4);\n  div +=        88044. * DIV(  7, -4);\n  div +=        35948. * DIV(  8, -4);\n  div +=         2860. * DIV(  9, -4);\n  div +=         1001. * DIV( 10, -4);\n  div +=          364. * DIV(-11, -3);\n  div +=         1144. * DIV(-10, -3);\n  div +=        17534. * DIV( -9, -3);\n  div +=        47740. * DIV( -8, -3);\n  div +=       307942. * DIV( -7, -3);\n  div +=       719880. * DIV( -6, -3);\n  div +=      2696420. * DIV( -5, -3);\n  div +=      5324000. * DIV( -4, -3);\n  div +=     13195432. * DIV( -3, -3);\n  div +=     21066864. * DIV( -2, -3);\n  div +=     35250918. * DIV( -1, -3);\n  div +=     38793668. * DIV(  0, -3);\n  div +=     35250918. * DIV(  1, -3);\n  div +=     21066864. * DIV(  2, -3);\n  div +=     13195432. * DIV(  3, -3);\n  div +=      5324000. * DIV(  4, -3);\n  div +=      2696420. * DIV(  5, -3);\n  div +=       719880. * DIV(  6, -3);\n  div +=       307942. * DIV(  7, -3);\n  div +=        47740. * DIV(  8, -3);\n  div +=        17534. * DIV(  9, -3);\n  div +=         1144. * DIV( 10, -3);\n  div +=          364. * DIV( 11, -3);\n  div +=           91. * DIV(-12, -2);\n  div +=          312. * DIV(-11, -2);\n  div +=         6152. * DIV(-10, -2);\n  div +=        18392. * DIV( -9, -2);\n  div +=       144851. * DIV( -8, -2);\n  div +=       376104. * DIV( -7, -2);\n  div +=      1673336. * DIV( -6, -2);\n  div +=      3752136. * DIV( -5, -2);\n  div +=     11031091. * DIV( -4, -2);\n  div +=     21066864. * DIV( -3, -2);\n  div +=     44114320. * DIV( -2, -2);\n  div +=     67161776. * DIV( -1, -2);\n  div +=     91488921. * DIV(  0, -2);\n  div +=     67161776. * DIV(  1, -2);\n  div +=     44114320. * DIV(  2, -2);\n  div +=     21066864. * DIV(  3, -2);\n  div +=     11031091. * DIV(  4, -2);\n  div +=      3752136. * DIV(  5, -2);\n  div +=      1673336. * DIV(  6, -2);\n  div +=       376104. * DIV(  7, -2);\n  div +=       144851. * DIV(  8, -2);\n  div +=        18392. * DIV(  9, -2);\n  div +=         6152. * DIV( 10, -2);\n  div +=          312. * DIV( 11, -2);\n  div +=           91. * DIV( 12, -2);\n  div +=           14. * DIV(-13, -1);\n  div +=           52. * DIV(-12, -1);\n  div +=         1466. * DIV(-11, -1);\n  div +=         4760. * DIV(-10, -1);\n  div +=        48356. * DIV( -9, -1);\n  div +=       137168. * DIV( -8, -1);\n  div +=       744652. * DIV( -7, -1);\n  div +=      1845224. * DIV( -6, -1);\n  div +=      6439522. * DIV( -5, -1);\n  div +=     13981364. * DIV( -4, -1);\n  div +=     35250918. * DIV( -3, -1);\n  div +=     67161776. * DIV( -2, -1);\n  div +=    130000120. * DIV( -1, -1);\n  div +=    192838464. * DIV(  0, -1);\n  div +=    130000120. * DIV(  1, -1);\n  div +=     67161776. * DIV(  2, -1);\n  div +=     35250918. * DIV(  3, -1);\n  div +=     13981364. * DIV(  4, -1);\n  div +=      6439522. * DIV(  5, -1);\n  div +=      1845224. * DIV(  6, -1);\n  div +=       744652. * DIV(  7, -1);\n  div +=       137168. * DIV(  8, -1);\n  div +=        48356. * DIV(  9, -1);\n  div +=         4760. * DIV( 10, -1);\n  div +=         1466. * DIV( 11, -1);\n  div +=           52. * DIV( 12, -1);\n  div +=           14. * DIV( 13, -1);\n  div +=            1. * DIV(-14,  0);\n  div +=            4. * DIV(-13,  0);\n  div +=          212. * DIV(-12,  0);\n  div +=          740. * DIV(-11,  0);\n  div +=        10841. * DIV(-10,  0);\n  div +=        33104. * DIV( -9,  0);\n  div +=       231888. * DIV( -8,  0);\n  div +=       620112. * DIV( -7,  0);\n  div +=      2622481. * DIV( -6,  0);\n  div +=      6179364. * DIV( -5,  0);\n  div +=     18233940. * DIV( -4,  0);\n  div +=     38793668. * DIV( -3,  0);\n  div +=     91488921. * DIV( -2,  0);\n  div +=    192838464. * DIV( -1,  0);\n  div +=    461273920. * DIV(  0,  0);\n  div +=    192838464. * DIV(  1,  0);\n  div +=     91488921. * DIV(  2,  0);\n  div +=     38793668. * DIV(  3,  0);\n  div +=     18233940. * DIV(  4,  0);\n  div +=      6179364. * DIV(  5,  0);\n  div +=      2622481. * DIV(  6,  0);\n  div +=       620112. * DIV(  7,  0);\n  div +=       231888. * DIV(  8,  0);\n  div +=        33104. * DIV(  9,  0);\n  div +=        10841. * DIV( 10,  0);\n  div +=          740. * DIV( 11,  0);\n  div +=          212. * DIV( 12,  0);\n  div +=            4. * DIV( 13,  0);\n  div +=            1. * DIV( 14,  0);\n  div +=           14. * DIV(-13,  1);\n  div +=           52. * DIV(-12,  1);\n  div +=         1466. * DIV(-11,  1);\n  div +=         4760. * DIV(-10,  1);\n  div +=        48356. * DIV( -9,  1);\n  div +=       137168. * DIV( -8,  1);\n  div +=       744652. * DIV( -7,  1);\n  div +=      1845224. * DIV( -6,  1);\n  div +=      6439522. * DIV( -5,  1);\n  div +=     13981364. * DIV( -4,  1);\n  div +=     35250918. * DIV( -3,  1);\n  div +=     67161776. * DIV( -2,  1);\n  div +=    130000120. * DIV( -1,  1);\n  div +=    192838464. * DIV(  0,  1);\n  div +=    130000120. * DIV(  1,  1);\n  div +=     67161776. * DIV(  2,  1);\n  div +=     35250918. * DIV(  3,  1);\n  div +=     13981364. * DIV(  4,  1);\n  div +=      6439522. * DIV(  5,  1);\n  div +=      1845224. * DIV(  6,  1);\n  div +=       744652. * DIV(  7,  1);\n  div +=       137168. * DIV(  8,  1);\n  div +=        48356. * DIV(  9,  1);\n  div +=         4760. * DIV( 10,  1);\n  div +=         1466. * DIV( 11,  1);\n  div +=           52. * DIV( 12,  1);\n  div +=           14. * DIV( 13,  1);\n  div +=           91. * DIV(-12,  2);\n  div +=          312. * DIV(-11,  2);\n  div +=         6152. * DIV(-10,  2);\n  div +=        18392. * DIV( -9,  2);\n  div +=       144851. * DIV( -8,  2);\n  div +=       376104. * DIV( -7,  2);\n  div +=      1673336. * DIV( -6,  2);\n  div +=      3752136. * DIV( -5,  2);\n  div +=     11031091. * DIV( -4,  2);\n  div +=     21066864. * DIV( -3,  2);\n  div +=     44114320. * DIV( -2,  2);\n  div +=     67161776. * DIV( -1,  2);\n  div +=     91488921. * DIV(  0,  2);\n  div +=     67161776. * DIV(  1,  2);\n  div +=     44114320. * DIV(  2,  2);\n  div +=     21066864. * DIV(  3,  2);\n  div +=     11031091. * DIV(  4,  2);\n  div +=      3752136. * DIV(  5,  2);\n  div +=      1673336. * DIV(  6,  2);\n  div +=       376104. * DIV(  7,  2);\n  div +=       144851. * DIV(  8,  2);\n  div +=        18392. * DIV(  9,  2);\n  div +=         6152. * DIV( 10,  2);\n  div +=          312. * DIV( 11,  2);\n  div +=           91. * DIV( 12,  2);\n  div +=          364. * DIV(-11,  3);\n  div +=         1144. * DIV(-10,  3);\n  div +=        17534. * DIV( -9,  3);\n  div +=        47740. * DIV( -8,  3);\n  div +=       307942. * DIV( -7,  3);\n  div +=       719880. * DIV( -6,  3);\n  div +=      2696420. * DIV( -5,  3);\n  div +=      5324000. * DIV( -4,  3);\n  div +=     13195432. * DIV( -3,  3);\n  div +=     21066864. * DIV( -2,  3);\n  div +=     35250918. * DIV( -1,  3);\n  div +=     38793668. * DIV(  0,  3);\n  div +=     35250918. * DIV(  1,  3);\n  div +=     21066864. * DIV(  2,  3);\n  div +=     13195432. * DIV(  3,  3);\n  div +=      5324000. * DIV(  4,  3);\n  div +=      2696420. * DIV(  5,  3);\n  div +=       719880. * DIV(  6,  3);\n  div +=       307942. * DIV(  7,  3);\n  div +=        47740. * DIV(  8,  3);\n  div +=        17534. * DIV(  9,  3);\n  div +=         1144. * DIV( 10,  3);\n  div +=          364. * DIV( 11,  3);\n  div +=         1001. * DIV(-10,  4);\n  div +=         2860. * DIV( -9,  4);\n  div +=        35948. * DIV( -8,  4);\n  div +=        88044. * DIV( -7,  4);\n  div +=       479097. * DIV( -6,  4);\n  div +=       989664. * DIV( -5,  4);\n  div +=      3156832. * DIV( -4,  4);\n  div +=      5324000. * DIV( -3,  4);\n  div +=     11031091. * DIV( -2,  4);\n  div +=     13981364. * DIV( -1,  4);\n  div +=     18233940. * DIV(  0,  4);\n  div +=     13981364. * DIV(  1,  4);\n  div +=     11031091. * DIV(  2,  4);\n  div +=      5324000. * DIV(  3,  4);\n  div +=      3156832. * DIV(  4,  4);\n  div +=       989664. * DIV(  5,  4);\n  div +=       479097. * DIV(  6,  4);\n  div +=        88044. * DIV(  7,  4);\n  div +=        35948. * DIV(  8,  4);\n  div +=         2860. * DIV(  9,  4);\n  div +=         1001. * DIV( 10,  4);\n  div +=         2002. * DIV( -9,  5);\n  div +=         5148. * DIV( -8,  5);\n  div +=        54714. * DIV( -7,  5);\n  div +=       118800. * DIV( -6,  5);\n  div +=       554232. * DIV( -5,  5);\n  div +=       989664. * DIV( -4,  5);\n  div +=      2696420. * DIV( -3,  5);\n  div +=      3752136. * DIV( -2,  5);\n  div +=      6439522. * DIV( -1,  5);\n  div +=      6179364. * DIV(  0,  5);\n  div +=      6439522. * DIV(  1,  5);\n  div +=      3752136. * DIV(  2,  5);\n  div +=      2696420. * DIV(  3,  5);\n  div +=       989664. * DIV(  4,  5);\n  div +=       554232. * DIV(  5,  5);\n  div +=       118800. * DIV(  6,  5);\n  div +=        54714. * DIV(  7,  5);\n  div +=         5148. * DIV(  8,  5);\n  div +=         2002. * DIV(  9,  5);\n  div +=         3003. * DIV( -8,  6);\n  div +=         6864. * DIV( -7,  6);\n  div +=        62832. * DIV( -6,  6);\n  div +=       118800. * DIV( -5,  6);\n  div +=       479097. * DIV( -4,  6);\n  div +=       719880. * DIV( -3,  6);\n  div +=      1673336. * DIV( -2,  6);\n  div +=      1845224. * DIV( -1,  6);\n  div +=      2622481. * DIV(  0,  6);\n  div +=      1845224. * DIV(  1,  6);\n  div +=      1673336. * DIV(  2,  6);\n  div +=       719880. * DIV(  3,  6);\n  div +=       479097. * DIV(  4,  6);\n  div +=       118800. * DIV(  5,  6);\n  div +=        62832. * DIV(  6,  6);\n  div +=         6864. * DIV(  7,  6);\n  div +=         3003. * DIV(  8,  6);\n  div +=         3432. * DIV( -7,  7);\n  div +=         6864. * DIV( -6,  7);\n  div +=        54714. * DIV( -5,  7);\n  div +=        88044. * DIV( -4,  7);\n  div +=       307942. * DIV( -3,  7);\n  div +=       376104. * DIV( -2,  7);\n  div +=       744652. * DIV( -1,  7);\n  div +=       620112. * DIV(  0,  7);\n  div +=       744652. * DIV(  1,  7);\n  div +=       376104. * DIV(  2,  7);\n  div +=       307942. * DIV(  3,  7);\n  div +=        88044. * DIV(  4,  7);\n  div +=        54714. * DIV(  5,  7);\n  div +=         6864. * DIV(  6,  7);\n  div +=         3432. * DIV(  7,  7);\n  div +=         3003. * DIV( -6,  8);\n  div +=         5148. * DIV( -5,  8);\n  div +=        35948. * DIV( -4,  8);\n  div +=        47740. * DIV( -3,  8);\n  div +=       144851. * DIV( -2,  8);\n  div +=       137168. * DIV( -1,  8);\n  div +=       231888. * DIV(  0,  8);\n  div +=       137168. * DIV(  1,  8);\n  div +=       144851. * DIV(  2,  8);\n  div +=        47740. * DIV(  3,  8);\n  div +=        35948. * DIV(  4,  8);\n  div +=         5148. * DIV(  5,  8);\n  div +=         3003. * DIV(  6,  8);\n  div +=         2002. * DIV( -5,  9);\n  div +=         2860. * DIV( -4,  9);\n  div +=        17534. * DIV( -3,  9);\n  div +=        18392. * DIV( -2,  9);\n  div +=        48356. * DIV( -1,  9);\n  div +=        33104. * DIV(  0,  9);\n  div +=        48356. * DIV(  1,  9);\n  div +=        18392. * DIV(  2,  9);\n  div +=        17534. * DIV(  3,  9);\n  div +=         2860. * DIV(  4,  9);\n  div +=         2002. * DIV(  5,  9);\n  div +=         1001. * DIV( -4, 10);\n  div +=         1144. * DIV( -3, 10);\n  div +=         6152. * DIV( -2, 10);\n  div +=         4760. * DIV( -1, 10);\n  div +=        10841. * DIV(  0, 10);\n  div +=         4760. * DIV(  1, 10);\n  div +=         6152. * DIV(  2, 10);\n  div +=         1144. * DIV(  3, 10);\n  div +=         1001. * DIV(  4, 10);\n  div +=          364. * DIV( -3, 11);\n  div +=          312. * DIV( -2, 11);\n  div +=         1466. * DIV( -1, 11);\n  div +=          740. * DIV(  0, 11);\n  div +=         1466. * DIV(  1, 11);\n  div +=          312. * DIV(  2, 11);\n  div +=          364. * DIV(  3, 11);\n  div +=           91. * DIV( -2, 12);\n  div +=           52. * DIV( -1, 12);\n  div +=          212. * DIV(  0, 12);\n  div +=           52. * DIV(  1, 12);\n  div +=           91. * DIV(  2, 12);\n  div +=           14. * DIV( -1, 13);\n  div +=            4. * DIV(  0, 13);\n  div +=           14. * DIV(  1, 13);\n  div +=            1. * DIV(  0, 14);\n  div /= 1073741824.;\n  float p = 0.;\n  p +=            1. * P(  0,-15);\n  p +=           15. * P( -1,-14);\n  p +=           15. * P(  1,-14);\n  p +=          105. * P( -2,-13);\n  p +=          225. * P(  0,-13);\n  p +=          105. * P(  2,-13);\n  p +=          455. * P( -3,-12);\n  p +=         1575. * P( -1,-12);\n  p +=         1575. * P(  1,-12);\n  p +=          455. * P(  3,-12);\n  p +=         1365. * P( -4,-11);\n  p +=         6825. * P( -2,-11);\n  p +=        11025. * P(  0,-11);\n  p +=         6825. * P(  2,-11);\n  p +=         1365. * P(  4,-11);\n  p +=         3003. * P( -5,-10);\n  p +=        20475. * P( -3,-10);\n  p +=        47775. * P( -1,-10);\n  p +=        47775. * P(  1,-10);\n  p +=        20475. * P(  3,-10);\n  p +=         3003. * P(  5,-10);\n  p +=         5005. * P( -6, -9);\n  p +=        45045. * P( -4, -9);\n  p +=       143325. * P( -2, -9);\n  p +=       207025. * P(  0, -9);\n  p +=       143325. * P(  2, -9);\n  p +=        45045. * P(  4, -9);\n  p +=         5005. * P(  6, -9);\n  p +=         6435. * P( -7, -8);\n  p +=        75075. * P( -5, -8);\n  p +=       315315. * P( -3, -8);\n  p +=       621075. * P( -1, -8);\n  p +=       621075. * P(  1, -8);\n  p +=       315315. * P(  3, -8);\n  p +=        75075. * P(  5, -8);\n  p +=         6435. * P(  7, -8);\n  p +=         6435. * P( -8, -7);\n  p +=        96525. * P( -6, -7);\n  p +=       525525. * P( -4, -7);\n  p +=      1366365. * P( -2, -7);\n  p +=      1863225. * P(  0, -7);\n  p +=      1366365. * P(  2, -7);\n  p +=       525525. * P(  4, -7);\n  p +=        96525. * P(  6, -7);\n  p +=         6435. * P(  8, -7);\n  p +=         5005. * P( -9, -6);\n  p +=        96525. * P( -7, -6);\n  p +=       675675. * P( -5, -6);\n  p +=      2277275. * P( -3, -6);\n  p +=      4099095. * P( -1, -6);\n  p +=      4099095. * P(  1, -6);\n  p +=      2277275. * P(  3, -6);\n  p +=       675675. * P(  5, -6);\n  p +=        96525. * P(  7, -6);\n  p +=         5005. * P(  9, -6);\n  p +=         3003. * P(-10, -5);\n  p +=        75075. * P( -8, -5);\n  p +=       675675. * P( -6, -5);\n  p +=      2927925. * P( -4, -5);\n  p +=      6831825. * P( -2, -5);\n  p +=      9018009. * P(  0, -5);\n  p +=      6831825. * P(  2, -5);\n  p +=      2927925. * P(  4, -5);\n  p +=       675675. * P(  6, -5);\n  p +=        75075. * P(  8, -5);\n  p +=         3003. * P( 10, -5);\n  p +=         1365. * P(-11, -4);\n  p +=        45045. * P( -9, -4);\n  p +=       525525. * P( -7, -4);\n  p +=      2927925. * P( -5, -4);\n  p +=      8783775. * P( -3, -4);\n  p +=     15030015. * P( -1, -4);\n  p +=     15030015. * P(  1, -4);\n  p +=      8783775. * P(  3, -4);\n  p +=      2927925. * P(  5, -4);\n  p +=       525525. * P(  7, -4);\n  p +=        45045. * P(  9, -4);\n  p +=         1365. * P( 11, -4);\n  p +=          455. * P(-12, -3);\n  p +=        20475. * P(-10, -3);\n  p +=       315315. * P( -8, -3);\n  p +=      2277275. * P( -6, -3);\n  p +=      8783775. * P( -4, -3);\n  p +=     19324305. * P( -2, -3);\n  p +=     25050025. * P(  0, -3);\n  p +=     19324305. * P(  2, -3);\n  p +=      8783775. * P(  4, -3);\n  p +=      2277275. * P(  6, -3);\n  p +=       315315. * P(  8, -3);\n  p +=        20475. * P( 10, -3);\n  p +=          455. * P( 12, -3);\n  p +=          105. * P(-13, -2);\n  p +=         6825. * P(-11, -2);\n  p +=       143325. * P( -9, -2);\n  p +=      1366365. * P( -7, -2);\n  p +=      6831825. * P( -5, -2);\n  p +=     19324305. * P( -3, -2);\n  p +=     32207175. * P( -1, -2);\n  p +=     32207175. * P(  1, -2);\n  p +=     19324305. * P(  3, -2);\n  p +=      6831825. * P(  5, -2);\n  p +=      1366365. * P(  7, -2);\n  p +=       143325. * P(  9, -2);\n  p +=         6825. * P( 11, -2);\n  p +=          105. * P( 13, -2);\n  p +=           15. * P(-14, -1);\n  p +=         1575. * P(-12, -1);\n  p +=        47775. * P(-10, -1);\n  p +=       621075. * P( -8, -1);\n  p +=      4099095. * P( -6, -1);\n  p +=     15030015. * P( -4, -1);\n  p +=     32207175. * P( -2, -1);\n  p +=     41409225. * P(  0, -1);\n  p +=     32207175. * P(  2, -1);\n  p +=     15030015. * P(  4, -1);\n  p +=      4099095. * P(  6, -1);\n  p +=       621075. * P(  8, -1);\n  p +=        47775. * P( 10, -1);\n  p +=         1575. * P( 12, -1);\n  p +=           15. * P( 14, -1);\n  p +=            1. * P(-15,  0);\n  p +=          225. * P(-13,  0);\n  p +=        11025. * P(-11,  0);\n  p +=       207025. * P( -9,  0);\n  p +=      1863225. * P( -7,  0);\n  p +=      9018009. * P( -5,  0);\n  p +=     25050025. * P( -3,  0);\n  p +=     41409225. * P( -1,  0);\n  p +=     41409225. * P(  1,  0);\n  p +=     25050025. * P(  3,  0);\n  p +=      9018009. * P(  5,  0);\n  p +=      1863225. * P(  7,  0);\n  p +=       207025. * P(  9,  0);\n  p +=        11025. * P( 11,  0);\n  p +=          225. * P( 13,  0);\n  p +=            1. * P( 15,  0);\n  p +=           15. * P(-14,  1);\n  p +=         1575. * P(-12,  1);\n  p +=        47775. * P(-10,  1);\n  p +=       621075. * P( -8,  1);\n  p +=      4099095. * P( -6,  1);\n  p +=     15030015. * P( -4,  1);\n  p +=     32207175. * P( -2,  1);\n  p +=     41409225. * P(  0,  1);\n  p +=     32207175. * P(  2,  1);\n  p +=     15030015. * P(  4,  1);\n  p +=      4099095. * P(  6,  1);\n  p +=       621075. * P(  8,  1);\n  p +=        47775. * P( 10,  1);\n  p +=         1575. * P( 12,  1);\n  p +=           15. * P( 14,  1);\n  p +=          105. * P(-13,  2);\n  p +=         6825. * P(-11,  2);\n  p +=       143325. * P( -9,  2);\n  p +=      1366365. * P( -7,  2);\n  p +=      6831825. * P( -5,  2);\n  p +=     19324305. * P( -3,  2);\n  p +=     32207175. * P( -1,  2);\n  p +=     32207175. * P(  1,  2);\n  p +=     19324305. * P(  3,  2);\n  p +=      6831825. * P(  5,  2);\n  p +=      1366365. * P(  7,  2);\n  p +=       143325. * P(  9,  2);\n  p +=         6825. * P( 11,  2);\n  p +=          105. * P( 13,  2);\n  p +=          455. * P(-12,  3);\n  p +=        20475. * P(-10,  3);\n  p +=       315315. * P( -8,  3);\n  p +=      2277275. * P( -6,  3);\n  p +=      8783775. * P( -4,  3);\n  p +=     19324305. * P( -2,  3);\n  p +=     25050025. * P(  0,  3);\n  p +=     19324305. * P(  2,  3);\n  p +=      8783775. * P(  4,  3);\n  p +=      2277275. * P(  6,  3);\n  p +=       315315. * P(  8,  3);\n  p +=        20475. * P( 10,  3);\n  p +=          455. * P( 12,  3);\n  p +=         1365. * P(-11,  4);\n  p +=        45045. * P( -9,  4);\n  p +=       525525. * P( -7,  4);\n  p +=      2927925. * P( -5,  4);\n  p +=      8783775. * P( -3,  4);\n  p +=     15030015. * P( -1,  4);\n  p +=     15030015. * P(  1,  4);\n  p +=      8783775. * P(  3,  4);\n  p +=      2927925. * P(  5,  4);\n  p +=       525525. * P(  7,  4);\n  p +=        45045. * P(  9,  4);\n  p +=         1365. * P( 11,  4);\n  p +=         3003. * P(-10,  5);\n  p +=        75075. * P( -8,  5);\n  p +=       675675. * P( -6,  5);\n  p +=      2927925. * P( -4,  5);\n  p +=      6831825. * P( -2,  5);\n  p +=      9018009. * P(  0,  5);\n  p +=      6831825. * P(  2,  5);\n  p +=      2927925. * P(  4,  5);\n  p +=       675675. * P(  6,  5);\n  p +=        75075. * P(  8,  5);\n  p +=         3003. * P( 10,  5);\n  p +=         5005. * P( -9,  6);\n  p +=        96525. * P( -7,  6);\n  p +=       675675. * P( -5,  6);\n  p +=      2277275. * P( -3,  6);\n  p +=      4099095. * P( -1,  6);\n  p +=      4099095. * P(  1,  6);\n  p +=      2277275. * P(  3,  6);\n  p +=       675675. * P(  5,  6);\n  p +=        96525. * P(  7,  6);\n  p +=         5005. * P(  9,  6);\n  p +=         6435. * P( -8,  7);\n  p +=        96525. * P( -6,  7);\n  p +=       525525. * P( -4,  7);\n  p +=      1366365. * P( -2,  7);\n  p +=      1863225. * P(  0,  7);\n  p +=      1366365. * P(  2,  7);\n  p +=       525525. * P(  4,  7);\n  p +=        96525. * P(  6,  7);\n  p +=         6435. * P(  8,  7);\n  p +=         6435. * P( -7,  8);\n  p +=        75075. * P( -5,  8);\n  p +=       315315. * P( -3,  8);\n  p +=       621075. * P( -1,  8);\n  p +=       621075. * P(  1,  8);\n  p +=       315315. * P(  3,  8);\n  p +=        75075. * P(  5,  8);\n  p +=         6435. * P(  7,  8);\n  p +=         5005. * P( -6,  9);\n  p +=        45045. * P( -4,  9);\n  p +=       143325. * P( -2,  9);\n  p +=       207025. * P(  0,  9);\n  p +=       143325. * P(  2,  9);\n  p +=        45045. * P(  4,  9);\n  p +=         5005. * P(  6,  9);\n  p +=         3003. * P( -5, 10);\n  p +=        20475. * P( -3, 10);\n  p +=        47775. * P( -1, 10);\n  p +=        47775. * P(  1, 10);\n  p +=        20475. * P(  3, 10);\n  p +=         3003. * P(  5, 10);\n  p +=         1365. * P( -4, 11);\n  p +=         6825. * P( -2, 11);\n  p +=        11025. * P(  0, 11);\n  p +=         6825. * P(  2, 11);\n  p +=         1365. * P(  4, 11);\n  p +=          455. * P( -3, 12);\n  p +=         1575. * P( -1, 12);\n  p +=         1575. * P(  1, 12);\n  p +=          455. * P(  3, 12);\n  p +=          105. * P( -2, 13);\n  p +=          225. * P(  0, 13);\n  p +=          105. * P(  2, 13);\n  p +=           15. * P( -1, 14);\n  p +=           15. * P(  1, 14);\n  p +=            1. * P(  0, 15);\n  p /= 1073741824.;\n#elif (KERNEL == 11)\n  // This versions uses 11x11 kernel only\n  float div = 0.;\n  div +=            1. * DIV(  0, -5);\n  div +=            5. * DIV( -1, -4);\n  div +=            4. * DIV(  0, -4);\n  div +=            5. * DIV(  1, -4);\n  div +=           10. * DIV( -2, -3);\n  div +=           16. * DIV( -1, -3);\n  div +=           41. * DIV(  0, -3);\n  div +=           16. * DIV(  1, -3);\n  div +=           10. * DIV(  2, -3);\n  div +=           10. * DIV( -3, -2);\n  div +=           24. * DIV( -2, -2);\n  div +=           98. * DIV( -1, -2);\n  div +=          128. * DIV(  0, -2);\n  div +=           98. * DIV(  1, -2);\n  div +=           24. * DIV(  2, -2);\n  div +=           10. * DIV(  3, -2);\n  div +=            5. * DIV( -4, -1);\n  div +=           16. * DIV( -3, -1);\n  div +=           98. * DIV( -2, -1);\n  div +=          224. * DIV( -1, -1);\n  div +=          500. * DIV(  0, -1);\n  div +=          224. * DIV(  1, -1);\n  div +=           98. * DIV(  2, -1);\n  div +=           16. * DIV(  3, -1);\n  div +=            5. * DIV(  4, -1);\n  div +=            1. * DIV( -5,  0);\n  div +=            4. * DIV( -4,  0);\n  div +=           41. * DIV( -3,  0);\n  div +=          128. * DIV( -2,  0);\n  div +=          500. * DIV( -1,  0);\n  div +=         1424. * DIV(  0,  0);\n  div +=          500. * DIV(  1,  0);\n  div +=          128. * DIV(  2,  0);\n  div +=           41. * DIV(  3,  0);\n  div +=            4. * DIV(  4,  0);\n  div +=            1. * DIV(  5,  0);\n  div +=            5. * DIV( -4,  1);\n  div +=           16. * DIV( -3,  1);\n  div +=           98. * DIV( -2,  1);\n  div +=          224. * DIV( -1,  1);\n  div +=          500. * DIV(  0,  1);\n  div +=          224. * DIV(  1,  1);\n  div +=           98. * DIV(  2,  1);\n  div +=           16. * DIV(  3,  1);\n  div +=            5. * DIV(  4,  1);\n  div +=           10. * DIV( -3,  2);\n  div +=           24. * DIV( -2,  2);\n  div +=           98. * DIV( -1,  2);\n  div +=          128. * DIV(  0,  2);\n  div +=           98. * DIV(  1,  2);\n  div +=           24. * DIV(  2,  2);\n  div +=           10. * DIV(  3,  2);\n  div +=           10. * DIV( -2,  3);\n  div +=           16. * DIV( -1,  3);\n  div +=           41. * DIV(  0,  3);\n  div +=           16. * DIV(  1,  3);\n  div +=           10. * DIV(  2,  3);\n  div +=            5. * DIV( -1,  4);\n  div +=            4. * DIV(  0,  4);\n  div +=            5. * DIV(  1,  4);\n  div +=            1. * DIV(  0,  5);\n  div /= 4096.;\n  float p = 0.;\n  p +=            1. * P(  0, -6);\n  p +=            6. * P( -1, -5);\n  p +=            6. * P(  1, -5);\n  p +=           15. * P( -2, -4);\n  p +=           36. * P(  0, -4);\n  p +=           15. * P(  2, -4);\n  p +=           20. * P( -3, -3);\n  p +=           90. * P( -1, -3);\n  p +=           90. * P(  1, -3);\n  p +=           20. * P(  3, -3);\n  p +=           15. * P( -4, -2);\n  p +=          120. * P( -2, -2);\n  p +=          225. * P(  0, -2);\n  p +=          120. * P(  2, -2);\n  p +=           15. * P(  4, -2);\n  p +=            6. * P( -5, -1);\n  p +=           90. * P( -3, -1);\n  p +=          300. * P( -1, -1);\n  p +=          300. * P(  1, -1);\n  p +=           90. * P(  3, -1);\n  p +=            6. * P(  5, -1);\n  p +=            1. * P( -6,  0);\n  p +=           36. * P( -4,  0);\n  p +=          225. * P( -2,  0);\n  p +=          400. * P(  0,  0);\n  p +=          225. * P(  2,  0);\n  p +=           36. * P(  4,  0);\n  p +=            1. * P(  6,  0);\n  p +=            6. * P( -5,  1);\n  p +=           90. * P( -3,  1);\n  p +=          300. * P( -1,  1);\n  p +=          300. * P(  1,  1);\n  p +=           90. * P(  3,  1);\n  p +=            6. * P(  5,  1);\n  p +=           15. * P( -4,  2);\n  p +=          120. * P( -2,  2);\n  p +=          225. * P(  0,  2);\n  p +=          120. * P(  2,  2);\n  p +=           15. * P(  4,  2);\n  p +=           20. * P( -3,  3);\n  p +=           90. * P( -1,  3);\n  p +=           90. * P(  1,  3);\n  p +=           20. * P(  3,  3);\n  p +=           15. * P( -2,  4);\n  p +=           36. * P(  0,  4);\n  p +=           15. * P(  2,  4);\n  p +=            6. * P( -1,  5);\n  p +=            6. * P(  1,  5);\n  p +=            1. * P(  0,  6);\n  p /= 4096.;\n#elif (KERNEL == 7)  // eventually a 7x7 version\n  float div = 0.;\n  div +=            1. * DIV(  0, -3);\n  div +=            3. * DIV( -1, -2);\n  div +=            4. * DIV(  0, -2);\n  div +=            3. * DIV(  1, -2);\n  div +=            3. * DIV( -2, -1);\n  div +=            8. * DIV( -1, -1);\n  div +=           25. * DIV(  0, -1);\n  div +=            8. * DIV(  1, -1);\n  div +=            3. * DIV(  2, -1);\n  div +=            1. * DIV( -3,  0);\n  div +=            4. * DIV( -2,  0);\n  div +=           25. * DIV( -1,  0);\n  div +=           80. * DIV(  0,  0);\n  div +=           25. * DIV(  1,  0);\n  div +=            4. * DIV(  2,  0);\n  div +=            1. * DIV(  3,  0);\n  div +=            3. * DIV( -2,  1);\n  div +=            8. * DIV( -1,  1);\n  div +=           25. * DIV(  0,  1);\n  div +=            8. * DIV(  1,  1);\n  div +=            3. * DIV(  2,  1);\n  div +=            3. * DIV( -1,  2);\n  div +=            4. * DIV(  0,  2);\n  div +=            3. * DIV(  1,  2);\n  div +=            1. * DIV(  0,  3);\n  div /= 256.;\n  float p = 0.;\n  p +=            1. * P(  0, -4);\n  p +=            4. * P( -1, -3);\n  p +=            4. * P(  1, -3);\n  p +=            6. * P( -2, -2);\n  p +=           16. * P(  0, -2);\n  p +=            6. * P(  2, -2);\n  p +=            4. * P( -3, -1);\n  p +=           24. * P( -1, -1);\n  p +=           24. * P(  1, -1);\n  p +=            4. * P(  3, -1);\n  p +=            1. * P( -4,  0);\n  p +=           16. * P( -2,  0);\n  p +=           36. * P(  0,  0);\n  p +=           16. * P(  2,  0);\n  p +=            1. * P(  4,  0);\n  p +=            4. * P( -3,  1);\n  p +=           24. * P( -1,  1);\n  p +=           24. * P(  1,  1);\n  p +=            4. * P(  3,  1);\n  p +=            6. * P( -2,  2);\n  p +=           16. * P(  0,  2);\n  p +=            6. * P(  2,  2);\n  p +=            4. * P( -1,  3);\n  p +=            4. * P(  1,  3);\n  p +=            1. * P(  0,  4);\n  p /= 256.;\n#elif (KERNEL == 3)\n  float div = 0.;\n  div +=            1. * DIV(  0, -1);\n  div +=            1. * DIV( -1,  0);\n  div +=            4. * DIV(  0,  0);\n  div +=            1. * DIV(  1,  0);\n  div +=            1. * DIV(  0,  1);\n  div /= 16.;\n  float p = 0.;\n  p +=            1. * P(  0, -2);\n  p +=            2. * P( -1, -1);\n  p +=            2. * P(  1, -1);\n  p +=            1. * P( -2,  0);\n  p +=            4. * P(  0,  0);\n  p +=            1. * P(  2,  0);\n  p +=            2. * P( -1,  1);\n  p +=            2. * P(  1,  1);\n  p +=            1. * P(  0,  2);\n  p /= 16.;\n#endif\n  fragColor = vec4(0., 0., 0., div + p);\n}\n",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Compute pressure gradient and subtracts to velocity\n// bufD = bufA - ∇(bufC) - nu.∇²(bufA) = new velocity\n//\n// Created by Pascal Massimino [skal] (2022)\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\nvoid mainImage(out vec4 fragColor, in vec2 p) {\n  vec2 norm = 1. / iResolution.xy;\n  p *= norm;\n  vec2 dx = vec2(norm.x,     0.);\n  vec2 dy = vec2(    0., norm.y);\n  // compute grad(p) and subtract to velocity field\n  float gx = texture(iChannel0, p + dx).w\n           - texture(iChannel0, p - dx).w;\n  float gy = texture(iChannel0, p + dy).w\n           - texture(iChannel0, p - dy).w;\n  vec4 v = texture(iChannel1, p);\n  v.xy -= 0.5 * vec2(gx, gy);\n  // diffusion\n  vec2 laplacian = 4. * v.xy - (\n     texture(iChannel1, p + dx).xy + texture(iChannel1, p - dx).xy,\n     texture(iChannel1, p - dy).xy + texture(iChannel1, p - dy).xy);\n  v.xy += nu * laplacian;\n  v.zw = texture(iChannel1, p).zw;\n  fragColor = v;\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// some constants\n// Created by Pascal Massimino [skal] (2022)\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\nconst float dt = 1.0;     // step\nconst float Vo = 1.5;     // initial / typical velocity\nconst float nu = 0.0001;  // viscosity\n\nconst bool use_airfoil = true;    // balls or airfoil\n\n#define KERNEL 29 // kernel for pressure solver: 29, 11, 7 or 3!\n#define RUNGE_KUTTA 4 // order. 4, 2 (midpoint) or 1 (=Euler)\n\n// 0 = tracers, 1 = velocity, 2 = pressure, 3 = divergence\nint show_what = 0;\n\n// airfoil characteristics\nconst float FoilCamber = 0.3;   // higher = more bent\nconst float FoilSize = 120.;\nconst float FoilAlpha = 25.;   // angle of attack in degrees\n\nconst float kRadius = 12.;  // ball radius\n\nbool IsObstacle(vec2 mouse, vec2 pos) {\n  if (length(mouse) < 0.01) mouse = vec2(100., 180.);\n  pos = mouse - pos;\n\n  if (!use_airfoil) {    // array of balls:\n    return (length(vec2(pos.x, fract(abs(pos.y) / 50.) * 50.)) < kRadius);\n  }\n  // Airfoil profile following more or less NACA formulae\n  // see: https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_symmetrical_4-digit_NACA_airfoil\n  float alpha = 3.1415 * (180. + FoilAlpha) / 180.;  // angle of attack\n  mat2 M = mat2(cos(alpha), sin(alpha), -sin(alpha), cos(alpha)) / FoilSize;\n  pos = M * pos;\n  float x = pos.x, x2 = x * x;\n  if (x < 0. || x > 1.) return false;\n  // mor or le\n  // mean camber line\n  float xm = x * (1. - x) * FoilCamber;\n  // thickness\n  float th = 0.2969 * sqrt(x) - 0.1260 * x - 0.3516 * x2 + 0.2843 * x * x2 - 0.1036 * x2 * x2;\n  float y = pos.y - xm;\n  return abs(y) < th;\n}\n\n// For velocity field display:\nconst float kCell = 40.;\nconst float kVelocityUnit = 20.;\n\nfloat SegmentDistance(vec2 p, vec2 p1, vec2 p2) {\n  vec2 dir = p2 - p1;\n  float d2 = dot(dir, dir);\n  float d3 = dot(dir, p - p1) / d2;\n  float frac = clamp(d3, 0.0, 1.0);\n  return length(p - p1 - frac * dir);\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

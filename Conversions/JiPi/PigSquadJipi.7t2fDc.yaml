@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: PigSquadJipi
+  id: PigSquadJipi
+  kernel: PigSquadJipi
+  name: PigSquadJipi
+shader:
+  author: N.N.
+  description: A Shader to celebrate the Portland Indie Game Squad's 9th Anniversary.
+    Happy developing everyone!
+  id: 7t2fDc
+  name: Pig Squad JiPi
+  parent:
+    id: WdBcRh
+    name: Pig Squad 9 Year Anniversary
+    url: https://www.shadertoy.com/view/WdBcRh
+  tags:
+  - raymarch
+  - sdf
+  - pig
+  - portland
+  - indiegames
+  url: https://www.shadertoy.com/view/7t2fDc

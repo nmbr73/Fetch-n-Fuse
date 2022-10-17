@@ -1,0 +1,46 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "slVcz3",
+  "date": "0",
+  "viewed": 0,
+  "name": "Crosshatch JiPi",
+  "description": "A simple crosshatching filter combined with edge detection to form a quick and dirty appearance of a pencil sketch.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simple",
+   "crosshatch",
+   "edgedetect"
+  ],
+  "hasliked": 0,
+  "parentid": "MdX3Dr",
+  "parentname": "Crosshatch"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "// The brightnesses at which different hatch lines appear\nfloat hatch_1 = 0.8;\nfloat hatch_2 = 0.6;\nfloat hatch_3 = 0.3;\nfloat hatch_4 = 0.15;\n\n// How close together hatch lines should be placed\nfloat density = 10.0;\n\n// How wide hatch lines are drawn.\nfloat width = 1.0;\n\n// enable GREY_HATCHES for greyscale hatch lines\n#define GREY_HATCHES\n\n// enable COLOUR_HATCHES for coloured hatch lines\n#define COLOUR_HATCHES\n\n#ifdef GREY_HATCHES\nfloat hatch_1_brightness = 0.8;\nfloat hatch_2_brightness = 0.6;\nfloat hatch_3_brightness = 0.3;\nfloat hatch_4_brightness = 0.0;\n#else\nfloat hatch_1_brightness = 0.0;\nfloat hatch_2_brightness = 0.0;\nfloat hatch_3_brightness = 0.0;\nfloat hatch_4_brightness = 0.0;\n#endif\n\nfloat d = 1.0; // kernel offset\n\nfloat lookup(vec2 p, float dx, float dy)\n{\n    vec2 uv = (p.xy + vec2(dx * d, dy * d)) / iResolution.xy;\n    vec4 c = texture(iChannel0, uv.xy);\n\t\n\t// return as luma\n    return 0.2126*c.r + 0.7152*c.g + 0.0722*c.b;\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\t//\n\t// Inspired by the technique illustrated at\n\t// http://www.geeks3d.com/20110219/shader-library-crosshatching-glsl-filter/\n\t//\n\tfloat ratio = iResolution.y / iResolution.x;\n\tfloat coordX = fragCoord.x / iResolution.x;\n\tfloat coordY = fragCoord.y / iResolution.x;\n\tvec2 dstCoord = vec2(coordX, coordY);\n\tvec2 srcCoord = vec2(coordX, coordY / ratio);\t\n\tvec2 uv = srcCoord.xy;\n\n\tvec3 res = vec3(1.0, 1.0, 1.0);\n    vec4 tex = texture(iChannel0, uv);\n    float brightness = (0.2126*tex.x) + (0.7152*tex.y) + (0.0722*tex.z);\n#ifdef COLOUR_HATCHES\n\t// check whether we have enough of a hue to warrant coloring our\n\t// hatch strokes.  If not, just use greyscale for our hatch color.\n\tfloat dimmestChannel = min( min( tex.r, tex.g ), tex.b );\n\tfloat brightestChannel = max( max( tex.r, tex.g ), tex.b );\n\tfloat delta = brightestChannel - dimmestChannel;\n\tif ( delta > 0.1 )\n\t\ttex = tex * ( 1.0 / brightestChannel );\n\telse\n\t\ttex.rgb = vec3(1.0,1.0,1.0);\n#endif // COLOUR_HATCHES\n  \n    if (brightness < hatch_1) \n    {\n\t\tif (mod(fragCoord.x + fragCoord.y, density) <= width)\n\t\t{\n#ifdef COLOUR_HATCHES\n\t\t\tres = vec3(tex.rgb * hatch_1_brightness);\n#else\n\t\t\tres = vec3(hatch_1_brightness);\n#endif\n\t\t}\n    }\n  \n    if (brightness < hatch_2) \n    {\n\t\tif (mod(fragCoord.x - fragCoord.y, density) <= width)\n\t\t{\n#ifdef COLOUR_HATCHES\n\t\t\tres = vec3(tex.rgb * hatch_2_brightness);\n#else\n\t\t\tres = vec3(hatch_2_brightness);\n#endif\n\t\t}\n    }\n  \n    if (brightness < hatch_3) \n    {\n\t\tif (mod(fragCoord.x + fragCoord.y - (density*0.5), density) <= width)\n\t\t{\n#ifdef COLOUR_HATCHES\n\t\t\tres = vec3(tex.rgb * hatch_3_brightness);\n#else\n\t\t\tres = vec3(hatch_3_brightness);\n#endif\n\t\t}\n    }\n  \n    if (brightness < hatch_4) \n    {\n\t\tif (mod(fragCoord.x - fragCoord.y - (density*0.5), density) <= width)\n\t\t{\n#ifdef COLOUR_HATCHES\n\t\t\tres = vec3(tex.rgb * hatch_4_brightness);\n#else\n\t\t\tres = vec3(hatch_4_brightness);\n#endif\n\t\t}\n    }\n\t\n\tvec2 p = fragCoord.xy;\n    \n\t// simple sobel edge detection,\n\t// borrowed and tweaked from jmk's \"edge glow\" filter, here:\n\t// https://www.shadertoy.com/view/Mdf3zr\n    float gx = 0.0;\n    gx += -1.0 * lookup(p, -1.0, -1.0);\n    gx += -2.0 * lookup(p, -1.0,  0.0);\n    gx += -1.0 * lookup(p, -1.0,  1.0);\n    gx +=  1.0 * lookup(p,  1.0, -1.0);\n    gx +=  2.0 * lookup(p,  1.0,  0.0);\n    gx +=  1.0 * lookup(p,  1.0,  1.0);\n    \n    float gy = 0.0;\n    gy += -1.0 * lookup(p, -1.0, -1.0);\n    gy += -2.0 * lookup(p,  0.0, -1.0);\n    gy += -1.0 * lookup(p,  1.0, -1.0);\n    gy +=  1.0 * lookup(p, -1.0,  1.0);\n    gy +=  2.0 * lookup(p,  0.0,  1.0);\n    gy +=  1.0 * lookup(p,  1.0,  1.0);\n    \n\t// hack: use g^2 to conceal noise in the video\n    float g = gx*gx + gy*gy;\n\tres *= (1.0-g);\n\t\n\tfragColor = vec4(res, 1.0);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

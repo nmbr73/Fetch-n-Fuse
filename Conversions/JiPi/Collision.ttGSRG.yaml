@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Collision
+  id: Collision
+  kernel: Collision
+  name: Collision
+shader:
+  author: avin
+  description: collision visualisation with flashes
+  id: ttGSRG
+  name: Collision
+  tags:
+  - collision
+  - flash
+  url: https://www.shadertoy.com/view/ttGSRG

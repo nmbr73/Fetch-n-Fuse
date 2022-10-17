@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MationiRandomColorBorder
+  id: MationiRandomColorBorder
+  kernel: MationiRandomColorBorder
+  name: MationiRandomColorBorder
+shader:
+  author: juanpetrik
+  description: Random Color Border
+  id: fsdcR4
+  name: Mationi - Random Color Border
+  tags:
+  - mationi
+  url: https://www.shadertoy.com/view/fsdcR4

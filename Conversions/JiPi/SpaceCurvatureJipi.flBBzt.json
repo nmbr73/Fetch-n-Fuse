@@ -1,0 +1,100 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flBBzt",
+  "date": "0",
+  "viewed": 0,
+  "name": "Space curvature JiPi",
+  "description": "generalise Join3D from [iq] https://www.shadertoy.com/view/3ld3DM\n=> opCurveSpace (add a 2 rotations, generic 2D shape profile, generic 3D shape) - (not exact)\nRq: BumpMap is a bit triky cause it requires an uvw space normal",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "3d",
+   "torsion"
+  ],
+  "hasliked": 0,
+  "parentid": "tdyBDh",
+  "parentname": "Space curvature"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by sebastien durand - 01/2019\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n// *****************************************************************************\n// Add 2 rotations to [iq]  https://www.shadertoy.com/view/3ld3DM\n// See also           [dr2] https://www.shadertoy.com/view/3l3GD7\n// *****************************************************************************\n\n// Buf B: Calculate distance to scene\n// Image: DOF post processing\n\n\n#define WITH_DOF\n#define WITH_CONE_TEST\n\n\n#ifdef WITH_DOF\n\nconst float aperture = 2.;\n\nconst float cosAngle = cos(radians(aperture/2.));\nconst float GA = 2.399;  // golden angle = 2pi/(1+phi)\nconst mat2 rot = mat2(cos(GA),sin(GA),-sin(GA),cos(GA));\n    \nbool inCone(vec3 p, vec3 o, vec3 n, float side) {\n\treturn side*dot(normalize(o-p), n) >= cosAngle;\n}\n\n//--------------------------------------------------------------------------\n// eiffie's code for calculating the aperture size for a given distance...\nfloat coc(float t) {\n\treturn max(t*.08, (2./iResolution.y) * (1.+t));\n}\n\nvec3 RD(const vec2 q) {\n    return normalize(vec3((2.* q.x - 1.) * iResolution.x/iResolution.y,  (2.* q.y - 1.), 2.));\n}\n\nvec3 dof(sampler2D tex, vec2 uv, float fdist) {\n    \n    const float amount = 1.;\n\tvec4 colMain = texture(tex, uv);\n    \n    fdist = min(30., fdist);\n    float rad = min(.3, coc(abs(colMain.w-fdist))),//.3; // TODO calculate this for Max distance on picture\n    \t  r=6.;\n    \n    vec3 cn = RD(uv),    // Cone axis    \n         co = cn*fdist,  // Cone origin\n         sum = vec3(0.),  \n     \t bokeh = vec3(1),\n         acc = vec3(0),\n         pixPos;\n    vec2 pixScreen,\n         pixel = 1./iResolution.xy,        \n         angle = vec2(0, rad);\n    vec4 pixCol;\n    \n    bool isInCone = false;\n\tfor (int j=0;j<32;j++) {  \n        r += 1./r;\n\t    angle *= rot;\n        pixScreen = uv + pixel*(r-1.)*angle; // Neighbourg Pixel\n        pixCol = texture(tex, pixScreen);    // Color of pixel (w is depth)      \n        pixPos = pixCol.w * RD(pixScreen);   // Position of 3D point in camera base\n#ifdef WITH_CONE_TEST\n        if (inCone(pixPos, co, cn, sign(fdist - pixCol.w))) \n#endif            \n        {        // true if the point is effectivelly in the cone\n            bokeh = pow(pixCol.xyz, vec3(9.)) * amount +.1;\n            acc += pixCol.xyz * bokeh;\t\t\t\n            sum += bokeh;\n            isInCone = true;\n        }\n\t}\n        \n \treturn (!isInCone) ? colMain.xyz : // Enable to deal with problem of precision when at thin begining of the cone\n       acc.xyz/sum;\n}\n\n\nvoid mainImage(out vec4 fragColor,in vec2 fragCoord) {\n\tvec2 r = iResolution.xy, m = iMouse.xy / r,\n\t     q = fragCoord.xy/r.xy;\n    \n    // Animation\n \tfloat anim = .1*iTime,\n   \t   aCam = 10. + 4.*anim + 8.*m.x;\n\n    // Camera\n\tvec3 ro = 1.5*vec3(cos(aCam), 1.2, .2 + sin(aCam));\n\t\t\t\n  \t// DOF\n    float fdist = length(ro-vec3(0,.3,0));\n    vec3 c = dof(iChannel0,q,fdist); \n    \n    // Vigneting\n    c *= pow(16.*q.x*q.y*(1.-q.x)*(1.-q.y), .32); \n    \n    fragColor = vec4(c,1.);\n}\n\n#else \n\n\nvoid mainImage(out vec4 fragColor,in vec2 fragCoord)\n{\n\tvec2 uv = gl_FragCoord.xy / iResolution.xy;\n    vec4 c = texture(iChannel0,uv);\n    c *= pow(16.*uv.x*uv.y*(1.-uv.x)*(1.-uv.y), .5); // Vigneting\n\tfragColor = c; //*.01; \n}\n\n#endif",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dX3Rn",
+     "filepath": "/media/a/bd6464771e47eed832c5eb2cd85cdc0bfc697786b903bfd30f890f9d4fc36657.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGzr",
+     "filepath": "/media/a/08b42b43ae9d3c0605da11d0eac86618ea888e62cdd9518ee8b9097488b31560.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Add second rotation to [iq]  https://www.shadertoy.com/view/3ld3DM\n// See also               [dr2] https://www.shadertoy.com/view/3l3GD7\n\n// -------------------------------\n// Choose shapes\n// -------------------------------\n\n//#define SD2D(uv,w) sdBox(uv, w)\n#define SD2D(uv,w) sdRoundedX(uv, w.x, w.y)\n//#define SD2D(uv,w) sdCircle(uv, w)\n//#define SD2D(uv,w) sdBox2(uv, w)\n\n//#define SD3D(uv,w) sdBox3(uv, vec3(w.x,h,w.x))\n#define SD3D(uv,w) .8*sdMessage3D(-uv.yzx+vec3(l+.24,0,0), txt,.5,w.x)\n\n// -------------------------------\n// Render options\n// -------------------------------\n\n#define WITH_TEXTURE\n#define WITH_BUMPMAP\n#define WITH_GRIB\n//#define WITH_AA\n\n// -------------------------------\n#define GROUND 0\n#define BIDULE 1\n// -------------------------------\n\nmat2 rot(float a) {\n    float ca = cos(a), sa = sin(a);\n    return mat2( ca, -sa, sa, ca );\n}\n\n\n// --------------------------------------------------------\n// Inspired by [iq] https://www.shadertoy.com/view/3ld3DM\n// --------------------------------------------------------\n\nvec3 opCurveSpace( in vec3 p, in float h, in vec3 r, out vec2 q, out float ra) {\n    float s = sign(r.x);\n    if (s*r.x<.001) r.x = .001;\n    if (abs(r.y)<.001) r.y = .001;\n    if (abs(r.z)<.001) r.z = .001;\n    vec2 sc = vec2(sin(r.x),cos(r.x)); // could de precalculated\n    mat2 rot2 = rot(r.y);            // could de precalculated\n    ra = .5*h/r.x;           // Distance\n    p.xz *= rot2;          // Apply 2nd rotation\n    p.x -= ra;             // Recenter\n    q = p.xy - 2.*sc*max(0.,dot(sc,p.xy));  // Reflect\n    vec3 uvw = vec3(ra-length(q)*s,         // New space coordinates \n                    ra*atan(s*p.y,-s*p.x),\n                    p.z);\n    uvw.zx *= rot(r.y+r.z*(uvw.y/h));        // Inverse 2nd rotation\n    return uvw;\n}\n\n\n// -- Text ------------------------------------------------\n// Adapted from [FabriceNeyret2] https://www.shadertoy.com/view/llyXRW\n// --------------------------------------------------------\n\n//int[] gtxt = int[] (83,80,65,67,69);\nint[] gtxt1 = int[] (32,74,105,80,105,32);\nint[] gtxt2 = int[] (110,109,98,114,55,51);\n\nfloat sdFont(in vec2 p, in int c) {\n    vec2 uv = (p + vec2(float(c%16), float(15-c/16)) + .5)/16.;\n    return max(max(abs(p.x) - .25, max(p.y - .35, -.38 - p.y)), textureLod(iChannel2, uv, 0.).w - 127./255.);\n}\n\nfloat sdMessage2D(in vec2 p, in int[6] txt) { \n \tfloat d = 99., w = .45; // letter width  \n    for (int id = 0; id<6; id++){\n    \td = min(d, sdFont(p, txt[id]));   \n    \tp.x -= w; \n    }\n    return d-.015; //0.015\n}\n\nfloat sdMessage3D(in vec3 p, in int[6] txt, in float scale, in float h) { \n    return opExtrussion(p, sdMessage2D(p.xy/scale, txt)*scale, h);\n}\n\n// Based on [iq] https://www.shadertoy.com/view/3ld3DM\nvec4 sdJoint3D( in vec3 p, in float l, in vec3 rot, in vec2 w,in int[6] txt) {\n    vec2 q; float ra;\n    vec3 uvw = opCurveSpace(p, l, rot, q, ra);\n#ifdef SD3D   \n    float d = SD3D(uvw, w);\n#else // \n    // 2D Profile\n    float ww = 1.2*max(w.x,w.y);\n    float dTop = length(vec2(q.x+ra-clamp(q.x+ra,-ww,ww), q.y))*sign(-q.y);\n    \n    // Profile  \n    float d = SD2D(uvw.xz, w);\n\td = max(dTop, d);\n#endif\n    return vec4(d, uvw );\n}\n\nvec4 sdJoint3DSphere( in vec3 p, in float h, in vec3 rot, in float w) {   \n    vec2 q; float ra; // only use in 2D\n    vec3 uvw = opCurveSpace(p, h, rot, q, ra);\n    float d = sdVerticalCapsule(uvw, h, w);\n \treturn vec4(d, uvw );\n}\n\n// --------------------------------------------------------\n//   The Scene\n// --------------------------------------------------------\n\nvec4 map4( in vec3 pos ) {\n    float a = 1.*sin(iTime*1.5), b = 1.3*sin(iTime*2.5);\n    //vec4 d1 = sdJoint3DSphere(pos-vec3(0.,0., .4), .8, vec3(b,a,a*b), .2 ),\n    vec4 d1 = sdJoint3D(pos-vec3(0.,0., .4), 1.1, vec3(b,a,a*b),vec2(.2,.04), gtxt1 ),\n         d2 = sdJoint3D(pos-vec3(0.,0.,-.4), .8, vec3(a,b,1.5*sin(a+iTime*2.1)), vec2(.2,.04), gtxt2 );\n    d1.w += .4;\n    d2.w -= .4;\n    return d1.x<d2.x ? d1 : d2; // Without ground\n}\n\nfloat map(in vec3 p) {\n    return min(map4(p).x, p.y); // Distance with ground\n}\n\n// --------------------------------------\n// Shading Tools\n// --------------------------------------\n\nvec3 normal(in vec3 p, in vec3 ray, in float t) {\n\tfloat pitch = .4 * t / iResolution.x;\n    vec2 d = vec2(-1,1) * pitch;\n\tvec3 p0 = p+d.xxx, p1 = p+d.xyy, p2 = p+d.yxy, p3 = p+d.yyx;\n\tfloat f0 = map(p0), f1 = map(p1), f2 = map(p2), f3 = map(p3);\n\tvec3 grad = p0*f0+p1*f1+p2*f2+p3*f3 - p*(f0+f1+f2+f3);\n\treturn normalize(grad - max(.0, dot(grad,ray))*ray);\n}\n\nfloat SoftShadow(in vec3 ro, in vec3 rd) {\n    float r = 1., h, t = .005+hash13(ro)*.02, dt = .01;\n    for(int i=0; i<48; i++ ) {\n\t\th = map4(ro + rd*t).x;\n\t\tr = min(r, 3.*h/t);\n\t\tt += dt;\n        dt += .0015;\n        if (h<1e-4) break;\n    }\n    return clamp(r, 0., 1.);\n}\n\nfloat CalcAO(in vec3 p, in vec3 n) {\n    float d, h=.01, a=.0, s=1.;\n    for(int i=0; i<4; i++) {\n        d = map(n * h + p);\n        a += (h-d)*s;\n        s *= .8;\n        h += .03;\n    }\n    return clamp(1.-4.*a, 0., 1.);\n}\n\nfloat isGridLine(vec3 p, vec3 v) {\n    vec3 k = smoothstep(.2,.8,abs(mod(p+v*.5, v)-v*.5)/.01);\n    return k.x * k.y * k.z;\n}\n\n// See https://iquilezles.org/articles/palettes for more information\nvec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d ) {\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\n#ifdef WITH_BUMPMAP\n//----------------------------------\n// Texture 3D\n//----------------------------------\n// Need to be in UVW space !\nvec3 normalUVW(in vec3 p, in vec3 n, in float t) {   \n\tfloat pitch = .4 * t / iResolution.x;\n    return normalize(map4(p+n*pitch).yzw - map4(p).yzw);\n}\n\n// Tri-Planar blending function. Based on an old Nvidia writeup:\n// GPU Gems 3 - Ryan Geiss: http://http.developer.nvidia.com/GPUGems3/gpugems3_ch01.html\nvec3 tex3D( sampler2D tex, in vec3 p, in vec3 n ){  \n    n = max(n*n, .001);\n    n /= n.x + n.y + n.z;  \n\treturn (texture(tex, p.yz)*n.x + texture(tex, p.zx)*n.y + texture(tex, p.xy)*n.z).xyz;\n}\n\n// Texture bump mapping. Four tri-planar lookups, or 12 texture lookups in total. I tried to \n// make it as concise as possible. Whether that translates to speed, or not, I couldn't say.\nvec3 doBumpMap( sampler2D tx, in vec3 p, in vec3 n, in vec3 nUVW, float bf){   \n    const vec2 e = vec2(.001, 0);\n    // Three gradient vectors rolled into a matrix, constructed with offset greyscale texture values.    \n    mat3 m = mat3( tex3D(tx, p - e.xyy, nUVW), tex3D(tx, p - e.yxy, nUVW), tex3D(tx, p - e.yyx, nUVW));\n    vec3 g = vec3(.299, .587, .114)*m; // Converting to greyscale.\n    g = (g - dot(tex3D(tx,  p , nUVW), vec3(.299, .587, .114)) )/e.x; \n    g -= nUVW*dot(nUVW, g);\n    return normalize( n + g*bf ); // Bumped normal. \"bf\" - bump factor.\n}\n#endif\n\n//----------------------------------\n// Shading\n//----------------------------------\n\nvec3 render(in vec3 ro, in vec3 rd, in float res, in vec3 pos, in vec3 n, in vec3 cobj, in vec3 light) {\n    float \n         ao = CalcAO(pos, n),\n    \t sh = SoftShadow( pos, light),\n         amb = clamp(.5+.5*n.y, .0, 1.),\n         dif = sh*clamp(dot( n, light ), 0., 1.),\n         pp = clamp(dot(reflect(-light,n), -rd),0.,1.),\n         fre = (.7+.3*dif)* ao*pow( clamp(1.+dot(n,rd),0.,1.), 2.);\n    vec3 brdf = ao*.5*(amb)+ sh*ao*1.*dif*vec3(1.,.9,.7)*vec3(1.,.25,.05),\n         sp = sh*5.*pow(pp,9.)*vec3(1., .6, .2),\n\t     col = cobj*(brdf + sp) + fre*(.5*cobj+.5);\n    return mix(.1*vec3(1.,1.,.8),col,2.*dot(n,-rd));\n}\n\n// --------------------------------------\n// Main\n// --------------------------------------\n\nvoid mainImage2(out vec4 fragColor, in vec2 fragCoord ) {\n\n    vec2 r = iResolution.xy, \n         m = iMouse.xy / r,\n\t     q = fragCoord.xy/r.xy, pix = q+q-1.;\n\tpix.x *= r.x/r.y;\n    \n    float anim = .1*iTime,\n     \t  tTensionCol = smoothstep(.8,1.2,anim),\n\t\t  aCam = 10. + 4.*anim + 8.*m.x;\n    \n    // Camera\n\tvec3 ro = 1.5*vec3(cos(aCam), 1.2, .2 + sin(aCam)),\n         w = normalize(vec3(0,.3,0) - ro), \n         u = normalize(cross(w, vec3(0,1,0))), \n         v = cross(u, w),\n         rd = normalize(pix.x * u + pix.y * v + w+w);\n\t\t\t\n    // Ground intersection (faster than ray marching)\n    float tg = -ro.y/rd.y; \n    float tmax = min(tg,5.5);\n\t// Ray marching\n    int obj = GROUND;\n    float h = .1, t = .01*hash13(q.xyx);\n    for(int i=0;i<200;i++) { \n        if (h<5.e-5 || t>tmax) break;\n        t += h = map4(ro + rd*t).x;\n    }\n    if (h<5.e-5) {\n        obj = BIDULE;\n    } else {\n        t = tg;\n    }\n    \n\t// Light\n    vec3 lightPos = vec3(0.,1.2, .7);\n            \n    // Calculate color on point\n    vec3 pos = ro + t * rd;\n    vec3 n = obj == GROUND ? vec3(0,1,0) : normal(pos,rd,t);\n    vec3 uvw = obj == GROUND ? pos : map4(pos).yzw; \t\t\n    vec3 cobj = vec3(1.);\n\tfloat grib = 1.;\n#ifdef WITH_TEXTURE\n    float k = hash13(floor((uvw+.15)/.3));\n    cobj = pal(k, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,0.5),vec3(0.8,0.90,0.30));\n    cobj = mix(vec3(1), sqrt(cobj), step(.5,k));\n#endif      \n#ifdef WITH_GRIB\n    grib = isGridLine(uvw+.15, vec3(.3));\n    cobj = mix(vec3(.1),cobj,grib);\n#endif\n#ifdef WITH_BUMPMAP\n    vec3 nuvw = obj == GROUND ? n : normalUVW(pos,n,t);\n    n = grib < .7 ? n : doBumpMap(iChannel1, uvw, n, nuvw, .003);\n    // keep in visible side\n    n = normalize(n - max(.0,dot(n,rd))*rd);\n#endif   \n \n    // Shading\n    vec3 c = render(ro, rd, t, pos, n, cobj, normalize(lightPos-pos));\n\n#ifndef WITH_TEXTURE\n    // Add light\n    vec3 col = mix(vec3(0.,.25,1.), vec3(1.,.25,0.), smoothstep(-.1,.1,cos(.5*iTime)));\n    c += .1*(.03+col/pow(.1+length(pos-vec3(0,.4,0)),1.5));\n#endif        \n\n\tfragColor = vec4(pow(clamp(c,0.,1.), vec3(.43)), t);\t\n}\n\n\n// -- Anti aliasing ----------------------------------\n\n#ifdef WITH_AA\nvoid mainImage(out vec4 O, in vec2 U ) {\n    vec4 T;                                     \n    for (int k=0; k<4; k++, O+=T)               \n        mainImage2(T, U+.25*vec2(k%2-1,k/2-1));  \n    O /= 4.;\n}\n#else\nvoid mainImage(out vec4 O, in vec2 U ) {\n    mainImage2(O, U);  \n}\n#endif",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\nfloat hash13( const in vec3 p ) {\n\tfloat h = dot(p,vec3(127.1,311.7,758.5453123));\t\n    return fract(sin(h)*43758.5453123);\n}\n\n\n// [iq] https://www.shadertoy.com/view/llGSzw\nvec3 hash3( uint n ) \n{\n    // integer hash copied from Hugo Elias\n\tn = (n << 13U) ^ n;\n    n = n * (n * n * 15731U + 789221U) + 1376312589U;\n    uvec3 k = n * uvec3(n,n*16807U,n*48271U);\n    return vec3( k & uvec3(0x7fffffffU))/float(0x7fffffff);\n}\n\nfloat hash1( uint n ) \n{\n    // integer hash copied from Hugo Elias\n\tn = (n << 13U) ^ n;\n    n = n * (n * n * 15731U + 789221U) + 1376312589U;\n    return float( n & uvec3(0x7fffffffU))/float(0x7fffffff);\n}\n\n\n// --------------------------------------------------------\n// [iq] https://iquilezles.org/articles/distfunctions\n// --------------------------------------------------------\n\nfloat opExtrussion( in vec3 p, in float sdf, in float h) {\n    vec2 w = vec2(sdf, abs(p.z) - h);\n  \treturn min(max(w.x,w.y),0.) + length(max(w,0.));\n}\n\nfloat sdCircle( in vec2 p, in vec2 w) {\n    float d = length(p)- w.x;\n    return max(d, -w.y-d);\n}\n\nfloat sdRoundedX( in vec2 p, in float w, in float r ) {\n    p = abs(p);\n    return length(p-min(p.x+p.y,w)*0.5) - r;\n}\n\nfloat sdVerticalCapsule( vec3 p, float h, float r ) {\n  p.y -= clamp( p.y, 0.0, h );\n  return length( p ) - r;\n}\n\nfloat sdBox( in vec2 p, in vec2 b ) {\n    vec2 d = abs(p)-b;\n    return length(max(d,0.0)) + min(max(d.x,d.y),0.0);\n}\n\nfloat sdBox2( in vec2 p, in vec2 b ) {\n    float d = sdBox(p, vec2(.8*b.x))-.01;\n    return max(d, -b.y-d);\n}\n\nfloat sdBox3( vec3 p, vec3 b ) {\n  vec3 q = abs(p) - b;\n  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);\n}\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

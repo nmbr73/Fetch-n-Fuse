@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: CreepingWaves
+  id: CreepingWaves
+  kernel: CreepingWaves
+  name: CreepingWaves
+shader:
+  author: thesage1014
+  description: A simple experiment with using a buffer. Initially I was experimenting
+    with game of life from the yt video https://www.youtube.com/watch?v=xh61Ol2X4GA
+  id: 7djcWR
+  name: Creeping Waves
+  tags:
+  - buffer
+  url: https://www.shadertoy.com/view/7djcWR

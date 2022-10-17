@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: ReactionDiffusionStampsJipi
+  id: ReactionDiffusionStampsJipi
+  kernel: ReactionDiffusionStampsJipi
+  name: ReactionDiffusionStampsJipi
+shader:
+  author: N.N.
+  description: 'A reaction-diffusion simulation (3 reaction-diffusion passes per image
+    evaluation) with boundary conditions.
+
+    Click the mouse to add stamps manually.
+
+    I used the same effect here: https://www.pouet.net/prod.php?which=89693'
+  id: ssKyzz
+  name: Reaction-Diffusion-Stamps JiPi
+  parent:
+    id: sdVyzR
+    name: Reaction-Diffusion-Stamps
+    url: https://www.shadertoy.com/view/sdVyzR
+  tags:
+  - mouse
+  - diffusion
+  - multipass
+  - reaction
+  url: https://www.shadertoy.com/view/ssKyzz

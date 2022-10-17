@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: WaveSimulationJipi
+  id: WaveSimulationJipi
+  kernel: WaveSimulationJipi
+  name: WaveSimulationJipi
+shader:
+  author: N.N.
+  description: Click to draw waves. Blue and red waves are independent and travel
+    at slightly different speeds.
+  id: 7lBfDG
+  name: Wave Simulation JiPi
+  parent:
+    id: slBBR3
+    name: Wave Simulation
+    url: https://www.shadertoy.com/view/slBBR3
+  tags:
+  - waves
+  - simulation
+  url: https://www.shadertoy.com/view/7lBfDG

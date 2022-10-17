@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: RotatingVolumeRingsJipi
+  id: RotatingVolumeRingsJipi
+  kernel: RotatingVolumeRingsJipi
+  name: RotatingVolumeRingsJipi
+shader:
+  author: N.N.
+  description: Slow. Drag Mouse to rotate.
+  id: 7sGcWw
+  name: Rotating Volume Rings JiPi
+  parent:
+    id: 7syyDh
+    name: Rotating Volume Rings
+    url: https://www.shadertoy.com/view/7syyDh
+  tags:
+  - volume
+  - tori
+  url: https://www.shadertoy.com/view/7sGcWw

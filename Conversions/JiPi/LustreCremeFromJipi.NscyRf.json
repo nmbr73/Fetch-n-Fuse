@@ -1,0 +1,143 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NscyRf",
+  "date": "0",
+  "viewed": 0,
+  "name": "Lustre creme from JiPi",
+  "description": "I've changed the parameters of my [url=https://www.shadertoy.com/view/XsdGWj]video on fire[/url] shader to work without green screen. Her hair's on fire thanks to luster creme now :)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "edgedetection",
+   "videomultipass"
+  ],
+  "hasliked": 0,
+  "parentid": "MscGWX",
+  "parentname": "Lustre creme from ...."
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tfragColor = max(texture(iChannel0,uv),texture(iChannel1,uv+0.002));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4df3zn",
+     "filepath": "/media/a/3405e48f74815c7baa49133bdc835142948381fbe003ad2f12f5087715731153.ogv",
+     "type": "video",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 px = 4.0/vec2(640.0,360.0);\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 tex = pow(texture(iChannel0,uv)*1.3,vec4(1.8));\n    float d = 1.0-smoothstep(0.0,0.08,length(tex));\n    //float d = abs(tex.g - newG);\n    //tex.g = newG * 0.9;\n    if (d > 0.0)\n    {\n        //px*= sin(iTime+uv.yx*3.0)*.35;\n        uv -= 0.5*px;\n        vec4 tex2 = texture(iChannel1,uv);\n        uv += px;\n        tex2 += texture(iChannel1,uv);\n        uv.x -= px.x -.018 *sin(iTime*4.1+tex2.r);\n        uv.y += px.y +.015 * cos(iTime*4.1+tex2.g);\n        tex2 += texture(iChannel1,uv);\n        uv.y -= px.y;\n        tex2 += texture(iChannel1,uv);\n        tex2 /= 4.013;\n        tex2 = clamp(tex2*1.02-0.012,0.0,1.0);\n        tex = max(clamp(tex*(1.0-d),0.0,1.0),mix(tex,tex2,smoothstep(-1.3,0.23,d)));\n     }\n        \n\tfragColor = tex;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 px = 2.5 / vec2(640.0,360.0);\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 tx = texture(iChannel1,uv);\n    float dist = distance(tx,texture(iChannel1,uv+px));\n    px.y *= -1.0;\n    dist += distance(tx,texture(iChannel1,uv+px));\n    px.x *= -1.0;\n    dist += distance(tx,texture(iChannel1,uv+px));\n    px.y *= -1.0;\n    dist += distance(tx,texture(iChannel1,uv+px));\n    uv *= mat2(0.999,0.001,-0.001,0.999);\n\tfragColor = texture(iChannel0,uv*0.995+0.0025)*vec4(0.93,0.91,0.0,0.0)+\n        vec4(smoothstep(0.05,1.3,dist),smoothstep(0.1,2.8,dist),0.0,1.0)*.245;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

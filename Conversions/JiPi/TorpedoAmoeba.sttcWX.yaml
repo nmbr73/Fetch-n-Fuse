@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: TorpedoAmoeba
+  id: TorpedoAmoeba
+  kernel: TorpedoAmoeba
+  name: TorpedoAmoeba
+shader:
+  author: lomateron
+  description: 'why it has color? read user comments in https://www.shadertoy.com/view/Nltyzs
+
+    this one is 3 layers across time of 3x3 pixel grids
+
+    complexity increases faster by increasing pixel reads across time than increasing
+    pixel reads across space'
+  id: sttcWX
+  name: torpedo amoeba
+  tags:
+  - automata
+  url: https://www.shadertoy.com/view/sttcWX

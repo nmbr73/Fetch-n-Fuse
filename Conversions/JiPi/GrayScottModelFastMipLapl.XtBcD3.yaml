@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: GrayScottModelFastMipLapl
+  id: GrayScottModelFastMipLapl
+  kernel: GrayScottModelFastMipLapl
+  name: GrayScottModelFastMipLapl
+shader:
+  author: FabriceNeyret2
+  description: 'revisit [url]https://www.shadertoy.com/view/XtjcWK[/url] using MIPmap
+    to calculate Laplacian (in spirit of Multigrids and Difference of Gaussians)
+
+    Mouse paint.
+
+    x8 accelerated version. See full screen !    ref: [url]http://mrob.com/pub/comp/xmorphia/[/url]'
+  id: XtBcD3
+  name: Gray-Scott Model fast (MIP Lapl)
+  tags:
+  - simulation
+  - mipmap
+  - diffusion
+  - gray
+  - reactiondiffusion
+  - reaction
+  - grayscott
+  - scottmodel
+  url: https://www.shadertoy.com/view/XtBcD3

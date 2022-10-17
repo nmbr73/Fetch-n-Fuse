@@ -1,0 +1,29 @@
+fuse:
+  author: JiPi
+  file: VapeJipi
+  id: VapeJipi
+  kernel: VapeJipi
+  name: VapeJipi
+shader:
+  author: N.N.
+  description: 'Click around!
+
+
+    Feedback-based "smoke" "fluid" effect. Just distorting with a simplex noise field
+    and some magic parameters.'
+  id: NttfD4
+  name: Vape JiPi
+  parent:
+    id: MssyDr
+    name: Vape
+    url: https://www.shadertoy.com/view/MssyDr
+  tags:
+  - noise
+  - fake
+  - perlin
+  - fluid
+  - simplex
+  - smoke
+  - feedback
+  - curlnoise
+  url: https://www.shadertoy.com/view/NttfD4

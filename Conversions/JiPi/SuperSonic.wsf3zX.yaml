@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: SuperSonic
+  id: SuperSonic
+  kernel: SuperSonic
+  name: SuperSonic
+shader:
+  author: wyatt
+  description: "Airfoil accelerates to supersonic speeds.\nYou can set the Mach number\
+    \ to whatever you want in the common tab. \nIn order to accommodate super sonic\
+    \ flow, the simulation is quite viscous. \nAdvection is computed separately\n\
+    Mouse to reset."
+  id: wsf3zX
+  name: Super Sonic
+  tags:
+  - test
+  url: https://www.shadertoy.com/view/wsf3zX

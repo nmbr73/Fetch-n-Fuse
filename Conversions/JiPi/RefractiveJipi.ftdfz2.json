@@ -1,0 +1,67 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftdfz2",
+  "date": "0",
+  "viewed": 0,
+  "name": "Refractive JiPi",
+  "description": "A bit glitchy, and done before, but it's a very simple (and crappy looking) refractive man.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "texture",
+   "experiment",
+   "uv",
+   "jcvd",
+   "refractive"
+  ],
+  "hasliked": 0,
+  "parentid": "XsK3WK",
+  "parentname": "Refractive JCVD"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGRr",
+     "filepath": "/media/a/35c87bcb8d7af24c54d41122dadb619dd920646a0bd0e477e7bdc6d12876df17.webm",
+     "type": "video",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec4 jc = texture(iChannel0, uv);\n    \n    uv -= vec2(1.05,.15);\n\tfragColor = texture(iChannel1, uv + jc.xz);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

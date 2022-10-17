@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: ElasticFluid
+  id: ElasticFluid
+  kernel: ElasticFluid
+  name: ElasticFluid
+shader:
+  author: michael0884
+  description: 'Tracking the deformation gradient to model solid bodies. Yeah, no
+    actual particles here.  Only particle distributions.
+
+    SPACE - zoom in
+
+    With a 0 mu parameter the solid becomes a splashy fluid
+
+    '
+  id: wdtfDj
+  name: Elastic fluid
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/wdtfDj

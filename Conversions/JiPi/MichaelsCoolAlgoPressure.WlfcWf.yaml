@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MichaelsCoolAlgoPressure
+  id: MichaelsCoolAlgoPressure
+  kernel: MichaelsCoolAlgoPressure
+  name: MichaelsCoolAlgoPressure
+shader:
+  author: wyatt
+  description: .
+  id: WlfcWf
+  name: ' Michaels cool algo + Pressure'
+  tags:
+  - virtualtracking
+  url: https://www.shadertoy.com/view/WlfcWf

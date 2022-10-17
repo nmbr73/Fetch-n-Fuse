@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Celerity
+  id: Celerity
+  kernel: Celerity
+  name: Celerity
+shader:
+  author: wyatt
+  description: 'A study on the speed of sound and its correspondence to density. '
+  id: 3djcWK
+  name: Celerity
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/3djcWK

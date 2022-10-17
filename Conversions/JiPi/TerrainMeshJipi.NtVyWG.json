@@ -1,0 +1,170 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtVyWG",
+  "date": "0",
+  "viewed": 0,
+  "name": "terrain mesh JiPi",
+  "description": "emulating low poly and contour levels with surface nets\nselect style in common tab\n",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "mesh",
+   "surfacenets"
+  ],
+  "hasliked": 0,
+  "parentid": "Nlyyzd",
+  "parentname": "terrain mesh  with SN"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdXGzn",
+     "filepath": "/media/a/3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0.png",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//\"terrain mesh  with SN\"  by Kastorp\n//------------------------------------------------\n//messy code adapted from previous shader\n\n//Surface net algorith can be parametrized \n// to obtain smooth mesh , voxels or contour levels\n//select style in common tab\n\nconst vec3 dir[6] =vec3[6]\n(\n   vec3(1,0,0), vec3(0,1,0),vec3(0,0,1),\n   vec3(-1,0,0), vec3(0,-1,0),vec3(0,0,-1)\n);\n\n\nvec4 VoxelHitPos(vec3 pos, vec3 ro, vec3 rd){\n    vec3 ri = 1.0/rd;\n\tvec3 rs = sign(rd);\n    vec3 mini = (pos-ro + 0.5 - 0.5*vec3(rs))*ri;\n    float t=  max ( mini.x, max ( mini.y, mini.z ) );\n    return vec4(t*rd+ro,t);\n}\n\nvec3 rayDirection(vec3 cameraDir, vec2 uv){\n    \n    vec3 cameraPlaneU = vec3(normalize(vec2(cameraDir.y, -cameraDir.x)), 0);\n    vec3 cameraPlaneV = cross(cameraPlaneU, cameraDir) ;\n\treturn normalize(cameraDir + uv.x * cameraPlaneU + uv.y * cameraPlaneV);\n\n}\n\nRayOut trace(vec3 ro,vec3 rd)\n{\n    float TK=iMouse.x>0.? step(iMouse.y/R.y,0.5)*.1:.1; //edge thickness \n    RayOut ray;\n    //RAYTRACING BOUNDING BOX\n    span tb= iBox(  ro,  rd, vec3(N*.5+.00001,N*.5+.00001,10.) ) ;\n    if(tb.f.t==NOHIT) return   InfRay();\n    \n    \n    //VOXEL TRAVERSAL\n    vec3 rs= sign(rd);\n    vec3 ri = 1./rd;\n\tvec3 rp=ro +  max(tb.n.t,0.)*rd;  \n    vec3 mp=floor(rp);\n    vec3 sd = (mp-rp + 0.5 + sign(rd)*0.5) *ri;\n    vec3 mask=vec3(0.);     \n    for (int i = 0; i < 200; i++) {\n\n\n        if(length(rp-ro)>tb.f.t) break; //outside bounding box\n       \n       //BEGIN SURFACE NETS\n       vec4 data = getVoxel( mp,iChannel0);         \n       int g_dirs =int(data.a);            \n       if(g_dirs>0) {          \n           //RAYTRACE VOXEL \n           vec3 g_m= data.xyz;       \n           ray =  InfRay();\n           if(g_dirs<64) {\n              if(TK>0.) Add( ray, Ray(iSphere(ro- g_m,rd,TK),3.));\n               vec3[6] g_ng;\n               for(int k =min(iFrame,0);k<6;k++) {\n                  if((g_dirs & (1<<k))>0) {\n                      //get neighbour surface vertex along each direction\n                      g_ng[k] = getVoxel( mp-dir[k],iChannel0).xyz; \n                      if(TK>0.) Add( ray, Ray(iCylinder(ro,rd,g_m,g_ng[k],TK/2.),2.));\n                      if(TK>0.) Add( ray, Ray(iSphere(ro- g_ng[k],rd,TK),3.));\n                      for(int k2= 0;k2<k;k2++){\n                          if(k2!=k-3 && (g_dirs & (1<<k2))>0){\n                              //get quad opposite vertex\n                              vec4 g_f = getVoxel( mp-dir[k]-dir[k2],iChannel0); \n                              if(g_f.a>0.&& g_f.a<64.){\n                                  if(TK>0.) Add( ray, Ray(iSphere(ro- g_f.xyz,rd,TK),3.));\n                                  if(TK>0.) Add( ray, Ray(iCylinder(ro,rd,g_f.xyz,g_ng[k],TK/2.),2.));\n                                  if(TK>0.) Add( ray, Ray(iCylinder(ro,rd,g_f.xyz,g_ng[k2],TK/2.),2.));\n                                  //thanks Oneshade!! \n                                  #ifndef TRI\n                                      Add( ray, Ray(iBilinearPatch(ro,rd,g_m,g_ng[k], g_f.xyz,g_ng[k2]),1.));\n                                  #else\n                                  //triangle version\n                                  if(length(g_m-g_f.xyz)>length(g_ng[k]-g_ng[k2])){                               \n                                      Add( ray, Ray(triIntersect(ro,rd,g_m,g_ng[k],g_ng[k2]),1.));\n                                      Add( ray, Ray(triIntersect(ro,rd,g_ng[k], g_f.xyz,g_ng[k2]),1.));\n                                     // if(TK>0.) Add( ray, Ray(iCylinder(ro,rd,g_ng[k2],g_ng[k],TK/2.),2.));\n                                  }else{\n                                      Add( ray, Ray(triIntersect(ro,rd,g_m,g_ng[k],g_f.xyz ),1.));\n                                      Add( ray, Ray(triIntersect(ro,rd,g_m,g_f.xyz, g_ng[k2]),1.));                                     \n                                      //if(TK>0.) Add( ray, Ray(iCylinder(ro,rd,g_f.xyz,g_m,TK/2.),2.));                                  \n                                  }\n                                  #endif\n                              }\n                          }\n                      }                       \n                   } \n               }\n           }     \n           if (ray.d< NOHIT ){//ray.d+=max(tb.n.t,0.); \n               return ray;}            \n        }\n        //END SURFACE NETS\n        \n        mask = step(sd.xyz, sd.yzx) * step(sd.xyz, sd.zxy);\n\t\tsd += mask *  rs *ri;\n        mp += mask *  rs;\n        rp = VoxelHitPos(mp,rp,rd).xyz+rd*.0001; \n\t} \n    return Ray(tb,0.);\n}\n// Tri-Planar blending function. Based on an old Nvidia tutorial.\nvec3 tex3D( sampler2D tex, in vec3 p, in vec3 n ){  \n    n = max(abs(n), 0.001);//n = max((abs(n) - 0.2)*7., 0.001); //  etc.\n    n /= (n.x + n.y + n.z ); \n\tp = (texture(tex, p.yz)*n.x + texture(tex, p.zx)*n.y + texture(tex, p.xy)*n.z).xyz;\n    return p*p;\n}\n\nvoid mainImage(out vec4 O, in vec2 U) {\n    vec2 uv = (U - 0.5 * R.xy) / R.y;\n    \n    vec2 M= iMouse.x>0.? iMouse.xy/R.xy*3.5+.5:vec2(1.); \n    vec3 ro = 12.* vec3(cos(M.x),sin(M.x),1.)*M.y;\n    vec3 rd = rayDirection(normalize(vec3(0)-ro) ,uv);\n    vec3 ld = normalize(vec3(-6.,-.2,-4.));\n    \n    RayOut r= trace(ro,rd);    \n    if(r.d<NOHIT && r.id>0.){\n        vec3 p = ro+rd*r.d, \n             n = dot(r.n,rd)>0.?r.n:-r.n;\n \n \n       \n         if(r.id==1.){\n             O.rgb= mix(tex3D(iChannel3, (p)*.5, n).grb,vec3(0.110,0.204,0.055),.4); //grass\n             O.rgb= texture(iChannel1,p.xy/80.,0.).rgb;\n             //O.rgb = mix( O.rgb ,vec3(0.188,0.137,0.051),smoothstep(.7,.5,max(dot(n,vec3(0,0,-1)),0.))) ;  //dirt                         \n         } else\n         O.rgb=(r.id==3.?vec3(.8,.6,.6):vec3(.2,.4,.4)) ;\n\n        O.rgb *= smoothstep(-1.,1.,dot(n,ld)) *(.5+.5*smoothstep(p.z,2.,3.)); \n        \n#ifdef SHADOWS         \n         RayOut s= trace(p+n*.01,ld); \n         //if(s.id>.0 &&  r.id==1. &&s.d<.1 &&abs(dot(ld,r.n))<.05  ) O.x*=5.;\n         if( s.id>.0 ) O*=.7;\n#endif         \n         \n         O = vec4(sqrt(clamp(O, 0., 1.)));      \n    }    \n    else O =vec4(0.4,0.4,0.7,1.0);\n    \n}\n\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//ISOSURFACE FUNCTION  (USE YOU OWN HERE)\n\nfloat map(vec3 p)\n{   \n\n   float d= p.z/2.-   length(texture(iChannel1,p.xy/80.,0.).xyz)*2.5-.5;  \n   d=step(0.,d)*2.-1.;  //works also with 1 bit per voxel     \n    return d;\n}\n\n\nvoid mainImage( out vec4 O, in vec2 U )\n{   \n    vec3 c = texToVoxCoord(floor(U), offset); \n    float data =map(c); //not stateful here, otherwise use getVoxel( c ,iChannel0);\n    O = vec4(data);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\n//select style here:\n#define cube vec3(0.,0.,.99)  // contour\n//#define cube vec3(0.)  // smooth\n//#define cube vec3(0.99)  // voxel\n\nconst float N= 80.; //number of voxel x side (TOT=N^3)\n#define TRI  \n\n\n//-------------------------------\nvec3 offset = floor(vec3(0.,0.,0.));\nconst vec2 packedChunkSize= vec2(5,3);// ceil(sqrt(N) * vec2(1.25 ,0.8)); // iResolution.xy/iResolution.yx \nconst float heightLimit = packedChunkSize.x * packedChunkSize.y; //must be > N\n#define R iResolution.xy\n//-----------------------------------------\n// VOXEL CACHE FUNCTIONS from fb39ca4\n\nvec2 unswizzleChunkCoord(vec2 storageCoord) {\n \tvec2 s = floor(storageCoord);\n    float dist = max(s.x, s.y);\n    float o = floor(dist / 2.);\n    float neg = step(0.5, mod(dist, 2.)) * 2. - 1.;\n    return neg * (s - o);\n}\n\nvec2 swizzleChunkCoord(vec2 chunkCoord) {\n    vec2 c = chunkCoord;\n    float dist = max(abs(c.x), abs(c.y));\n    vec2 c2 = floor(abs(c - 0.5));\n    float o = max(c2.x, c2.y);\n    float neg = step(c.x + c.y, 0.) * -2. + 1.;\n    return (neg * c) + o;\n}\n\nfloat calcLoadDist(vec2 iResolutionxy) {\n    vec2  chunks = floor(iResolutionxy / packedChunkSize); \n    float gridSize = min(chunks.x, chunks.y);    \n    return floor((gridSize - 1.) / 2.);\n}\n\nvec3 texToVoxCoord(vec2 textelCoord, vec3 offset) {\n\n    vec2 packedChunkSize= packedChunkSize;\n\tvec3 voxelCoord = offset;\n    voxelCoord.xy += unswizzleChunkCoord(textelCoord / packedChunkSize);\n    voxelCoord.z += mod(textelCoord.x, packedChunkSize.x) + packedChunkSize.x * mod(textelCoord.y, packedChunkSize.y);\n    return voxelCoord;\n}\n\nvec2 voxToTexCoord(vec3 voxCoord) {\n    vec2 packedChunkSize= packedChunkSize;\n    vec3 p = floor(voxCoord);\n    return swizzleChunkCoord(p.xy) * packedChunkSize + vec2(mod(p.z, packedChunkSize.x), floor(p.z / packedChunkSize.x));\n}\n\nvec4  getVoxel(vec3 p,sampler2D iChannel) {\n    p.z-= offset.z;\n    if(p.z>heightLimit || p.z<0.){return vec4(0.);}  \n    return texelFetch(iChannel, ivec2(voxToTexCoord(p))  , 0); \n\n}\n\n\n\n//-----------Intersection functions--------------------\n#define NOHIT 1e5\nstruct its\n{\n\tfloat t;\n\tvec3 n;    //normal \n\tvec3 fuv;  //face & uv \n};\nconst its  NO_its=its(NOHIT,vec3(0.),vec3(0.));\nstruct span\n{\n\tits n;\n\tits f;\n};\n\nstruct RayOut{   \n    float d;\n    vec3 n;\n    vec3 fuv; //unused here\n    float id;\n    float d2;\n};\n\nRayOut FastUnion(  RayOut a, RayOut b)\n{\n   if(a.d<b.d) return a;\n   else return b;\n}\n#define Add(_ro,_func) _ro = FastUnion(_ro,_func);\n\nRayOut InfRay(){return RayOut(NOHIT,vec3(0),vec3(0),0.,0.);}\nRayOut Ray(span s,float mat){    \n    if(s.f.t<0. ||(s.f.t==NOHIT && s.n.t<0. )) return  InfRay();\n    if(s.n.t<0. && s.f.t>0.  ) return RayOut(0.001,vec3(0),vec3(0),mat,s.f.t);\n    return RayOut( s.n.t,s.n.n,s.n.fuv,mat,s.f.t-s.n.t);\n}\n\nspan iSphere( in vec3 ro, in vec3 rd, float ra )\n{\n\n    vec3 oc = ro ;\n    float b = dot( oc, rd );\n    float c = dot( oc, oc ) - ra*ra;\n    float h = b*b - c;\n    if( h<0. ) return span(NO_its,NO_its); // no intersection\n    h = sqrt( h );\n    vec3 oNor =normalize(ro-(b+h)*rd); \n    vec3 oFuv=vec3(0.,atan(oNor.y,length(oNor.xz)),atan(oNor.z,oNor.x))*ra*1.5708  ;\n    vec3 fNor= normalize(ro-(b-h)*rd); \n    vec3 fFuv=vec3(0.,atan(fNor.y,length(fNor.xz)),atan(fNor.z,fNor.x))*ra*1.5708  ;\n    if( h-b < 0. ) return  span(NO_its,NO_its);\n    return span(its(-b-h,oNor,oFuv) , its(-b+h,-fNor,fFuv));\n}\n\nspan iBox( in vec3 ro, in vec3 rd, vec3 boxSize) \n{\n    vec3 m = 1./rd; \n    vec3 n = m*ro;   \n    vec3 k = abs(m)*boxSize;\n\n    vec3 t1 = -n - k;\n    vec3 t2 = -n + k;\n    float tN = max( max( t1.x, t1.y ), t1.z );\n    float tF = min( min( t2.x, t2.y ), t2.z );\n    if( tN>tF || tF<0.) return span(NO_its,NO_its); // no intersection\n    vec3 oNor = -sign(rd)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz); \n    vec3 oFuv=vec3( dot(abs(oNor),vec3(1,5,9)+ oNor)/2.,dot(ro+rd*tN,oNor.zxy),dot(ro+rd*tN,oNor.yzx));      \n    vec3  fNor=- sign(rd)*step(t2.xyz,t2.yzx)*step(t2.xyz,t2.zxy); \n    vec3 fFuv=vec3( dot(abs(fNor),vec3(1,5,9)+ fNor)/2.,dot(ro+rd*tF,fNor.zxy),dot(ro+rd*tF,fNor.yzx));\n    return  span(its(tN,oNor,oFuv) , its(tF,fNor,fFuv));\n}\n\nspan iPlane( in vec3 ro, in vec3 rd, in vec3 n ,float h)\n{\n    float d= -(dot(ro,n)+h)/dot(rd,n);\n    vec3  u = normalize(cross(n,vec3(0,0,1))), v = normalize(cross(u,n) );\n    vec3 oFuv=vec3(1.,dot(ro+d*rd,u), dot(ro+d*rd,v));\n    vec3 oNor=n;\n    if(d<0.)  return span(NO_its,NO_its);\n    return span(its(d,oNor,oFuv),NO_its);\n}\n\nspan iCylinder( in vec3 ro, in vec3 rd,  in vec3 pa, in vec3 pb, float ra ) // extreme a, extreme b, \n{\n    span no_hit =  span(NO_its,NO_its);;\n\n    vec3 ba = pb-pa;\n\n    vec3  oc = ro - pa;\n\n    float baba = dot(ba,ba);\n    float bard = dot(ba,rd);\n    float baoc = dot(ba,oc);\n    \n    float k2 = baba            - bard*bard;\n    float k1 = baba*dot(oc,rd) - baoc*bard;\n    float k0 = baba*dot(oc,oc) - baoc*baoc - ra*ra*baba;\n    \n    float h = k1*k1 - k2*k0;\n    if( h<0.0 )  return no_hit;\n    h = sqrt(h);\n    \n    float t = (-k1-h)/k2;\n    float y = baoc + t*bard; \n    float t2 = ( ((y<0.0) ? 0.0 : baba) - baoc)/bard;   \n    \n    if( (y<0.0 || y>baba )  && abs(k1+k2*t2)>h)  return span(NO_its,NO_its);\n    its iN,iF;\n    vec3 w = normalize(ba), u = normalize(cross(ba,vec3(0,0,1))), v = normalize(cross(u,w) );\n    \n    //entry point\n    vec3 q = (oc+t*rd-ba)*mat3(u,v,w);   \n    if( y>0.0 && y<baba ) iN= its( t, (oc+t*rd - ba*y/baba)/ra,vec3(0.,atan(q.y,q.x)*ra,q.z) ); \n    else iN= its(t2, ba*sign(y)/baba ,vec3(1.,dot(oc+t2*rd-ba,u) ,dot(oc+t2*rd-ba,v) )); \n        \n  \n    //exit point\n    t = (-k1+ h)/k2;\n    y = baoc + t*bard; \n    t2 = ( ((y<0.0) ? 0.0 : baba) - baoc)/bard;\n    q = (oc+t*rd-ba)*mat3(u,v,w); \n    if( y>0.0 && y<baba ) iF= its( t, (oc+t*rd - ba*y/baba)/ra,vec3(0.,atan(q.y,q.x)*ra,q.z) ); \n    else iF= its(t2, ba*sign(y)/baba ,vec3(1.,dot(oc+t2*rd-ba,u) ,dot(oc+t2*rd-ba,v) )); \n    \n    return span(iN , iF);\n  \n}\nfloat cross2D(in vec2 a, in vec2 b) { return a.y * b.x - a.x * b.y; }\n\n//from https://www.shadertoy.com/view/Ns2SzG by Oneshade\nspan iBilinearPatch(in vec3 ro, in vec3 rd,in vec3 a, in vec3 b, in vec3 c, in vec3 d) {\n    //bool tr=false;\n    if(abs(rd.x)<.0001){  //not working if rd.x==0.\n         return span(its(.01,vec3(0),vec3(0)),NO_its);\n        //tr=true; ro=ro.yzx;rd=rd.yzx;a=a.yzx;b=b.yzx;c=c.yzx;d=d.yzx;\n    }\n    vec2 m = rd.yz / rd.x;\n    if(length(a - b + c - d)==0.)  a+=vec3(.001); //fix coplanar issue\n    vec3 p = a - b + c - d, q = d - a, r = b - a;\n    vec2 c1 = p.yz - p.x * m, c2 = q.yz - q.x * m, c3 = r.yz - r.x * m;\n    vec2 c4 = (ro.x - a.x) * m + a.yz - ro.yz;\n\n    // Quadratic coefficients (reversed as a trick to deal with edge cases)\n    float qa = cross2D(c4, c2);\n    float qb = cross2D(c4, c1) + cross2D(c3, c2);\n    float qc = cross2D(c3, c1);\n   \n    float discr = (qb * qb - 4.0 * qa * qc);\n    span s=span(NO_its,NO_its);\n    if (discr > 0.0) {\n        vec2 v = 2.0 * qa / (vec2(-1.0, 1.0) * sqrt(discr) - qb); // Solve quadratic in v\n        vec2 u = -(c4.x + c3.x * v) / (c1.x * v + c2.x);\n        vec2 t = (p.x * u * v + q.x * u + r.x * v + a.x - ro.x) / rd.x;\n\n        // Get closest intersection in view and add it to the scene        \n        if (abs(u[0] - 0.5) < 0.5 && abs(v[0] - 0.5) < 0.5) \n             s.n= its(t[0],normalize(cross(p * v[0] + q, p * u[0] + r)),vec3(0.,u[0], v[0]));\n        if ( abs(u[1] - 0.5) < 0.5 && abs(v[1] - 0.5) < 0.5) \n             s.f= its(t[1],normalize(cross(p * v[1] + q, p * u[1] + r)),vec3(0.,u[1], v[1])); \n        if (s.f.t<s.n.t){ its tp=s.n;s.n=s.f;s.f=tp;}     \n        s.n.n*=-sign(dot(s.n.n,rd));\n        s.f.n*=-sign(dot(s.f.n,rd));\n    }\n    //if(tr) {s.n.n=s.n.n.zxy;s.f.n=s.f.n.zxy;}\n    return s;\n}\n\n//based on Iq's\nspan triIntersect( in vec3 ro, in vec3 rd, in vec3 v0, in vec3 v1, in vec3 v2 )\n{\n    vec3 v1v0 = v1 - v0;\n    vec3 v2v0 = v2 - v0;\n    vec3 rov0 = ro - v0;\n\n    vec3  n = cross( v1v0, v2v0 );\n    vec3  q = cross( rov0, rd );\n    float d = 1.0/dot( rd, n );\n    float u = d*dot( -q, v2v0 );\n    float v = d*dot(  q, v1v0 );\n    float t = d*dot( -n, rov0 );   \n\n    if( u<0.0 || v<0.0 || (u+v)>1.0 ) t = -1.0;\n    \n//    return vec3( t, u, v );\n\n     return  span(its(t,-n,vec3(0)),NO_its);\n}\n\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// SURFACE NET BUFFER\n\n\n\n\n struct GRIDCELL{     //calculated for each cube in the following sequence:\n   vec3 p[8];         //  1. cube vertex positions\n   float val[8];      //  2. isosurface value at each cube vertex\n   float nVertex;     //  3. number of vertex where val[]>0; if 0<nVertex<8  => surface cube\n   float nEdge;       //  4. number of cube edges with crossing \n   vec3 m;            //  5. surface vertex, as an average of all crossing edge positions\n   int dirs;          //  6. 6bit bitmask of surface edges from each cube;                        \n} ;\n\n\nconst vec3 v[8] =vec3[8]\n(\n   vec3(0,0,0), vec3(1,0,0),vec3(1,1,0),vec3(0,1,0),\n   vec3(0,0,1), vec3(1,0,1),vec3(1,1,1),vec3(0,1,1)\n);\n\nconst int  e[24] =int[24](\n   0,1,   1,2,  2,3,   3,0, \n   4,5,   5,6,  6,7,   7,4,   \n   0,4,   1,5,  2,6,   3,7);\n\nconst vec3 dir[6] =vec3[6]\n(\n   vec3(1,0,0), vec3(0,1,0),vec3(0,0,1),\n   vec3(-1,0,0), vec3(0,-1,0),vec3(0,0,-1)\n);\n\n\nint gFrame=0; \nvoid  getSurface(vec3 c, inout GRIDCELL g)\n{\n    \n    g.m=vec3(0.);\n    g.nVertex=0.;\n    g.nEdge=0.;\n    g.dirs=0;\n\n    //gFrame unrolling fails here...\n    for(int i=0;i<8;i++)\n    {\n\n        //1. cube vertex positions\n       \n        vec3 vp=c+ cube/2.+ v[i]*(1.-cube);\n        g.p[i]=vp;\n\n        //  2. isosurface value at each cube vertex\n        float val = //map(vp);\n                    getVoxel( c+  v[i] ,iChannel0).x;\n         g.val[i]=val;\n        \n        //3. number of vertex where val[]>0;\n        g.nVertex+= (val<=0.?1.:0.);\n\n    }\n \n     if(g.nVertex>0. && g.nVertex<8.)\n     {\n\n          for(int i=gFrame;i<24;i+=2)\n          {\n              //  isosurface weights at each cube edge vertexes\n              float d1 = g.val[e[i]],\n                  d2 = g.val[e[i+1]],\n                  d= d1/(d1-d2);\n\n            //  4. number of cube edges with crossing \n             if(d1*d2<0.){\n                 g.nEdge++;\n                 g.m+= g.p[e[i+1]]*d + g.p[e[i]]*(1.-d);\n                 \n                 for(int k =gFrame;k<6;k++) {\n                     \n                     //  6. 6bit bitmask of surface edges from  each cube\n                     if(dot((g.p[e[i+1]] +g.p[e[i]])/2.- c -.5 , dir[k] )<0. )  g.dirs=g.dirs | (1<<k); \n                     \n                 }\n             }\n          }\n         \n        //  5. surface vertex, as an average of all crossing edge positions\n         g.m/= g.nEdge;\n         g.m =min(max(g.m,c),c+1.); //must be inside the cube\n         //g.m=c+csz/2.; //orthogonal connections\n    } else if(g.nVertex==8. ){\n        g.dirs=64;g.m=c+.5;\n    }\n}\n\n\nvoid mainImage( out vec4 O, in vec2 U )\n{\n    vec3 c = texToVoxCoord(floor(U), offset);        \n    GRIDCELL g;     \n    getSurface(c,g);  \n    O = vec4(g.m,g.dirs);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

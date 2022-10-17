@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: PartyCon
+  id: PartyCon
+  kernel: PartyCon
+  name: PartyCon
+shader:
+  author: N.N.
+  description: visuals for the concert at @party online 2020, programmed in about
+    1 hour
+  id: ftfyDX
+  name: Fork @Party Con JiPi 639
+  parent:
+    id: flfcD2
+    name: Fork @Party Con qb777 479
+    url: https://www.shadertoy.com/view/flfcD2
+  tags:
+  - raymarching
+  - 4d
+  - lasers
+  url: https://www.shadertoy.com/view/ftfyDX

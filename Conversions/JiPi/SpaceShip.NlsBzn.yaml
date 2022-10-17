@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: SpaceShip
+  id: SpaceShip
+  kernel: SpaceShip
+  name: SpaceShip
+shader:
+  author: A_Toaster
+  description: Raymarched SDF spaceship. Definitely can be improved+optimized.
+  id: NlsBzn
+  name: Space ship
+  tags:
+  - raymarching
+  - space
+  url: https://www.shadertoy.com/view/NlsBzn

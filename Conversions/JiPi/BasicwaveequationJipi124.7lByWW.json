@@ -1,0 +1,145 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7lByWW",
+  "date": "0",
+  "viewed": 0,
+  "name": "BasicWaveEquation JiPi 124",
+  "description": "Verlet integration of the wave equation using a nine-point stencil to calculate the laplacian. Use your mouse.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "wave",
+   "numerical",
+   "equation",
+   "integration"
+  ],
+  "hasliked": 0,
+  "parentid": "ldVyWW",
+  "parentname": "Basic : Wave Equation"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\tfragColor = texture(iChannel0,fragCoord.xy / iResolution.xy)*.5+.5;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//in which BufA is t-dt, BufB is t and BufA becomes t+dt\n\n\n\nvec4 getA(ivec2 p, vec2 R){\n    vec4 middle    = getX(iChannel1,p,R);   \t\n    vec4 up        = getX(iChannel1,p+ivec2( 0, 1),R);\n    vec4 down      = getX(iChannel1,p+ivec2( 0,-1),R);\n    vec4 right     = getX(iChannel1,p+ivec2( 1, 0),R);\n    vec4 left      = getX(iChannel1,p+ivec2(-1, 0),R);\n    vec4 upright   = getX(iChannel1,p+ivec2( 1, 1),R);\n    vec4 upleft    = getX(iChannel1,p+ivec2(-1, 1),R);\n    vec4 downright = getX(iChannel1,p+ivec2( 1,-1),R);\n    vec4 downleft  = getX(iChannel1,p+ivec2(-1,-1),R);\n        \n   \treturn (-8.*middle + up + left + right + down + upright + upleft + downright + downleft)/(3.*dx*dx);  \n}\n\n#define R iResolution.xy\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n   \tivec2 p = ivec2(fragCoord);\n    fragColor = 2.*getX(iChannel1,p,R)-getX(iChannel0,p,R)+getA(p,R)*dt*dt;\n    if(iMouse.z>0. && distance(fragCoord,iMouse.xy)<10.) fragColor = vec4(1.);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//in which BufB is t-dt, BufA is t and BufA becomes t+dt\n\nvec4 getA(ivec2 p, vec2 R){\n    vec4 middle    = getX(iChannel1,p,R);   \t\n    vec4 up        = getX(iChannel1,p+ivec2( 0, 1),R);\n    vec4 down      = getX(iChannel1,p+ivec2( 0,-1),R);\n    vec4 right     = getX(iChannel1,p+ivec2( 1, 0),R);\n    vec4 left      = getX(iChannel1,p+ivec2(-1, 0),R);\n    vec4 upright   = getX(iChannel1,p+ivec2( 1, 1),R);\n    vec4 upleft    = getX(iChannel1,p+ivec2(-1, 1),R);\n    vec4 downright = getX(iChannel1,p+ivec2( 1,-1),R);\n    vec4 downleft  = getX(iChannel1,p+ivec2(-1,-1),R);\n        \n   \treturn (-8.*middle + up + left + right + down + upright + upleft + downright + downleft)/(3.*dx*dx);  \n}\n\n#define R iResolution.xy\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n   \tivec2 p = ivec2(fragCoord);\n    fragColor = 2.*getX(iChannel1,p,R)-getX(iChannel0,p,R)+getA(p,R)*dt*dt;\n    if(iMouse.z>0. && distance(fragCoord,iMouse.xy)<10.) fragColor = vec4(1.);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\nvec4 texelFetchC( sampler2D Channel, ivec2 pos, vec2 iR)\n{\n    \n    if ( (pos.x) >= 0 && (pos.x) < int(iR.x) && (pos.y) > 0 && (pos.y) < int(iR.y) )\n    {\n        return texture( Channel, (vec2(pos)+0.5)/iR.xy );\n    }\n\telse\n\t\treturn vec4(0);\n}\n\nconst float dx = 0.2;\nconst float dt = 0.08;\n\nvec4 getX(sampler2D g, ivec2 p, vec2 iR){\n    //return texelFetch(g,p,0);\n    return texelFetchC(g,p,iR);\n    //return texture(g,(vec2(p)+0.5)/R);\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

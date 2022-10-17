@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: JamSession
+  id: JamSession
+  kernel: JamSession
+  name: JamSession
+shader:
+  author: Passion
+  description:    
+ [url]https://www.shadertoy.com/view/XdsyW4[/url]
+  id: 7ssBzX
+  name: Jam Session
+  tags:
+  - raymarch
+  - metaballs
+  - audio
+  - smin
+  url: https://www.shadertoy.com/view/XdsyW4

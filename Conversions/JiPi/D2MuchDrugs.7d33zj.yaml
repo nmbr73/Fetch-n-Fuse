@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: D2MuchDrugs
+  id: D2MuchDrugs
+  kernel: D2MuchDrugs
+  name: D2MuchDrugs
+shader:
+  author: xenn
+  description: Displacement mapping with chromatic dispersion. The displacement vectors
+    are supplied by an underlying dynamical system. Click to paint.
+  id: 7d33zj
+  name: 2 much drugs
+  tags:
+  - displacement
+  - chromatic
+  - aberration
+  - mapping
+  - dispersion
+  url: https://www.shadertoy.com/view/7d33zj

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: Hell2
+  id: Hell2
+  kernel: Hell2
+  name: Hell2
+shader:
+  author: iq
+  description: A remix of [url]https://www.shadertoy.com/view/MdfGRX[/url]
+  id: 7ssBzX
+  name: Hell 2
+  tags:
+  - 3d
+  - raymarching
+  - cloud
+  - volumetric
+  url: https://www.shadertoy.com/view/7ssBzX

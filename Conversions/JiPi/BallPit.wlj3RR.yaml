@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: BallPit
+  id: BallPit
+  kernel: BallPit
+  name: BallPit
+shader:
+  author: ShnitzelKiller
+  description: 'Hash-based collision avoidance to enable arbitrary number of particles
+    without performance loss. Use the mouse to add more balls, or erase by holding
+    E. Uncomment #define gooey to change the physics mode.'
+  id: wlj3RR
+  name: Ball pit
+  tags:
+  - collision
+  - interactive
+  - physics
+  - particle
+  url: https://www.shadertoy.com/view/wlj3RR

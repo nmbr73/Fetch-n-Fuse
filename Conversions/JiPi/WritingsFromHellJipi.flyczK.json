@@ -1,0 +1,217 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flyczK",
+  "date": "0",
+  "viewed": 0,
+  "name": " writings from hell JiPi",
+  "description": "Rebuild",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "hell"
+  ],
+  "hasliked": 0,
+  "parentid": "",
+  "parentname": ""
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2016\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// just a dummy shader because i needed some feedback of own color (not possible in image tab)\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = texture(iChannel0,fragCoord.xy/iResolution.xy);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdXGzn",
+     "filepath": "/media/a/3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2016\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// writing random endless scribbles\n// by summing up low band noised curvature\n\n// fragColor: red = writing, blue = burn mask\n\n#define PI2 6.28318530717959\n#define PNUM 40\n\nvec2 filterUV1(vec2 uv) \n{\n    // iq's improved texture filtering (https://www.shadertoy.com/view/XsfGDn)\n\tvec2 x=uv*iChannelResolution[1].xy;\n    vec2 p = floor(x);\n    vec2 f = fract(x);\n    f = f*f*(3.0-2.0*f);\n    return (p+f)/iChannelResolution[1].xy;\n}\n\nvec4 getPixel(int x, int y)\n{\n    return texture(iChannel0,vec2(float(x)+.5,float(y)+.5)/iChannelResolution[0].xy);\n}\n\nbool isPixel(int x, int y, vec2 fragCoord)\n{\n    vec2 c=fragCoord/iResolution.xy*iChannelResolution[0].xy;\n    return ( int(c.x)==x && int(c.y)==y );\n}\n\nvec2 readPos(int i)\n{\n    return getPixel(i,0).xy;\n}\n\nbool writePos(vec2 pos, int i, inout vec4 fragColor, vec2 fragCoord)\n{\n    if (isPixel(i,0,fragCoord)) { fragColor.xy=pos; return true; }\n    return false;\n}\n\nvec4 getRand(vec2 pos)\n{\n    return texture(iChannel1,filterUV1(pos/vec2(400,300)));\n}\n\nfloat dotDist(vec2 pos,vec2 fragCoord)\n{\n    return length(pos-fragCoord);\n}\n\n// iq: https://iquilezles.org/articles/distfunctions\nfloat lineDist(vec2 a,vec2 b,vec2 p)\n{\n    vec2 pa = p - a, ba = b - a;\n    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );\n    return length( pa - ba*h );\n}\n\nvec4 drawDot(vec2 pos,float r, vec2 fragCoord)\n{\n    return vec4(clamp(r-length(pos-fragCoord),0.,1.)/r*3.);\n}\n\n#define N(x) (x.yx*vec2(1,-1))\n\n// gives a parametric position on a pentagram with radius 1 within t=0..5\n// (maybe there's more elegant ways to do this...)\nvec2 pentaPos(float t)\n{\n    float w=sqrt((5.+sqrt(5.))*.5);\n    float s=sqrt(1.-w*w*.25);\n    float ang=-floor(t)*PI2*2./5.;\n    vec2 x=vec2(cos(ang),sin(ang));\n    return -N(x)*s+x*w*(fract(t)-.5);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float time=float(iFrame)*1./60.;\n    vec2 uv=fragCoord/iResolution.xy;\n    float v=0.;\n    for(int i=0;i<50;i++) v+=texture(iChannel0,getRand(vec2(i,0)).xy).x/50.;\n    fragColor = texture(iChannel0,uv);\n    int pnum = int(min(iResolution.y/50.0,float(PNUM-1)));\n    bool write=false;\n    for(int i=0;i<PNUM;i++)\n    {\n        bool isMouse = (i==pnum);\n        // breaking here if i>pnum didnt work in windows (failed to unloll loop)\n        if(i<=pnum) {\n        vec2 pos;\n            \n\t    pos=readPos(i);\n        vec2 oldpos=pos;\n        \n    \tfloat ang = (getRand(pos)+getRand(pos+vec2(1,3)*time)).x*PI2;\n    \tpos+=vec2(.7,0)\n            +vec2(4,5)*vec2(cos(15.*time+float(i)),\n                            .5*sin(15.*time+float(i)+.5)+\n                            .5*sin(21.*time+float(i)+.5))*getRand(pos).x;\n            //+vec2(.2,2)*vec2(cos(ang),sin(ang));\n    \t//vec4 c = drawDot(mod(pos,iResolution.xy),2.5,fragCoord);\n\n        if(isMouse) \n        {\n            pos=iMouse.xy;\n            if(iMouse.xy==vec2(0) && mod(iTime+5.,37.7)>18.)\n            {\n                pos=pentaPos(iTime*.5)*.45*iResolution.y+iResolution.xy*.5;\n                pos+=(getRand(pos*.6+iTime*vec2(.1,1.)).xy-.5)*7./500.*iResolution.y;\n            }\n        \tif(length(oldpos-pos)>40.) oldpos=pos;\n        }\n                \n        vec2 mpos=mod(pos,iResolution.xy);\n        //float dd = dotDist(mpos,fragCoord);\n        float dd = lineDist(mpos,oldpos-(pos-mpos),fragCoord);\n    \tvec4 c = vec4(clamp((isMouse?5.:3.)-dd,0.,1.9),0,max(0.,1.-dd/40.),0);\n        if(mpos==oldpos-(pos-mpos)) c=vec4(0.); // ignore 0-length segments\n        if(getRand(pos*.3+time).z>.8 && !isMouse) \n            pos+=vec2(10,0);\n        else\n    \t\tfragColor = max(fragColor,c);        \n\n        if(writePos(pos, i, fragColor,fragCoord)) write=true;\n        }\n    }\n\n    if(!write)\n    {\n       fragColor.z=max(-1.,fragColor.z-.002);\n       fragColor.x=max(0.,fragColor.x-.003);\n    }\n        \n    if(iTime<2.) \n    {\n        fragColor=vec4(0,0,.6,0);\n\t    for(int i=0;i<PNUM;i++)\n    \t{\n            if(i<=pnum){\n                vec4 rnd=texture(iChannel1,vec2(float(i)+.5,.5)/iChannelResolution[1].xy);\n        \t    writePos(vec2(20.+rnd.x*40.,iResolution.y/float(pnum)*float(i+1)),i,fragColor,fragCoord);     \n            }\n        }\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2016\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// single pass CFD\n// ---------------\n// this is some \"computational flockarooid dynamics\" ;)\n// the self-advection is done purely rotational on all scales. \n// therefore i dont need any divergence-free velocity field. \n// with stochastic sampling i get the proper \"mean values\" of rotations \n// over time for higher order scales.\n//\n// try changing \"RotNum\" for different accuracies of rotation calculation\n// for even RotNum uncomment the line #define SUPPORT_EVEN_ROTNUM\n\n#define RotNum 5\n//#define SUPPORT_EVEN_ROTNUM\n\n#define Res  iChannelResolution[0]\n#define Res1 iChannelResolution[1]\n\n#define keyTex iChannel3\n#define KEY_I texture(keyTex,vec2((105.5-32.0)/256.0,(0.5+0.0)/3.0)).x\n\nconst float ang = 2.0*3.1415926535/float(RotNum);\nmat2 m = mat2(cos(ang),sin(ang),-sin(ang),cos(ang));\nmat2 mh = mat2(cos(ang*0.5),sin(ang*0.5),-sin(ang*0.5),cos(ang*0.5));\n\nvec4 randS(vec2 uv)\n{\n    return texture(iChannel1,uv*Res.xy/Res1.xy)-vec4(0.5);\n}\n\nvec2 getGradBlue(vec2 pos)\n{\n    float eps=1.4;\n    vec2 d=vec2(eps,0);\n    return vec2(\n\t\t texture(iChannel0,fract((pos+d.xy)/Res.xy)).z\n        -texture(iChannel0,fract((pos-d.xy)/Res.xy)).z,\n\t\t texture(iChannel0,fract((pos+d.yx)/Res.xy)).z\n        -texture(iChannel0,fract((pos-d.yx)/Res.xy)).z\n    )/(eps*2.);\n}\n\nfloat getRot(vec2 pos, vec2 b)\n{\n    vec2 p = b;\n    float rot=0.0;\n    for(int i=0;i<RotNum;i++)\n    {\n        vec2 v=texture(iChannel0,fract((pos+p)/Res.xy)).xy;\n\n        rot+=dot(v,p.yx*vec2(1,-1));\n        p = m*p;\n    }\n    return rot/float(RotNum)/dot(b,b);\n}\n\nvec4 getC2(vec2 uv) \n{\n    // line 0 holds writer infos so take 1st line instead\n    if(uv.y*iChannelResolution[2].y<1.) uv.y+=1./iChannelResolution[2].y;\n\treturn texture(iChannel2,uv);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    vec2 pos = fragCoord.xy;\n    float rnd = randS(vec2(float(iFrame)/Res.x,0.5/Res1.y)).x;\n    \n    vec2 b = vec2(cos(ang*rnd),sin(ang*rnd));\n    vec2 v=vec2(0);\n    float bbMax=0.7*Res.y*1.; bbMax*=bbMax;\n    for(int l=0;l<8;l++)\n    {\n        if ( dot(b,b) > bbMax ) break;\n        vec2 p = b;\n        for(int i=0;i<RotNum;i++)\n        {\n#ifdef SUPPORT_EVEN_ROTNUM\n            v+=p.yx*getRot(pos+p,-mh*b);\n#else\n            // this is faster but works only for odd RotNum\n            v+=p.yx*getRot(pos+p,b);\n#endif\n            p = m*p;\n        }\n        b*=2.0;\n    }\n    vec4 c2=getC2(fract(uv));\n    float strength = clamp(1.-1.*c2.z,0.,1.);\n    fragColor=texture(iChannel0,fract((pos+v*strength*(2./*+2.*iMouse.y/Res.y*/)*vec2(-1,1)*1.0)/Res.xy));\n    fragColor=mix(fragColor,c2.xxzw*vec4(1,-1,1,1),.3*clamp(1.-strength,0.,1.));\n    \n    // damping\n    fragColor.xy=mix(fragColor.xy,vec2(.0),.02);\n    \n    // add a little \"motor\" in the center\n    //vec2 scr=(fragCoord.xy/Res.xy)*2.0-vec2(1.0);\n    //fragColor.xy += (0.01*scr.xy / (dot(scr,scr)/0.1+0.3));\n    \n    if(iFrame<=4 || KEY_I>0.5) fragColor=texture(iChannel2,fragCoord.xy/Res.xy);\n}\n",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGRn",
+     "filepath": "/media/a/95b90082f799f48677b4f206d856ad572f1d178c676269eac6347631d4447258.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2016\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\nfloat getVign(vec2 fragCoord)\n{\n\tfloat vign=1.;\n    \n\tfloat rs=length(fragCoord-iResolution.xy*.5)/iResolution.x/.7;\t\n    vign*=1.-rs*rs*rs;\n    \n    vec2 co=2.*(fragCoord.xy-.5*iResolution.xy)/iResolution.xy;\n\tvign*=cos(0.75*length(co));\n    vign*=0.5+0.5*(1.-pow(co.x*co.x,16.))*(1.-pow(co.y*co.y,16.));\n    \n    return vign;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // camera rattle\n    vec4 rattle=texture(iChannel2,vec2(iTime*.1234*.5,.5/256.));\n\tvec2 uv = fract(((fragCoord.xy / iResolution.xy-.5)*(1.+rattle.z*.01)+.5) + rattle.xy*.005);\n    vec4 c = texture(iChannel0,uv);\n    vec4 old = texture(iChannel1,fragCoord.xy / iResolution.xy);\n    // brightness flickering\n    vec4 flicker=texture(iChannel2,vec2(iTime*.2,.5/256.));\n    \n    // yellow-red fade\n    fragColor= 1.5*mix(abs(c.xxww*vec4(1,.2,0,1)),.6*abs(c.xxxw),(1.-smoothstep(.35,.45,c.z))*(1.-smoothstep(.25,.35,c.x)));\n    \n    fragColor+=\n        +abs(c.yyyw)*vec4(.4,.4,.3,1)                            // bright core\n        +(.8+.2*flicker)*vec4(1,1,.5,1)*clamp(c.zzzw-.5,0.,1.);  // halo\n    \n    // mix bg image\n    fragColor=mix(vec4(1),vec4(.2,.12,.06,0)*1.2+.4*texture(iChannel3,uv).x*vec4(1,1,1,0),-fragColor+1.1);\n\n    fragColor*=(flicker*.25+.75)*2.3*fragColor;     // fragColor^2 contrast\n    fragColor*=getVign(fragCoord);                  // vignetting\n    fragColor=mix(fragColor,old*vec4(.7,1,1,1),.6); // slight motion blur (camera latency)\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

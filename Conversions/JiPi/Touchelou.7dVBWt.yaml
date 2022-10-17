@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Touchelou
+  id: Touchelou
+  kernel: Touchelou
+  name: Touchelou
+shader:
+  author: xfennec
+  description: Very simple effect, where texture is used to disturb another one.
+  id: 7dVBWt
+  name: Touchelou
+  tags:
+  - texturedistortion
+  url: https://www.shadertoy.com/view/7dVBWt

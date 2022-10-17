@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: LastFluid
+  id: LastFluid
+  kernel: LastFluid
+  name: LastFluid
+shader:
+  author: wyatt
+  description: 'This is it, this is as good as it gets.
+
+    Just so you know, before me, realtime fluids were not physical... Pressure was
+    computed per frame rather than being treated as a living variable.'
+  id: 3tcSDj
+  name: Last Fluid
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/3tcSDj

@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: GraphNetwork
+  id: GraphNetwork
+  kernel: GraphNetwork
+  name: GraphNetwork
+shader:
+  author: wyatt
+  description: 'graph network of particles. They find each other by searching a directional
+    graph. '
+  id: wdjcDR
+  name: Graph Network*
+  tags:
+  - graph
+  url: https://www.shadertoy.com/view/wdjcDR

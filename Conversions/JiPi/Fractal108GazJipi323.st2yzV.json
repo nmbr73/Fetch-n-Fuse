@@ -1,0 +1,34 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "st2yzV",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fractal108gaz JiPi323",
+  "description": "fractal",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fractal"
+  ],
+  "hasliked": 0,
+  "parentid": "7slfD8",
+  "parentname": "Fractal 108 gaz"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define R(p,a,t) mix(a*dot(p,a),p,cos(t))+sin(t)*cross(p,a)\n#define H(h) (cos((h)*6.3+vec3(0,23,21))*.5+.5)\n\nvoid mainImage(out vec4 O, vec2 C)\n{\n    vec3 p,r=iResolution,c=vec3(0),\n    d=normalize(vec3((C-.5*r.xy)/r.y,1));\n \tfor(float i=0.,s,e,g=0.,t=iTime;i++<90.;){\n        p=g*d;\n        p.z-=.5;\n        p=R(p,H(t*.01),t*.2);\n        s=1.;\n        for(int j=0;j++<6;)\n           p=p.x<p.y?p.zxy:p.zyx,\n           s*=e=max(1./dot(p,p),1.5),\n           p=abs(p)*e-vec3(2,1.7,.8);\n        g+=e=abs(p.x)/s+1e-4;\n\t    c+=mix(vec3(1),H(log(s)*.4),.4)*.015/exp(.1*i*i*e);\n\t}\n\tc*=c*c;\n    O=vec4(c,1);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

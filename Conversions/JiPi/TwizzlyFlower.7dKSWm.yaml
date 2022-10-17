@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: TwizzlyFlower
+  id: TwizzlyFlower
+  kernel: TwizzlyFlower
+  name: TwizzlyFlower
+shader:
+  author: SnoopethDuckDuck
+  description: messy code
+  id: 7dKSWm
+  name: Twizzly Flower
+  tags:
+  - raymarching
+  - template
+  - artofcode
+  url: https://www.shadertoy.com/view/7dKSWm

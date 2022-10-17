@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ParticlesSdfJipi
+  id: ParticlesSdfJipi
+  kernel: ParticlesSdfJipi
+  name: ParticlesSdfJipi
+shader:
+  author: N.N.
+  description: particles
+  id: ssKyR3
+  name: Particles SDF JiPi
+  parent:
+    id: NsyyR3
+    name: Particles SDF
+    url: https://www.shadertoy.com/view/NsyyR3
+  tags:
+  - particles
+  url: https://www.shadertoy.com/view/ssKyR3

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: FourierWorkflow
+  id: FourierWorkflow
+  kernel: FourierWorkflow
+  name: FourierWorkflow
+shader:
+  author: FabriceNeyret2
+  description: "workflow for all applications working in Fourier domain.  SPACE toggles\
+    \ Fourier depiction.\nbuf B and D do the space transforms, buf C operates in Fourier.\n\
+    \                                     Adapted from  Flyguy's https://www.shadertoy.com/view/MscGWS#"
+  id: 4s3GDs
+  name: Fourier workflow
+  tags:
+  - fft
+  - fourier
+  - dft
+  url: https://www.shadertoy.com/view/4s3GDs

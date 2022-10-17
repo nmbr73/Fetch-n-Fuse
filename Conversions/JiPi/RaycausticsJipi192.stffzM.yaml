@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: RaycausticsJipi192
+  id: RaycausticsJipi192
+  kernel: RaycausticsJipi192
+  name: RaycausticsJipi192
+shader:
+  author: N.N.
+  description: 'VERY SLOW ! TURN OFF ANIMATION !!
+
+    I''m open to ideas for optimisation'
+  id: stffzM
+  name: RayCaustics JiPi192
+  parent:
+    id: ftsBzH
+    name: Ray Caustics
+    url: https://www.shadertoy.com/view/ftsBzH
+  tags:
+  - noise
+  - clouds
+  url: https://www.shadertoy.com/view/stffzM

@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: MazeLattice
+  id: MazeLattice
+  kernel: MazeLattice
+  name: MazeLattice
+shader:
+  author: Shane
+  description: Applying a geometric pattern and edging to Fizzer's infinite, maze-like
+    lattice structure.
+  id: llGGzh
+  name: Maze Lattice
+  tags:
+  - 3d
+  - random
+  - truchet
+  - edge
+  - bump
+  - tech
+  - maze
+  - hexagonal
+  url: https://www.shadertoy.com/view/llGGzh

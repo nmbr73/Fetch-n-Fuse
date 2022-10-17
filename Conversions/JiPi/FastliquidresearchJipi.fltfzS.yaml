@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: FastliquidresearchJipi
+  id: FastliquidresearchJipi
+  kernel: FastliquidresearchJipi
+  name: FastliquidresearchJipi
+shader:
+  author: N.N.
+  description: Research of the day to make a liquid effect at a cheap price o:)
+  id: fltfzS
+  name: FastLiquidResearch JiPi
+  parent:
+    id: lljBWy
+    name: fast liquid research
+    url: https://www.shadertoy.com/view/lljBWy
+  tags:
+  - test
+  - fluid
+  - flow
+  - liquid
+  url: https://www.shadertoy.com/view/fltfzS

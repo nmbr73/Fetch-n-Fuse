@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: HardsurfaceSphere2
+  id: HardsurfaceSphere2
+  kernel: HardsurfaceSphere2
+  name: HardsurfaceSphere2
+shader:
+  author: tdhooper
+  description: Tiling the sphere with triangle voronoi patterns, polished version
+    of [url]https://www.shadertoy.com/view/fsKBRR[/url]
+  id: fdGfW1
+  name: HardSurface Sphere [2]
+  tags:
+  - voronoi
+  - geodesic
+  url: https://www.shadertoy.com/view/fdGfW1

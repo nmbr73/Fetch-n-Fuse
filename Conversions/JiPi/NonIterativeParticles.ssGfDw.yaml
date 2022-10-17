@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: NonIterativeParticles
+  id: NonIterativeParticles
+  kernel: NonIterativeParticles
+  name: NonIterativeParticles
+shader:
+  author: Plento
+  description: ' A WIP concept in making a ton of individual point particles. Energy
+    is definitely not being conserved properly but so far it looks ok. Use the MOUSE
+    to drag stuff around and press A to zoom in while using the mouse.'
+  id: ssGfDw
+  name: 'Non Iterative Particles '
+  tags:
+  - 2d
+  - mouse
+  - experiment
+  - fluid
+  - particles
+  - physics
+  - mass
+  url: https://www.shadertoy.com/view/ssGfDw

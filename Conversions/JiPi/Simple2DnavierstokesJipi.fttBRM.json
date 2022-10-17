@@ -1,0 +1,368 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fttBRM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Simple2DNavierStokes  JiPi",
+  "description": "Experiment with divergence free fluid - at least it would be div-free if I could somehow execute pass C multiple times.\nMostly ported from an old WebGL experiment of mine https://github.com/Wumpf/fluidwebglts\nThere is a lot room for improvement here :)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "multipass",
+   "navierstokes"
+  ],
+  "hasliked": 0,
+  "parentid": "ldd3WS",
+  "parentname": "Simple 2D Navier Stokes"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "#define VELOCITY 0 \n#define PRESSURE 1\n#define DIVERGENCE 2\n\n#define SHOW VELOCITY\n\n\nvec4 showPressure(vec2 uv)\n{\n    return abs(texture(iChannel2, uv)) * 0.05;\n}\n\nvec4 showVelocity(vec2 uv)\n{\n    vec4 color = texture(iChannel0, uv);\n    if(color.z > 0.0) // obstacle\n    {\n        return vec4(0.5);\n    }\n    else\n    {\n        return abs(color) * 0.008;\n    }\n}\n\nvec4 showDivergence(vec2 uv)\n{\n    // Divergence should be as close to 0 as possible.. sadly it isn't.\n    return abs(texture(iChannel1, uv));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n\n    #if SHOW == VELOCITY\n    fragColor = showVelocity(uv);\n    #elif SHOW == PRESSURE\n    fragColor = showPressure(uv);\n    #elif SHOW == DIVERGENCE\n    fragColor = showDivergence(uv);\n    #endif\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advection & force\n\n// Magic force within a rectangle.\nconst vec2 Force = vec2(100.0, 0.0);\nconst vec2 ForceAreaMin = vec2(0.0, 0.2); \nconst vec2 ForceAreaMax = vec2(0.06, 0.8);\n\n// Circular barrier.\nconst vec2 BarrierPosition = vec2(0.2, 0.5);\nconst float BarrierRadiusSq = 0.01;\n\n#define VelocityTexture iChannel3\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 inverseResolution = vec2(1.0) / iResolution.xy;\n    vec2 uv = fragCoord.xy * inverseResolution;\n\n    // Simple advection by backstep.\n    // Todo: Try better methods like MacCormack (http://http.developer.nvidia.com/GPUGems3/gpugems3_ch30.html)\n    vec2 oldVelocity = texture(VelocityTexture, uv).xy;\n    vec2 samplePos = uv - oldVelocity * iTimeDelta * inverseResolution;\n    vec2 outputVelocity = texture(VelocityTexture, samplePos).xy;\n    \n    // Add force.\n    if(uv.x > ForceAreaMin.x && uv.x < ForceAreaMax.x &&\n       uv.y > ForceAreaMin.y && uv.y < ForceAreaMax.y)\n    {\n    \toutputVelocity += Force * iTimeDelta;\n    }\n    \n    // Clamp velocity at borders to zero.\n    if(uv.x > 1.0 - inverseResolution.x ||\n      \tuv.y > 1.0 - inverseResolution.y ||\n      \tuv.x < inverseResolution.x ||\n      \tuv.y < inverseResolution.y)\n    {\n        outputVelocity = vec2(0.0, 0.0);\n    }\n    \n    // Circle barrier.\n    vec2 toBarrier = BarrierPosition - uv;\n    toBarrier.x *= inverseResolution.y / inverseResolution.x;\n    if(dot(toBarrier, toBarrier) < BarrierRadiusSq)\n    {\n        fragColor = vec4(0.0, 0.0, 999.0, 0.0);\n    }\n    else\n    {\n        fragColor = vec4(outputVelocity, 0.0, 0.0);\n    } \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Compute divergence.\n\n#define VelocityTexture iChannel0\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 inverseResolution = vec2(1.0) / iResolution.xy;\n    vec2 uv = fragCoord.xy * inverseResolution;\n    \n    // Obstacle?\n    if(texture(VelocityTexture, uv).z > 0.0)\n    {\n        fragColor = vec4(0.0);\n        return;\n    }\n\n    float x0 = texture(VelocityTexture, uv - vec2(inverseResolution.x, 0)).x;\n    float x1 = texture(VelocityTexture, uv + vec2(inverseResolution.x, 0)).x;\n    float y0 = texture(VelocityTexture, uv - vec2(0, inverseResolution.y)).y;\n    float y1 = texture(VelocityTexture, uv + vec2(0, inverseResolution.y)).y;\n    float divergence = ((x1-x0) + (y1-y0)) * 0.5;\n    fragColor = vec4(divergence);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Jacobi iteration\n// For a more accurate result, this should be executed multiple times.\n\n#define DivergenceTexture iChannel1\n#define PressureTexture iChannel2\n#define VelocityTexture iChannel0\n\nvec2 inverseResolution;\nvec2 border;\nvec2 uv;\n\nfloat samplePressure(vec2 pos)\n{\n    // Obstacle?\n    if(texture(VelocityTexture, pos).z > 0.0)\n    {\n        return 0.0;\n    }\n    \n    // Boundary condition: Vanish for at walls.\n    if(pos.x > 1.0 - border.x || pos.y > 1.0 - border.y ||\n      \tpos.x < border.x || pos.y < border.y)\n    {\n        return 0.0;\n    }\n   \telse\n    {\n    \treturn texture(PressureTexture, pos).x;\n    }\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    inverseResolution = vec2(1.0) / iResolution.xy;\n    border = inverseResolution * 2.0;\n    uv = fragCoord.xy * inverseResolution;\n    \n    float div = texture(DivergenceTexture, uv).x;\n    float x0 = samplePressure(uv - vec2(inverseResolution.x, 0));\n    float x1 = samplePressure(uv + vec2(inverseResolution.x, 0));\n    float y0 = samplePressure(uv - vec2(0, inverseResolution.y));\n    float y1 = samplePressure(uv + vec2(0, inverseResolution.y));\n    \n   \tfragColor = vec4((x0 + x1 + y0 + y1 - div) * 0.25);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Subtract pressure gradient to ensure zero divergence.\n\n#define PressureTexture iChannel2\n#define VelocityTexture iChannel0\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 inverseResolution = vec2(1.0) / iResolution.xy;\n    vec2 uv = fragCoord.xy * inverseResolution;\n    \n    float x0 = texture(PressureTexture, uv - vec2(inverseResolution.x, 0)).x;\n    float x1 = texture(PressureTexture, uv + vec2(inverseResolution.x, 0)).x;\n    float y0 = texture(PressureTexture, uv - vec2(0, inverseResolution.y)).x;\n    float y1 = texture(PressureTexture, uv + vec2(0, inverseResolution.y)).x;\n    vec2 pressureGradient = (vec2(x1, y1) - vec2(x0, y0)) * 0.5;\n    vec2 oldV = texture(VelocityTexture, uv).xy;\n    \n    fragColor = vec4(oldV - pressureGradient, 0.0, 0.0);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: SoundVisualizer
+  id: SoundVisualizer
+  kernel: SoundVisualizer
+  name: SoundVisualizer
+shader:
+  author: stack_overflow
+  description: 'Just playing with sound in Shadertoy :-)
+
+    Ensure your browser is not blocking autoplay.'
+  id: 3ljXDd
+  name: Sound visualizer
+  tags:
+  - sound
+  - visualizer
+  url: https://www.shadertoy.com/view/3ljXDd

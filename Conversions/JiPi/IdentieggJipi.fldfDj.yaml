@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: IdentieggJipi
+  id: IdentieggJipi
+  kernel: IdentieggJipi
+  name: IdentieggJipi
+shader:
+  author: N.N.
+  description: 'Random dyed egg generator inspired by WordPress/Gravatar identicon.
+
+    '
+  id: fldfDj
+  name: IdentiEgg JiPi
+  parent:
+    id: slfXR7
+    name: IdentiEgg
+    url: https://www.shadertoy.com/view/slfXR7
+  tags:
+  - color
+  - random
+  - egg
+  - pysanky
+  - pysanka
+  url: https://www.shadertoy.com/view/fldfDj

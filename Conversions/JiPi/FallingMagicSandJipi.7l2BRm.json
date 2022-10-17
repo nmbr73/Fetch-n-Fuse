@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7l2BRm",
+  "date": "0",
+  "viewed": 0,
+  "name": "Falling magic Sand JiPi",
+  "description": "s",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation"
+  ],
+  "hasliked": 0,
+  "parentid": "XtjyRt",
+  "parentname": "Falling magic sand"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGzn",
+     "filepath": "/media/a/0c7bf5fe9462d5bffbd11126e82908e39be3ce56220d900f633d58fb432e56f5.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec3 a=texture(iChannel0,uv).rgb;\n    vec3 b=texture(iChannel1,uv*vec2(2.,1.5)+vec2(0,iTime*0.1)).rgb;\n    if (length(a)>length(b)){a=normalize(a);}else{a=vec3(0.);}\n    \n\tfragColor = vec4(a,1.);//vec4(uv,0.5+0.5*sin(iTime),1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 poss[]=vec2[3](vec2(-0.004,0.),vec2(0.004,0.),vec2(0.,0.01));\nfloat pit=3.14159*2./3.;\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\tvec2 uv = fragCoord.xy / iResolution.xy;\n \tvec4 a=vec4(-0.001);\n for (int i=0;i<3;i++){\n     a+=texture(iChannel0,uv+poss[i]);}\n \ta=a/3.0;\n    if(distance(uv,iMouse.xy/iResolution.xy)<0.05){\n        a=vec4(sin(iTime),sin(iTime+pit),sin(iTime-pit),1.)*.5+.5;}\n    //a=vec4(1.,0.,0.,1.);\n \ta.a=1.;\n    fragColor = clamp(a,0.,1.);// vec4(0.0,0.0,1.0,1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: SinglepassfluidsimJipi
+  id: SinglepassfluidsimJipi
+  kernel: SinglepassfluidsimJipi
+  name: SinglepassfluidsimJipi
+shader:
+  author: N.N.
+  description: This is just a variation on Florian Berger's (flockaroo's) single pass
+    CFD method, with (possibly) some optimizations and time- and resolution-dependent
+    stability fixes, a randomized simplex gradient seed for initial color, and mouse
+    interaction.
+  id: styfzz
+  name: SinglePassFluidSim JiPi
+  parent:
+    id: stdfzl
+    name: Single Pass Fluid Sim
+    url: https://www.shadertoy.com/view/stdfzl
+  tags:
+  - fluid
+  - flow
+  - dynamics
+  - pass
+  - cfd
+  - single
+  url: https://www.shadertoy.com/view/styfzz

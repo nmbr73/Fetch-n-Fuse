@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: WaveRipplesJipi
+  id: WaveRipplesJipi
+  kernel: WaveRipplesJipi
+  name: WaveRipplesJipi
+shader:
+  author: N.N.
+  description: Circular ripples extend from the mouse click position.
+  id: 7l3yR2
+  name: Wave Ripples JiPi
+  parent:
+    id: ldSSD1
+    name: Wave Ripples
+    url: https://www.shadertoy.com/view/ldSSD1
+  tags:
+  - waves
+  - ripples
+  - distortion
+  url: https://www.shadertoy.com/view/7l3yR2

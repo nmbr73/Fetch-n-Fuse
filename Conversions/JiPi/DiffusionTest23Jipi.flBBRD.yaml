@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: DiffusionTest23Jipi
+  id: DiffusionTest23Jipi
+  kernel: DiffusionTest23Jipi
+  name: DiffusionTest23Jipi
+shader:
+  author: N.N.
+  description: diffusion  test getting closer
+  id: flBBRD
+  name: diffusion test23 JiPi
+  parent:
+    id: slScD1
+    name: diffusion test23
+    url: https://www.shadertoy.com/view/slScD1
+  tags:
+  - test
+  url: https://www.shadertoy.com/view/flBBRD

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: CellsCamJipi
+  id: CellsCamJipi
+  kernel: CellsCamJipi
+  name: CellsCamJipi
+shader:
+  author: N.N.
+  description: experiments with voronoi
+  id: flKyWz
+  name: Cells cam JiPi
+  parent:
+    id: ftVyDR
+    name: Cells cam
+    url: https://www.shadertoy.com/view/ftVyDR
+  tags:
+  - voronoi
+  - life
+  - cells
+  url: https://www.shadertoy.com/view/flKyWz

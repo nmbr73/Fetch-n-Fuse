@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: RiverbasinJipi552
+  id: RiverbasinJipi552
+  kernel: RiverbasinJipi552
+  name: RiverbasinJipi552
+shader:
+  author: N.N.
+  description: 'Inspired by [url]https://imgur.com/gallery/WaEbi[/url]
+
+
+    See [url]https://www.shadertoy.com/view/XsVBRm[/url] for previous version'
+  id: NtsBRr
+  name: RiverBasin JiPi552
+  parent:
+    id: XsVBDz
+    name: River Basin
+    url: https://www.shadertoy.com/view/XsVBDz
+  tags:
+  - procedural
+  - terrain
+  - river
+  - erosion
+  url: https://www.shadertoy.com/view/NtsBRr

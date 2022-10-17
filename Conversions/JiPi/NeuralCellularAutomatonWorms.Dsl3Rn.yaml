@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: NeuralCellularAutomatonWorms
+  id: NeuralCellularAutomatonWorms
+  kernel: NeuralCellularAutomatonWorms
+  name: NeuralCellularAutomatonWorms
+shader:
+  author: fenix
+  description: "I just watched this video and was inspired to create this shader.\n\
+    \n     https://www.youtube.com/watch?v=3H79ZcBuw4M\n\nI have no idea how this\
+    \ works, but in my defence neither does the guy who made the video (or so he says)."
+  id: Dsl3Rn
+  name: Neural Cellular Automaton Worms
+  tags:
+  - cellular
+  - worms
+  - neural
+  - atomaton
+  - atomata
+  url: https://www.shadertoy.com/view/Dsl3Rn

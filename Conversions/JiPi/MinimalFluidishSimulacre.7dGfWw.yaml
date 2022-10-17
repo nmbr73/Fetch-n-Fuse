@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: MinimalFluidishSimulacre
+  id: MinimalFluidishSimulacre
+  kernel: MinimalFluidishSimulacre
+  name: MinimalFluidishSimulacre
+shader:
+  author: leon
+  description: fluidicly incorrect
+  id: 7dGfWw
+  name: Minimal Fluidish Simulacre
+  tags:
+  - fluid
+  - small
+  url: https://www.shadertoy.com/view/7dGfWw

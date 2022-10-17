@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MationiBlueNeonBorder
+  id: MationiBlueNeonBorder
+  kernel: MationiBlueNeonBorder
+  name: MationiBlueNeonBorder
+shader:
+  author: juanpetrik
+  description: Mationi - Blue Neon Border
+  id: 7dccR7
+  name: Mationi - Blue Neon Border
+  tags:
+  - blueneon
+  url: https://www.shadertoy.com/view/7dccR7

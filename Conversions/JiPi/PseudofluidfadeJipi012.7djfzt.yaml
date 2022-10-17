@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: PseudofluidfadeJipi012
+  id: PseudofluidfadeJipi012
+  kernel: PseudofluidfadeJipi012
+  name: PseudofluidfadeJipi012
+shader:
+  author: N.N.
+  description: Thing
+  id: 7djfzt
+  name: Pseudofluidfade JiPi 012
+  parent:
+    id: MdSBzm
+    name: Pseudofluidfade
+    url: https://www.shadertoy.com/view/MdSBzm
+  tags:
+  - noise
+  - perlinnoise
+  - perlin
+  - fluid
+  - curl
+  - fade
+  - curlnoise
+  url: https://www.shadertoy.com/view/7djfzt

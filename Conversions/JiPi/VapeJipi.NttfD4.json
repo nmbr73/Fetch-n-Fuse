@@ -1,0 +1,111 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NttfD4",
+  "date": "0",
+  "viewed": 0,
+  "name": "Vape JiPi",
+  "description": "Click around!\n\nFeedback-based \"smoke\" \"fluid\" effect. Just distorting with a simplex noise field and some magic parameters.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "noise",
+   "fake",
+   "perlin",
+   "fluid",
+   "simplex",
+   "smoke",
+   "feedback",
+   "curlnoise"
+  ],
+  "hasliked": 0,
+  "parentid": "MssyDr",
+  "parentname": "Vape"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ){\n    vec2 uv = fragCoord.xy/iResolution.xy;\n    fragColor = 1.0-texture(iChannel0, uv);\n    //vec4 temp = fragColor;\n    fragColor = smoothstep(0.0, 1.0, pow(fragColor, vec4(0.4545)));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float hash12(vec2 p){\n\tvec3 p3  = fract(vec3(p.xyx) * 0.1031);\n\tp3 += dot(p3, p3.yzx + 9.0);\n\treturn fract((p3.x + p3.y) * p3.z);\n}\n\nfloat noise(vec2 x){\n    vec2 f = fract(x)*fract(x)*(3.0-2.0*fract(x));\n\treturn mix(mix(hash12(floor(x)),\n                   hash12(floor(x)+vec2(1,0)),f.x),\n               mix(hash12(floor(x)+vec2(0,1)),\n                   hash12(floor(x)+vec2(1)),f.x),f.y);\n}\n\nvec4 circle(vec2 uv, vec2 pos){\n    // draw a circle at mouse coordinates\n    float s = 4.0+4.0*pow(noise(vec2(iTime*2.8)),2.0);\n    uv += pos+vec2(1.0/s);\n    float val = clamp(1.0-length(s*uv-1.0), 0.0, 1.0);\n    val = pow(5.0*val, 5.0);\n\treturn vec4(clamp(val, 0.0, 1.0));\n}\n\nvec2 hash21(float p){\n\tvec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973));\n\tp3 += dot(p3, p3.yzx + 19.19);\n    return fract((p3.xx+p3.yz)*p3.zy);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\tvec2 uv = fragCoord.xy / iResolution.yy;\n    float brightness = 1.0;//0.6+0.4*noise(vec2(iTime*2.9));\n    fragColor = brightness*circle(uv, -iMouse.xy/iResolution.yy)*clamp(iMouse.z, 0.0, 1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// simplex noise obviously not by me, see main() below\nvec3 mod289(vec3 x){\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 mod289(vec4 x){\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute(vec4 x){\n     return mod289(((x*34.0)+1.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r){\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nfloat simplex(vec3 v){\n  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n\n  vec3 i  = floor(v + dot(v, C.yyy) );\n  vec3 x0 =   v - i + dot(i, C.xxx) ;\n\n  vec3 g = step(x0.yzx, x0.xyz);\n  vec3 l = 1.0 - g;\n  vec3 i1 = min( g.xyz, l.zxy );\n  vec3 i2 = max( g.xyz, l.zxy );\n\n  vec3 x1 = x0 - i1 + C.xxx;\n  vec3 x2 = x0 - i2 + C.yyy;\n  vec3 x3 = x0 - D.yyy;\n\n  i = mod289(i);\n  vec4 p = permute( permute( permute(\n             i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n           + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n           + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n\n  float n_ = 0.142857142857;\n  vec3  ns = n_ * D.wyz - D.xzx;\n\n  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);\n\n  vec4 x_ = floor(j * ns.z);\n  vec4 y_ = floor(j - 7.0 * x_ );\n\n  vec4 x = x_ *ns.x + ns.yyyy;\n  vec4 y = y_ *ns.x + ns.yyyy;\n  vec4 h = 1.0 - abs(x) - abs(y);\n\n  vec4 b0 = vec4( x.xy, y.xy );\n  vec4 b1 = vec4( x.zw, y.zw );\n\n  vec4 s0 = floor(b0)*2.0 + 1.0;\n  vec4 s1 = floor(b1)*2.0 + 1.0;\n  vec4 sh = -step(h, vec4(0.0));\n\n  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n\n  vec3 p0 = vec3(a0.xy,h.x);\n  vec3 p1 = vec3(a0.zw,h.y);\n  vec3 p2 = vec3(a1.xy,h.z);\n  vec3 p3 = vec3(a1.zw,h.w);\n\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n\n  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\n  m = m * m;\n  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),\n                                dot(p2,x2), dot(p3,x3) ) );\n  }\n\nfloat fbm3(vec3 v) {\n    float result = simplex(v);\n    result += simplex(v * 2.) / 2.;\n    result += simplex(v * 4.) / 4.;\n    result /= (1. + 1./2. + 1./4.);\n    return result;\n}\n\nvec3 snoiseVec3( vec3 x ){\n\n  float s  = simplex(vec3( x ));\n  float s1 = simplex(vec3( x.y - 19.1 , x.z + 33.4 , x.x + 47.2 ));\n  float s2 = simplex(vec3( x.z + 74.2 , x.x - 124.5 , x.y + 99.4 ));\n  vec3 c = vec3( s , s1 , s2 );\n  return c;\n\n}\n\nvec3 curlNoise(vec3 p)\n{\n    const float e = .1;\n  vec3 dx = vec3( e   , 0.0 , 0.0 );\n  vec3 dy = vec3( 0.0 , e   , 0.0 );\n  vec3 dz = vec3( 0.0 , 0.0 , e   );\n\n  vec3 p_x0 = snoiseVec3( p - dx );\n  vec3 p_x1 = snoiseVec3( p + dx );\n  vec3 p_y0 = snoiseVec3( p - dy );\n  vec3 p_y1 = snoiseVec3( p + dy );\n  vec3 p_z0 = snoiseVec3( p - dz );\n  vec3 p_z1 = snoiseVec3( p + dz );\n\n  float x = p_y1.z - p_y0.z - p_z1.y + p_z0.y;\n  float y = p_z1.x - p_z0.x - p_x1.z + p_x0.z;\n  float z = p_x1.y - p_x0.y - p_y1.x + p_y0.x;\n\n  //const float divisor = 1.0 / ( 2.0 * e );\n  //return normalize( vec3( x , y , z ) * divisor );\n  // technically incorrect but I like this better...\n  return vec3( x , y , z );\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord){\n    vec2 uv = -1.0+2.0*fragCoord.xy / iResolution.xy;\n    uv.x *= iResolution.x/iResolution.y;\n    uv *= 1.25;\n    \n    // noise seed\n    vec3 v = vec3(uv, iTime*0.3);\n    const float disp_freq = 0.6;\n    v.xy *= disp_freq;\n    // get first some density variation\n    vec4 disp = 0.5*mix(vec4(0), pow(0.5+0.5*vec4(fbm3(-2.0*v+11.2)), vec4(2)), 0.05);\n    v.xy /= disp_freq;\n    // add to randomization coordinates\n    v += disp.x*15.;\n    \n    // vector field (\"fluid\" direction)\n    vec2 off =  0.25*curlNoise(vec3(v)).xy;// vec2(fbm3(v), fbm3(v+99.0));\n    // maybe apply density to vector field too?\n    //off /= 1.0+disp.x*10.0;\n    vec2 uv2 = fragCoord.xy / iResolution.xy;\n    // get \"emitter\" from buffer A\n    fragColor += texture(iChannel0, uv2);\n    // mutate previous state with field direction\n    fragColor += texture(iChannel1, (0.5+0.5*(1.0*(-1.0+2.0*uv2)))+off*0.025);\n    \n    // disperse and output\n    fragColor = pow( clamp(fragColor-disp, 0.0, 1.0), vec4(1.002*(1.0+disp)));\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

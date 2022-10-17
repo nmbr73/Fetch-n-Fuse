@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: IceCrystalsJipi
+  id: IceCrystalsJipi
+  kernel: IceCrystalsJipi
+  name: IceCrystalsJipi
+shader:
+  author: N.N.
+  description: 'Experimenting with visualizing crystal growth through a particle simulation.
+
+
+    Pressing Space re-seeds the simulation, which is especially useful after switching
+    to fullscreen-mode.'
+  id: 7ljfzG
+  name: Ice Crystals JiPi
+  parent:
+    id: XtsfWs
+    name: Ice Crystals 1.0
+    url: https://www.shadertoy.com/view/XtsfWs
+  tags:
+  - simulation
+  - particles
+  - brownian
+  - ice
+  - dla
+  url: https://www.shadertoy.com/view/7ljfzG

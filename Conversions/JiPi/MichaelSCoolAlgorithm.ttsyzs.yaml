@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: MichaelSCoolAlgorithm
+  id: MichaelSCoolAlgorithm
+  kernel: MichaelSCoolAlgorithm
+  name: MichaelSCoolAlgorithm
+shader:
+  author: wyatt
+  description: .
+  id: ttsyzs
+  name: Michael's Cool Algorithm
+  tags:
+  - virtualtracking
+  url: https://www.shadertoy.com/view/ttsyzs

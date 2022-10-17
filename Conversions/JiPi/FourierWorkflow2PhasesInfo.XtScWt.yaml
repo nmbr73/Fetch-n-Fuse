@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: FourierWorkflow2PhasesInfo
+  id: FourierWorkflow2PhasesInfo
+  kernel: FourierWorkflow2PhasesInfo
+  name: FourierWorkflow2PhasesInfo
+shader:
+  author: FabriceNeyret2
+  description: "space: show   module / phase / complex / real / imaginary     \nS:\
+    \ inset on/off  =spectrum before / after op\n     Set your signal in buf A, and\
+    \ your Fourier-space operations in buf C\nExample: keep only phases, module =\
+    \ |f] ^ -1.6 . So much info in phases !"
+  id: XtScWt
+  name: Fourier Workflow 2 / phases info
+  tags:
+  - fft
+  - fourier
+  - dft
+  - phase
+  url: https://www.shadertoy.com/view/XtScWt

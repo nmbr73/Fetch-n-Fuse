@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: SoundOscilloscopeJipi625
+  id: SoundOscilloscopeJipi625
+  kernel: SoundOscilloscopeJipi625
+  name: SoundOscilloscopeJipi625
+shader:
+  author: wyatt
+  description: "Solid forces resist torques in this fluid simulation. \nI love helping\
+    \ my friends succeed, sometimes I feel external pressure to dominate and be the\
+    \ best, but I would much rather collaborate and advance together."
+  id: ssfBWM
+  name: Solid Forces
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/ssfBWM

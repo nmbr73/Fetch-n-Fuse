@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: TerrainMeshJipi
+  id: TerrainMeshJipi
+  kernel: TerrainMeshJipi
+  name: TerrainMeshJipi
+shader:
+  author: N.N.
+  description: 'emulating low poly and contour levels with surface nets
+
+    select style in common tab
+
+    '
+  id: NtVyWG
+  name: terrain mesh JiPi
+  parent:
+    id: Nlyyzd
+    name: terrain mesh  with SN
+    url: https://www.shadertoy.com/view/Nlyyzd
+  tags:
+  - mesh
+  - surfacenets
+  url: https://www.shadertoy.com/view/NtVyWG

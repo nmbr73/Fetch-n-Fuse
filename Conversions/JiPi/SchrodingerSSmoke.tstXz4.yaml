@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SchrodingerSSmoke
+  id: SchrodingerSSmoke
+  kernel: SchrodingerSSmoke
+  name: SchrodingerSSmoke
+shader:
+  author: wyatt
+  description: 'Copied from Michael, who actually understood the paper : [url]https://www.shadertoy.com/view/tdcXzN[/url]
+
+    Paper : [url]http://page.math.tu-berlin.de/~chern/projects/PhDThesis/thesis_reduced.pdf[/url]
+
+    '
+  id: tstXz4
+  name: Schrodinger's Smoke
+  tags:
+  - asdf
+  url: https://www.shadertoy.com/view/tstXz4

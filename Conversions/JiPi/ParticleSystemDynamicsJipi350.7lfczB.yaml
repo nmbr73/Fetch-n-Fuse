@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: ParticleSystemDynamicsJipi350
+  id: ParticleSystemDynamicsJipi350
+  kernel: ParticleSystemDynamicsJipi350
+  name: ParticleSystemDynamicsJipi350
+shader:
+  author: N.N.
+  description: A particle system implementing several different forces, and rule-based
+    particle interactions. Use mouse controls to speed up particles locally.
+  id: 7lfczB
+  name: Particle System Dynamics JiPi350
+  parent:
+    id: 4sK3RR
+    name: Particle System Dynamics
+    url: https://www.shadertoy.com/view/4sK3RR
+  tags:
+  - dynamics
+  - particle
+  - system
+  url: https://www.shadertoy.com/view/7lfczB

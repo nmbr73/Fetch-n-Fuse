@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: SphereGearsJipi
+  id: SphereGearsJipi
+  kernel: SphereGearsJipi
+  name: SphereGearsJipi
+shader:
+  author: N.N.
+  description: 'Originally based on [url]https://www.shadertoy.com/view/XlVcWz[/url],
+    but much more optimized and remade. LIVE coding tutorial on it here: [url]https://www.youtube.com/watch?v=sl9x19EnKng[/url]'
+  id: stKczG
+  name: Sphere Gears JiPi
+  parent:
+    id: tt2XzG
+    name: Sphere Gears
+    url: https://www.shadertoy.com/view/tt2XzG
+  tags:
+  - 3d
+  - raymarching
+  - gears
+  - sdf
+  - motionblur
+  url: https://www.shadertoy.com/view/stKczG

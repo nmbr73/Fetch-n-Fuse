@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: BallsAreTouching
+  id: BallsAreTouching
+  kernel: BallsAreTouching
+  name: BallsAreTouching
+shader:
+  author: w23
+  description: oh..oh
+  id: MdlGWn
+  name: balls are touching
+  parent:
+    id: MdlGWn
+    name: balls are touching
+    url: https://www.shadertoy.com/view/MdlGWn
+  tags:
+  - raymarching
+  - metaballs
+  - cubemap
+  - reflections
+  url: https://www.shadertoy.com/view/MdlGWn

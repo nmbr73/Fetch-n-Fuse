@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: CookbookSdfSphereJipi
+  id: CookbookSdfSphereJipi
+  kernel: CookbookSdfSphereJipi
+  name: CookbookSdfSphereJipi
+shader:
+  author: N.N.
+  description: SDF sphere
+  id: NtlfWX
+  name: Cookbook-SDF-Sphere JiPi
+  parent:
+    id: 7dVXDR
+    name: Cookbook - SDF Sphere
+    url: https://www.shadertoy.com/view/7dVXDR
+  tags:
+  - sdf
+  url: https://www.shadertoy.com/view/NtlfWX

@@ -1,0 +1,92 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NlfBR2",
+  "date": "0",
+  "viewed": 0,
+  "name": "BurstingBubbles JiPi977",
+  "description": "Little modification of an old automata. Thought the 'pops' looked kinda satisfying.\n\npress r to reset",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "automata",
+   "cool"
+  ],
+  "hasliked": 0,
+  "parentid": "NtfGRj",
+  "parentname": "Bursting bubbles automata"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Code forked from Inigo Quilez's game of life shader\n// https://www.shadertoy.com/view/XstGRf\n// Reset code stolen from somewhere else - sorry!\n// (Press R to reset shader)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n//float x = (1./ 0.9) * texelFetch( iChannel0, ivec2(fragCoord), 0 ).x;\nfloat x = (1./ 0.9) * texture( iChannel0, (vec2(ivec2(fragCoord))+0.5)/iResolution.xy ).x;\n//x = 16. * x * x * (1.-x) * (1.-x);\nfragColor = vec4( x );\n\n\n\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define KEYBOARD iChannel1\n#define KEY_RESET 82\n\n\nfloat Cell( in ivec2 p )\n{\n    // do wrapping\n    ivec2 r = ivec2(textureSize(iChannel0, 0));\n    p = (p+r) % r;\n    \n    // fetch texel\n   // return (texelFetch(iChannel0, p, 0 ).x > 0.5 ) ? 1 : 0;\n   return texelFetch(iChannel0, p, 0 ).x;\n   return texture(iChannel0, (vec2(p)+0.5)/iResolution.xy ).x;\n}\n\nfloat hash1( float n )\n{\n    return fract(sin(n)*138.5453123);\n}\n\nbool key_down(int key) {\n    return int(texelFetch(KEYBOARD, ivec2(key, 0), 0).x) == 1;\n}\n\n\n// goes through 0.5,0.5, 0 derivative at 0,0  and 1,1\n// not in use\nfloat p(float x)\n{\nreturn (1. / 9.) * (-4. * x * x + 8. * x + 5.) * x * x * (2.-x) * (2.-x);\n}\n\n// not in use\nfloat gain(float x, float k)\n{\n  float a = 0.5*pow(2.0*((x<0.5)?x:1.0-x), k);\n  return (x<0.5)?a:1.0-a;\n}\n\n// not in use\nfloat p4(float x)\n{\nreturn (0.9 + 0.1 * cos( 2. * 3.14159 * x)) * x;\n}\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    ivec2 px = ivec2( fragCoord );\n    \n    if (key_down(KEY_RESET) || iFrame == 0) {\n    // if you want a random reset, uncomment\n\n      float f = hash1(fragCoord.x*13.0 + 0.01 * iTime + hash1( fragCoord.y*73.1));\n      fragColor = vec4( f, 0.0, 0.0, 0.0 );  \n        return;\n    }\n    \n  // center cell\n  float e = Cell(px); \n\n  // neighbour cells\n  float t = Cell(px + ivec2(0,-1));\n  float b = Cell(px + ivec2(0,1));\n  float l = Cell(px + ivec2(-1,0));\n  float r = Cell(px + ivec2(1,0));   \n\n  float h = 0.5 * (l+r);\n  float v = 0.5 * (t + b);  \n  //float k = max(h,v); // \"average\" of neighbours\nfloat k = 0.5 *(h+v);\n\n // difference between center and average\n float j = abs(e - k);\n\nif (fract(4. * (e-k)) < 0.26) //0.05, 0.28 are also interesting. (only values <= 0.3 ish)\n{\nif (e > k - 0.05 )\ne = 4. * j;\ne += 0.01;\n//float n = 0.0;\nfloat m =0.5; //n * e + (1.-n) * 0.5;\nfloat p = 0.01;\ne = m * e + (1.-m) * max(e + 0.01, k - 0.01);\n}\nelse if ( j > 0.1)\ne = k;\nelse if (abs(v-h) < 0.2)\n{\ne = k + 0.01 +  0.01 * step(0.9,j) * sign(k-e);\n}\n\nif ( e > 0.9)\ne = 0.;\n\n e = max(min(e,1.),0.); // probably not necessary - cap values in between 0. and 1.\n\n\tfragColor = vec4( e, 0.0, 0.0, 0.0 );\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

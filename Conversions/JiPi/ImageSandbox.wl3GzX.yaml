@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ImageSandbox
+  id: ImageSandbox
+  kernel: ImageSandbox
+  name: ImageSandbox
+shader:
+  author: athlete
+  description: Each pixel represented by a SDF box - inspired by LAS+ light installation
+    at Kraftwerk, Berlin, 2019.
+  id: wl3GzX
+  name: Image Sandbox
+  tags:
+  - sdf
+  - domainrepetition
+  - heightmap
+  - mouseinput
+  - las
+  url: https://www.shadertoy.com/view/wl3GzX

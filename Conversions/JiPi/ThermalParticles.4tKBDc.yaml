@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ThermalParticles
+  id: ThermalParticles
+  kernel: ThermalParticles
+  name: ThermalParticles
+shader:
+  author: wyatt
+  description: 'Mouseable particle experiment inspired by Fabrice
+
+
+    I have way more to learn, but right now I think the Universe is a whole lot of
+    bubbles that swim, dance, and twirl and are connected by love and creativity'
+  id: 4tKBDc
+  name: Thermal Particles
+  tags:
+  - physics
+  url: https://www.shadertoy.com/view/4tKBDc

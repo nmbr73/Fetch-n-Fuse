@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: TriangulatedActors
+  id: TriangulatedActors
+  kernel: TriangulatedActors
+  name: TriangulatedActors
+shader:
+  author: wyatt
+  description: 'Triangulated particle simulation '
+  id: ttVXzD
+  name: Triangulated Actors**
+  tags:
+  - particles
+  - triangulation
+  url: https://www.shadertoy.com/view/ttVXzD

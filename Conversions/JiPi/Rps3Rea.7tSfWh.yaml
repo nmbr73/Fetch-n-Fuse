@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: Rps3Rea
+  id: Rps3Rea
+  kernel: Rps3Rea
+  name: Rps3Rea
+shader:
+  author: N.N.
+  description: A model of the "rock-paper-scissors" reaction-diffusion system, composed
+    of three fields which "defeat" each other nontransitively, similarly to the game
+    rock-paper-scissors. Takes a few seconds to look interesting due to poorly chosen
+    initial conditions.
+  id: 7tSfWh
+  name: Fork RPS(3) rea JiPi 168
+  parent:
+    id: fl2fDz
+    name: RPS(3) reaction-diffusion
+    url: https://www.shadertoy.com/view/fl2fDz
+  tags:
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/7tSfWh

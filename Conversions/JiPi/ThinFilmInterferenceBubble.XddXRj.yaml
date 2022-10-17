@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: ThinFilmInterferenceBubble
+  id: ThinFilmInterferenceBubble
+  kernel: ThinFilmInterferenceBubble
+  name: ThinFilmInterferenceBubble
+shader:
+  author: cornusammonis
+  description: Simulates thin-film interference patterns on a bubble.  If the bubble
+    appears to be mostly white, check the BUG NOTICE in the source.
+  id: XddXRj
+  name: Thin-Film Interference Bubble
+  tags:
+  - interference
+  - bubble
+  - thinfilm
+  url: https://www.shadertoy.com/view/XddXRj

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ConvolutionmazeJipi
+  id: ConvolutionmazeJipi
+  kernel: ConvolutionmazeJipi
+  name: ConvolutionmazeJipi
+shader:
+  author: N.N.
+  description: playing with lomateron blur convolutions
+  id: fttBWs
+  name: ConvolutionMaze JiPi
+  parent:
+    id: 7ld3zs
+    name: Convolution maze (fork)
+    url: https://www.shadertoy.com/view/7ld3zs
+  tags:
+  - convolution
+  - ca
+  url: https://www.shadertoy.com/view/fttBWs

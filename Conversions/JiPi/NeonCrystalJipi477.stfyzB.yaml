@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: NeonCrystalJipi477
+  id: NeonCrystalJipi477
+  kernel: NeonCrystalJipi477
+  name: NeonCrystalJipi477
+shader:
+  author: N.N.
+  description: Fifth creation in my new aim of.. surely you've seen the others by
+    now? If not, go look at them to find out :>
+  id: stfyzB
+  name: Neon Crystal JiPi 477
+  parent:
+    id: NlXcRB
+    name: Neon Crystal
+    url: https://www.shadertoy.com/view/NlXcRB
+  tags:
+  - 3d
+  - raymarching
+  - transparency
+  - glass
+  - crystal
+  url: https://www.shadertoy.com/view/stfyzB

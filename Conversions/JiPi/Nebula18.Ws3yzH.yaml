@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: Nebula18
+  id: Nebula18
+  kernel: Nebula18
+  name: Nebula18
+shader:
+  author: Leria
+  description: "Dark Light Purple Nebula \nA+mouse: tune density\nC toggle : control\
+    \ sigma_s or albedo"
+  id: Ws3yzH
+  name: Nebula 18
+  tags:
+  - fractal
+  - noise
+  - pink
+  - red
+  - nebula
+  - purple
+  url: https://www.shadertoy.com/view/Ws3yzH

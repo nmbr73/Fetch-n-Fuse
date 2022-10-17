@@ -1,0 +1,36 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fsffRM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Fork Floating C JiPi 608",
+  "description": "I randomized the size.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarching",
+   "sphere",
+   "spheres"
+  ],
+  "hasliked": 0,
+  "parentid": "ftVSzK",
+  "parentname": "Floating Colorful Spheres"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define hash(x) fract(sin(x)*1e3)\n\nvec3 ld=normalize(vec3(-1,2,5));\nvec2 l=vec2(1,0);\n\nvec3 rot3d(vec3 v,float a,vec3 ax){\n  ax=normalize(ax);\n  return cos(a)*v+(1.-cos(a))*dot(ax,v)*ax-sin(a)*cross(ax,v);\n}\n\nfloat hash3(vec3 p){\n  float s=dot(p,vec3(1.2134,1.1623,1.7232));\n  return hash(s);\n}\n\nvec2 hash22(vec2 p){\n  vec2 s=vec2(dot(p,vec2(1.6823,1.2362)),dot(p,vec2(1.1631,1.7223)));\n  return hash(s)*2.-1.;\n}\n\nfloat sphere(vec3 i,vec3 f,vec3 c){\n  float r=hash3(i+c);\n  \n  if(r>.95)r=hash(r)*.5;\n  else r=-.5;\n  \n  return length(f-c)-r;\n}\n\n// Reference:\n// https://www.iquilezles.org/www/articles/fbmsdf/fbmsdf.htm\nfloat sphereL(vec3 p){\n  p.y-=iTime*.5;\n  float d=1e5;\n  vec3 i=floor(p);\n  vec3 f=fract(p);\n  \n  d=min(d,sphere(i,f,l.yyy));\n  d=min(d,sphere(i,f,l.yyx));\n  d=min(d,sphere(i,f,l.yxy));\n  d=min(d,sphere(i,f,l.yxx));\n  \n  d=min(d,sphere(i,f,l.xyy));\n  d=min(d,sphere(i,f,l.xyx));\n  d=min(d,sphere(i,f,l.xxy));\n  d=min(d,sphere(i,f,l.xxx));\n  \n  return d;\n}\n\nfloat perlin2d(vec2 p){\n  vec2 i=floor(p);\n  vec2 f=fract(p);\n  vec2 u=f*f*f*(6.*f*f-15.*f+10.);\n  \n  return mix(mix(dot(f-l.yy,hash22(i+l.yy)),dot(f-l.xy,hash22(i+l.xy)),u.x),\n             mix(dot(f-l.yx,hash22(i+l.yx)),dot(f-l.xx,hash22(i+l.xx)),u.x),\n             u.y);\n}\n\nfloat smin(float a,float b,float k){\n  float h=max(k-abs(a-b),0.);\n  return min(a,b)-h*h*.25/k;\n}\n\nfloat map(vec3 p){\n  float d;\n  d=sphereL(p);\n  d=smin(d,p.y-perlin2d(p.zx)*.5,.4);\n  return d;\n}\n\nvec3 calcN(vec3 p){\n  vec2 e=vec2(1e-3,0);\n  return normalize(vec3(map(p+e.xyy)-map(p-e.xyy),\n  map(p+e.yxy)-map(p-e.yxy),\n  map(p+e.yyx)-map(p-e.yyx)));\n}\n\nfloat fog(float d,float den){\n  float s=d*den;\n  return exp(-s*s);\n}\n\nvec3 hsv(float h,float s,float v){\n  return ((clamp(abs(fract(h+vec3(0,2,1)/3.)*6.-3.)-1.,0.,1.)-1.)*s+1.)*v;\n}\n\nvec3 getC(vec3 p){\n  vec3 col;\n  col=hsv(perlin2d(p.zx*.2),.8,1.);\n  return col;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n  vec2 uv = vec2(gl_FragCoord.x / iResolution.x, gl_FragCoord.y / iResolution.y);\n  uv -= 0.5;\n  uv /= vec2(iResolution.y / iResolution.x, 1)*.5;\n  vec3 col=vec3(0);\n  \n  vec3 cp=vec3(.5,5,-iTime);\n  vec3 cd=vec3(0,0,-1);\n  vec3 cs=normalize(cross(cd,vec3(0,1,0)));\n  vec3 cu=cross(cs,cd);\n  \n  vec3 rd=normalize(uv.x*cs+uv.y*cu+cd*2.);\n  rd=rot3d(rd,iTime*.1,vec3(1,7,2));\n  vec3 rp=cp;\n  \n  float d;\n  for(int i=0;i<100;i++){\n    d=map(rp);\n    if(abs(d)<1e-4){\n      break;\n    }\n    rp+=rd*d;\n  }\n  \n  vec3 n=calcN(rp);\n  vec3 al=getC(rp);\n  float diff=max(dot(ld,n),0.);\n  float spec=pow(max(dot(reflect(ld,n),rd),0.),20.);\n  col+=al*diff+spec;\n  float f=fog(length(rp-cp),.03);\n  col=mix(vec3(1),col,f);\n  \n  col=pow(col,vec3(1./2.2));\n  fragColor = vec4(col,1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

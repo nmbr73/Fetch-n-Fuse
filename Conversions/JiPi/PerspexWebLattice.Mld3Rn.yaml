@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: PerspexWebLattice
+  id: PerspexWebLattice
+  kernel: PerspexWebLattice
+  name: PerspexWebLattice
+shader:
+  author: Shane
+  description: Yet another Voronoi variation.
+  id: Mld3Rn
+  name: Perspex Web Lattice
+  tags:
+  - voronoi
+  - raymarch
+  - lattice
+  - web
+  url: https://www.shadertoy.com/view/Mld3Rn

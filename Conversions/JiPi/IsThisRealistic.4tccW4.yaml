@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: IsThisRealistic
+  id: IsThisRealistic
+  kernel: IsThisRealistic
+  name: IsThisRealistic
+shader:
+  author: wyatt
+  description: 'I''ve been making a lot of fluids lately but Im just guessing at how
+    it should work. Some people on this website seem like they''re like college educated
+    experts on stuff. So I just want to know if I''m taking creative liberties or
+    if this is physics
+
+    Thanks!'
+  id: 4tccW4
+  name: Is this realistic ?
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/4tccW4

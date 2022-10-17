@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: FluidThingy3Jipi359
+  id: FluidThingy3Jipi359
+  kernel: FluidThingy3Jipi359
+  name: FluidThingy3Jipi359
+shader:
+  author: N.N.
+  description: "A fluid is feeding a reaction-diffusion wich in turn feed the fluid.\
+    \ \nfluid made using this tutorial : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n\
+    cubemap rendering taken from flockaroo at : https://www.shadertoy.com/view/WdVXWy\n"
+  id: 7llyzH
+  name: fluid_thingy_3 JiPi 359
+  parent:
+    id: WslfWr
+    name: fluid_thingy_3
+    url: https://www.shadertoy.com/view/WslfWr
+  tags:
+  - 2d
+  - fluid
+  - diffusion
+  - reaction
+  url: https://www.shadertoy.com/view/7llyzH

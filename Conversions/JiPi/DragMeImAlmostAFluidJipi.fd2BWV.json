@@ -1,0 +1,203 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fd2BWV",
+  "date": "0",
+  "viewed": 0,
+  "name": "Drag Me! Im almost a Fluid! JiPi",
+  "description": "Nachbau Drag Me! Im almost a Fluid!",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "",
+  "parentname": ""
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n\n\tSo a litte bit ago I made this:\t\n\t\thttps://www.shadertoy.com/view/lsVfRd\n\n\tbut I forgiot the convective term...\n\n\tI didnt realize the velocity advects through itself\n\tkinda trippy tbh\n\n\tfluids are like multi-dimensional infinitesimal newton's cradles\n\t\n\t\n\n\n*/\nvoid mainImage( out vec4 C, in vec2 U )\n{\n   \tvec4 g = texture(iChannel0,U/iResolution.xy);\n    vec2 d = vec2(\n    \ttexture(iChannel0,(U+vec2(1,0))/iResolution.xy).w-texture(iChannel0,(U-vec2(1,0))/iResolution.xy).w,\n    \ttexture(iChannel0,(U+vec2(0,1))/iResolution.xy).w-texture(iChannel0,(U-vec2(0,1))/iResolution.xy).w\n    );\n    vec3 n = normalize(vec3(d,0.1));\n    float a = acos(dot(n,normalize(vec3(1))))/3.141593;\n\tg.w = 2.*sqrt(g.w);\n    vec3 color = \n        1.3*(.5+0.5*sin(abs(g.xyz)*vec3(20,20,1)+2.*g.w*vec3(sin(g.w),cos(g.w*2.),3)))*(abs(a)*.5+0.5);\n    C = vec4(\n        color*color*1.2\n       ,1);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// FLUID PART\n\nvec2 ur, U;\nfloat ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,fract((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,fract(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1) {\n        // INIT\n        float q = length(U-0.5*ur);\n        // make a small right pointing velocity in the middle\n        Co = vec4(0.1*exp(-0.01*q*q),0,0,2.*exp(-0.01*q*q));\n    } else {\n        // start where the pixel is and make a box around it\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        // ADVECT TO LEARN FROM THE PAST\n        for (int i = 0; i < 5; i++) {\n            // add the velocity at each position to the position\n            v -= t(v).xy;\n            A -= t(A).xy;\n            B -= t(B).xy;\n            C -= t(C).xy;\n            D -= t(D).xy;\n        }\n        // find out where and what the pixel is now and what its neighbors were doing last frame\n        vec4 me = t(v,0,0);\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        //average the neighbors to allow values to blend\n        vec4 ne = .25*(n+e+s+w);\n        // mix the velocity and pressure from neighboring cells\n\t\tme = mix(t(v),ne,vec4(0.06,0.06,1.,0.));\n        // add the change in the area of the advected box to the pressure\n        me.z  = me.z  - ((area(A,B,C)+area(B,C,D))-4.);\n\t\t\n        // PRESSURE GRADIENT\n            vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        \t// add the pressure gradient to the velocity\n            me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        // MOUSE MOVEMENT\n        \tvec4 mouse = texture(iChannel1,vec2(0.5));\n            float q = ln(U,mouse.xy,mouse.zw);\n            vec2 m = mouse.xy-mouse.zw;\n            float l = length(m);\n            if (l>0.) m = min(l,10.)*m/l;\n        \t// add a line from the mouse to the velocity field and add some color\n            me.xyw += 0.03*exp(-6e-2*q*q*q)*vec3(m,20.);\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -.6, .6);\n    }\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// MOUSE\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec4 p = texture(iChannel0,fragCoord/iResolution.xy);\n    if (iMouse.z>0.) {\n        if (p.z>0.) fragColor =  vec4(iMouse.xy,p.xy);\n    \telse fragColor =  vec4(iMouse.xy,iMouse.xy);\n    }\n    else fragColor = vec4(-iResolution.xy,-iResolution.xy);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// FLUID PART\n\nvec2 ur, U;\nfloat ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,fract((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,fract(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1) {\n        // INIT\n        float q = length(U-0.5*ur);\n        // make a small right pointing velocity in the middle\n        Co = vec4(0.1*exp(-0.01*q*q),0,0,2.*exp(-0.01*q*q));\n    } else {\n        // start where the pixel is and make a box around it\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        // ADVECT TO LEARN FROM THE PAST\n        for (int i = 0; i < 5; i++) {\n            // add the velocity at each position to the position\n            v -= t(v).xy;\n            A -= t(A).xy;\n            B -= t(B).xy;\n            C -= t(C).xy;\n            D -= t(D).xy;\n        }\n        // find out where and what the pixel is now and what its neighbors were doing last frame\n        vec4 me = t(v,0,0);\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        //average the neighbors to allow values to blend\n        vec4 ne = .25*(n+e+s+w);\n        // mix the velocity and pressure from neighboring cells\n\t\tme = mix(t(v),ne,vec4(0.06,0.06,1.,0.));\n        // add the change in the area of the advected box to the pressure\n        me.z  = me.z  - ((area(A,B,C)+area(B,C,D))-4.);\n\t\t\n        // PRESSURE GRADIENT\n            vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        \t// add the pressure gradient to the velocity\n            me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        // MOUSE MOVEMENT\n        \tvec4 mouse = texture(iChannel1,vec2(0.5));\n            float q = ln(U,mouse.xy,mouse.zw);\n            vec2 m = mouse.xy-mouse.zw;\n            float l = length(m);\n            if (l>0.) m = min(l,10.)*m/l;\n        \t// add a line from the mouse to the velocity field and add some color\n            me.xyw += 0.03*exp(-6e-2*q*q*q)*vec3(m,20.);\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -.6, .6);\n    }\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// FLUID PART\n\nvec2 ur, U;\nfloat ln (vec2 p, vec2 a, vec2 b) {\n    return length(p-a-(b-a)*clamp(dot(p-a,b-a)/dot(b-a,b-a),0.,1.));\n}\nvec4 t (vec2 v, int a, int b) {return texture(iChannel0,fract((v+vec2(a,b))/ur));}\nvec4 t (vec2 v) {return texture(iChannel0,fract(v/ur));}\nfloat area (vec2 a, vec2 b, vec2 c) { // area formula of a triangle from edge lengths\n    float A = length(b-c), B = length(c-a), C = length(a-b), s = 0.5*(A+B+C);\n    return sqrt(s*(s-A)*(s-B)*(s-C));\n}\nvoid mainImage( out vec4 Co, in vec2 uu )\n{\n    U = uu;\n    ur = iResolution.xy;\n    if (iFrame < 1) {\n        // INIT\n        float q = length(U-0.5*ur);\n        // make a small right pointing velocity in the middle\n        Co = vec4(0.1*exp(-0.01*q*q),0,0,2.*exp(-0.01*q*q));\n    } else {\n        // start where the pixel is and make a box around it\n        vec2 v = U,\n             A = v + vec2( 1, 1),\n             B = v + vec2( 1,-1),\n             C = v + vec2(-1, 1),\n             D = v + vec2(-1,-1);\n        // ADVECT TO LEARN FROM THE PAST\n        for (int i = 0; i < 5; i++) {\n            // add the velocity at each position to the position\n            v -= t(v).xy;\n            A -= t(A).xy;\n            B -= t(B).xy;\n            C -= t(C).xy;\n            D -= t(D).xy;\n        }\n        // find out where and what the pixel is now and what its neighbors were doing last frame\n        vec4 me = t(v,0,0);\n        vec4 n = t(v,0,1),\n            e = t(v,1,0),\n            s = t(v,0,-1),\n            w = t(v,-1,0);\n        //average the neighbors to allow values to blend\n        vec4 ne = .25*(n+e+s+w);\n        // mix the velocity and pressure from neighboring cells\n\t\tme = mix(t(v),ne,vec4(0.06,0.06,1.,0.));\n        // add the change in the area of the advected box to the pressure\n        me.z  = me.z  - ((area(A,B,C)+area(B,C,D))-4.);\n\t\t\n        // PRESSURE GRADIENT\n            vec4 pr = vec4(e.z,w.z,n.z,s.z);\n        \t// add the pressure gradient to the velocity\n            me.xy = me.xy + vec2(pr.x-pr.y, pr.z-pr.w)/ur;\n        // MOUSE MOVEMENT\n        \tvec4 mouse = texture(iChannel1,vec2(0.5));\n            float q = ln(U,mouse.xy,mouse.zw);\n            vec2 m = mouse.xy-mouse.zw;\n            float l = length(m);\n            if (l>0.) m = min(l,10.)*m/l;\n        \t// add a line from the mouse to the velocity field and add some color\n            me.xyw += 0.03*exp(-6e-2*q*q*q)*vec3(m,20.);\n        Co = me;\n        Co.xyz = clamp(Co.xyz, -.6, .6);\n    }\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

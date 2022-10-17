@@ -1,0 +1,135 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fllyD7",
+  "date": "0",
+  "viewed": 0,
+  "name": "psychadelic_rapberries JiPi 226",
+  "description": "Wrote this raymarching demo a few years ago to test the closest representative point (CRP) method for approximating spherical area lights. Couldn't find a better name for the demo, so psychadelic raspberries it is :)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "procedural",
+   "sdf",
+   "arealights"
+  ],
+  "hasliked": 0,
+  "parentid": "4ldXRr",
+  "parentname": "psychadelic_raspberries"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Second postprocessing pass. Applies FXAA and dithering.\n\n#define SETTINGS_AA_ENABLED 1\n#define SETTINGS_DITHER_ENABLED 1\n\nfloat rgb2luma(vec3 color)\n{\n\treturn dot(vec3(0.3, 0.6, 0.1), color);    \n}\n\n// Implementation of the fast approximative anti-aliasing (FXAA) algorithm by\n// Timothy Lottes. This version uses only four neighbor samples for edge\n// detection and does not perform a full end-of-edge search, which will cause\n// some artifacts and over-blurring but still produce acceptable results.\nvec3 fxaa(sampler2D tex, vec2 texcoord)\n{\n    float subpixel_shift = 0.25;\n    vec2 resolution = vec2(textureSize(tex, 0));\n    vec2 delta = 1.0 / resolution;    \n    vec4 pos = vec4(texcoord, texcoord - (0.5 + subpixel_shift) * delta);\n\n    // Sample neighborhood sRGB values and convert them to luma\n    float luma_nw = rgb2luma(texture(tex, pos.zw).rgb);\n    float luma_ne = rgb2luma(texture(tex, pos.zw + vec2(delta.x, 0.0)).rgb);\n    float luma_sw = rgb2luma(texture(tex, pos.zw + vec2(0.0, delta.y)).rgb);\n    float luma_se = rgb2luma(texture(tex, pos.zw + delta).rgb);\n    float luma_m  = rgb2luma(texture(tex, pos.xy).rgb);\n    float luma_min = min(luma_m, min(min(luma_nw, luma_ne), min(luma_sw, luma_se)));\n    float luma_max = max(luma_m, max(max(luma_nw, luma_ne), max(luma_sw, luma_se)));\n\n    // Find local edge direction\n    vec2 dir = vec2(-((luma_nw + luma_ne) - (luma_sw + luma_se)),\n        (luma_nw + luma_sw) - (luma_ne + luma_se));\n    float reduce_min = 1.0 / 128.0;\n    float reduce_mul = 1.0 / 8.0;\n    float dir_reduce = max(reduce_min,\n        (luma_nw + luma_ne + luma_sw + luma_se) * 0.25 * reduce_mul);\n    float rcp_dir_min = 1.0 / (min(abs(dir.x), abs(dir.y)) + dir_reduce);\n    vec2 span_max = vec2(8.0);\n    dir = clamp(dir * rcp_dir_min, -span_max, span_max) / resolution;\n\n    // Blur along the edge to reduce aliasing\n    vec3 rgb_a = 0.5 * (texture(tex, pos.xy - dir / 6.0).xyz +\n        texture(tex, pos.xy + dir / 6.0).xyz);\n    vec3 rgb_b = 0.5 * rgb_a + 0.25 * (texture(tex, pos.xy - dir / 2.0).xyz +\n        texture(tex, pos.xy + dir / 2.0).xyz);\n    float luma_b = rgb2luma(rgb_b);\n    vec3 output_color = (luma_b < luma_min) || (luma_b > luma_max) ? rgb_a : rgb_b;\n\n    return output_color;\n}\n\nvec3 dither(vec2 screen_pos)\n{\n    float white_noise = fract(sin(dot(vec2(screen_pos), vec2(12.989, 78.233))) * 43758.545);\n    return vec3((0.5 * white_noise - 0.5) / 255.0);\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord)\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    vec3 output_color = texture(iChannel0, uv).rgb;    \n\n    // Apply anti-aliasing\n    if (SETTINGS_AA_ENABLED > 0) {\n        output_color = fxaa(iChannel0, uv);\n    }\n\n    // Apply dithering, to reduce color banding\n    if (SETTINGS_DITHER_ENABLED > 0) {\n\t    output_color += dither(fragCoord.xy);\n        output_color = clamp(output_color, 0.0, 1.0);        \n    }\n\n    fragColor = vec4(output_color, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdXGzn",
+     "filepath": "/media/a/3083c722c0c738cad0f468383167a0d246f91af2bfa373e9c5c094fb8c8413e0.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// This SDF raymarching demo implements the closest representative point (CRP)\n// method for approximating spherical area lights. It also features soft shadows,\n// translucency, and various postprocessing effects like DOF, bloom, and FXAA.\n//\n// Author: Johan Nysjö\n\n#define SETTINGS_KEY_LIGHT_INTENSITY 0.8\n#define SETTINGS_SKY_LIGHT_INTENSITY 1.2\n#define SETTINGS_EXPOSURE 2.0\n#define SETTINGS_TRANSLUCENCY_ENABLED 1\n#define SETTINGS_DISPLAY_STEP_COUNT 0\n\n#define MAX_NUM_PRIMARY_RAY_STEPS 100\n\n#define PI 3.141592653\n\nstruct Ray {\n\tvec3 origin;\n    vec3 direction;\n};\n\nstruct PerspectiveCamera {\n\tvec3 eye;\n    vec3 up;\n    vec3 center;\n    float fovy;\n    float aspect;\n};\n\nstruct SphereAreaLight {\n    vec3 position;\n    float radius;\n    vec3 color;\n    float intensity;\n};\n\nstruct HemisphereLight {\n    vec3 up;\n    vec3 sky_color;\n    vec3 ground_color;\n    float intensity;\n};\n\nstruct Material {\n    vec3 base_color;\n    float metalness;\n    float gloss;\n    float wrap;\n};\n\nvec3 srgb2lin(vec3 color)\n{\n\treturn pow(color, vec3(2.2));\n}\n\nRay get_camera_ray(PerspectiveCamera camera, vec2 uv)\n{\n    vec3 f = normalize(camera.center - camera.eye);\n    vec3 s = normalize(cross(f, normalize(camera.up)));\n    vec3 u = normalize(cross(s, f));\n\n    float half_height = tan(0.5 * camera.fovy);\n    float half_width = camera.aspect * half_height;\n    float x = 2.0 * uv.x - 1.0;\n    float y = 2.0 * uv.y - 1.0;\n\n    Ray ray;\n    ray.origin = camera.eye;\n    ray.direction = normalize(f + x * half_width * s + y * half_height * u);\n    \n    return ray;\n}\n\n// Polynomial smooth min operation for SDFs\n// Reference: http://www.iquilezles.org/www/articles/smin/smin.htm\nfloat smin_op(float a, float b)\n{\n    float k = 0.1;\n    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);\n\n    return mix(b, a, h) - k * h * (1.0 - h);\n}\n\nfloat sdf_sphere(vec3 p, float r)\n{\n    return length(p) - r;\n}\n\nfloat sdf_sphere_noisy(vec3 p, float r)\n{\n    float dist = length(p) - r;\n    float freq = 35.0;\n    float magnitude = 0.015;\n    float displacement = magnitude * sin(freq * p.x) * sin(freq * p.y) * sin(freq * p.z);\n\n    return dist + displacement;\n}\n\nfloat sdf(vec3 pos)\n{\n    float time = iTime + 1.3;\n\n    // Generate three larger noisy spheres\n    float displacement = 0.15 * sin(0.5 * PI * time) + 1.1;\n    float dist = sdf_sphere_noisy(pos - vec3(0.0, 0.0, 0.0), 0.4);\n    dist = smin_op(dist, sdf_sphere_noisy(pos - vec3(-0.75 * displacement, 0.0, 0.0), 0.3));\n    dist = smin_op(dist, sdf_sphere_noisy(pos - vec3(0.75 * displacement, 0.0, 0.0), 0.3));\n\n    // Generate a number of smaller spheres that orbits around the larger spheres\n    const int num_particles = 10;\n    const int max_num_particles = 64; // same as the noise texture width\n    for(int i = 0; i < num_particles; ++i) {\n     \tvec3 rand_pos = 2.0 * texture(iChannel0, vec2(0.0, float(i) / float(max_num_particles))).rgb - 1.0;\n        float speed = 0.5 * texture(iChannel0, vec2(0.5, float(i) / float(max_num_particles))).r;\n        rand_pos.x *= sin(speed * PI * time);\n        rand_pos.z *= -cos(speed * PI * time);\n        dist = smin_op(dist, sdf_sphere(pos - vec3(1.7, 0.9, 1.0) * rand_pos, 0.15));\n    }\n\n    return dist;\n}\n\nstruct FirstHitInfo {\n    vec3 pos;\n    float depth;\n};\n\nbool raymarch(Ray ray, out FirstHitInfo hit_info, out int num_steps)\n{\n    float tol = 0.0015; // surface intersection tolerance\n    float max_depth = 50.0;\n\n    // Raymarch through the signed distance field until a surface is hit or the\n    // ray is terminated\n    vec3 pos = ray.origin;\n    float depth = 0.0;\n    num_steps = 0;\n    bool hit = false;\n    for(int i = 0; i < MAX_NUM_PRIMARY_RAY_STEPS; ++i) {\n        num_steps = i;    \n        float dist = sdf(pos);\n        if(abs(dist) < tol) {\n         \thit_info.pos = pos;\n            hit_info.depth = depth;\n            hit = true;\n            break;\n        }\n\n     \tpos += ray.direction * dist;\n        depth += dist;\n\n        if(depth > max_depth) {\n         \tbreak;   \n        }\n    }\n    \n    return hit;\n}\n\nvec3 get_gradient(vec3 pos)\n{\n    // Estimate SDF gradient with central differences\n    float delta = 0.005;\n    vec3 gradient = vec3(\n        sdf(pos + delta * vec3(1.0, 0.0, 0.0)) -\n        sdf(pos + delta * vec3(-1.0, 0.0, 0.0)),\n        sdf(pos + delta * vec3(0.0, 1.0, 0.0)) -\n        sdf(pos + delta * vec3(0.0, -1.0, 0.0)),\n        sdf(pos + delta * vec3(0.0, 0.0, 1.0)) -\n        sdf(pos + delta * vec3(0.0, 0.0, -1.0)));\n\n    return gradient;\n}\n\nfloat cast_shadow_ray(vec3 pos, vec3 L)\n{\n    const float tol = 0.0015; // surface intersection tolerance\n    const int max_num_steps = 25;\n    float radius = 0.03;\n    float start_offset = 0.06;\n    \n    Ray ray;\n    ray.origin = pos;\n    ray.direction = L;\n\n    float t = start_offset;\n    float visibility = 1.0;\n    for (int i = 0; i < max_num_steps; ++i) {\n        float occluder_dist = max(0.0, sdf(ray.origin + t * ray.direction));\n        if (occluder_dist < radius) {\n        \tvisibility = min(visibility, clamp(occluder_dist / radius, 0.0, 1.0));\n        }\n\n        if (occluder_dist < tol) {\n           visibility = 0.0;\n           break;\n        }\n        \n\t\tt += occluder_dist;\n    }\n\n    return visibility;\n}\n\nfloat compute_ao(vec3 pos, vec3 N)\n{\n    const int max_num_steps = 5;\n    float base_step_size = 0.025;\n    \n    Ray ray;\n    ray.origin = pos;\n    ray.direction = N;\n\n    float t = base_step_size;\n    float occlusion = 1.0;\n    for (int i = 0; i < max_num_steps; ++i) {\n        float occluder_dist = max(0.0, sdf(ray.origin + t * ray.direction));\n        float occlusion_i = clamp(occluder_dist / t, 0.0, 1.0);\n\t    occlusion = mix(occlusion_i, occlusion, 0.8);\n        t *= 2.0;\n    }\n\n    return occlusion;\n}\n\n// Estimates local surface thickness by inverting the SDF and calculating the\n// ambient occlusion along the negative normal direction. The returned thickness\n// value will be in range [0, 1], where higher values indicate higher thickness.\nfloat compute_local_thickness(vec3 pos, vec3 N)\n{\n    const int max_num_steps = 4;\n\tfloat base_step_size = 0.03;\n\n    Ray ray;\n    ray.origin = pos;\n    ray.direction = -N;\n\n    float t = base_step_size;\n    float occlusion = 1.0;\n    for(int i = 0; i < max_num_steps; ++i) {\n        float occluder_dist = max(0.0, -sdf(ray.origin + t * ray.direction));        \n        float occlusion_i = clamp(occluder_dist / t, 0.0, 1.0);\n        occlusion = mix(occlusion_i, occlusion, 0.8);\n        t *= 2.0;\n    }    \n    float thickness = occlusion;\n\n    return thickness;\n}\n\nfloat diffuse_wrap(vec3 N, vec3 L, float wrap)\n{\n    return max(0.0, (dot(L, N) + wrap) / ((1.0 + wrap) * (1.0 + wrap)));\n}\n\nfloat specular_D_blinn_phong(vec3 N, vec3 H, float specular_power)\n{\n    return pow(max(0.0, dot(N, H)), specular_power) * (specular_power + 8.0) / 8.0;\n}\n\nfloat specular_power_from_gloss(float gloss)\n{\n    return pow(2.0, 10.0 * gloss + 1.0);\n}\n\n// Computes the closest representative point (CRP) on a spherical area light source.\n// Reference: Brian Karnis, \"Real Shading in Unreal Engine 4\", SIGGRAPH 2013\nvec3 sphere_area_light_crp(SphereAreaLight light, vec3 N, vec3 R, vec3 eye)\n{\n    vec3 L = (light.position - eye);\n    vec3 center_to_ray = dot(L, R) * R - L;\n    vec3 closest_point = L + center_to_ray * clamp(light.radius / length(center_to_ray), 0.0, 1.0);\n\n    return closest_point;\n}\n\n// Computes a normalization factor for a spherical area light source. This factor\n// should be multiplied with the Blinn-Phong specular D value so that the intensity\n// of the specular highlight decreases when the sphere radius increases.\nfloat sphere_area_light_normalization(SphereAreaLight light, vec3 closest_point, float gloss)\n{\n\t// Use the solid angle to the sphere light source to estimate a new gloss\n    // value that widens the highlight. Based on the specular D modification\n    // proposed by Brian Karnis, \"Real Shading in Unreal Engine 4\", SIGGRAPH 2013.\n    float d = length(closest_point);\n    float roughness = 1.0 - gloss;\n    float alpha = roughness * roughness;\n    float alpha_new = clamp(alpha + 0.5 * light.radius / d, 0.0, 1.0);\n    float gloss_new = 1.0 - sqrt(alpha_new);\n    \n    // Compute sphere normalization factor\n    float specular_power = specular_power_from_gloss(gloss);\n    float specular_power_new = specular_power_from_gloss(gloss_new);\n    float normalization_factor = (8.0 + specular_power_new) / (8.0 + specular_power);\n\n    return normalization_factor;\n}\n\nvec3 fresnel_schlick(vec3 R_F0, vec3 E, vec3 H)\n{\n    return R_F0 + (1.0 - R_F0) * pow(1.0 - max(0.0, dot(E, H)), 5.0);\n}\n\nvec3 fresnel_schlick_gloss(vec3 R_F0, vec3 E, vec3 N, float gloss)\n{\n    return R_F0 + (max(vec3(gloss), R_F0) - R_F0) * pow(1.0 - max(0.0, dot(E, N)), 5.0);\n}\n\nvec3 hemisphere_diffuse(HemisphereLight light, vec3 N)\n{\n    return mix(light.ground_color, light.sky_color, 0.5 * dot(N, light.up) + 0.5) * light.intensity;\n}\n\nvec3 hemisphere_specular(HemisphereLight light, vec3 R, float gloss)\n{\n    float g = min(0.975, gloss);\n    float alpha = clamp(dot(R, light.up) / (1.0 - g * g), 0.0, 1.0);\n    return mix(light.ground_color, light.sky_color, alpha) * light.intensity;\n}\n\nvec3 compute_shading(vec3 pos, vec3 N, vec3 V, Material material, SphereAreaLight key_light,\n                     HemisphereLight sky_light)\n{\n    vec3 L = normalize(key_light.position - pos);\n    vec3 R = normalize(reflect(-V, N));    \n\n\tfloat visibility = cast_shadow_ray(pos, L);    \n    float occlusion = compute_ao(pos, N);\n\n    vec3 closest_point = sphere_area_light_crp(key_light, N, R, pos);\n    float sphere_normalization =\n        sphere_area_light_normalization(key_light, closest_point, material.gloss);\n    vec3 L_crp = normalize(closest_point);\n    vec3 H = normalize(V + L_crp);\n\n    vec3 specular_color = mix(vec3(0.04), material.base_color, material.metalness);\n    vec3 diffuse_color = mix(material.base_color, vec3(0.0), material.metalness);\n    float specular_power = specular_power_from_gloss(material.gloss);\n    vec3 F0 = specular_color;\n    vec3 F = fresnel_schlick_gloss(specular_color, N, V, material.gloss);\n    \n    vec3 key_light_color = key_light.color * key_light.intensity;\n\n    // Diffuse lighting\n    vec3 output_color = vec3(0.0);\n    output_color += visibility * (1.0 - F0) * diffuse_color *\n                    diffuse_wrap(N, L_crp, material.wrap) * key_light_color;\n    output_color += occlusion * (1.0 - F) * diffuse_color * hemisphere_diffuse(sky_light, N);\n\n    // Specular lighting\n    output_color += visibility * fresnel_schlick(specular_color, L_crp, H) *\n                    specular_D_blinn_phong(N, H, specular_power) * sphere_normalization *\n                    max(0.0, dot(N, L_crp)) * key_light_color;    \n    output_color += occlusion * F * hemisphere_specular(sky_light, R, material.gloss);\n    \n    // Translucency\n    if (SETTINGS_TRANSLUCENCY_ENABLED > 0) {\n        float thickness = compute_local_thickness(pos, N);\n        output_color += diffuse_color * (1.0 - thickness) * max(0.0, dot(-L, V)) * key_light_color;\n    }\n    \n    return output_color;\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord)\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\n    // Set up the camera\n    PerspectiveCamera camera;\n    camera.eye = vec3(0.0, 0.0, 2.0);\n    camera.up = vec3(0.0, 1.0, 0.0);\n    camera.center = vec3(0.0, 0.0, 0.0);\n    camera.fovy = radians(55.0);\n    camera.aspect = iResolution.x / iResolution.y;\n\n    // Set up light sources    \n    SphereAreaLight key_light;\n    key_light.position = vec3(4.0, 4.0, -3.0);\n    key_light.radius = 1.5;\n    key_light.color = vec3(1.0, 1.0, 1.0);\n    key_light.intensity = SETTINGS_KEY_LIGHT_INTENSITY;\n    \n    HemisphereLight sky_light;\n    sky_light.up = vec3(0.0, 1.0, 0.0);\n    sky_light.sky_color = srgb2lin(vec3(0.65, 0.9, 1.0));\n    sky_light.ground_color = srgb2lin(vec3(0.25, 0.25, 0.25));    \n    sky_light.intensity = SETTINGS_SKY_LIGHT_INTENSITY;\n    \n    // Generate camera ray\n    Ray ray = get_camera_ray(camera, uv);\n\n    // Find the closest SDF surface intersection by raymarching\n    FirstHitInfo hit_info;\n    int num_steps = 0;    \n    bool hit = raymarch(ray, hit_info, num_steps);\n\n    // Apply shading\n    vec3 output_color = vec3(0.0);\n    float output_depth = 0.0;\n    if (hit) {\n        Material material;\n        material.base_color = srgb2lin(vec3(0.8, 0.35, uv.x));\n        material.metalness = 0.0;\n        material.gloss = 0.65;\n        material.wrap = 0.6;\n\n\t\tvec3 N = normalize(get_gradient(hit_info.pos));\n        vec3 V = normalize(-ray.direction);\n\n        output_color = compute_shading(hit_info.pos, N, V, material, key_light, sky_light);        \n        output_depth = hit_info.depth;\n    }\n    else {\n        output_color.rgb += hemisphere_diffuse(sky_light, ray.direction);\n        output_depth = 999.0;\n    }\n    \n    output_color *= SETTINGS_EXPOSURE;\n    \n    if (SETTINGS_DISPLAY_STEP_COUNT > 0) {\n        // Display a cost map of the number of raymarching steps (primary rays only).\n        // NOTE: Remember to disable postprocessing effects (i.e., depth of field and\n        // bloom) when enabling this setting.\n        output_color.rgb = vec3(float(num_steps) / float(MAX_NUM_PRIMARY_RAY_STEPS));\n    }\n    \n\tfragColor = vec4(output_color, output_depth);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// First postprocessing pass. Applies DOF, bloom, vignette, and tone mapping.\n\n#define SETTINGS_DEPTH_OF_FIELD_ENABLED 1\n#define SETTINGS_BLOOM_ENABLED 1\n#define SETTINGS_VIGNETTE_ENABLED 1\n\n// Generates well-distributed points on a unit disk using Vogel's method.\n// Reference: Spreading points on a disc and on a sphere, http://blog.marmakoide.org/?p=1\nvec2 vogel_disk(int i, int num_samples)\n{\n\tfloat radius = sqrt(float(i) / float(num_samples));\n    float golden_angle = 2.4;    \n    float phi = float(i) * golden_angle;\n    float x = radius * cos(phi);\n    float y = radius * sin(phi);\n\n    return vec2(x, y);\n}\n\nvec3 depth_of_field(sampler2D tex, vec2 texcoord, float depth, float coc_radius,\n                    float focus_dist, float focus_width)\n{\n    const int num_samples = 18;\n    vec2 resolution = vec2(textureSize(tex, 0));\n    float aspect = resolution.x / resolution.y;\n\n    // Calculate the circle of confusion (CoC) at the current depth \n    float coc = coc_radius * clamp(abs(focus_dist - depth) / focus_width, 0.0, 1.0);\n\n    // Sample the color texture at well-distributed points in the CoC and\n    // average the result\n    vec3 output_color = vec3(0.0);\n    for (int i = 0; i < num_samples; ++i) {\n        vec2 offset = vogel_disk(i, num_samples);\n        offset.y *= aspect;\n        output_color += texture(tex, texcoord + coc * offset).rgb;\n    }\n    output_color /= float(num_samples);\n\n    return output_color;\n}\n\nfloat gaussian_approx(float x)\n{\n\treturn x * x * (3.0 - 2.0 * x);    \n}\n\nvec3 bloom(sampler2D tex, vec2 uv, float intensity, float radius)\n{\n    const int num_samples = 16;\n    float aspect = iResolution.x / iResolution.y;\n    \n    // Blur the HDR input texture. Here we just generate well-distributed points\n    // in a Vogel disk and weight each sample with a Gaussian weight.\n    vec3 output_color = vec3(0.0);\n    float weight_sum = 0.0;\n    for (int i = 0; i < num_samples; ++i) {\n        vec2 offset = vogel_disk(i, num_samples);\n        float weight = gaussian_approx(1.0 - length(offset));\n        offset.y *= aspect;\n        output_color += weight * texture(tex, uv + radius * offset).rgb;\n        weight_sum += weight;\n    }\n    output_color /= weight_sum;\n\n    // Multiply the filtered HDR value with the bloom strength/intensity\n    output_color *= intensity;\n\n    return output_color;\n}\n\nfloat vignette(in vec2 uv)\n{\n\tfloat radius = 2.5;\n    float dist = length(2.0 * uv - 1.0);\n    return 1.0 - min(1.0, dist / radius);\n}\n\n// Approximation of the ACES filmic tone mapping curve.\n// Reference: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/\nvec3 aces(vec3 x)\n{\n    float a = 2.51;\n    float b = 0.03;\n    float c = 2.43;\n    float d = 0.59;\n    float e = 0.14;\n\n    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);\n}\n\nvec3 lin2srgb(vec3 color)\n{\n\treturn pow(color, vec3(0.454));\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord)\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n\tvec4 output_color = texture(iChannel0, uv);\n\n    // Apply depth of field\n    if (SETTINGS_DEPTH_OF_FIELD_ENABLED > 0) {\n\t    float depth = output_color.a;\n    \tfloat coc_radius = 0.004;\n        float focus_dist = 1.8;\n        float focus_width = 1.0;\n    \toutput_color.rgb = depth_of_field(iChannel0, uv, depth, coc_radius, focus_dist, focus_width);\n    }\n\n    // Apply bloom\n    if (SETTINGS_BLOOM_ENABLED > 0) {\n\t    float bloom_intensity = 0.07;\n    \tfloat bloom_radius = 0.02;\n\t\toutput_color.rgb += bloom(iChannel0, uv, bloom_intensity, bloom_radius);\n    }\n\n    // Apply vignette\n    if (SETTINGS_VIGNETTE_ENABLED > 0) {\n\t    output_color.rgb *= vec3(vignette(uv));\n    }\n    \n    // Apply tone mapping and gamma correction\n    output_color.rgb = aces(output_color.rgb);\n    output_color.rgb = lin2srgb(output_color.rgb);\n\n\tfragColor = output_color;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

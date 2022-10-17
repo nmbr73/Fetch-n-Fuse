@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: MichaelSWater
+  id: MichaelSWater
+  kernel: MichaelSWater
+  name: MichaelSWater
+shader:
+  author: emh
+  description: A fork of "Paint streams" (https://www.shadertoy.com/view/WtfyDj).
+    Playing around.
+  id: 3lGcW1
+  name: Michael's Water
+  tags:
+  - water
+  - sph
+  url: https://www.shadertoy.com/view/3lGcW1

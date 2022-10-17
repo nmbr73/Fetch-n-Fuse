@@ -1,0 +1,108 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stcfDH",
+  "date": "0",
+  "viewed": 0,
+  "name": "Smokey JiPi",
+  "description": "WIP experiment. yep jean-claude again, too good to not use! advecting curl computed from video. using curl for velocities gives an incompressible flow which appears fluid-like. try webcam (change vid on BufA)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "curl",
+   "smoke",
+   "invisible",
+   "incompressible"
+  ],
+  "hasliked": 0,
+  "parentid": "ldVGDw",
+  "parentname": "Smokey"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph2007-curlnoise.pdf\n\n\nvec4 ssamp( vec2 uv )\n{\n    return texture( iChannel1, uv );\n}\n\n//vec3 e = vec3(1./iResolution.xy, 0.);\n//vec4 dx( vec2 uv ) { return (ssamp(uv+e.xz) - ssamp(uv-e.xz)) / (2.*e.x); }\n//vec4 dy( vec2 uv ) { return (ssamp(uv+e.zy) - ssamp(uv-e.zy)) / (2.*e.y); }\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    fragColor = .5*ssamp(uv);\n    \n    //vec2 L = normalize(vec2(-0.5,0.5));\n    //vec2 n = .005*vec2(dy(uv).x,-dx(uv).x);\n    //fragColor.xy = n;\n    //fragColor *= .5+.3*max(0.,dot(L,n));\n    //fragColor = clamp(fragColor,0.,1.);\n    //fragColor = sqrt(fragColor);\n    //fragColor = pow(fragColor,2.);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGRr",
+     "filepath": "/media/a/35c87bcb8d7af24c54d41122dadb619dd920646a0bd0e477e7bdc6d12876df17.webm",
+     "type": "video",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sf3Rr",
+     "filepath": "/media/a/ad56fba948dfba9ae698198c109e71f118a54d209c0ea50d77ea546abad89c57.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph2007-curlnoise.pdf\n\nvec4 ssamp( vec2 uv, float oct )\n{\n    uv /= oct;\n    \n    vec2 d = 2.*vec2(1.,-1.)/iChannelResolution[1].xy;\n    \n    vec4 tex = (texture( iChannel1, 1.25*uv - 0.*0.004*iTime )\n        + texture( iChannel1, 1.25*uv - 0.*0.004*iTime + d.xy )\n        + texture( iChannel1, 1.25*uv - 0.*0.004*iTime + d.xx )\n        + texture( iChannel1, 1.25*uv - 0.*0.004*iTime + d.yy )\n        + texture( iChannel1, 1.25*uv - 0.*0.004*iTime - d.xy )) / 5.;\n    \n    vec4 noise = .15*(1.-texture( iChannel2, 4.*uv - 0.17*iTime ))\n        + .15*(1.-texture( iChannel2, 3.3*uv + 0.1*iTime ));\n    \n    return tex + noise;\n}\n\nvec2 e = vec2(1./256., 0.);\nvec4 dx( vec2 uv, float oct ) { return (ssamp(uv+e.xy,oct) - ssamp(uv-e.xy,oct)) / (2.*e.x); }\nvec4 dy( vec2 uv, float oct ) { return (ssamp(uv+e.yx,oct) - ssamp(uv-e.yx,oct)) / (2.*e.x); }\n\nvec2 hash2( float n ) { return fract(sin(vec2(n,n+1.0))*vec2(43758.5453123,22578.1459123)); }\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    // vel\n    //vec2 vel = vec2( dx(uv).x, dy(uv).x );\n    \n    // curl\n    float oct = 1.25;\n    vec2 curl1 = .7*vec2( dy(uv,oct).x, -dx(uv,oct).x );\n    //oct = 7.37;\n    //vec2 curl2 = 0.*vec2( dy(uv,oct).x, -dx(uv,oct).x );\n    //oct = 0.1;\n    //vec2 curl3 = 0.*vec2( dy(uv,oct).x, -dx(uv,oct).x );\n    \n    vec2 curl = .0004*curl1;// + .0001*curl2 + .00001*curl3;\n    curl *= sqrt(iResolution.x/640.);\n    \n    vec2 wind = 0.002*vec2(.45 + .1*log(max(iTime,1.)),1.); // grav and wind\n    vec2 rand = 0.0005*(hash2(iTime)-0.5);\n\n    fragColor = .991*texture( iChannel0, uv - curl + rand - wind );\n    \n    //fragColor += .1 * smoothstep(0.9,1.,texture( iChannel1, uv ));\n    \n    if( iMouse.z > 0. )\n        fragColor += 0.5*length(texture( iChannel1, uv ))*.15*smoothstep( iResolution.x/10.,iResolution.x/10.-29.,length(iMouse.xy-fragCoord));\n\t    //fragColor += .1*smoothstep( iResolution.x/10.,iResolution.x/10.-29.,length(iMouse.xy-fragCoord));\n    else\n\t    fragColor += .035*smoothstep( iResolution.x/8.,iResolution.x/8.-29.,length(fragCoord-iResolution.xy/(3.+iTime/5.)));\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

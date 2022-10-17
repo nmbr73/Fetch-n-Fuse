@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: OrganicFabricsiJipi
+  id: OrganicFabricsiJipi
+  kernel: OrganicFabricsiJipi
+  name: OrganicFabricsiJipi
+shader:
+  author: N.N.
+  description: 'Unnamed organic shape
+
+    new: add mouse click interaction'
+  id: slcfDM
+  name: Organic FabricsI JiPi
+  parent:
+    id: flX3Wr
+    name: Organic Fabrics I
+    url: https://www.shadertoy.com/view/flX3Wr
+  tags:
+  - procedural
+  - tree
+  - grow
+  - fabric
+  url: https://www.shadertoy.com/view/slcfDM

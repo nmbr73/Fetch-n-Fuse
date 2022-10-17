@@ -1,0 +1,123 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sllfzf",
+  "date": "0",
+  "viewed": 0,
+  "name": "Drippy Room JiPi",
+  "description": "After finding out that multipass has finally been added to Shadertoy, I just had to use it for a 3D watery effect with an interacting object. Thank you for adding multipass to Shadertoy! Now it's even more amazing than it was before. :octopusballoon:",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "water",
+   "spotlight",
+   "box",
+   "feedback",
+   "wooden"
+  ],
+  "hasliked": 0,
+  "parentid": "MstGWX",
+  "parentname": "Drippy Room"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsfGRn",
+     "filepath": "/media/a/1f7dca9c22f324751f2a5a59c9b181dfe3b5564a04b724c657732d0bf09c99db.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3Rr",
+     "filepath": "/media/a/79520a3d3a0f4d3caa440802ef4362e99d54e12b1392973e4ea321840970a88a.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "mat3 boxxfrm;\nfloat box1(vec3 ro,vec3 rd)\n{\n    return min((sign(rd.x)-ro.x)/rd.x,min((sign(rd.y)-ro.y)/rd.y,(sign(rd.z)-ro.z)/rd.z));\n}\nvec2 box2(vec3 ro,vec3 rd)\n{\n    return vec2(max((-sign(rd.x)-ro.x)/rd.x,max((-sign(rd.y)-ro.y)/rd.y,(-sign(rd.z)-ro.z)/rd.z)),box1(ro,rd));\n}\nvec3 textureBox1(vec3 p)\n{\n    vec3 ap=abs(p),f=step(ap.zxy,ap.xyz)*step(ap.yzx,ap.xyz);\n    vec2 uv=f.x>.5?p.yz:f.y>.5?p.xz:p.xy;\n    float l=clamp(-normalize(p-vec3(0,1,0)).y,0.,1.);\n    vec2 b=box2(boxxfrm*p,boxxfrm*(vec3(0,1,0)-p));\n    // Some lighting and a shadow (and approximated AO).\n    float s=mix(.2,1.,smoothstep(0.,.8,length(p.xz)));\n    vec3 d=.6*(1.-smoothstep(-1.,1.,p.y))*vec3(0.3,0.3,.5)*s+smoothstep(0.9,.97,l)*vec3(1,1,.8)*step(b.y,b.x);\n    return texture(iChannel1,uv).rgb*d;\n}\n\nvec3 textureBox2(vec3 p,vec3 p2)\n{\n    vec3 ap=abs(p),f=step(ap.zxy,ap.xyz)*step(ap.yzx,ap.xyz);\n    vec2 uv=f.x>.5?p.yz:f.y>.5?p.xz:p.xy;\n    vec3 n=normalize(-transpose(boxxfrm)*(f*sign(p)));\n    float l=clamp(-normalize(p2-vec3(0,1,0)).y,0.,1.);\n    vec3 d=1.*(1.-smoothstep(-1.,2.5,p2.y))*vec3(0.3,0.3,.7)+smoothstep(0.95,.97,l)*clamp(-n.y,0.,1.)*2.*vec3(1,1,.8)+\n        \tsmoothstep(0.9,1.,l)*clamp(-n.y,0.,1.)*vec3(1,1,.8);\n    return texture(iChannel3,uv).rgb*d;\n}\nmat2 rotation2D(float a)\n{\n    return mat2(cos(a),sin(a),-sin(a),cos(a));\n}\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float time=iTime;\n    vec3 waterc=vec3(.55,.75,1.)*.9;\n\n    // Set up the primary ray.\n    vec3 ro=vec3(0,.7,.8),rd=normalize(vec3((fragCoord-iResolution.xy/2.)/iResolution.y,-1.));\n    \n    rd.yz*=rotation2D(.7);\n    rd.xz*=rotation2D(time*.1);\n    ro.xz*=rotation2D(time*.1);\n    \n    // These are the heights of the planes that the water surface lies within.\n    float h0=.1,h1=-.4;\n    \n    float ba=time;\n    boxxfrm=mat3(cos(ba),sin(ba),0,-sin(ba),cos(ba),0,0,0,1)*\n        \t\tmat3(cos(ba),0,sin(ba),-sin(ba),0,cos(ba),0,1,0)*4.;\n    \n    float t0=(h0-ro.y)/rd.y,t1=(h1-ro.y)/rd.y;\n    float bt2=box1(ro,rd);\n    vec2 bt3=box2(boxxfrm*ro,boxxfrm*rd);\n    \n    // Raymarch through the water surface.\n    float ht=0.,h=0.;\n    vec2 uv;\n    const int n=256;\n    for(int i=0;i<n;++i)\n    {\n        ht=mix(t0,t1,float(i)/float(n));\n        vec3 hp=ro+rd*ht;\n        uv=hp.xz/2.+.5;\n        h=texture(iChannel0,uv).r;\n        if(h<float(i)/float(n))\n            break;\n    }\n    // Check primary ray intersection with the inner box.\n    if(bt3.x<bt3.y&&bt3.x<ht)\n    {\n        fragColor.rgb=textureBox2(boxxfrm*(ro+rd*bt3.x),ro+rd*bt3.x);\n        return;\n    }\n    // Check subsequent intersections after water surface intersection.\n    if(ht>0.&&ht<bt2)\n    {\n        const float e=1e-2;\n        float hdx=texture(iChannel0,uv+vec2(e,0.)).r;\n        float hdy=texture(iChannel0,uv+vec2(0.,e)).r;\n        vec3 norm=normalize(vec3(hdx,e,hdy));\n        float fresnel=1.-pow(clamp(1.-dot(-rd,norm),0.,1.),2.);\n        vec3 r=refract(rd,norm,1./1.333);\n        vec3 r2=reflect(rd,norm);\n        ro+=ht*rd;\n\t\tbt2=box1(ro,r);\n    \tbt3=box2(boxxfrm*ro,boxxfrm*r);\n        \n\t\tfloat bt4=box1(ro,r2);\n    \tvec2 bt5=box2(boxxfrm*ro,boxxfrm*r2);\n        \n        vec3 reflc,refrc;\n        \n\t\treflc=textureBox1(ro+r*bt4);\n        if(bt5.x<bt5.y&&bt5.x>0.)\n        {\n            reflc=textureBox2(boxxfrm*(ro+r2*bt5.x),ro+r2*bt5.x);\n        }\n        \n        refrc=textureBox1(ro+r*bt2);\n        if(bt3.x<bt3.y&&bt3.x>0.)\n        {\n            refrc=textureBox2(boxxfrm*(ro+r*bt3.x),ro+r*bt3.x);\n        } \n\n        fragColor.rgb=reflc*(1.-fresnel)+refrc*fresnel*waterc;\n    }\n    else\n\t\tfragColor.rgb=textureBox1(ro+rd*bt2);\n    \n    // Apply (very simple) tone mapping and gamma.\n    fragColor.rgb=sqrt(clamp((fragColor.rgb/(fragColor.rgb+vec3(1.))),0.,1.));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float density=.9;\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 o=vec2(1.)/500.;\n    fragCoord/=iResolution.xy;\n\n    // Load the fluid buffer states. There are two, stored in R and G. Only R is changed per pass,\n    // and the two channels are swapped using a swizzle mask.\n    fragColor.rg=texture(iChannel0,fragCoord).gr;\n\n    fragColor.r = (texture(iChannel0,fragCoord+o*vec2( 0.,+1.)).r+\n        \t\ttexture(iChannel0,fragCoord+o*vec2( 0,-1)).r+\n                texture(iChannel0,fragCoord+o*vec2(-1, 0)).r+\n                texture(iChannel0,fragCoord+o*vec2(+1, 0)).r+\n                texture(iChannel0,fragCoord+o*vec2(-1,-1)).r+\n                texture(iChannel0,fragCoord+o*vec2(+1,-1)).r+\n                texture(iChannel0,fragCoord+o*vec2(-1,+1)).r+\n                texture(iChannel0,fragCoord+o*vec2(+1,+1)).r+\n                texture(iChannel0,fragCoord+o*vec2( 0, 0)).r)*2./9.-\n        \t\ttexture(iChannel0,fragCoord+o*vec2( 0, 0)).g;\n            \n   \n    // Add the interaction with the inner box.\n    float ba=iTime;\n    mat3 boxxfrm=mat3(cos(ba),sin(ba),0,-sin(ba),cos(ba),0,0,0,1)*\n        \t\tmat3(cos(ba),0,sin(ba),-sin(ba),0,cos(ba),0,1,0)*4.;\n    vec3 bp=vec3(fragCoord.x*2.-1.,.1,fragCoord.y*2.-1.);\n    vec3 bp2=boxxfrm*bp;\n    float bd=length(max(vec3(0.),abs(bp2)-vec3(1.)));\n    \n    if(bd<1e-3)\n   \t\tfragColor.r+=.03;\n\n    // Add some random drips.\n    float p=.01;\n    float c=floor(mod(iTime,64.)/p);\n    fragColor.r += (1.-smoothstep(0.,.01,distance(fragCoord,1.5*vec2(cos(c*11.),sin(c*7.1)))))*.8;    \n    \n    fragColor.r *= density;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

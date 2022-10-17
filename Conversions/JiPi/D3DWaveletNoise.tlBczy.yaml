@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: D3DWaveletNoise
+  id: D3DWaveletNoise
+  kernel: D3DWaveletNoise
+  name: D3DWaveletNoise
+shader:
+  author: blackle
+  description: An attempt to generalize https://www.shadertoy.com/view/wsBfzK to 3
+    dimensions and distort an SDF.
+  id: tlBczy
+  name: 3D Wavelet Noise
+  tags:
+  - noise
+  url: https://www.shadertoy.com/view/tlBczy

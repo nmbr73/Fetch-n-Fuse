@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: MultiscaleMipFluid
+  id: MultiscaleMipFluid
+  kernel: MultiscaleMipFluid
+  name: MultiscaleMipFluid
+shader:
+  author: cornusammonis
+  description: A mipmap-based approach to multiscale fluid dynamics.
+  id: tsKXR3
+  name: Multiscale MIP Fluid
+  tags:
+  - simulation
+  - water
+  - fluid
+  - mipmap
+  - turbulence
+  - mip
+  - diffusion
+  - advection
+  - navier
+  - stokes
+  - eddy
+  url: https://www.shadertoy.com/view/tsKXR3

@@ -1,0 +1,170 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftdfDs",
+  "date": "0",
+  "viewed": 0,
+  "name": "Temperatur JiPi",
+  "description": "Long ago Fabrice challenged my fluid models, telling me that I did not consider temperature. I'm still trying to live up to his expectations. ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "automata"
+  ],
+  "hasliked": 0,
+  "parentid": "fsf3zS",
+  "parentname": "Temperatures"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Fork of \"Transport Dynamics II\" by wyatt. https://shadertoy.com/view/sdl3RN\n// 2021-03-18 22:39:28\n\n// Display\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    vec4 f = A(U);\n    Q = (.6-0.5*(sin(1.5*f.z+vec4(1,2,3,4))))*f.w;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define R iResolution.xy\n#define A(U) texture(iChannel0,(U)/R)\n//#define Main void mainImage(out vec4 Q, in vec2 U)\n#define box for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)\n#define r2 0.70710678118\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Forces\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 a = A(U+u);\n        float f = 0.03*a.w*(a.w*(a.w-.9)+.4*a.z);\n        dQ.xy -= f*u;\n        dQ.z  += a.w*f*dot(Q.xy-a.xy,u);\n    }\n    Q += dQ;\n    Q.y -= 5e-5;\n    vec2 M = 1.5*R;\n    if (iMouse.z>0.) M = iMouse.xy;\n    if(length(U-M)<.02*R.y)Q = vec4(-.5*normalize(iMouse.xy-0.5*R),.1,1.);\n    if (length(Q.xy)>.5) Q.xy = .5*normalize(Q.xy);\n    \n    // Change boundary/initials:\n    \n    if (true) {\n    // Left-Right hot cold\n        if (iFrame < 1)Q = vec4(0,0,U.x/R.x,.3);\n        if (U.x    <18.) Q.z=mix(Q.z,0.,.01);\n        if (R.x-U.x<18.||(R.x-U.x<R.x*.3&&U.y<10.)) Q.z=mix(Q.z,10.,.01);\n    } else {\n    // Up down hot cold\n        if (iFrame < 1)Q = vec4(0,0,5.*step(U.y+30.*sin(10.*U.x/R.x*6.2),0.5*R.y),1.);\n        if (U.y    <18.) Q.z=mix(Q.z,5.,.01);\n        if (R.y-U.y<18.) Q.z=mix(Q.z,0.,.01);\n    }\n    \n    if (U.x < 2.||R.x-U.x<2.) Q.xy *= 0.;\n    if (U.y < 2.||R.y-U.y<2.) Q.xyz *= 0.;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float j = .5+.5*max(1.-2.5*Q.w*q.w,0.);\n       float k = .5+.5*max(1.-2.5*Q.w*q.w,0.);\n       float wa = 0.25*Q.w*min(i,j)/j;\n       float wb = 0.25*q.w*max(k+i-1.,0.)/k;\n        dQ.xyz += Q.xyz*wa+q.xyz*wb;\n        dQ.w += wa+wb;\n        \n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n    \n    if (U.x < 2.||R.x-U.x<2.) Q.xy *= 0.;\n    if (U.y < 2.||R.y-U.y<2.) Q.xy *= 0.;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float j = .5;\n       float k = .5;\n       float wa = 0.25*Q.w*min(i,j)/j;\n       float wb = 0.25*q.w*max(k+i-1.,0.)/k;\n        dQ.xyz += Q.xyz*wa+q.xyz*wb;\n        dQ.w += wa+wb;\n        \n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n        \n    if (U.x < 2.||R.x-U.x<2.) Q.xy *= 0.;\n    if (U.y < 2.||R.y-U.y<2.) Q.xy *= 0.;\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Advect\nvoid mainImage(out vec4 Q, in vec2 U)\n{\n    Q = A(U);\n    vec4 dQ = vec4(0);\n    box if(abs(x)!=abs(y))\n    {\n        vec2 u = vec2(x,y);\n        vec4 q = A(U+u);\n        vec2 a = Q.xy,\n             b = q.xy+u;\n       float ab = dot(u,b-a);\n       float i = dot(u,(0.5*u-a))/ab;\n       float j = .5;\n       float k = .5;\n       float wa = 0.25*Q.w*min(i,j)/j;\n       float wb = 0.25*q.w*max(k+i-1.,0.)/k;\n        dQ.xyz += Q.xyz*wa+q.xyz*wb;\n        dQ.w += wa+wb;\n        \n    }\n    if (dQ.w>0.)dQ.xyz/=dQ.w;\n    Q = dQ;\n        \n    if (U.x < 2.||R.x-U.x<2.) Q.xy *= 0.;\n    if (U.y < 2.||R.y-U.y<2.) Q.xy *= 0.;\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ProceduralBricksJipi
+  id: ProceduralBricksJipi
+  kernel: ProceduralBricksJipi
+  name: ProceduralBricksJipi
+shader:
+  author: N.N.
+  description: I'll try to refactor this someday
+  id: fdKBzR
+  name: Procedural Bricks JiPi
+  parent:
+    id: NdtBRB
+    name: Procedural Bricks
+    url: https://www.shadertoy.com/view/NdtBRB
+  tags:
+  - procedural
+  - texture
+  url: https://www.shadertoy.com/view/fdKBzR

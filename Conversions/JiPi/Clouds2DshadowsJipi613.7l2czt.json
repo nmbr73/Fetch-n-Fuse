@@ -1,0 +1,76 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7l2czt",
+  "date": "0",
+  "viewed": 0,
+  "name": "Clouds2DShadows JiPi 613",
+  "description": "Simple clouds2D shader with shadows from light",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simplexnoiseclouds2draymarchingdiffuselight"
+  ],
+  "hasliked": 0,
+  "parentid": "7l2yRt",
+  "parentname": "Clouds2D With Shadows"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGRn",
+     "filepath": "/media/a/10eb4fe0ac8a7dc348a2cc282ca5df1759ab8bf680117e4047728100969e7b43.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define MAX_DIST 6000.0\n#define MIN_DIST 0.01\n#define STEPS 255\n\nstruct Object\n{\n    int id;\n    float d;\n};\n\nObject minValue(Object a, Object b)\n{\n    if(a.d <= b.d)\n    {\n        return a;\n    }\n    return b;\n}\n\nvec3 rotateY(in vec3 p, in float angle, vec3 axis)\n{\n    vec3 result = p;\n    result -= axis;\n\n    float rnd = radians(angle);\n    result = vec3(result.x * cos(rnd) - result.z * sin(rnd), result.y, result.x * sin(rnd) + result.z * cos(rnd));\n    result += axis;\n    return result;\n}\n\nObject sdPlane(in int id, in vec3 p, in vec3 normal, in float h)\n{\n    return Object(id, dot(p, normal) + h);\n}\n\nObject sdScene(in vec3 p)\n{\n    Object plane1 = sdPlane(0, p, vec3(0.0f, -1.0f, 0.0f), 3.0f);\n    Object plane2 = sdPlane(1, p, vec3(0.0f, 1.0f, 0.0f), 1.0f);\n\n    Object result = minValue(plane1, plane2);\n    \n    return result;\n}\n\nObject rayMarching(in vec3 ro, in vec3 rd)\n{\n    Object result;\n    for(int i = 0; i < STEPS; ++i)\n    {\n        vec3 p = ro + rd * result.d;\n        Object tmp = sdScene(p);\n        result.d += tmp.d;\n        result.id = tmp.id;\n        \n        if(tmp.d <= MIN_DIST || tmp.d >= MAX_DIST)\n            break;\n    }\n    return result;\n}\n\nfloat saturate(in float a)\n{\n    return clamp(a, 0.0f, 1.0f);\n}\n\nfloat diffuseCloud(in vec3 p, in vec3 lightPos, in vec3 normal)\n{\n    vec3 lightDir = normalize(lightPos - p);\n    \n    return saturate(dot(lightDir, normal));\n}\n\nfloat diffuse(in vec3 p, in vec3 lightPos, in vec3 normal)\n{\n    vec3 lightDir = normalize(lightPos - p);\n    \n    vec3 p1 = p - normal * MIN_DIST;\n    \n    float result = saturate(dot(lightDir, normal));\n    if(rayMarching(p1, lightDir).d <= length(lightPos - p))\n    {\n        result *= 0.2f;\n    }\n    \n    return result;\n}\n\nvec3 calcCloudsShadow(in vec3 col, in float clouds)\n{\n    return mix(col, col * vec3(0.4f), clouds);\n}\n\nvec3 calcNormal(vec3 p)\n{\n    float e = 0.0005f;\n    return normalize(\n                    vec3(\n                        sdScene(vec3(p.x + e, p.y, p.z)).d - sdScene(vec3(p.x - e, p.y, p.z)).d,\n                        sdScene(vec3(p.x, p.y + e, p.z)).d - sdScene(vec3(p.x, p.y - e, p.z)).d,\n                        sdScene(vec3(p.x, p.y, p.z + e)).d - sdScene(vec3(p.x, p.y, p.z - e)).d\n                    ));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec3 lightPos = vec3(100.0f, 1000.0f, 0.0f);\n    vec2 uv = (fragCoord - 0.5f * iResolution.xy)/iResolution.y;\n\n    vec3 ro = vec3(0.0f, 1.0f, -3.0f);\n    vec3 rd = normalize(vec3(uv, 1.0f));\n\n    Object result = rayMarching(ro, rd);\n    vec3 clouds;\n    vec3 col = vec3(0.2f);\n    \n    if(result.d <= MAX_DIST)\n    {\n        vec3 p = ro + rd * result.d;\n        vec4 clouds = texture(iChannel0, p.xz / 60.0f * 0.5f + 0.5f).rgba;\n        if(result.id == 0)\n        {        \n            col = mix(vec3(1.0f), vec3(0.52734375f, 0.8046875f, 0.91796875), clouds.a) *  mix(diffuseCloud(p, lightPos, clouds.xyz), 1.0f, clouds.a);\n        }\n        else if(result.id == 1)\n        {\n            vec3 normal = calcNormal(p);\n            col = texture(iChannel1, p.xz / 2.0f * 0.5f + 0.5f).rgb * mix(diffuse(p, lightPos, normal), 1.0f, clouds.a);\n            \n        }\n    }\n\n    col = mix(vec3(0.74296875f, 0.86953125f, 0.98234375f), col, exp(-result.d * 0.01f));\n    // Output to screen\n    fragColor = vec4(col, 1.0f);\n    //fragColor = vec4(texture(iChannel0, uv * 0.5f + 0.5f).aaa,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define OCTAVES 5\n\nfloat random(in vec3 p)\n{\n    return fract(sin(dot(p, vec3(12.345345f, 18.42545f, 32.454342f))) * 4321488.23432f);\n}\n\nfloat simplexNoise(in vec3 p)\n{\n    vec3 ip = floor(p);\n    vec3 fp = fract(p);\n    \n    float a1 = random(ip);\n    float a2 = random(ip + vec3(1.0f, 0.0f, 0.0f));\n    float a3 = random(ip + vec3(0.0f, 1.0f, 0.0f));\n    float a4 = random(ip + vec3(1.0f, 1.0f, 0.0f));\n    \n    float b1 = random(ip + vec3(0.0f, 0.0f, 1.0f));\n    float b2 = random(ip + vec3(1.0f, 0.0f, 1.0f));\n    float b3 = random(ip + vec3(0.0f, 1.0f, 1.0f));\n    float b4 = random(ip + vec3(1.0f, 1.0f, 1.0f));\n    \n    \n    vec3 u = fp * fp * (3.0f - 2.0f * fp);\n    \n    float x1 = mix(a1, a2, u.x);\n    float x2 = mix(a3, a4, u.x);\n    \n    float y1 = mix(b1, b2, u.x);\n    float y2 = mix(b3, b4, u.x);\n    \n    float r1 = mix(x1, x2, u.y);\n    float r2 = mix(y1, y2, u.y);\n    \n    return mix(r1, r2, u.z); \n}\n\nfloat fbm(in vec3 p)\n{\n    float result = 0.0f;\n    float amp = 0.5f;\n    for(int i = 0; i < OCTAVES; ++i)\n    {\n        float m = pow(2.0f, float(i));\n        result += simplexNoise(p * m) * (1.0f / m);\n    }\n    return pow(result, 2.0f);\n}\n\nvec3 calcNormal(in vec3 p)\n{\n    vec3 p1 = p + vec3(1.0f, 0.0f, 0.0f);\n    vec3 p2 = p + vec3(-1.0f, 0.0f, 0.0f);\n    vec3 p3 = p + vec3(0.0f, 0.0f, 1.0f);\n    vec3 p4 = p + vec3(0.0f, 0.0f, -1.0f);\n    \n    float a = fbm(p1);\n    float b = fbm(p2);\n    float c = fbm(p3);\n    float d = fbm(p4);\n   \n    \n    return normalize(vec3(a - b, 1.0f, c - d));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    \n    uv *= 30.0f;\n    \n    vec3 p =vec3(uv + iTime * 0.08f, iTime * 0.1f);\n    \n    vec3 normal = calcNormal(p);\n    \n    fragColor = vec4(normal, fbm(p));\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

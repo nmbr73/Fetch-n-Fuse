@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: ExperimentMalze
+  id: ExperimentMalze
+  kernel: ExperimentMalze
+  name: ExperimentMalze
+shader:
+  author: malouane
+  description: 'based on the shader [url=https://www.shadertoy.com/view/tlKGDh]Physarum
+    Polycephalum Simulation
+
+    [/url] of [url=https://www.shadertoy.com/user/michael0884]michael0884[/url]
+
+
+    use mouse for add particles
+
+    use spacebar for clear the screen
+
+
+    a'
+  id: Ns2cWd
+  name: experiment_malze
+  tags:
+  - expriment
+  url: https://www.shadertoy.com/view/Ns2cWd

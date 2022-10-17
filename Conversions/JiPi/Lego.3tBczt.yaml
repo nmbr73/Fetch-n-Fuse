@@ -1,0 +1,28 @@
+fuse:
+  author: JiPi
+  file: Lego
+  id: Lego
+  kernel: Lego
+  name: Lego
+shader:
+  author: zduny
+  description: 'Click to rotate around X axis.
+
+
+    Press arrows to change size.
+
+    Press SHIFT to toggle between a plate and a brick.
+
+    Press C to change color.
+
+    Press SPACE to stop rotation around Y axis.
+
+    '
+  id: 3tBczt
+  name: LEGO
+  tags:
+  - raymarching
+  - interactive
+  - vector
+  - lego
+  url: https://www.shadertoy.com/view/3tBczt

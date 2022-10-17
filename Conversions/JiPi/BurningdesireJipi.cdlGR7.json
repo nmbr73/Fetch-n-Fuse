@@ -1,0 +1,33 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "cdlGR7",
+  "date": "0",
+  "viewed": 0,
+  "name": "BurningDesire JiPi",
+  "description": "Made it when playing with my favourite shaders made by IQ, JoÃ£o Portela and XT \nOn an interactive GLSLEditor developed by me\n[url]http://github.com/rakesh-malviya/GLSLEditor[/url]\nPlease goto the link and try it (Qt and glut required)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "procedural",
+   "3d",
+   "distancefield",
+   "flame",
+   "heart"
+  ],
+  "hasliked": 0,
+  "parentid": "XdlSRj",
+  "parentname": "Burning desire"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// Original shader created by XT95 - flame\n//AND\n// Original shader created by inigo quilez - iq/2013\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n// modified by JoÃ£o Portela. Heart3\n\n//Wanted to try some shaders on an interactive GLSLEditor developed by me\n//https://github.com/rakesh-malviya/GLSLEditor\n//Please goto the link and try it\n\n\nfloat noise(vec3 p) //Thx to Las^Mercury\n{\n        vec3 i = floor(p);\n        vec4 a = dot(i, vec3(1., 57., 21.)) + vec4(0., 57., 21., 78.);\n        vec3 f = cos((p-i)*acos(-1.))*(-.5)+.5;\n        a = mix(sin(cos(a)*a),sin(cos(1.+a)*(1.+a)), f.x);\n        a.xy = mix(a.xz, a.yw, f.y);\n        return mix(a.x, a.y, f.z);\n}\n\nfloat sphere(vec3 p, vec4 spr)\n{\n        return length(spr.xyz-p) - spr.w;\n}\n\nfloat flame(vec3 p)\n{\n        float d = sphere(p*vec3(0.4,0.5,1.0), vec4(.0,-1.,.0,1.));\n        return d + (noise(p+vec3(.0,iTime*2.,.0)) + noise(p*3.)*.5)*.25*(p.y) ;\n}\n\nfloat scene(vec3 p)\n{\n        return min(100.-length(p) , abs(flame(p)) );\n}\n\nvec4 raymarch(vec3 org, vec3 dir)\n{\n        float d = 0.0, glow = 0.0, eps = 0.02;\n        vec3  p = org;\n        bool glowed = false;\n\n        for(int i=0; i<64; i++)\n        {\n                d = scene(p) + eps;\n                p += d * dir;\n                if( d>eps )\n                {\n                        if(flame(p) < .0)\n                                glowed=true;\n                        if(glowed)\n                        glow = float(i)/64.;\n                }\n        }\n        return vec4(p,glow);\n}\n\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 p = (2.0*fragCoord.xy-iResolution.xy)/iResolution.y;\n    p.y -= 0.25;\n\n    // background color\n    vec3 bcol = vec3(1.0,0.7,0.8-0.07*p.y)*(1.0-0.35*length(p));\n\n    // animate\n    float tt = abs(sin(iTime))*1.5;\n    float ss = pow(tt,.2)*0.5 + 0.5;\n    ss -= ss*0.2*sin(tt*6.2831*3.0)*exp(-tt*4.0);\n    p *= vec2(0.5,1.5) + ss*vec2(0.5,-0.5);\n\n\n    // shape\n    float a = atan(p.x,p.y)/3.141593;\n    float r = length(p);\n    float h = abs(a);\n    float d = (13.0*h - 22.0*h*h + 10.0*h*h*h)/(6.0-5.0*h);\n\n        // color\n        float s = 1.0-0.5*clamp(r/d,0.0,1.0);\n        s = 0.75 + 0.75*p.x;\n        s *= 1.0-0.25*r;\n        s = 0.5 + 0.6*s;\n        s *= 0.5+0.5*pow( 1.0-clamp(r/d, 0.0, 1.0 ), 0.1 );\n        vec3 hcol = vec3(1.0,0.5*r,0.3)*s;\n\n    vec3 col = mix( bcol, hcol, smoothstep( -0.01, 0.01, d-r) );\n\n    vec2 vXT = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;\n    vXT.x *= iResolution.x/iResolution.y;\n\n    vec3 orgXT = vec3(0., -2., 4.);\n    vec3 dirXT = normalize(vec3(vXT.x*1.6, -vXT.y, -1.5));\n\n    vec4 pXT = raymarch(orgXT, dirXT);\n    float glowXT = pXT.w;\n\n    vec4 colXT = mix(vec4(0.7,0.4,.1,1.), vec4(0.1,.5,1.,1.), pXT.y*(-0.02)+.4);\n\n    fragColor = mix(vec4(col,1.0),colXT, pow(glowXT*2.,4.));\n\n    //fragColor = vec4(col,1.0);\n}\n\n\n/*\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n        vec2 v = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;\n        v.x *= iResolution.x/iResolution.y;\n\n        vec3 org = vec3(0., -2., 4.);\n        vec3 dir = normalize(vec3(v.x*1.6, -v.y, -1.5));\n\n        vec4 p = raymarch(org, dir);\n        float glow = p.w;\n\n        vec4 col = mix(vec4(1.,.5,.1,1.), vec4(0.1,.5,1.,1.), p.y*.02+.4);\n\n        fragColor = mix(vec4(0.), col, pow(glow*2.,4.));\n        //fragColor = mix(vec4(1.), mix(vec4(1.,.5,.1,1.),vec4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));\n\n}\n*/\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: OceanterrainJipi706
+  id: OceanterrainJipi706
+  kernel: OceanterrainJipi706
+  name: OceanterrainJipi706
+shader:
+  author: N.N.
+  description: Ocean terrain with raymarch.
+  id: 7ljyD3
+  name: OceanTerrain JiPi706
+  parent:
+    id: NtjcW3
+    name: Ocean terrain
+    url: https://www.shadertoy.com/view/NtjcW3
+  tags:
+  - terrain
+  - water
+  url: https://www.shadertoy.com/view/7ljyD3

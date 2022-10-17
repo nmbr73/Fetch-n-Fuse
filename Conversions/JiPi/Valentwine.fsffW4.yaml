@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Valentwine
+  id: Valentwine
+  kernel: Valentwine
+  name: Valentwine
+shader:
+  author: Mipmap
+  description: 'Valentine? Valenline? Valentwine? Happy Valentine''s Day.
+
+    Color tweak of "Lover 2" by FabriceNeyret2. https://shadertoy.com/view/ssjyWc'
+  id: fsffW4
+  name: Valentwine
+  tags:
+  - heart
+  - reproduction
+  - dondeti
+  url: https://www.shadertoy.com/view/fsffW4

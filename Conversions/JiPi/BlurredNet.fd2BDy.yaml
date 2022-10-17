@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: BlurredNet
+  id: BlurredNet
+  kernel: BlurredNet
+  name: BlurredNet
+shader:
+  author: dr2
+  description: Blurred Apollonian net
+  id: fd2BDy
+  name: Blurred Net
+  tags:
+  - blur
+  - dof
+  - focus
+  - apollonian
+  url: https://www.shadertoy.com/view/fd2BDy

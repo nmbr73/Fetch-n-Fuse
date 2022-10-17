@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: BrushToy
+  id: BrushToy
+  kernel: BrushToy
+  name: BrushToy
+shader:
+  author: leon
+  description: Another graphic programming rabbit hole
+  id: NlSBW3
+  name: Brush toy
+  tags:
+  - abstract
+  - paint
+  url: https://www.shadertoy.com/view/NlSBW3

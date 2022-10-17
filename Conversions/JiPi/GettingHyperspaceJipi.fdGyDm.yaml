@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: GettingHyperspaceJipi
+  id: GettingHyperspaceJipi
+  kernel: GettingHyperspaceJipi
+  name: GettingHyperspaceJipi
+shader:
+  author: N.N.
+  description: Getting into hyperspace.
+  id: fdGyDm
+  name: Getting Hyperspace JiPi
+  parent:
+    id: NdKyD1
+    name: Getting into/out of hyperspace
+    url: https://www.shadertoy.com/view/NdKyD1
+  tags:
+  - star
+  - hyperspace
+  url: https://www.shadertoy.com/view/fdGyDm

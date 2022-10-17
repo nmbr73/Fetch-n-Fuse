@@ -1,0 +1,35 @@
+fuse:
+  author: JiPi
+  file: ChampagneicecreamJipi671
+  id: ChampagneicecreamJipi671
+  kernel: ChampagneicecreamJipi671
+  name: ChampagneicecreamJipi671
+shader:
+  author: N.N.
+  description: 'Winning shader made at Revision 2022 Shader Showdown Final.
+
+    Live coded on stage in 25 minutes.  Designed beforehand in several hours.
+
+
+    '
+  id: NlScWt
+  name: ChampagneIceCream  JiPi671
+  parent:
+    id: NlSyWt
+    name: Champagne ice cream
+    url: https://www.shadertoy.com/view/NlSyWt
+  tags:
+  - line
+  - demoscene
+  - particles
+  - glow
+  - ice
+  - organic
+  - soft
+  - smooth
+  - spring
+  - particle
+  - merge
+  - cream
+  - spawn
+  url: https://www.shadertoy.com/view/NlScWt

@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: MolecularDance
+  id: MolecularDance
+  kernel: MolecularDance
+  name: MolecularDance
+shader:
+  author: wyatt
+  description: I use a 2 pass blur to make a hacky electric field. Then tracked particles
+    with different charges interact with the blur field. The field is colored by a
+    caustic. Mouseable. Controls in Common tab
+  id: WdB3WG
+  name: Molecular Dance
+  tags:
+  - particles
+  - physics
+  - continuous
+  url: https://www.shadertoy.com/view/WdB3WG

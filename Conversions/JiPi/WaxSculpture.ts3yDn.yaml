@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: WaxSculpture
+  id: WaxSculpture
+  kernel: WaxSculpture
+  name: WaxSculpture
+shader:
+  author: wyatt
+  description: "Sophia and I have mountain of colorful wax in our room that we've\
+    \ made over the years. \n\nUse your mouse to make your own wax sculpture!"
+  id: ts3yDn
+  name: Wax Sculpture
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/ts3yDn

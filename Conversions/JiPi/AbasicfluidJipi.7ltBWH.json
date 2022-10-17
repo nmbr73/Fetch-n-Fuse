@@ -1,0 +1,283 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7ltBWH",
+  "date": "0",
+  "viewed": 0,
+  "name": "ABasicFluid JiPi",
+  "description": "Basic fluid simulation, with a high vorticity confinement, the result looks interesting (although pretty wrong)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "navierstokes",
+   "gridbased"
+  ],
+  "hasliked": 0,
+  "parentid": "ws2BDK",
+  "parentname": "ABasicFluid"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by evilryu\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// from aiekick： https://www.shadertoy.com/view/lttXDn\nvec3 blackbody(float t)\n{\n\tfloat Temp = t*7500.0;\n    vec3 col = vec3(255.);\n    col.x = 56100000. * pow(Temp,(-3. / 2.)) + 148.;\n   \tcol.y = 100.04 * log(Temp) - 623.6;\n   \tif (Temp > 6500.) col.y = 35200000. * pow(Temp,(-3. / 2.)) + 184.;\n   \tcol.z = 194.18 * log(Temp) - 1448.6;\n   \tcol = clamp(col, 0., 255.)/255.;\n    if (Temp < 1000.) col *= Temp/1000.;\n   \treturn col;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 pos = fragCoord/iResolution.xy;\n    vec3 col=texture(iChannel3,pos).xyz;\n    col=blackbody(smoothstep(-3.,250.,length(col)));\n    float d=distToOcc(pos,iResolution.xy, iTime);\n    col.xyz+=vec3(.6)*(1.-smoothstep(0.,.1, d));\n    fragColor.xyz=col.xyz;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by evilryu\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// Advection and body force\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 pixelSize=1./iResolution.xy;\n    vec2 pos=fragCoord.xy*pixelSize;\n    \n    // semi-lagrangian\n    vec2 U=texture(iChannel3,pos).xy;    \n    vec2 prevPos=pos-iTimeDelta*U*pixelSize;\n    \n    // Interpolation is done by sampling\n    vec2 Unext = texture(iChannel3,prevPos).xy;\n    \n    // Body forces\n   \n    if(pos.x>=0.43 && pos.x<=0.5 && pos.y<=1. && pos.y>=0.8)\n    {\n        Unext+=iTimeDelta*vec2(0.,-1000.);\n    }\n    \n    if(pos.x>=0. && pos.x<=0.1 && pos.y<=.5 && pos.y>=.45)\n    {\n        Unext+=iTimeDelta*vec2(1000.,0.);\n    }\n    \n    if(pos.x>=0. && pos.x<=0.1 && pos.y<=.5 && pos.y>=.45)\n    {\n        Unext+=iTimeDelta*vec2(1000.,0.);\n    }\n    \n     if(pos.x>=.9 && pos.x<=1. && pos.y<=.5 && pos.y>=.45)\n    {\n        Unext+=iTimeDelta*vec2(-1000.,0.);\n    }\n    \n    if(iMouse.z>0.||iMouse.w>0.)\n    {\n        float intensity=smoothstep(0.,0.05,length((fragCoord.xy-iMouse.xy)/iResolution.xy));\n        Unext*=intensity;\n    }\n        \n    // Vorticity confinement force\n    float W=texture(iChannel1, pos).y;\n    float Wleft=texture(iChannel1, pos-vec2(pixelSize.x,0)).y;\n    float Wright=texture(iChannel1, pos+vec2(pixelSize.x,0)).y;\n    float Wdown=texture(iChannel1, pos-vec2(0,pixelSize.y)).y;\n    float Wup=texture(iChannel1, pos+vec2(0,pixelSize.y)).y;\n    \n    vec3 GradW=vec3(Wright-Wleft, Wup-Wdown, 0.)*.5;\n    vec2 Fcon=cross(GradW/(length(GradW)+1e-10), vec3(0,0,W)).xy;\n    \n    Unext+=50.*iTimeDelta*Fcon;\n    \n        \n    // Boundary conditions\n    if(pos.x > 1.0 - pixelSize.x ||\n      \tpos.y > 1.0 - pixelSize.y ||\n      \tpos.x < pixelSize.x ||\n      \tpos.y < pixelSize.y)\n    {\n        Unext = vec2(0.0, 0.0);\n    }\n    \n    // occluder\n    if(distToOcc(pos, iResolution.xy, iTime)<=0.)\n   \t{\n        Unext=vec2(0);\n    }\n   \n    // output Fcon is just for visualization\n    fragColor=vec4(Unext,Fcon);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by evilryu\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// Divergence/Vortocity\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 pixelSize=1./iResolution.xy;\n    vec2 pos=fragCoord.xy*pixelSize;\n    \n    vec2 left=texture(iChannel0, pos-vec2(pixelSize.x,0)).xy;\n    vec2 right=texture(iChannel0, pos+vec2(pixelSize.x,0)).xy;\n    vec2 down=texture(iChannel0, pos-vec2(0,pixelSize.y)).xy;\n    vec2 up=texture(iChannel0, pos+vec2(0,pixelSize.y)).xy;\n    \n    // Central difference\n    float D=((right.x-left.x) + (up.y-down.y))*0.5;\n    \n    // Vortisity\n    float W=((right.y-left.y) - (up.x-down.x))*0.5;\n    \n    fragColor = vec4(D,W,0,0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by evilryu\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// Jacobian\n\nvec2 pixelSize;\nfloat P;\n\nfloat getPressure(vec2 pos, bool hori)\n{\n    if(distToOcc(pos, iResolution.xy, iTime)<=0.)\n    {\n        if(hori)\n        {\n            return P+rho*dx/iTimeDelta*texture(iChannel0, pos).x;\n        }\n        else\n        {\n            return P+rho*dx/iTimeDelta*texture(iChannel0,pos).y;\n        }\n        \n    }\n    if(pos.x<pixelSize.x || pos.x>1.-pixelSize.x)\n    {\n        return P+rho*dx/iTimeDelta*texture(iChannel0, pos).x;\n    }\n    else if(pos.y<pixelSize.y || pos.y>1.-pixelSize.y)\n    {\n        return P+rho*dx/iTimeDelta*texture(iChannel0,pos).y;\n    }\n    else\n    {\n        return texture(iChannel2, pos).x;\n    }\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    pixelSize=1./iResolution.xy;\n    vec2 pos=fragCoord.xy*pixelSize;\n    \n    float D=texture(iChannel1,pos).x;\n    \n    // Using previous pressure as guess\n    float Pleft, Pright, Pup, Pdown;\n    \n    P=texture(iChannel2,pos).x;\n    \n    float Usolid=0.;\n              \n    Pleft=getPressure(pos-vec2(pixelSize.x,0),true);\n    Pright=getPressure(pos+vec2(pixelSize.x,0),true);\n    Pup=getPressure(pos+vec2(0,pixelSize.y),false);\n    Pdown=getPressure(pos-vec2(0,pixelSize.y),false);\n    \n    P=(Pleft+Pright+Pup+Pdown-D*rho*dx/iTimeDelta)/4.;\n\n    fragColor = vec4(P,0,0,0);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by evilryu\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// Velocity field substract pressure gradient force\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 pixelSize=1./iResolution.xy;\n    vec2 pos=fragCoord.xy*pixelSize;\n\t\n    vec2 U=texture(iChannel0,pos).xy;\n    \n    float Pleft=texture(iChannel2, pos-vec2(pixelSize.x,0)).x;\n    float Pright=texture(iChannel2, pos+vec2(pixelSize.x,0)).x;\n    float Pup=texture(iChannel2, pos+vec2(0,pixelSize.y)).x;\n    float Pdown=texture(iChannel2, pos-vec2(0,pixelSize.y)).x;\n    \n\n    vec2 dP=vec2((Pright-Pleft)/dx, (Pup-Pdown)/dx)*.5;\n    U-=dP*iTimeDelta/rho;\n    fragColor = vec4(U,0,0);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "\nconst float rho=1.;\nconst float dx=1.;\n\nfloat hash11(float p)\n{\n    vec2 p2 = fract(vec2(p * 5.3983, p * 5.4427));\n    p2 += dot(p2.yx, p2.xy + vec2(21.5351, 14.3137));\n    return fract(p2.x * p2.y * 95.4337);\n}\n\nfloat noise(float x)\n{\n    float p=floor(x);\n    float f=fract(x);\n    f=f*f*(3.-2.*f);\n    return mix(hash11(p),hash11(p+1.0),f);\n}\n\nmat3 m_rot(float angle)\n{\n    float c = cos(angle);\n    float s = sin(angle);\n    return mat3( c, s, 0, -s, c, 0, 0, 0, 1);\n}\nmat3 m_trans(float x, float y)\n{\n    return mat3(1., 0., 0., 0., 1., 0, -x, -y, 1.);\n}\nmat3 m_scale(float s)\n{\n    return mat3(s, 0, 0, 0, s, 0, 0, 0, 1);\n}\n\nfloat distToOcc(vec2 pos, vec2 resolution, float time)\n{\n    float ratio=resolution.x/resolution.y;\n    pos.x*=ratio;\n\tpos=pos*2.-1.;\n    pos*=0.6;\n    pos.x-=.4;\n   \n    pos*=6.0;\n    pos.y+=3.;\n   \tvec3 p = vec3(pos, 1.);\n    float d = 1.0;\n    for(int i = 0; i < 7; ++i)\n    {\n        d=min(d,(length(max(abs(p.xy)-vec2(0.01,1.0), 0.0)))/p.z);\n        p.x=abs(p.x);\n        float pi=3.1415936;\n        p=m_scale(1.22) * m_rot(0.25*pi) * m_trans(0.,3.*noise(float(i))) * p;\n\n    }\n    \n    d=smoothstep(0.1, 0.15,d);\n    return d;\n}\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

@@ -1,0 +1,49 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "slyBWG",
+  "date": "0",
+  "viewed": 0,
+  "name": "Ondulation JiPi",
+  "description": "Crée une ondulation circulairel sur une image.\ngrâce au coordonner polaire de uv.\n\nUtilisation, ondulation de l'eau",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "ondulationeaudformation"
+  ],
+  "hasliked": 0,
+  "parentid": "ftGBzt",
+  "parentname": "Ondulation/déformation circ"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define NBR_WAVE 100.\n#define HEIGHT_WAVE 100.\n#define PI 3.1415\n\nmat2 rotate2d(float angle)\n{\n \treturn mat2(cos(angle),-sin(angle),sin(angle),cos(angle));   \n}\n\nvec2 toPolar(vec2 uv)\n{\n    float distance = length(uv);\n    float angle = atan(uv.y,uv.x);\n    return vec2(angle/PI*2.,distance);\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    float ratio = iResolution.y/iResolution.x;\n    \n    uv.x = (uv.x-0.25) / ratio;\n    //uv = toPolar(uv-0.5);\n\n    float _iTime = -iTime;\n\n    // Time varying pixel color\n    uv.y += (sin((toPolar(uv-0.5)).y*NBR_WAVE+ _iTime*20.0)/HEIGHT_WAVE);\n    uv.x += (cos((toPolar(uv-0.5)).y*NBR_WAVE+ _iTime*20.0)/HEIGHT_WAVE);\n    uv.y+=0.01; //zoomer sur l'image afin de masquer la répétition\n    uv.y*=0.97;\n    \n    //si on joue sur les valeur x et y d'uv on peu crée d'autre type de déformation soit vertical soit horizontal ou les deux\n    \n    vec3 col = texture(iChannel0,uv).xyz;\n\n    // Output to screen\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: Fluid2No2Jipi
+  id: Fluid2No2Jipi
+  kernel: Fluid2No2Jipi
+  name: Fluid2No2Jipi
+shader:
+  author: N.N.
+  description: 'fluid
+
+
+    this paper helped A LOT:
+
+    https://www.cs.ubc.ca/~rbridson/fluidsimulation/fluids_notes.pdf'
+  id: flVyz1
+  name: fluid 2 No2 JiPi
+  parent:
+    id: flKczR
+    name: fluid 2 (number 2)
+    url: https://www.shadertoy.com/view/flKczR
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/flVyz1

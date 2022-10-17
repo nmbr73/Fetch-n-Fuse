@@ -1,0 +1,187 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7dGBWG",
+  "date": "0",
+  "viewed": 0,
+  "name": "sobel_filter_test JiPi",
+  "description": "Various kernel stuff.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "math",
+   "filter",
+   "default",
+   "shader",
+   "kernel"
+  ],
+  "hasliked": 0,
+  "parentid": "NdVBRt",
+  "parentname": "sobel_filter_test"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define STRENGTH 100.\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = pF(iChannel1);\n}\n\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sX3Rn",
+     "filepath": "/media/a/c3a071ecf273428bc72fc72b2dd972671de8da420a2d4f917b75d20e1c24b34c.ogv",
+     "type": "video",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    //fragColor = texture(iChannel0, UV);\n    fragColor = texture(iChannel0, UV-0.05*cos(iTime)*sin(iTime));\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// Utilities\n    // macros\n#define RES iResolution.xy\n#define P fragCoord.xy\n#define UV (fragCoord.xy/iResolution.xy)\n#define MUV (iMouse.xy/iResolution.xy)\n\n#define pF(c) texelFetch(c, ivec2(P), 0)\n#define sF(c) texture(c, UV)\n\n    // screen\nvec2 wrap(in vec2 p, in vec2 res) {\n    if (p.x > res.x) p.x = mod(p.x, res.x);\n    else if (p.x < 0.) p.x = res.x + p.x;\n    \n    if (p.y > res.y) p.y = mod(p.y, res.y);\n    else if (p.y < 0.) p.y = res.y + p.y;\n    \n    return p;\n}\n\n#define SCALE(v, mx, a, b) (a + (v * (b - a) / mx))\nvec2 scale(vec2 mn, vec2 mx, mat2 bounds) {\n    return vec2(SCALE(mn.x, mx.x, bounds[0][0], bounds[0][1]),\n                SCALE(mn.y, mx.y, bounds[1][0], bounds[1][1]));\n}\n\n// math\n    //Generic 3x3 filter - vec3(center, edges, diagonals)\n#define GAUSSIAN vec3(.204, .124, .075)\n#define LAPLACIAN vec3(-1., .2, .05)\nvec4 filter3x3(in vec2 pos, in vec3 kernel, in sampler2D channel, in vec2 reso) {\n    vec4 sum = vec4(0.);\n    \n    for(int i=-1; i<=1; i++) {\n        for(int j=-1; j<=1; j++) {\n            float weight = (i==0 && j==0) ? kernel[0] : (abs(i-j) == 1 ? kernel[1] : kernel[2]);\n            \n            sum += weight * texelFetch(channel, ivec2(wrap(pos + vec2(i, j), reso)), 0);\n        }\n    }\n    \n    return sum;\n}\n\n\n    // Sobel\n#define SOBEL_EDGE_COLOR vec4(0.753,0.380,0.796,1.)\nvec4 sobel(in vec2 pos, in sampler2D channel, in vec2 reso) {\n    // \n    mat3 SX = mat3( 1.0,  2.0,  1.0, \n                    0.0,  0.0,  0.0, \n                   -1.0, -2.0, -1.0);\n    mat3 SY = mat3(1.0, 0.0, -1.0, \n                   2.0, 0.0, -2.0, \n                   1.0, 0.0, -1.0);\n\n    vec4 T = texelFetch(channel, ivec2(pos), 0);\n\n    mat3 M = mat3(0.);\n    for(int i=0; i<3; i++) {\n        for(int j=0; j<3; j++) {\n            vec4 A = texelFetch(channel, ivec2(pos + vec2(i-1, j-1)), 0);\n            M[i][j] = length(A);\n        }\n    }\n    \n    float gx = dot(SX[0], M[0]) + dot(SX[1], M[1]) + dot(SX[2], M[2]);\n    float gy = dot(SY[0], M[0]) + dot(SY[1], M[1]) + dot(SY[2], M[2]);\n    \n    \n    // TODO factor into float sobel() and move this to a buffer pass.\n    float g = sqrt(gx*gx + gy*gy);\n    g = smoothstep(0.15, 0.98, g);\n\n    return mix(T, SOBEL_EDGE_COLOR, g);\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec4 blurred = filter3x3(P, GAUSSIAN, iChannel0, RES); \n    fragColor = vec4((blurred.x + blurred.y + blurred.z) * 0.3333);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Only want the sobel from this source\n    vec4 T = texture(iChannel1, UV);//* filter3x3(P, GAUSSIAN, iChannel0, RES)) * 0.25;\n    vec4 sob = sobel(P, iChannel0, RES);\n    \n    fragColor = sob*sob;\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

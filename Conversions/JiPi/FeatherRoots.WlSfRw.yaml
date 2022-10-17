@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FeatherRoots
+  id: FeatherRoots
+  kernel: FeatherRoots
+  name: FeatherRoots
+shader:
+  author: michael0884
+  description: 'SPACE to restart
+
+    Recommended to watch in 4x acceleration
+
+    Use mouse to spawn vortices'
+  id: WlSfRw
+  name: Feather roots
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/WlSfRw

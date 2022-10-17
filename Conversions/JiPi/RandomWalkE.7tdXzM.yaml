@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: RandomWalkE
+  id: RandomWalkE
+  kernel: RandomWalkE
+  name: RandomWalkE
+shader:
+  author: SnoopethDuckDuck
+  description: Goes to bottom left corner after a while. (i think h21 is used not
+    randomly idk)
+  id: 7tdXzM
+  name: Random Walk e
+  tags:
+  - e
+  url: https://www.shadertoy.com/view/7tdXzM

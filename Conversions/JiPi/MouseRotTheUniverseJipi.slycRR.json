@@ -1,0 +1,36 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "slycRR",
+  "date": "0",
+  "viewed": 0,
+  "name": "mouse rot the universe JiPi",
+  "description": "click mouse and move",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "mouse",
+   "stars",
+   "universe"
+  ],
+  "hasliked": 0,
+  "parentid": "NldcR2",
+  "parentname": "mouse rot the universe"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//CLICK MOUSE AND MOVE\nvoid mainImage(out vec4 c,in vec2 o){\n  c=vec4(0);o-=iResolution.xy/2.0;\n  float t=iTime,dt=256.0;vec2 x,y,z;\n  vec2 v2=vec2((iMouse.x-iResolution.x/2.0)/iResolution.x,(iMouse.y-iResolution.y/2.0)/iResolution.y)*3.1415;\n  for (float i=0.0;i<=16.0;i+=0.25){t=iTime/16.0+i*dt;\n      x=vec2(cos(t*1.0)*100.0,sin(t*1.0)*100.0)*v2;\n      y=vec2(cos(t*10.0)*60.0,sin(t*10.0)*60.0)*v2;\n      z=vec2(cos(t*15.0)*80.0,sin(t*15.0)*80.0);\n      c+=vec4(0.0,0.6,0.8,1.0)*vec4(length(o)/length(x+y+z-o)/16.0)/(i+0.5)/2.0;\n  }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

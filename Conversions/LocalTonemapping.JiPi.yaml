@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: LocalTonemapping
+  id: LocalTonemapping
+  kernel: LocalTonemapping
+  name: LocalTonemapping
+shader:
+  author: N.N.
+  description: 'Nachbau aus einem JavaScript mit GLSL Code.
+  id: JiPi
+  name: LocalTonemapping
+  tags:
+  - Shadow
+  - Buffer
+  url: https://www.shadertoy.com/TEST

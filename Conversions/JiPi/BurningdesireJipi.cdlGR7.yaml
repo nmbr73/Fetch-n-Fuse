@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: BurningdesireJipi
+  id: BurningdesireJipi
+  kernel: BurningdesireJipi
+  name: BurningdesireJipi
+shader:
+  author: N.N.
+  description: "Made it when playing with my favourite shaders made by IQ, JoÃƒÂ£o\
+    \ Portela and XT \nOn an interactive GLSLEditor developed by me\n[url]http://github.com/rakesh-malviya/GLSLEditor[/url]\n\
+    Please goto the link and try it (Qt and glut required)"
+  id: cdlGR7
+  name: BurningDesire JiPi
+  parent:
+    id: XdlSRj
+    name: Burning desire
+    url: https://www.shadertoy.com/view/XdlSRj
+  tags:
+  - procedural
+  - 3d
+  - distancefield
+  - flame
+  - heart
+  url: https://www.shadertoy.com/view/cdlGR7

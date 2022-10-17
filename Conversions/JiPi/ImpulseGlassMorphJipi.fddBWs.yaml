@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ImpulseGlassMorphJipi
+  id: ImpulseGlassMorphJipi
+  kernel: ImpulseGlassMorphJipi
+  name: ImpulseGlassMorphJipi
+shader:
+  author: N.N.
+  description: "Improve https://www.shadertoy.com/view/lttBzN  by mrange\nto add morph\
+    \ \nAnd I also tested AR camera data with it [url=https://youtube.com/shorts/jGe8Zc_rhJA]https://youtube.com/shorts/jGe8Zc_rhJA[/url] "
+  id: fddBWs
+  name: impulse_glass_morph JiPi
+  parent:
+    id: NddfDX
+    name: impulse_glass_morph
+    url: https://www.shadertoy.com/view/NddfDX
+  tags:
+  - glass
+  url: https://www.shadertoy.com/view/fddBWs

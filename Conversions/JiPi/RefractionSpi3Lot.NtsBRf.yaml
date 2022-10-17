@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: RefractionSpi3Lot
+  id: RefractionSpi3Lot
+  kernel: RefractionSpi3Lot
+  name: RefractionSpi3Lot
+shader:
+  author: Spi3lot
+  description: Refraction!!!
+  id: NtsBRf
+  name: Refraction - Spi3lot
+  tags:
+  - reflection
+  - simulation
+  - refraction
+  - light
+  - code
+  - the
+  - physics
+  - art
+  - of
+  - photon
+  - bigwings
+  url: https://www.shadertoy.com/view/NtsBRf

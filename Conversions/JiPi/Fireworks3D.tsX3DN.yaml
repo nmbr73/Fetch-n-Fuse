@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Fireworks3D
+  id: Fireworks3D
+  kernel: Fireworks3D
+  name: Fireworks3D
+shader:
+  author: dr2
+  description: Simple 3d fireworks - happy new year
+  id: tsX3DN
+  name: Fireworks 3d
+  tags:
+  - explosion
+  - fireworks
+  - fibonacci
+  url: https://www.shadertoy.com/view/tsX3DN

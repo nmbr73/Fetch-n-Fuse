@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: D100000PinsValley
+  id: D100000PinsValley
+  kernel: D100000PinsValley
+  name: D100000PinsValley
+shader:
+  author: aiekick
+  description: 100000 Pins Valley
+  id: XtBfz1
+  name: 100000 Pins Valley
+  tags:
+  - valley
+  - '100000'
+  - pins
+  url: https://www.shadertoy.com/view/XtBfz1

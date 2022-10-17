@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: GenerativeBeat
+  id: GenerativeBeat
+  kernel: GenerativeBeat
+  name: GenerativeBeat
+shader:
+  author: jpupper
+  description: The seed of the image changes in every beat for making a visual with
+    the same pattern but similar.
+  id: NdccWN
+  name: Generative Beat
+  tags:
+  - beat
+  - generative
+  - feedback
+  url: https://www.shadertoy.com/view/NdccWN

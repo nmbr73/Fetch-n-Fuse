@@ -1,0 +1,161 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flBfWz",
+  "date": "0",
+  "viewed": 0,
+  "name": "Basic Sandpiles JiPi",
+  "description": "Inspired by numberphile, click to create a sandpile of 1000 particles, starts with 80000 particles.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "sandpiles"
+  ],
+  "hasliked": 0,
+  "parentid": "llySRK",
+  "parentname": "Basic : Sandpiles "
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "vec4 color(vec2 p){\n    return vec4(.5)+vec4(.5)*cos(6.28*(texture(iChannel0,p/iResolution.xy)*.25+vec4(0,.1,.2,.3)));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ){\t\n    \n    fragColor += color(fragCoord);\n    fragColor += color(fragCoord+vec2( .5, 0));\n    fragColor += color(fragCoord+vec2(-.5, 0));\n    fragColor += color(fragCoord+vec2( 0, .5));\n    fragColor += color(fragCoord+vec2( 0,-.5));\n    \n    fragColor *= .2;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\t\n    float s = texture(iChannel0,fragCoord/iResolution.xy).r; \n    \n    if(s>3.) s-=4.;\n    \n\tfloat d = texture(iChannel0,(fragCoord+vec2( 0.0,-1.0))/iResolution.xy).r; \n    if(d>3.) s++;\n  \tfloat l = texture(iChannel0,(fragCoord+vec2(-1.0, 0.0))/iResolution.xy).r; \n    if(l>3.) s++;\n  \tfloat r = texture(iChannel0,(fragCoord+vec2( 1.0, 0.0))/iResolution.xy).r; \n    if(r>3.) s++;\n    float u = texture(iChannel0,(fragCoord+vec2( 0.0, 1.0))/iResolution.xy).r; \n\tif(u>3.) s++;\n    \n    if(iMouse.z>0. && distance(fragCoord,iMouse.xy)<1.) s = 1000.;\n    \n    if(iFrame==0 && distance(fragCoord,.5+iResolution.xy/2.)<.2) s = 80000.;\n    \n    fragColor = vec4(s);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\t\n    float s = texture(iChannel0,fragCoord/iResolution.xy).r; \n    \n    if(s>3.) s-=4.;\n    \n\tfloat d = texture(iChannel0,(fragCoord+vec2( 0.0,-1.0))/iResolution.xy).r; \n    if(d>3.) s++;\n  \tfloat l = texture(iChannel0,(fragCoord+vec2(-1.0, 0.0))/iResolution.xy).r; \n    if(l>3.) s++;\n  \tfloat r = texture(iChannel0,(fragCoord+vec2( 1.0, 0.0))/iResolution.xy).r; \n    if(r>3.) s++;\n    float u = texture(iChannel0,(fragCoord+vec2( 0.0, 1.0))/iResolution.xy).r; \n\tif(u>3.) s++;\n    \n    fragColor = vec4(s);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\t\n    float s = texture(iChannel0,fragCoord/iResolution.xy).r; \n    \n    if(s>3.) s-=4.;\n    \n\tfloat d = texture(iChannel0,(fragCoord+vec2( 0.0,-1.0))/iResolution.xy).r; \n    if(d>3.) s++;\n  \tfloat l = texture(iChannel0,(fragCoord+vec2(-1.0, 0.0))/iResolution.xy).r; \n    if(l>3.) s++;\n  \tfloat r = texture(iChannel0,(fragCoord+vec2( 1.0, 0.0))/iResolution.xy).r; \n    if(r>3.) s++;\n    float u = texture(iChannel0,(fragCoord+vec2( 0.0, 1.0))/iResolution.xy).r; \n\tif(u>3.) s++;\n    \n    fragColor = vec4(s);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord ){\n\t\n    float s = texture(iChannel0,fragCoord/iResolution.xy).r; \n    \n    if(s>3.) s-=4.;\n    \n\tfloat d = texture(iChannel0,(fragCoord+vec2( 0.0,-1.0))/iResolution.xy).r; \n    if(d>3.) s++;\n  \tfloat l = texture(iChannel0,(fragCoord+vec2(-1.0, 0.0))/iResolution.xy).r; \n    if(l>3.) s++;\n  \tfloat r = texture(iChannel0,(fragCoord+vec2( 1.0, 0.0))/iResolution.xy).r; \n    if(r>3.) s++;\n    float u = texture(iChannel0,(fragCoord+vec2( 0.0, 1.0))/iResolution.xy).r; \n\tif(u>3.) s++;\n\n    fragColor = vec4(s);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

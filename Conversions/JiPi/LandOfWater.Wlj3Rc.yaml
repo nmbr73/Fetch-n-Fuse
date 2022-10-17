@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: LandOfWater
+  id: LandOfWater
+  kernel: LandOfWater
+  name: LandOfWater
+shader:
+  author: wyatt
+  description: 'hold mouse to make mountains
+
+
+
+    [url]javascript:  (function(){if(Effect.prototype.Paint.toString().length>1000){_Paint=Effect.prototype.Paint;}
+    Effect.prototype.Paint = function(...args){for(var i=0; i<4;i++){_Paint.apply(this,args);}}})()[/url]'
+  id: Wlj3Rc
+  name: Land of Water
+  tags:
+  - fluid
+  - automata
+  - physics
+  - erosion
+  url: https://www.shadertoy.com/view/Wlj3Rc

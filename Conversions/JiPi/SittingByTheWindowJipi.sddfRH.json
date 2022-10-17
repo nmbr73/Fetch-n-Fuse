@@ -1,0 +1,54 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sddfRH",
+  "date": "0",
+  "viewed": 0,
+  "name": "Sitting By the window JiPi",
+  "description": "And dreaming of everything",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "refraction",
+   "blur",
+   "normals",
+   "rain",
+   "window",
+   "raindrop"
+  ],
+  "hasliked": 0,
+  "parentid": "slfSzS",
+  "parentname": "Sitting By The Window"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// shader derived from Heartfelt - by Martijn Steinrucken aka BigWings - 2017\n// https://www.shadertoy.com/view/ltffzl\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n#define S(a, b, t) smoothstep(a, b, t)\n//#define DEBUG\n#define size 0.2\n#define CAM // uncomment to switch from webcam input to iChannel1 texture\n\n\nvec3 N13(float p) {\n   //  from DAVE HOSKINS\n   vec3 p3 = fract(vec3(p) * vec3(.1031,.11369,.13787));\n   p3 += dot(p3, p3.yzx + 19.19);\n   return fract(vec3((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y, (p3.y+p3.z)*p3.x));\n}\n\nvec4 N14(float t) {\n\treturn fract(sin(t*vec4(123., 1024., 1456., 264.))*vec4(6547., 345., 8799., 1564.));\n}\nfloat N(float t) {\n    return fract(sin(t*12345.564)*7658.76);\n}\n\nfloat Saw(float b, float t) {\n\treturn S(0., b, t)*S(1., b, t);\n}\n\n\n\nvec2 Drops(vec2 uv, float t) {\n    \n    vec2 UV = uv;\n    \n    // DEFINE GRID\n    uv.y += t*0.8;\n    vec2 a = vec2(6., 1.);\n    vec2 grid = a*2.;\n    vec2 id = floor(uv*grid);\n    \n    // RANDOM SHIFT Y\n    float colShift = N(id.x); \n    uv.y += colShift;\n    \n    // DEFINE SPACES\n    id = floor(uv*grid);\n    vec3 n = N13(id.x*35.2+id.y*2376.1);\n    vec2 st = fract(uv*grid)-vec2(.5, 0);\n    \n    // POSITION DROPS\n    //clamp(2*x,0,2)+clamp(1-x*.5, -1.5, .5)+1.5-2\n    float x = n.x-.5;\n    \n    float y = UV.y*20.;\n    float distort = sin(y+sin(y));\n    x += distort*(.5-abs(x))*(n.z-.5);\n    x *= .7;\n    float ti = fract(t+n.z);\n    y = (Saw(.85, ti)-.5)*.9+.5;\n    vec2 p = vec2(x, y);\n    \n    // DROPS\n    float d = length((st-p)*a.yx);\n    \n    float dSize = size; \n    \n    float Drop = S(dSize, .0, d);\n    \n    \n    float r = sqrt(S(1., y, st.y));\n    float cd = abs(st.x-x);\n    \n    // TRAILS\n    float trail = S((dSize*.5+.03)*r, (dSize*.5-.05)*r, cd);\n    float trailFront = S(-.02, .02, st.y-y);\n    trail *= trailFront;\n    \n    \n    // DROPLETS\n    y = UV.y;\n    y += N(id.x);\n    float trail2 = S(dSize*r, .0, cd);\n    float droplets = max(0., (sin(y*(1.-y)*120.)-st.y))*trail2*trailFront*n.z;\n    y = fract(y*10.)+(st.y-.5);\n    float dd = length(st-vec2(x, y));\n    droplets = S(dSize*N(id.x), 0., dd);\n    float m = Drop+droplets*r*trailFront;\n    \n    #ifdef DEBUG\n    m += st.x>a.y*.45 || st.y>a.x*.165 ? 1.2 : 0.; //DEBUG SPACES\n    #endif\n    \n    \n    return vec2(m, trail);\n}\n\nfloat StaticDrops(vec2 uv, float t) {\n\tuv *= 30.;\n    \n    vec2 id = floor(uv);\n    uv = fract(uv)-.5;\n    vec3 n = N13(id.x*107.45+id.y*3543.654);\n    vec2 p = (n.xy-.5)*0.5;\n    float d = length(uv-p);\n    \n    float fade = Saw(.025, fract(t+n.z));\n    float c = S(size, 0., d)*fract(n.z*10.)*fade;\n\n    return c;\n}\n\nvec2 Rain(vec2 uv, float t) {\n    float s = StaticDrops(uv, t); \n    vec2 r1 = Drops(uv, t);\n    vec2 r2 = Drops(uv*1.8, t);\n    \n    #ifdef DEBUG\n    float c = r1.x;\n    #else\n    float c = s+r1.x+r2.x;\n    #endif\n    \n    c = S(.3, 1., c);\n    \n    #ifdef DEBUG\n    return vec2(c, r1.y);\n    #else\n    return vec2(c, max(r1.y, r2.y));\n    #endif\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = (fragCoord.xy-.5*iResolution.xy) / iResolution.y;\n    vec2 UV = fragCoord.xy/iResolution.xy;\n    float T = iTime;\n    \n    \n    float t = T*.2;\n    \n    float rainAmount = 0.8;\n    \n\n    \n    UV = (UV-.5)*(.9)+.5;\n    \n    vec2 c = Rain(uv, t);\n\n   \tvec2 e = vec2(.001, 0.); //pixel offset\n   \tfloat cx = Rain(uv+e, t).x;\n   \tfloat cy = Rain(uv+e.yx, t).x;\n   \tvec2 n = vec2(cx-c.x, cy-c.x); //normals\n    \n    float blur = 5.0;    \n    float focus = blur-c.y*blur*0.75;\n    \n    #ifdef CAM\n\n    // BLUR derived from existical https://www.shadertoy.com/view/Xltfzj\n        float Pi = 6.28318530718; // Pi*2\n    \n        // GAUSSIAN BLUR SETTINGS {{{\n        float Directions = 16.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)\n        float Quality = 3.0; // BLUR QUALITY (Default 4.0 - More is better but slower)\n        float Size = 32.0; // BLUR SIZE (Radius)\n        // GAUSSIAN BLUR SETTINGS }}}\n\n        vec2 Radius = Size/iResolution.xy;\n\n        vec3 col = texture(iChannel0, UV).rgb;\n            // Blur calculations\n        for( float d=0.0; d<Pi; d+=Pi/Directions)\n        {\n            for(float i=1.0/Quality; i<=1.0; i+=1.0/Quality)\n            {\n                #ifdef DEBUG\n                vec3 tex = texture( iChannel0, UV+c+vec2(cos(d),sin(d))*Radius*i).rgb;\n                #else\n                vec3 tex = texture( iChannel0, UV+n+vec2(cos(d),sin(d))*Radius*i).rgb;\n                #endif\n\n                col += tex;            \n            }\n        }\n\n        col /= Quality * Directions - 0.0;\n\n        vec3 tex = texture( iChannel0, UV+n).rgb;\n        c.y = clamp(c.y, 0.0, 1.);\n\n        col -= c.y;\n        col += c.y*(tex+0.75);\n\n    #else\n    vec3 col = textureLod(iChannel1, UV+n, focus).rgb;\n    #endif\n    \n    fragColor = vec4(col, 1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: FloatingC
+  id: FloatingC
+  kernel: FloatingC
+  name: FloatingC
+shader:
+  author: N.N.
+  description: I randomized the size.
+  id: fsffRM
+  name: Fork Floating C JiPi 608
+  parent:
+    id: ftVSzK
+    name: Floating Colorful Spheres
+    url: https://www.shadertoy.com/view/ftVSzK
+  tags:
+  - raymarching
+  - sphere
+  - spheres
+  url: https://www.shadertoy.com/view/fsffRM

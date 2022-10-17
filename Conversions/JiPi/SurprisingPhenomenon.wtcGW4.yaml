@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SurprisingPhenomenon
+  id: SurprisingPhenomenon
+  kernel: SurprisingPhenomenon
+  name: SurprisingPhenomenon
+shader:
+  author: wyatt
+  description: wow! cool stuff happens when you mess around with the right stuff...
+  id: wtcGW4
+  name: Surprising Phenomenon!
+  tags:
+  - landauginzburg
+  url: https://www.shadertoy.com/view/wtcGW4

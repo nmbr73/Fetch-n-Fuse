@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: StableGooJipi
+  id: StableGooJipi
+  kernel: StableGooJipi
+  name: StableGooJipi
+shader:
+  author: N.N.
+  description: 'Use mouse to interact
+
+    Change variables around!
+
+
+    The goo has a negative and positive state. I change the UV around with smooth
+    noise to affect "spacetime"
+
+    '
+  id: 7tVyWR
+  name: stable goo JiPi
+  parent:
+    id: MddfDM
+    name: stable goo
+    url: https://www.shadertoy.com/view/MddfDM
+  tags:
+  - diffusion
+  - automata
+  - cellular
+  - gameoflife
+  - reaction
+  url: https://www.shadertoy.com/view/7tVyWR

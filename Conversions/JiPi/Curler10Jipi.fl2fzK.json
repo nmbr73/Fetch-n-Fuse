@@ -1,0 +1,212 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fl2fzK",
+  "date": "0",
+  "viewed": 0,
+  "name": "Curler 1.0 JiPi",
+  "description": "Playing around with computing the curl of a webcam and using that for iterative distortion.\n\ncamera -> brightness -> pseudo-gaussian-blur -> gradient -> curl -> distort\nParticles are dropped into the sim at random (biased towards replacing old ones).",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "curl",
+   "webcam"
+  ],
+  "hasliked": 0,
+  "parentid": "XsVBzd",
+  "parentname": "Curler 1.0"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(\n    out vec4 outFragColor,\n    vec2 fragCoord)\n{\n    vec4 selfState = texture(iChannel0, (fragCoord / iResolution.xy));\n    \n    outFragColor = selfState;\n    //outFragColor = (selfState * pow(selfState.a, 20.0));\n    outFragColor.a = 1.0;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "const int k_blurRadius = 10;\n\nfloat RandomFloat(\n  vec2 testCoord)\n{\n\t// From: https://www.shadertoy.com/view/Xd23Dh\n\t// (just removed some dimensions)\n\tfloat testCoordInGeneratorSpace = \n\t\tdot(testCoord, vec2(127.1, 311.7));\n\n\treturn fract(sin(testCoordInGeneratorSpace) * 43758.5453);\n}\n\nvec2 RandomVec2(\n  vec2 testCoord)\n{\n\t// From: https://www.shadertoy.com/view/Xd23Dh\n\t// (just removed some dimensions)\n\tvec2 testCoordInGeneratorSpace = vec2(\n\t\tdot(testCoord, vec2(127.1, 311.7)),\n\t\tdot(testCoord, vec2(269.5, 183.3)));\n\n\treturn fract(sin(testCoordInGeneratorSpace) * 43758.5453);\n}\n\nvec3 RandomVec3(\n  vec2 testCoord)\n{\n    // From: https://www.shadertoy.com/view/Xd23Dh\n    // (just removed some dimensions)\n    vec3 testCoordInGeneratorSpace = vec3(\n        dot(testCoord, vec2(127.1, 311.7)),\n        dot(testCoord, vec2(269.5, 183.3)),\n        dot(testCoord, vec2(419.2, 371.9)));\n\n\treturn fract(sin(testCoordInGeneratorSpace) * 43758.5453);\n}\n\nvec2 TransformFromCanvasTextureToFramedTexture(\n\tvec2 canvasTextureCoord,\n\tvec2 canvasTextureSize,\n\tvec2 framedTextureSize)\n{\t\n\tvec2 result = (canvasTextureCoord / canvasTextureSize);\n\n\tfloat canvasAspectRatio = (canvasTextureSize.x / canvasTextureSize.y);\n\tfloat framedAspectRatio = (framedTextureSize.x / framedTextureSize.y);\n\n\tif (framedAspectRatio < canvasAspectRatio)\n\t{\n\t\tfloat relativeAspectRatio = (canvasAspectRatio / framedAspectRatio);\n\n\t\tresult.x *= relativeAspectRatio;\n\t\tresult.x -= (0.5 * (relativeAspectRatio - 1.0));\n\t}\n\telse\n\t{\n\t\tfloat relativeAspectRatio = (framedAspectRatio / canvasAspectRatio);\n\n\t\tresult.y *= relativeAspectRatio;\n\t\tresult.y -= (0.5 * (relativeAspectRatio - 1.0));\n\t}\n\n\treturn result;\n}\n\nbool TextureCoordIsInBounds(\n\tvec2 texCoord)\n{\n\tvec2 inBounds = (\n        step(vec2(0.0), texCoord) * \n        step(texCoord, vec2(1.0)));\n    \n    return ((inBounds.x > 0.5) && (inBounds.y > 0.5));\n}\n\nvec4 SampleWebcam(\n\tsampler2D webcamTexture,\n\tvec2 webcamSize,\n    bool horizontallyMirrorWebcam,\n    vec2 canvasCoord,\n\tvec2 canvasSize)\n{\n\tvec2 webcamCoord = \n        TransformFromCanvasTextureToFramedTexture(\n            canvasCoord, \n            canvasSize, \n            webcamSize);\n\n    if (horizontallyMirrorWebcam)\n    {\n    \twebcamCoord.x = mix(1.0, 0.0, webcamCoord.x);\n    }\n    \n    vec4 result = TextureCoordIsInBounds(webcamCoord) ? \n        pow(texture(webcamTexture, webcamCoord), vec4(2.0)) : \n    \tvec4(0.0, 0.0, 0.0, 1.0);\n    \n    return result;\n}\n\nfloat GetBrightness(\n    vec4 color)\n{    \n    return (0.333 * (color.r + color.g + color.b));\n}\n\nvec4 ComputePseudoGaussianBlur(\n\tsampler2D source,\n    vec2 texelSize,\n    vec2 fragCoord,\n    vec2 blurDirection) // Unit-length. Typically (1, 0) or (0, 1).\n{\n    vec4 accumulator = vec4(0.0);\n    float totalWeight = 0.0;\n    \n    float oneOverBlurRadius = (1.0 / 10.0);\n\n    vec2 sampleUvIncrement = (blurDirection * texelSize);\n    vec2 sampleUv = (\n        (fragCoord * texelSize) - \n        (float(k_blurRadius) * sampleUvIncrement));\n    \n    float uncurvedSampleWeight = -1.0;\n    float uncurvedSampleWeightIncrement = (1.0 / float(k_blurRadius));\n    \n    for (int index = (-1 * k_blurRadius); index <= k_blurRadius; index++)\n    {\n        vec4 sampleColor = texture(source, sampleUv);\n\n        // NOTE: Small fudge to make the outermost texels non-zero.\n        float sampleWeight = smoothstep(\n            (1.0 + oneOverBlurRadius), \n            0.0, \n            abs(uncurvedSampleWeight));\n        sampleWeight = (sampleWeight * sampleWeight * sampleWeight); \n\n        accumulator += (sampleColor * sampleWeight);\n        totalWeight += sampleWeight;\n        \n        sampleUv += sampleUvIncrement;\n        uncurvedSampleWeight += uncurvedSampleWeightIncrement;\n    }\n\n    return (accumulator / totalWeight);\n}\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Pass: Webcam perspective correction.\n\nvoid mainImage(\n    out vec4 outFragColor,\n    vec2 fragCoord)\n{    \n    outFragColor = SampleWebcam(\n\t\tiChannel0,\n\t\t//iChannelResolution[0].xy,\n        iResolution.xy,\n    \ttrue, // horizontallyMirrorWebcam\n    \tfragCoord,\n\t\tiResolution.xy);\n    \n    outFragColor.a = GetBrightness(outFragColor);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Pass: Vertical blur.\n\nvoid mainImage(\n    out vec4 outFragColor,\n    vec2 fragCoord)\n{\n    outFragColor = ComputePseudoGaussianBlur(\n        iChannel0,\n        (1.0 / iResolution.xy),\n        fragCoord,\n        vec2(0.0, 1.0));\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Pass: Horizontal blur.\n\nvoid mainImage(\n    out vec4 outFragColor,\n    vec2 fragCoord)\n{\n    outFragColor = ComputePseudoGaussianBlur(\n        iChannel0,\n        (1.0 / iResolution.xy),\n        fragCoord,\n        vec2(1.0, 0.0));\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Pass: Curl and simulation.\n\nvec2 s_texelSize;\n\nvec2 ComputeGradient(\n    vec2 fragUv)\n{\n    // HAAAAACK!\n    \n    vec4 center = texture(iChannel0, fragUv);\n    vec4 right = texture(iChannel0, (fragUv + vec2(s_texelSize.x, 0.0)));\n    vec4 up = texture(iChannel0, (fragUv + vec2(0.0, s_texelSize.y)));\n\n    return vec2((center.a - right.a), (center.a - up.a));\n} \n\nvoid mainImage(\n    out vec4 outFragColor,\n    vec2 fragCoord)\n{\n    s_texelSize = (1.0 / iResolution.xy);\n    \n    vec2 fragUv = (fragCoord * s_texelSize);\n    \n    vec2 gradient = ComputeGradient(fragUv);\n    vec2 curl = vec2((-1.0 * gradient.y), gradient.x);\n    \n    vec4 selfState = texture(iChannel1, fragUv);\n    \n    vec2 frameOffset = vec2(mod(float(iFrame), 97.0), mod(float(iFrame), 101.0));\n    vec2 frameRandom = RandomVec2(fragUv + frameOffset);\n    \n    if (frameRandom.x > selfState.a)\n    {\n        vec4 camera = texture(iChannel2, fragUv);\n        \n        outFragColor.rgb = mix(selfState.rgb, camera.rgb, 0.8);\n        //outFragColor.rgb = camera.rgb;\n        \n        //outFragColor.a = mix(outFragColor.a, 1.0, frameRandom.y);\n        outFragColor.a = 1.0;\n    }\n    else\n    {\n        vec2 normalizedCurl = (curl / (length(curl) + 0.00001));\n            \n        vec4 curlSourceState = texture(iChannel1, (fragUv + (normalizedCurl * s_texelSize)));\n        \n        outFragColor = curlSourceState;\n        //outFragColor.rg = smoothstep(vec2(-1.0), vec2(1.0), (25.0 * curl));\n        \n        outFragColor.a -= (0.005 * iTimeDelta);\n    }\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

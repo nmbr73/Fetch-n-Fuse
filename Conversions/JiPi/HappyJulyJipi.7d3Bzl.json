@@ -1,0 +1,36 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7d3Bzl",
+  "date": "0",
+  "viewed": 0,
+  "name": "Happy July JiPi",
+  "description": "A random firework generator. Repeats every 110 seconds currently.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "noise",
+   "fireworks",
+   "2dphysics"
+  ],
+  "hasliked": 0,
+  "parentid": "7sdfzX",
+  "parentname": "Happy July 4th "
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "const vec3 White = vec3(1.); \nconst vec3 Orange = vec3(1.,1.,0.); \nconst vec3 SkyBlue = vec3(.5294,.8078,.9216);\nconst vec3 Black = vec3(0.); \nconst float g = -.01;\nconst float Pi = acos(-1.); \n\nfloat orb(vec2 center, float brightness, vec2 uv){\n    float dist = length(uv-center);\n    return min(1.,brightness/(dist*dist)); \n}\n\nfloat orb_path(vec2 ixy,float brightness,vec2 v,float time,vec2 uv){\n    vec2 loc = ixy + time*v + time*time*vec2(0.,g);\n    return orb(loc,brightness,uv); \n    \n}\n\n//From hash1 in https://www.shadertoy.com/view/4ttSWf\nfloat rand(float n){\n    return fract( n*17.0*fract( n*0.3183099 ) );\n\n}\nfloat rand2d( vec2 p )\n{\n    p  = 50.0*fract( p*0.3183099 );\n    return fract( p.x*p.y*(p.x+p.y) );\n}\nvec2 randvec2( float seed){\n    const vec2 k =  vec2( 0.3183099, 0.3678794);\n    return fract(seed*fract(k*seed)); \n}\n\nvec3 randvec3( float seed){\n    const vec3 k = vec3( 0.3183099, 0.3678794, 0.446234 );\n    return fract(seed*fract(k*seed)); \n}\n\nvec3 scaleTo1(vec3 v){\n    float ma = max(max(v.x,v.y),v.z);\n    return v/ma;\n}\n\nfloat rand_range(float l, float r, float seed){\n    return l+rand(seed)*(r-l); \n}\n\nfloat flicker(float time,float delay){\n    float time_after_delay = max(0.,time-delay);\n    return (cos(time*time_after_delay)+1.)/2.;\n}\n\nvec2 find_velocity(vec2 start,vec2 end,float time){\n    end-=start;\n    return vec2(end.x/time,(end.y-g*time*time)/time); \n}\n\nfloat get_orb(vec2 start,vec2 end,float time_to_take,float time,vec2 uv){\n    vec2 v = find_velocity(start,end,time_to_take);\n    return orb_path(start, .0001, v, time,uv);  \n}\nfloat firework_flicker(vec2 center, float time, float seed, vec2 uv){\n    uv-=center;\n    uv.x = abs(uv.x); \n    float brightness = (1. - smoothstep(0.,5.,time))*.0002;\n    float sdf = 0.;\n    \n    for(int i=1;i<=54;i++){\n        float fi = float(i); \n        float flickeri = flicker(time,3.*rand(fi*seed))*brightness;\n        float theta = rand_range(0.0,2.*Pi,fi*16.1*seed);\n        float r = 0.05+.03*(fi/9.);\n        vec2 v = r*vec2(cos(theta),sin(theta));  \n        sdf += orb_path(vec2(0.),flickeri,v,time,uv);\n        \n    }\n    \n    return sdf; \n}\n\nvec3 firework_flicker_total(float delay,float time_to_start, float time, float seed,vec2 uv){\n    vec3 col = scaleTo1(randvec3(seed));\n    vec2 center = randvec2(seed);\n    center.x = 2.*center.x-1.;\n    if(time<delay){\n        return vec3(0.); \n    }\n    time-=delay;\n    if(time<time_to_start){\n        return col*get_orb(vec2(0.,-1.),center,time_to_start,time,uv);\n    }\n    return col*firework_flicker(center, time-time_to_start,seed,uv); \n}\n\n\n\nfloat firework_standard(vec2 center, float time, float seed, vec2 uv){\n    uv-=center;\n    float brightness = (1. - smoothstep(0.,5.,time))*.0002;\n    float sdf = 0.;\n     for(int i=1;i<=54;i++){\n        float fi = float(i)/54.; \n        float theta = rand_range(0.,2.*Pi,rand(seed*20.*fi));\n        float r = 0.05+.03*(2.*fi);\n        vec2 v = r*vec2(cos(theta),sin(theta));  \n        sdf += orb_path(vec2(0.),brightness,v,time,uv);\n        \n    }\n    return sdf;\n}\n\nvec3 firework_standard_total(float delay,float time_to_start, float time, float seed,vec2 uv){\n    vec3 col = randvec3(seed);\n    vec2 center = randvec2(seed); \n    center.x=2.*center.x-1.;\n    if(time<delay){\n        return vec3(0.); \n    }\n    time-=delay;\n    if(time<time_to_start){\n        return col*get_orb(vec2(0.,-1.),center,time_to_start,time,uv);\n    }\n    return col*firework_standard(center, time-time_to_start,seed,uv); \n}\n\n\nvec3 background(vec2 uv){\n    vec2 star_loc = floor(100.*uv);\n    float star; \n    if(uv.y > -0.3 && rand2d(star_loc)>0.99){\n        star = orb(star_loc,0.5,100.*uv);\n    }else{\n        star = 0.;\n    }\n    vec3 star3 = star*White; \n    return mix(SkyBlue,Black,(uv.y+1.))/2.+star3;\n}\n\nvec3 scene(vec2 uv){\n    vec3 col;\n    float time = iTime*2.5; \n    time = mod(time,110.); \n    col = background(uv);\n    for(int i=0;i<=3;i++){\n        float fi = float(i);\n        float delay = fi;\n        col += firework_standard_total(delay,3., mod(time,11.), 1.+float(int((time+11.)/11.)*(7+i)), uv );\n    }\n    for(int i=0;i<=3;i++){\n      float fi = float(i);\n      float delay = fi;\n      col += firework_flicker_total(delay,3.,mod(time,11.),2.+float(int((time+11.)/11.)*(11+2*i)),uv);\n    }\n    //col = get_orb(vec2(0.),vec2(-1.0,0.),5.,iTime,uv)*White; \n    return col;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from -1 to 1)\n    vec2 uv = fragCoord/iResolution.y;\n    uv-=vec2(0.5*iResolution.x/iResolution.y,0.5);\n    uv*=2.;\n    \n    vec3 col = scene(uv);\n\n\n    // Output to screen\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

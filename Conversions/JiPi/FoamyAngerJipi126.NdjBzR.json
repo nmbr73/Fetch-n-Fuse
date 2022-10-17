@@ -1,0 +1,212 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NdjBzR",
+  "date": "0",
+  "viewed": 0,
+  "name": "Foamy Anger JiPi 126",
+  "description": "The darkness within must eventually bubble up",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid",
+   "particles"
+  ],
+  "hasliked": 0,
+  "parentid": "sdffDj",
+  "parentname": "Foamy Anger JiPi 678"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\nfloat sminMe(float a, float b, float k, float p, out float t)\n{\n    float h = max(k - abs(a-b), 0.0)/k;\n    float m = 0.5 * pow(h, p);\n    t = (a < b) ? m : 1.0-m;\n    return min(a, b) - (m*k/p);\n}\n\nfloat smin( in float a, in float b, in float k )\n{\n    float h = max(k-abs(a-b),0.0);\n    float m = 0.25*h*h/k;\n    return min(a,  b) - m;\n}\n\nvoid mainImage( out vec4 O, in vec2 pos )\n{\n\tR = iResolution.xy; time = iTime;\n\n    O.xyz = vec3(1.0);\n    \n    float d = 100.0;\n    \n    vec3 c = vec3(1.0);\n    float m = 1.0;\n    float v = 0.0;\n    \n    //rendering\n    int I = int(ceil(particle_size*0.5))+2; \n    range(i, -I, I) range(j, -I, I)\n    {\n        vec2 tpos = pos + vec2(i,j);\n        vec4 data = texel(ch0, tpos);\n        particle P0 = getParticle(data, tpos);\n        \n        if (P0.M == 0.0) continue;\n            \n        float nd = distance(pos, P0.NX) - P0.R;\n\n        float k = 4.0 / (1.0 + abs(m - P0.M)*1.5);\n        float t;\n        d = sminMe(d, nd, k, 3.0, t);\n        m = mix(m, P0.M, t);\n        v = mix(v, texel(ch1, tpos).w, t);\n    }  \n    \n    //shadow\n    float s = 100.0;\n    vec2 off = vec2(10.0, 20.0);\n    if (d > 0.0)\n    {\n        range(i, -I, I) range(j, -I, I)\n        {\n            vec2 tpos = pos-off + vec2(i,j);\n            vec4 data = texel(ch0, tpos);\n            particle P0 = getParticle(data, tpos);\n            \n            if (tpos.x < 0.0\n            ||  tpos.x > R.x\n            ||  tpos.y < 0.0\n            ||  tpos.y > R.x) { s = 0.0; break; }\n            if (P0.M == 0.0)  { continue; }\n\n            float nd = distance(pos - off, P0.NX) - P0.R;\n            if (texel(ch1, tpos).x > 1.0)\n                s = smin(s, nd, 3.0);\n        } \n    }\n    \n    //coloring and stuff\n    if (d < 0.0)\n        //d = 1.0-cos(d);\n        d = sin(d);\n    O.xyz *= vec3(abs(d));\n    if (d < 0.0)\n    {\n        O.xyz *= c;\n        O.xyz /= m*2.0;\n        //col.xyz /= 0.5 + m*0.25;\n        O.xyz -= vec3(v) / m * 0.06;\n    }\n    \n    //checkerboard\n    if (d > 1.0)\n    {\n        float size = 100.0;\n        float cy = step(mod(pos.y, size), size*0.5);\n        float ct = step(mod(pos.x + cy*size*0.5, size), size*0.5);\n        \n        ct = saturate(ct + 0.0);        \n        //col.xyz = mix(vec3(ct), col.xyz, 1.0-saturate(d));\n    }\n    \n    O.xyz = saturate(O.xyz);    \n    if (d > 0.0)\n        O.xyz *= mix(vec3(0.7), vec3(1.0), saturate(s));\n        \n    O.xyz = pow(O.xyz, vec3(0.7));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "vec2 R;\nvec4 Mouse;\nfloat time;\n\n#define Bf(p) p\n#define Bi(p) ivec2(p)\n//#define texel(a, p) texelFetch(a, Bi(p), 0)\n#define texel(a, p) texture(a, (vec2(Bi(p))+0.5)/R)\n#define pixel(a, p) texture(a, (p)/R)\n#define ch0 iChannel0\n#define ch1 iChannel1\n#define ch2 iChannel2\n#define ch3 iChannel3\n\n#define PI 3.14159265\n\n#define loop(i,x) for(int i = 0; i < x; i++)\n#define range(i,a,b) for(int i = a; i <= b; i++)\n\n#define snormalize(x) (length(x) > 0.0) ? normalize(x) : x\n#define saturate(x) clamp(x, 0.0, 1.0)\n#define G(x) exp(-dot(x*2.0,x*2.0))\n#define GS(x) exp(-length(x*2.0))\n#define dot2(x) dot(x,x)\n\n\n#define UV (pos/R)\n\n\n\n\n\nmat2 Rot(float ang)\n{\n    return mat2(cos(ang), -sin(ang), sin(ang), cos(ang)); \n}\n\nvec2 Dir(float ang)\n{\n    return vec2(cos(ang), sin(ang));\n}\n\n\nfloat sdBox( in vec2 p, in vec2 b )\n{\n    vec2 d = abs(p)-b;\n    return length(max(d,0.0)) + min(max(d.x,d.y),0.0);\n}\n\nfloat border(vec2 p)\n{\n    float bound = -sdBox(p - R*0.5, R*vec2(0.5, 0.5)); \n    float box = sdBox(Rot(0.*time-0.0)*(p - R*vec2(0.5, 0.6)) , R*vec2(0.05, 0.0125));\n    float drain = -sdBox(p - R*vec2(0.5, 0.7), R*vec2(1.5, 0.5));\n    //return bound - 10.0;\n    return min(bound-10.0, box);\n    return max(drain,min(bound-10.0, box));\n}\n\n#define hh 1.\nvec3 bN(vec2 p)\n{\n    vec3 dx = vec3(-hh,0,hh);\n    vec4 idx = vec4(-1./hh, 0., 1./hh, 0.25);\n    vec3 r = idx.zyw*border(p + dx.zy)\n           + idx.xyw*border(p + dx.xy)\n           + idx.yzw*border(p + dx.yz)\n           + idx.yxw*border(p + dx.yx);\n    return vec3(normalize(r.xy), r.z + 1e-4);\n}\n\n\n//-------------\n// Particle\n//-------------\nvec2 decode(float x)\n{\n    uint X = floatBitsToUint(x); \n    \n    //return unpackSnorm2x16(X);\n    return unpackHalf2x16(X);\n}\n\nfloat encode(vec2 x)\n{\n    //uint X = packSnorm2x16(x);\n    uint X = packHalf2x16(x);\n\n    return uintBitsToFloat(X); \n}\n\nstruct particle\n{\n    vec2 X;\n    vec2 NX;\n    float R;\n    float M;\n};\n    \nparticle getParticle(vec4 data, vec2 pos)\n{\n    particle P; \n    P.X = decode(data.x) + pos;\n    P.NX = decode(data.y) + pos;\n    P.R = data.z;\n    P.M = data.w;\n    return P;\n}\n\nvec4 saveParticle(particle P, vec2 pos)\n{\n    P.X = P.X - pos;\n    P.NX = P.NX - pos;\n    return vec4(encode(P.X), encode(P.NX), (P.R), (P.M));\n}\n\nvec2 vel(particle P)\n{\n    return P.NX - P.X;\n}\n\nparticle getParticleAt(sampler2D ch, vec2 pos)\n{\n    vec4 data = texel(ch, pos);\n    return getParticle(data, pos);\n}\n\n\n//-------------\n// RNG\n//-------------\nuvec4 s0; \n\nvoid rng_initialize(vec2 p, int frame)\n{\n    s0 = uvec4(p, uint(frame), uint(p.x) + uint(p.y));\n}\n\n// https://www.pcg-random.org/\nvoid pcg4d(inout uvec4 v)\n{\n\tv = v * 1664525u + 1013904223u;\n    v.x += v.y*v.w; v.y += v.z*v.x; v.z += v.x*v.y; v.w += v.y*v.z;\n    v = v ^ (v>>16u);\n    v.x += v.y*v.w; v.y += v.z*v.x; v.z += v.x*v.y; v.w += v.y*v.z;\n}\n\nfloat rand() { pcg4d(s0); return float(s0.x)/float(0xffffffffu);  }\nvec2 rand2() { pcg4d(s0); return vec2(s0.xy)/float(0xffffffffu);  }\nvec3 rand3() { pcg4d(s0); return vec3(s0.xyz)/float(0xffffffffu); }\nvec4 rand4() { pcg4d(s0); return vec4(s0)/float(0xffffffffu);     }\n\n\n\n//-------------\n// Kernels\n//-------------\n\n#define pixel_scale 4.0\nfloat W(vec2 r, float h)\n{\n\treturn (length(r/pixel_scale) >= 0.0 && h >= length(r/pixel_scale)) ? //>=\n        ( 4.0 / (PI * pow(h, 8.0))) * pow(h*h - dot2(r/pixel_scale), 3.0 ) :\n\t\t0.0;\n}\nvec2 WS(vec2 r, float h)\n{\n\treturn (length(r/pixel_scale) > 0.0 && h >= length(r/pixel_scale)) ?\n        -(30.0 / (PI * pow(h, 5.0)))  * pow(h - length(r/pixel_scale), 2.0) * normalize(r) :\n\t\tvec2(0.0);\n}\nfloat WV(vec2 r, float h)\n{\n\treturn (length(r/pixel_scale) > 0.0 && h >= length(r/pixel_scale)) ?\n        (20.0 / (PI * pow(h, 5.0)))  * (h - length(r/pixel_scale)) :\n\t\t0.0;\n}\n\nfloat WTest(vec2 r, float h)\n{\n\treturn (length(r) >= 0.0 && h >= length(r)) ? //>=\n        ( 4.0 / (PI * pow(h, 5.7))) * pow(h*h - dot2(r), 3.0 ) :\n\t\t0.0;\n}\n\nfloat WC(vec2 r, float h)\n{\n    r /= pixel_scale;\n    float a = 32.0 / (PI * pow(h, 9.0));\n    \n\tif (length(r)*2.0 > h && length(r) <= h)\n        return a * ( pow(h - length(r), 3.0) * pow(length(r), 3.0) );\n    if (length(r) > 0.0 && length(r)*2.0 <= h)\n        return a * ( pow(h - length(r), 3.0) * 2.0 - (pow(h, 6.0)/64.0) );\n\treturn 0.0;\n}\n\nfloat WA(vec2 r, float h)\n{\n    r /= pixel_scale;\n    float x = length(r);\n    if (x*2.0 > h && x <= h)\n        return pow(-(4.0*x*x/h) + 6.0*x - 2.0*h, 1.0/4.0) * 0.007/pow(h, 3.25);\n    return 0.0;\n}\n\n\n//-------------\n// Border\n//-------------\nbool imBorder(vec2 pos)\n{\n    return border(pos) < 0.0\n        && mod(pos.x, 1.8) < 1.0\n        && mod(pos.y, 1.8) < 1.0;\n}\n\nparticle getVP(vec2 pos)\n{\n    particle P;\n    \n    P.X = pos;\n    P.NX = pos;\n    P.M = 1.25;\n    P.R = 1.8 * 0.5; \n    return P;\n}\n\n\n//-------------\n// Sim\n//-------------\n#define dt 1.0\n\n#define particle_size 1.6\n#define relax_value 1.0 / 2.0\n\n#define fluid_rho 2.5\n#define particle_rad 1.0\n\nvoid Simulation(sampler2D ch, sampler2D chd, inout particle P, vec2 pos)\n{\n    vec2 F = vec2(0.0);\n    vec3 n = vec3(0.0);\n    \n    vec4 pr = texel(chd, pos);\n    \n    //int I = int(ceil(particle_size))+2; \n    int I = int(ceil(particle_rad*pixel_scale));\n    range(i, -I, I) range(j, -I, I)\n    {\n        if (i == 0 && j == 0) continue;\n        \n        vec2 tpos = pos + vec2(i,j);\n        vec4 data = texel(ch, tpos);       \n        particle P0 = getParticle(data, tpos);\n        \n        if (P0.M == 0.0 || tpos.x < 0.0 || tpos.y < 0.0) continue;\n        if (length(P0.NX - P.NX) > particle_rad*pixel_scale) continue;\n        \n        vec2 dx = P.NX - P0.NX;\n        float d = length(dx);\n        float r = P.R + P0.R;\n        float m = (((P.M-P0.M)/(P.M+P0.M)) + ((2.0*P0.M)/(P.M+P0.M)));\n        //m = P0.M / (P.M + P0.M);\n        \n        float rho = (P.M < 1.0) ? fluid_rho*0.5 : fluid_rho*P.M;\n    \n        vec4 pr0 = texel(chd, tpos);       \n        float pf = (pr.z+pr0.z);\n        \n        //collision\n        F += normalize(dx) * max(r - d, 0.0) * m;\n        //fluid\n        F -= WS(dx, particle_rad) * pf / rho * P0.M;\n           \n        //cohesion\n        //vec2 co = 0.2 * WC(dx, particle_rad*2.0) * normalize(dx);\n        //F -= ((fluid_rho*2.0)/(pr.x+pr0.x))*co;\n        \n        //adhesion\n        //if (imBorder(tpos))\n            //F -= 1.0 * WA(dx, particle_rad) * normalize(dx) * P0.M;\n        \n        //curl\n        n -= vec3(WS(dx, particle_rad) * abs(pr0.w) * P0.M, 0.0);\n        \n        //viscosity\n        //F -= 0.01 * WTest(dx, 4.0) * (vel(P) - vel(P0)) * P0.M * (imBorder(tpos) ? 100.0*0.0 : 0.5);\n    }\n \n    if (length(n) > 0.0 && pr.z > 0.0)\n       F += cross(normalize(n), vec3(0.0, 0.0, pr.w)).xy * 0.1 * pr.z;\n    \n    //border\n    vec2 dp = P.NX;\n    float d = border(dp) - P.R;\n    if (d < 0.0)\n        F -= bN(dp).xy * d;\n      \n    P.NX += F * relax_value;\n}\n\n\n\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\nvoid Integrate(sampler2D ch, inout particle P, vec2 pos)\n{\n    int I = 2; \n    range(i, -I, I) range(j, -I, I)\n    {\n        vec2 tpos = pos + vec2(i,j);\n        vec4 data = texel(ch, tpos);\n        \n        if (tpos.x < 0.0 || tpos.y < 0.0) continue;\n       \n        particle P0 = getParticle(data, tpos);\n\n        //falls in this pixel\n        if (P0.NX.x >= pos.x-0.5\n        &&  P0.NX.x < pos.x+0.5\n        &&  P0.NX.y >= pos.y-0.5\n        &&  P0.NX.y < pos.y+0.5\n        &&  P0.M > 0.0)\n        {\n            vec2 P0V = vel(P0)/dt;\n        \n            //external forces\n            if(iMouse.z > 0.0)\n            {\n                vec2 dm =(iMouse.xy - iMouse.zw)/10.; \n                float d = distance(iMouse.xy, P0.NX)/20.;\n                P0V += 0.005*dm*exp(-d*d) * 1.0;\n            }\n\n            P0V += vec2(0., -0.005) * ((P0.M < 0.95) ? 0.05 : 1.0);//*P0.M;\n            //P0V -= normalize(P0.NX - iResolution.xy*0.5) * 0.005 * ((P0.M < 0.95) ? 0.05 : 1.0);\n\n            float v = length(P0V);\n            P0V /= (v > 1.0) ? v : 1.0;\n\n            //\n            P0.X = P0.NX;     \n            P0.NX = P0.NX + P0V*dt;\n            P = P0;\n            break;\n        }\n    }\n}\n\nint emitTime(float area, float pc)\n{\n    float ppf = area/particle_size;\n    return int(((R.x*R.y) / ppf) * pc);\n}\n\nvoid mainImage( out vec4 O, in vec2 pos )\n{\n    R = iResolution.xy;\n    rng_initialize(pos, iFrame);\n\n    particle P;    \n\n    Integrate(ch0, P, pos);\n    \n    if (imBorder(pos)) P = getVP(pos);\n\n    //liquid emitter\n    if (P.M == 0.0 && pos.x > 10.0 && pos.x < 11.0 && UV.y > 0.6 && UV.y < 0.75\n    && mod(pos.y, particle_size*2.0) < 1.0 && rand() > 0.5 && iFrame < emitTime(R.x*0.15*0.5, 0.18) && true)\n    {\n        P.X = pos;\n        P.NX = pos + vec2(1.0, 0.0);\n        P.M = 1.0;\n        P.R = particle_size * 0.5;\n    }\n    //gas emitter\n    if (P.M == 0.0 && pos.x > R.x - 11.0 && pos.x < R.x - 10.0 && UV.y > 0.6 && UV.y < 0.75\n    && mod(pos.y, particle_size*2.0) < 1.0 && rand() > 0.25 && iFrame < emitTime(R.x*0.15*0.75, 0.4) && true)\n    {\n        P.X = pos;\n        P.NX = pos - vec2(0.5, 0.0);\n        P.M = 0.5;// + sin(iTime)*0.05;\n        P.R = particle_size * 0.5;\n    }\n    //dense liquid emitter\n    if (P.M == 0.0 && pos.x > R.x - 11.0 && pos.x < R.x - 10.0 && UV.y > 0.2 && UV.y < 0.3\n    && mod(pos.y, particle_size*2.0) < 1.0 && rand() > 0.25 && iFrame < emitTime(R.x*0.15*0.75, 0.05) && true)\n    {\n        P.X = pos;\n        P.NX = pos - vec2(0.5, 0.0);\n        P.M = 2.5;\n        P.R = particle_size * 0.5;\n    }\n   \n    O = saveParticle(P, pos);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec3 distribution(vec2 x, vec2 p, vec2 K)\n{\n    vec2 omin = clamp(x - K*0.5, p - 0.5*K, p + 0.5*K);\n    vec2 omax = clamp(x + K*0.5, p - 0.5*K, p + 0.5*K); \n    return vec3(0.5*(omin + omax), (omax.x - omin.x)*(omax.y - omin.y)/(K.x*K.y));\n}\n\nvec4 FluidData(particle P, vec2 pos)\n{\n    float den = 0.0;\n    vec3 curl = vec3(0.0);\n    \n    vec2 gradki = vec2(0.0);\n    float gradl = 0.0;\n    \n    float rho = (P.M < 1.0) ? fluid_rho*0.5 : fluid_rho*P.M;\n    \n    int I = int(ceil(particle_rad*pixel_scale)); \n    range(i, -I, I) range(j, -I, I)\n    {\n        vec2 tpos = pos + vec2(i,j);\n        vec4 data = texel(ch0, tpos);\n        particle P0 = getParticle(data, tpos);\n        \n        if (P0.M == 0.0) continue;\n \n        //density\n        den += W(P.NX - P0.NX, particle_rad) * P0.M;\n        //den += distribution(P.NX, P0.NX, vec2(particle_rad*pixel_scale)).z * P0.M;\n        \n        //gradient\n        vec2 g = WS(P.NX - P0.NX, particle_rad) * P0.M / rho;// * particle_rad*pixel_scale;\n        gradki += g;\n        gradl += dot2(g);\n\n        //curl\n        if (i == 0 && j == 0) continue;\n        vec2 u = (vel(P) - vel(P0)) * P0.M;\n\t\tvec2 v = WS(P.NX - P0.NX, particle_rad);  \n        //vec2 v = W(P.NX - P0.NX, particle_rad) * normalize(P.NX - P0.NX); \n\t\tcurl += cross(vec3(u, 0.0), vec3(v, 0.0));    \n    }\n    gradl += dot2(gradki);\n\n    //pressure\n    float Y = 3.0;\n    float C = 0.08;\n    float pr = ((fluid_rho*C)/Y) * (pow(den/rho, Y) - 1.0);\n    \n    //pr = den/fluid_rho - 1.0;\n        \n    //some hardcoded stuff\n    //gas\n    if (P.M < 1.0)\n        pr = den*0.02;\n    //pr = 0.02*(den-rho);\n    \n    //pr = max(pr, 0.0);\n    if (pr < 0.0)\n        pr *= 0.1;\n        \n\n    float l = pr / (gradl + 0.01);\n  \n    return vec4(den, pr, l, curl.z);\n}\n\nvoid mainImage( out vec4 O, in vec2 pos )\n{\n    R = iResolution.xy; time = iTime;\n    ivec2 p = ivec2(pos);\n\n    vec4 data = texel(ch0, pos);\n    particle P = getParticle(data, pos);\n   \n    if (P.M > 0.0)   \n        O = FluidData(P, pos);\n}\n",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\n\nvoid mainImage( out vec4 O, in vec2 pos )\n{\n    R = iResolution.xy; time = iTime; Mouse = iMouse;     \n    vec4 data = texel(ch0, pos); \n    particle P = getParticle(data, pos);\n      \n    if (P.M > 0.0 && !imBorder(P.NX))\n        Simulation(ch0, ch1, P, pos);\n \n    O = saveParticle(P, pos);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\n\nvoid mainImage( out vec4 O, in vec2 pos )\n{\n    R = iResolution.xy; time = iTime; Mouse = iMouse;     \n    vec4 data = texel(ch0, pos); \n    particle P = getParticle(data, pos);\n      \n    if (P.M > 0.0 && !imBorder(P.NX))\n        Simulation(ch0, ch1, P, pos);\n \n    O = saveParticle(P, pos);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

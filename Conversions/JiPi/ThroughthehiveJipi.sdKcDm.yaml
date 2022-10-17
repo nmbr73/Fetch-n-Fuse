@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ThroughthehiveJipi
+  id: ThroughthehiveJipi
+  kernel: ThroughthehiveJipi
+  name: ThroughthehiveJipi
+shader:
+  author: N.N.
+  description: Ersatz
+  id: sdKcDm
+  name: ThroughTheHive JiPI
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - ersatz
+  url: https://www.shadertoy.com/view/sdKcDm

@@ -1,0 +1,134 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtfyWX",
+  "date": "0",
+  "viewed": 0,
+  "name": "Burning Cube JiPi 360",
+  "description": "I liked how the really low effort \"fluid\" turned out",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "cube",
+   "fluid",
+   "multipass"
+  ],
+  "hasliked": 0,
+  "parentid": "7lXyzl",
+  "parentname": "Burning Cube"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n    vec4 col;\n    vec4 col2;\n    vec4 raw = texture(iChannel0, uv)*0.5+0.5;\n    vec4 raw2 = raw;\n\n    \n        raw2*=-1.;\n                col2 = raw2*0.5+0.5;\n\n        col2 = vec4(col2.y*1.5+abs(col2.z)*0.9-0.9,col2.y*0.5+abs(col2.z)*0.3-0.5 ,col2.y*0.3+abs(col2.z)*0.3-0.5,0);\n\n    if(raw.z < 0.9){\n        raw *= -1.;\n        \n    }\n        col = raw*0.5+0.5;\n    \n    fragColor = mix(col,col2, clamp(sin(iTime)+0.5,0.,1.));\n    //fragColor =  texture(iChannel1, uv);\n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec2 R;\n\nvec4 tf(ivec2 p, int i, int j){\n    //return texelFetch(iChannel0,p+ivec2(i,j),0);\n    return texture(iChannel0,(vec2(p+ivec2(i,j))+0.5f)/R);\n}\nvec4 state(ivec2 p){\n    //vec4 colNow = vec4(0,0,0,0);\n    vec4 r = tf(p,0,0);\n    vec4 colNow;\n    float d0 = 0.05;\n    int i0 = int(r.x * d0 + 1.)-1;\n    int i1 = i0 + 1;\n    int j0 = int(r.y*d0 + 1.)-1;\n    int j1 = j0 + 1;\n    float s1 = r.x*d0 - float(i0);\n    float s0 = 1.-s1;\n    float t1 = r.y*d0 - float(j0);\n    float t0 = 1. - t1;\n    colNow = t0*(s0 * tf(p,i0,j0) + s1 * tf(p,i1,j0)) +\n        t1 *(s0 * tf(p,i0,j1) + s1 * tf(p,i1,j1));\n    \n    \n    \n    //for(int i = 0; i < 2; i++){\n      //  for(int j = 0; j < 2; j++){\n        //    colNow += tf(p, tx + i, ty + j) * 0.1 * abs((r.x*0.1 - float(tx - i)) - 1.) * abs((r.y*0.1- float(ty - j)) - 1.);\n       // }\n   // }\n    \n    \n    \n    for(int i = -1; i < 2; i++){\n        for(int j = -1; j < 2; j++){\n            //colNow += texelFetch(iChannel0, p + ivec2(i,j),0).rgba;\n            //colNow += texture(iChannel0, (vec2( p + ivec2(i,j))+0.5f)/R).rgba;\n            \n            \n            \n                //int tx = floor()\n            if(abs(i) + abs(j) < 3){\n                vec4 l = tf(p,i,j);\n                float infl = -float(i) * l.x + -float(j) * l.y;\n                colNow += infl * l * -0.005f;\n                float d = (l.z - r.z)*0.1;\n                colNow += vec4(d*float(i),d*float(j),-d*0.02,0);\n            }\n            \n        }\n    }\n    if(r.z > 0.){\n        colNow+= vec4(0,-0.5,-0.05,0);\n         \n    }\n    colNow+= vec4(sin(colNow.y*60.)*0.15,0,0,0);\n    \n    \n        if(p.x < 1 || p.y < 1 || p.x > int(iResolution.x) - 2 || p.y > int(iResolution.y) -2){\n    return vec4(0,0,0.3,0);\n    }\n    return clamp(colNow*1.,-10.,10.);\n    \n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    R=iResolution.xy;  \n    // Amount, XV, YV, Tempurature;\n    fragColor = vec4(0.1,0.1,1.0,1.0);\n    \n    vec4 col = state(ivec2(fragCoord));\n    \n    vec2 uv = fragCoord/iResolution.xy;\n    if(iFrame < 5){\n      col = texture(iChannel1, uv)*2.-1.;\n    }\n    \n    col+= texture(iChannel2, uv);\n    \n    \n    if(length((iMouse.xy)-fragCoord)<3.){\n        col = vec4(sin(iTime*15.)*3.,-2.9,cos(iTime*10.)*3.5+5.5,0);\n    }\n    fragColor = col;\n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float sdBoxFrame( vec3 p, vec3 b, float e )\n{\n       p = abs(p  )-b;\n  vec3 q = abs(p+e)-e;\n  return min(min(\n      length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),\n      length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),\n      length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));\n}\n\nfloat sdBox( vec3 p, vec3 b )\n{\n  vec3 q = abs(p) - b;\n  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);\n}\n\nvec3 rotx(vec3 p, float a){\n    float s = sin(a);\n    float c = cos(a);\n    return(vec3(p.x*c+p.y*s,-p.x*s+p.y*c,p.z));\n}\nfloat sdSph(vec3 p, float r){\n    return length(p) - r;\n}\nvec4 getSDF(vec3 p, float time){\n    vec3 pos = rotx(p,time);\n    pos = rotx(pos.zyx,time*0.7);\n    return vec4(0,-0.5,1.0,sdBoxFrame(pos,vec3(0.1,0.1,0.1),0.0015));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    float time = iTime;\n    vec2 uv = (fragCoord-0.5f*iResolution.xy)/iResolution.x;\n     //vec2 pos = 0.25*vec2(sin(time),cos(time));\n    //float d = length(uv-pos);\n    \n    \n    vec3 pos = vec3(0.03*sin(time*1.0f),cos(time*0.5f),-sin(time*0.5f));\n    vec3 dir = normalize(rotx(vec3(uv.x,uv.y,-1.).zxy,time*0.5f).zxy);\n    \n    vec4 col = vec4(0,0,0,0);\n    int ma = 100;\n    vec4 newcol;\n    bool hit = false;\n    for(int i = 0; i < ma; i ++){\n        vec4 oc = getSDF(pos,time);\n        newcol = oc;\n        float dis = oc.w;\n        \n        col += vec4(.01/dis);\n        if(dis < 0.0001){\n            i = ma;\n            hit = true;\n        }\n        if(dis > 10.){\n            i = ma;\n        }\n        pos += dir * dis;\n    }\n    if(hit){\n        col = newcol;\n    }else{\n        col = vec4(0,0,0,0);\n    }\n    \n    \n    \n    \n    //if(d<0.05){\n    //    col = vec4(0,0,1.0,0);\n    //}\n    fragColor = col;\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

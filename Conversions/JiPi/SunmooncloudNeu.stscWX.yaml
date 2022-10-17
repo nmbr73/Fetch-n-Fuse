@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SunmooncloudNeu
+  id: SunmooncloudNeu
+  kernel: SunmooncloudNeu
+  name: SunmooncloudNeu
+shader:
+  author: N.N.
+  description: Rebuild - unknown Char<chter
+  id: stscWX
+  name: SunMoonCloud Neu
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - sun
+  url: https://www.shadertoy.com/view/stscWX

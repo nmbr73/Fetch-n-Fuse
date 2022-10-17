@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flByD1",
+  "date": "0",
+  "viewed": 0,
+  "name": "diffusion10  JiPi 649",
+  "description": "diffusion  test 10",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "test"
+  ],
+  "hasliked": 0,
+  "parentid": "flBcW1",
+  "parentname": "diffusion test10"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define S(a,b,t) smoothstep(a,b,t)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n\n    //uv.x *= iResolution.x/iResolution.y;\n    vec3 col = vec3(texture(iChannel0, uv));\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec3 kernel(ivec2 fragCoord, vec2 R){\n    vec3 num = vec3(0.);\n    vec3 preNum = texture(iChannel1, (vec2(fragCoord)+0.5)/R).rgb;\n    for(int i = -1; i < 2 ; i++ ){\n        for(int j = -1; j < 2 ; j++ ){\n            if(i != 0 || j != 0){\n                num += texture(iChannel1, (vec2(fragCoord + ivec2(i,j))+0.5)/R).rgb;\n            }  \n        }\n    }\n    \n    vec3 diff = num/8.0 - preNum;\n    if(diff.r > 0.){\n        preNum = preNum + diff*1.;\n    }else{\n        preNum = preNum ;\n    }\n    \n    return preNum;\n}\n\nvec3 getColor(ivec2 fragCoord, vec2 R){\n    vec3 num = kernel(fragCoord, R);\n    return num;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n  \n    vec3 col = vec3(texture(iChannel0, uv));\n    \n    /**/\n    if(iFrame < 10){\n        col = vec3(texture(iChannel0, uv));\n    }else{\n        col = getColor(ivec2(fragCoord),iResolution.xy);\n    }\n    /**/\n    fragColor = vec4(col.r, col.r, col.r,1);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

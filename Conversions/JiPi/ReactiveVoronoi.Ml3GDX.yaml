@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: ReactiveVoronoi
+  id: ReactiveVoronoi
+  kernel: ReactiveVoronoi
+  name: ReactiveVoronoi
+shader:
+  author: glk7
+  description: Ray-marched cubic section of an extruded voronoi tiled plane. The extrusion
+    height of each cell reacts to a random frequency of the audio on iChannel0. The
+    scene can be rotated with the mouse.
+  id: Ml3GDX
+  name: Reactive Voronoi
+  tags:
+  - 3d
+  - voronoi
+  - raymarch
+  - interactive
+  - reactive
+  - hardshadows
+  url: https://www.shadertoy.com/view/Ml3GDX

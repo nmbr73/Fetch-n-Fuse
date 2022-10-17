@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Frogtry
+  id: Frogtry
+  kernel: Frogtry
+  name: Frogtry
+shader:
+  author: metalfinger
+  description: ShaderFrog Test
+  id: sdVyDW
+  name: FrogTry
+  tags:
+  - galaxy
+  url: https://www.shadertoy.com/view/sdVyDW

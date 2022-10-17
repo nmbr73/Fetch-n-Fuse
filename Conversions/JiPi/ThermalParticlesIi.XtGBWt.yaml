@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: ThermalParticlesIi
+  id: ThermalParticlesIi
+  kernel: ThermalParticlesIi
+  name: ThermalParticlesIi
+shader:
+  author: wyatt
+  description: "Making some improvements, but it's still far from where I want it\
+    \ to be.  My goal is to get some orbiting, but clumping is cool for now. \nYou\
+    \ can move a single particle around by pushing it with the mouse"
+  id: XtGBWt
+  name: Thermal Particles II
+  tags:
+  - physics
+  url: https://www.shadertoy.com/view/XtGBWt

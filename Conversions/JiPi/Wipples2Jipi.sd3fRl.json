@@ -1,0 +1,58 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sd3fRl",
+  "date": "0",
+  "viewed": 0,
+  "name": "Wipples2 JiPi",
+  "description": "水滴2",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2"
+  ],
+  "hasliked": 0,
+  "parentid": "Ns3BRs",
+  "parentname": "水滴2"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "//http://dept-info.labri.fr/~schlick/DOC/gem2.ps.gz\nfloat bias(float x, float b) {\n\treturn  x/((1./b-2.)*(1.-x)+1.);\n}\n\nfloat gain(float x, float g) {\n\tfloat t = (1./g-2.)*(1.-(2.*x));\t\n\treturn x<0.5 ? (x/(t+1.)) : (t-x)/(t-1.);\n}\n\nvec3 degamma(vec3 c)\n{\n\treturn pow(c,vec3(2.2));\n}\nvec3 gamma(vec3 c)\n{\n\treturn pow(c,vec3(1./1.6));\n}\n\n#define pi 3.1415927\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n\tuv.y=1.-uv.y;\n\tuv.x *= iResolution.x / iResolution.y;\n\n\tfloat h = 0.;\n\n#if 1\n\tfloat time = iTime;\n#else\n\t//go forwards and backwards!\t\n\tfloat time = mod(iTime,30.);\n\tif (time > 15.) time = 30.-time;\n#endif\n\t\n\n#define DIVS\t8\n\t\n\tfor (int iy=0; iy<DIVS; iy++)\n\t{\n\t\tfor (int ix=0; ix<DIVS*2; ix++)\n\t\t{\n\t\t\t//random variations for droplet\n\t\t\tvec4 t = texture(iChannel1,(4./256.)*vec2(float(ix),float(iy)),-100.);\n\t\t\t\n\t\t\t\n\t\t\t//stratify droplet positions\n\t\t\tvec2 p = vec2(ix,iy)*(1./float(DIVS-1));\n\t\t\tp += (0.75/float(DIVS-1))*(t.xy*2.-1.);\n\t\t\t\t\n\t\t\t//radius\n\t\t\tvec2 v = uv-p;\n\t\t\tfloat d = dot(v,v);\n\t\t\td = pow(d,.7);\n\t\t\tfloat life = 10.;\n\t\t\t\n\t\t\tfloat n = time*5.*(t.w+0.2) - t.z*6.;\n\t\t\tn *= 0.1+ t.w;\n\t\t\tn = mod(n,life+t.z*3.+10.);\t\t\t\t//repeat, plus a pause\n\t\t\tfloat x = d*99.;\n\t\t\tfloat T = x<(2.*pi*n) ? 1. : 0.;\t//clip to 0 after end\n\t\t\tfloat e = max(1. - (n/life),0.);\t\t//entirely fade out by now\n\t\t\tfloat F = e*x/(2.*pi*n);\t\t\t\t//leading edge stronger and decay\n\t\t\t\n\t\t\tfloat s = sin(x-(2.*pi*n)-pi*0.5);\n\t\t\t\t\t\t   \n\t\t\ts = s*0.5+0.5;\t\t//bias needs [0,1]\n\t\t\ts = bias(s,.6);\t//shape the ripple profile\n\t\t\t\n\t\t\t\n\t\t\ts = (F*s)/(x+1.1)*T;\t\t\t\n\n\t\t\th+=s*100.*(0.5+t.w);\t\t\t\n\n\t\t}\n\t}\n\n\t\n\tvec3 n = vec3(dFdx(h),17.,dFdy(h));\t\t\n\tn = normalize(n);\n\t\n\tvec3 E = normalize(vec3(-uv.y*2.-1.,1.,uv.x*2.-1.));\t//fake up an eye vector\n\tvec3 rv = reflect(-E,n);\n\n\tvec3 fn = refract(vec3(0,1,0),n,2.5);\n\tuv += fn.xz*0.1;\n\t\n\tfloat lod = length(fn.xz)*10.;\n\t\n\tvec3 c = vec3(0.);\n\tc += degamma(texture(iChannel0,uv+vec2(0.0,0.),lod).xyz);\n\tc *= 1.-h*0.0125;\n\n\t\n//\tfragColor = vec4(h*0.5+0.5);\n//\tfragColor = vec4(n*0.5+0.5,1.);\n\tvec3 L = normalize(vec3(1,1,1));\n\tfloat dl = max(dot(n,L),0.)*.7+.3;\n\tc *= dl;\n//\tfragColor = vec4(vec3(dl),1.);\n\t\n\tc = gamma(c);\n\tfragColor = vec4(vec3(c),1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

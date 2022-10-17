@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: SpeedyMazeGeneration
+  id: SpeedyMazeGeneration
+  kernel: SpeedyMazeGeneration
+  name: SpeedyMazeGeneration
+shader:
+  author: mathmasterzach
+  description: Grows a random maze over time. Try clicking and dragging to erase parts
+    of the maze and watch them regrow. (technically separating parts of the maze will
+    make them grow into separate mazes)
+  id: MlVBDc
+  name: Speedy Maze Generation
+  tags:
+  - interactive
+  - pattern
+  - maze
+  - growth
+  url: https://www.shadertoy.com/view/MlVBDc

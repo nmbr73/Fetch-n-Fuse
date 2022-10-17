@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: XyOscilloscopeMusicCube
+  id: XyOscilloscopeMusicCube
+  kernel: XyOscilloscopeMusicCube
+  name: XyOscilloscopeMusicCube
+shader:
+  author: shyshokayu
+  description: 'This is just one really fast point of light moving around.
+
+    E to toggle waveform
+
+    Q to toggle point cache texture (blue is free memory, if there is no free left
+    then you might see artifacting in the oscilloscope, overrides waveform view)'
+  id: NlXBzS
+  name: XY Oscilloscope Music - Cube
+  tags:
+  - oscilloscope
+  - framework
+  - music
+  - xy
+  url: https://www.shadertoy.com/view/NlXBzS

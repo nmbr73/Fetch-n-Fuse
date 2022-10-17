@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7t3BzM",
+  "date": "0",
+  "viewed": 0,
+  "name": "p3 - drifts JiPi",
+  "description": "Per-pixel particles again. Might be good for gaming, but they annihilate each another too often :/\nClick & hold mouse to zoom, press R to fill field with noise.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "simulation",
+   "pixel",
+   "particles",
+   "dynamics",
+   "per"
+  ],
+  "hasliked": 0,
+  "parentid": "4sGGR1",
+  "parentname": "p3 - drifts"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "float magAmt = 8.0;  // zoom level\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n\tvec2 res = iResolution.xy;\n    //vec2 uv = fragCoord / res;\n    vec2 uv = (fragCoord + vec2(.01)) / res;\n    vec2 p = fragCoord / res.y;\n    vec2 ps = 1. / res;\n    \n    // mouse center\n    float mc = length(p-iMouse.xy/res.y);\n    \n    // apply zoom\n    if(iMouse.z>0.)\n        uv = uv/magAmt-iMouse.xy/res*(1.-magAmt)/magAmt;\n    \n    // corrective measure\n    //uv += .5/res;\n    \n    // combine circles from neighboring particles\n    float f = 1.;\n    for(float y=-1.; y<=1.; y++) {\n        for(float x=-1.; x<=1.; x++) {\n            vec2 pos = texture(iChannel0, (uv-vec2(x, y)/res)).ba;\n            float c = max(0., .5*res.x*length((uv-pos/res)/vec2(ps.x/ps.y, 1.)));\n            f = min(f, c);\n        }\n    }\n    \n    fragColor = vec4(mix(vec3(0., .25, .0), vec3(1.), f), 1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "const float MaxParticleSpeed = 0.2;\n\n// hash without sine\n// https://www.shadertoy.com/view/4djSRW\nvec2 hash22(vec2 p) {\n    vec3 MOD3 = vec3(443.8975, 397.2973, 491.1871);\n\tvec3 p3 = fract(vec3(p.xyx) * MOD3);\n    p3 += dot(p3, p3.yzx+19.19);\n    return fract(vec2((p3.x + p3.y)*p3.z, (p3.x+p3.z)*p3.y));\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    vec2 res = iResolution.xy;\n    vec2 ps = 1. / res;\n    vec2 uv = fragCoord.xy / res;\n    \n    vec4 buf[9];\n    buf[0] = texture(iChannel0, uv);\n    buf[1] = texture(iChannel0, fract(uv-vec2(ps.x, 0.)));\n    buf[2] = texture(iChannel0, fract(uv-vec2(-ps.x, 0.)));\n    buf[3] = texture(iChannel0, fract(uv-vec2(0., ps.y)));\n    buf[4] = texture(iChannel0, fract(uv-vec2(0., -ps.y)));\n    buf[5] = texture(iChannel0, fract(uv-vec2(ps.x, ps.y)));\n    buf[6] = texture(iChannel0, fract(uv-vec2(-ps.x, ps.y)));\n    buf[7] = texture(iChannel0, fract(uv-vec2(ps.x, -ps.y)));\n    buf[8] = texture(iChannel0, fract(uv-vec2(-ps.x, -ps.y)));\n    \n    // this cell's particle direction & position, if any\n    vec2 pDir = buf[0].rg;\n    vec2 pPos = buf[0].ba;\n    \n    // update this cell's particle position\n    pPos = mod(pPos+pDir, res);\n    \n    float ct = 0.;\n    vec2 pDirAdd = vec2(0.);\n    vec2 pPosAdd = vec2(0.);\n    vec2 pOffs = vec2(0.);\n    if(true){//length(pDir)==0.) {\n        for(int i=1; i<9; i++) {\n            vec2 pPosI = mod(buf[i].ba+buf[i].rg, res);\n            \n            // add up incoming particles\n            if(floor(pPosI)==floor(fragCoord)){// || (length(buf[i].rg)>0.&&hash12(mod(uv+iTime/100.-8., 100.))>.9125)) {\n                pDirAdd += buf[i].rg;\n                pPosAdd += pPosI;\n                ct ++;\n            }\n            \n            // slow down & 'bounce' particle when near a neighbor\n            if(distance(pPos, pPosI)<1.5) {\n                pDir *= .5;\n                pOffs -= .05*(pPosI-pPos)/(1.+distance(pPos, pPosI));\n                //pOffs -= .5*(pPosI-pPos)/(1.+distance(pPos, pPosI))*(length(buf[i].rg));\n             \tpOffs += .5*buf[i].rg;\n            }   \n        }\n\n        // if particles were added up, average and transfer them to the current cell\n        if(ct>0.) {\n            pDir = (pDirAdd / ct);\n            pPos = pPosAdd / ct;\n        }\n        \n        // apply 'bounce'\n        pDir += pOffs;\n        \n        // clear cell of data when particle leaves it\n        if(floor(pPos)!=floor(fragCoord)) {\n            pDir = vec2(0.);\n            pPos = vec2(0.);\n        }\n        \n        // make sure particle doesn't travel too fast\n        if(length(pDir)>MaxParticleSpeed)\n            pDir = MaxParticleSpeed*normalize(pDir);\n    }\n    \n    // fill field with noise\n    if(iFrame==0 || texture(iChannel3, vec2(82.5/256., 0.)).r>0.) {\n        pDir = .02 * (.5-hash22(mod(uv-iTime/100., vec2(100.))));\n        pPos = fragCoord;\n\t}   \n    \n    fragColor = vec4(pDir, pPos);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

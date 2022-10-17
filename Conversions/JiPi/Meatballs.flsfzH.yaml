@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: Meatballs
+  id: Meatballs
+  kernel: Meatballs
+  name: Meatballs
+shader:
+  author: kristemmerman
+  description: 'An attempt at meat :)
+
+
+    '
+  id: flsfzH
+  name: Meatballs
+  tags:
+  - 3d
+  - noise
+  - meat
+  url: https://www.shadertoy.com/view/flsfzH

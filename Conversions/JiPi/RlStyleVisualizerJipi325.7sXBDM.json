@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7sXBDM",
+  "date": "0",
+  "viewed": 0,
+  "name": "RL Style Visualizer JiPi 325",
+  "description": "Rough remake of Rocket League Visualizer",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "visualizer"
+  ],
+  "hasliked": 0,
+  "parentid": "llXyzN",
+  "parentname": "RL Style Visualizer"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{   \n    //basic background\n    vec4 base = vec4(7.0/255.0, 38.0/255.0, 70.0/255.0, 1.0);\n    fragColor = base;\n    \n    //proper ratios\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    uv.y = uv.y*1.1;\n    uv.x = uv.x*2.0 - .45;\n    \n    \n    //lookup conversion (512 frequences returned by input)\n    int tx = int(uv.x*512.0);\n    \n    //bucketed values of current and max frequencies\n    int starter = int(floor(float(tx)/57.0))*57;\n    int diff = tx-starter;\n    float sum = 0.0;\n    float maxSum = 0.0;\n    for (int i = 0; i<9;i++) {\n\t\tsum = sum + texelFetch( iChannel0, ivec2(starter+i,2), 0 ).x;\n        maxSum = maxSum + texelFetch( iChannel0, ivec2(starter+i,1), 0 ).x;\n    }\n    \n    //normalize values\n    sum = (sum/9.0);\n    maxSum = (maxSum/9.0);\n    \n    //Draw bars\n    float height = sum;\n    float col = ((sum)-.2)*1.25;\n    if (sum > uv.y && diff>20) {\n        fragColor = vec4(uv.y + base.x, uv.y+base.y, uv.y+base.z, 1.0);\n    }\n    \n    //draw \"max\" lines\n    float mDiff = abs((uv.y+.01)-maxSum);\n    float mVal = 1.0-(mDiff*50.0);\n    if (mDiff<.02 && diff>20 && maxSum > 0.001) {\n        fragColor = vec4(mix(fragColor.x,1.0, mVal),mix(fragColor.y, 1.0, mVal),mix(fragColor.z,1.0,  mVal), 1.0);\n    }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XslSWf",
+     "filepath": "https://soundcloud.com/michael_ault/angelwings",
+     "type": "musicstream",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 0
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{   \n    //same as usual uv but we offset by one so we grab the previous frame/texture from Buf A one frame higher;\n    vec2 ouv = vec2(fragCoord.x, fragCoord.y-1.0) / iResolution.xy;\n    //not offset texture for grabbing \"max\" values\n    vec2 uv = vec2(fragCoord.x, fragCoord.y) / iResolution.xy;\n    \n    //conversion factor for our texture to sound texture\n    int tx = int(fragCoord.x);\n    \n    //grab previous frame but offset by one pixel\n    fragColor = texture(iChannel0, ouv);\n    //old values for grabbing \"max\" values\n    vec4 fragColorOld = texture(iChannel0, uv);\n    \n    //get frequency data\n    float freq = texelFetch( iChannel1, ivec2(tx,0), 0 ).x;\n    \n    //only overwrite pixel if its the bottom one!\n    //fragColor = mix(fragColor, vec4(vec3(freq), 1.0), clamp(1.0-fragCoord.y,0.0,1.0));\n    \n    //simpler code for overwriting third to bottom pixel\n    if (int(fragCoord.y) == 2) {\n        fragColor = vec4(vec3(freq),1.0);\n    }\n    //write max in second to bottom pixel\n    if (int(fragCoord.y) == 1) {\n        if (freq > fragColorOld.x) {\n        \tfragColor = vec4(freq, 0.0, 0.0,1.0);\n        } else {\n            //reduce max over time\n        \tfragColor = vec4(fragColorOld.x-.005, 0.0, 0.0,1.0);\n        }\n    }\n}\n\n//Also see https://www.shadertoy.com/view/XtKGzm by ttoinou for a similar effect",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: MouseTrailJipi
+  id: MouseTrailJipi
+  kernel: MouseTrailJipi
+  name: MouseTrailJipi
+shader:
+  author: N.N.
+  description: Soft Mouse trails use buffer
+  id: NdGcRV
+  name: Mouse Trail JiPi
+  parent:
+    id: 7sycRG
+    name: Mouse Trails Soft
+    url: https://www.shadertoy.com/view/7sycRG
+  tags:
+  - mouse
+  - draw
+  - trails
+  url: https://www.shadertoy.com/view/NdGcRV

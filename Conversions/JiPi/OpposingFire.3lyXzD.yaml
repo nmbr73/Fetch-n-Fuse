@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: OpposingFire
+  id: OpposingFire
+  kernel: OpposingFire
+  name: OpposingFire
+shader:
+  author: rls
+  description: Basic fire from a texture. Made for a stream background.
+  id: 3lyXzD
+  name: Opposing Fire
+  tags:
+  - fire
+  url: https://www.shadertoy.com/view/3lyXzD

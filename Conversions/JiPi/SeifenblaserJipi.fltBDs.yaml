@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SeifenblaserJipi
+  id: SeifenblaserJipi
+  kernel: SeifenblaserJipi
+  name: SeifenblaserJipi
+shader:
+  author: N.N.
+  description: Rebuild
+  id: fltBDs
+  name: SeifenblaseR JiPi
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - bubble
+  url: https://www.shadertoy.com/view/fltBDs

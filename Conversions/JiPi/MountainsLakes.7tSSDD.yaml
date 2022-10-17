@@ -1,0 +1,30 @@
+fuse:
+  author: JiPi
+  file: MountainsLakes
+  id: MountainsLakes
+  kernel: MountainsLakes
+  name: MountainsLakes
+shader:
+  author: xjorma
+  description: 'Use the mouse to turn around!
+
+    Super fast even on my slow Pixel 2!
+
+    Water simulation inspired by this:
+
+    https://hal.inria.fr/inria-00402079/document
+
+    '
+  id: 7tSSDD
+  name: Mountains & Lakes
+  tags:
+  - terrain
+  - simulation
+  - water
+  - fluid
+  - liquid
+  - river
+  - lake
+  - mountain
+  - diorama
+  url: https://www.shadertoy.com/view/7tSSDD

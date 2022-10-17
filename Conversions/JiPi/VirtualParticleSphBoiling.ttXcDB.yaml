@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: VirtualParticleSphBoiling
+  id: VirtualParticleSphBoiling
+  kernel: VirtualParticleSphBoiling
+  name: VirtualParticleSphBoiling
+shader:
+  author: michael0884
+  description: 'Everything is improved once more! Also now tracking the temperature!
+
+    Cellular automaton particle tracking used for advection in a fluid which is also
+    fully conservative
+
+    Each pixel has 1 virtual particle'
+  id: ttXcDB
+  name: Virtual particle SPH - Boiling
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/ttXcDB

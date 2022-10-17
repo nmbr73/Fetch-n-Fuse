@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: NightCircuitJipi
+  id: NightCircuitJipi
+  kernel: NightCircuitJipi
+  name: NightCircuitJipi
+shader:
+  author: N.N.
+  description: 3d
+  id: 7sdcD4
+  name: Night circuit JiPi
+  parent:
+    id: tdyBR1
+    name: Night circuit
+    url: https://www.shadertoy.com/view/tdyBR1
+  tags:
+  - 3d
+  url: https://www.shadertoy.com/view/7sdcD4

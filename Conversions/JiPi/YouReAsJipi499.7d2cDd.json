@@ -1,0 +1,377 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7d2cDd",
+  "date": "0",
+  "viewed": 0,
+  "name": "You're as  JiPi 499",
+  "description": "You can add fire by left-clcking with the mouse.\nTry changing the texture in buffer A and the strength, kappa  and alpha varable for different result",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation",
+   "fluid",
+   "multipass",
+   "navierstokes",
+   "jacobi",
+   "multistep",
+   "vorticity"
+  ],
+  "hasliked": 0,
+  "parentid": "4tfBRn",
+  "parentname": "You're as Hot as Fire"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Variation of a precedent project\n// https://www.shadertoy.com/view/Xt2cRV\n\n// added substance advection/diffusion along the flow (like die coloring in fluid experiment)\n// you can modify the parameter (but do it in all buffer)\n\n// Made it look like ice accidently so decided to keep it\n\n// must be modified in all buffers and image\n// simulation parameters\nconst float dt = 1.0/400.0;\nconst float reynold = 200.0;\nconst float vorticesStrength = 5.0; //strength of vortices\nconst float sourceStrength = 40.0; //stength of sources\nconst float kappa = 0.0; //substance diffusion constant\nconst float alpha = 12.0; //substance dissipation rate\nconst float radius = 0.07; //radius of sources\n\n\n\n//macro\n#define GetVorticity(I,J) texelFetch( iChannel0, ijCoord+ivec2(I,J), 0 ).x\n#define GetStream(I,J) texelFetch( iChannel2, ijCoord+ivec2(I,J), 0 ).x\n#define GetVelocity(I,J) texelFetch( iChannel3, ijCoord+ivec2(I,J), 0 ).xy\n#define GetDensity(I,J) texelFetch( iChannel1, ijCoord+ivec2(I,J), 0 ).y\n\n// COLORMAP\n\nvec3 hot(float t)\n{\n    return vec3(smoothstep(0.00,0.33,t),\n                smoothstep(0.33,0.66,t),\n                smoothstep(0.66,1.00,t));\n}\n// for testing purpose, https://www.shadertoy.com/view/4dlczB\nvec3 blackbody(float t)\n{\n\tfloat Temp = t*7500.0;\n    vec3 col = vec3(255.);\n    col.x = 56100000. * pow(Temp,(-3. / 2.)) + 148.;\n   \tcol.y = 100.04 * log(Temp) - 623.6;\n   \tif (Temp > 6500.) col.y = 35200000. * pow(Temp,(-3. / 2.)) + 184.;\n   \tcol.z = 194.18 * log(Temp) - 1448.6;\n   \tcol = clamp(col, 0., 255.)/255.;\n    if (Temp < 1000.) col *= Temp/1000.;\n   \treturn col;\n}\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    //set grid\n    float dx = 1.0 / iResolution.y;\n    float dxPow = dx *dx ;\n    vec2 uvCoord = dx*fragCoord.xy;\n    ivec2 ijCoord = ivec2(floor(fragCoord.xy));\n\n    vec3 col = blackbody(GetDensity(0,0));\n    \n    fragColor = vec4(col,1);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGzn",
+     "filepath": "/media/a/0c7bf5fe9462d5bffbd11126e82908e39be3ce56220d900f633d58fb432e56f5.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Set initial condition / perturbation / advection / dissipation\n\n//Select scheme to do backward advection\n//#define EULER\n#define RUNGE\n\n// comment all to remove driving force.\n//#define VORTICES\n//#define LATTICE\n#define NOISE\n\n// must be modified in all buffers and image\n// simulation parameters\nconst float dt = 1.0/400.0;\nconst float reynold = 200.0;\nconst float vorticesStrength = 5.0; //strength of vortices\nconst float sourceStrength = 40.0; //stength of sources\nconst float kappa = 0.0; //substance diffusion constant\nconst float alpha = 12.0; //substance dissipation rate\nconst float radius = 0.07; //radius of sources\n\n\n//macro\n#define GetVelocity(I,J) texelFetch( iChannel3, ijCoord+ivec2(I,J), 0 ).xy\n#define GetDensity(I,J) texelFetch( iChannel1, ijCoord+ivec2(I,J), 0 ).y\n\n#define GetVelocityUV(XY) texture( iChannel3, vec2(XY)).xy\n#define GetDensityUV(XY) texture( iChannel1, vec2(XY)).y\n\nvec2 Euler(vec2 posUV){\n    vec2 AspectRatio = iResolution.xy/iResolution.y;\n    return dt*GetVelocityUV(posUV)/AspectRatio;\n}\n\nvec2 Runge(vec2 posUV){\n    vec2 AspectRatio = iResolution.xy/iResolution.y;\n    vec2 k1 = GetVelocityUV(posUV)/AspectRatio;\n    vec2 k2 = GetVelocityUV(posUV-0.5*k1*dt)/AspectRatio;\n    vec2 k3 = GetVelocityUV(posUV-0.5*k2*dt)/AspectRatio;\n    vec2 k4 = GetVelocityUV(posUV-k3*dt)/AspectRatio;\n    return dt/6.*(k1+2.0*k2+2.0*k3+k4);\n}\n\n//main\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n    // set grid\n    float dx = 1.0 / iResolution.y;\n    float dxPow = dx *dx ;\n    vec2 uvCoord = dx*fragCoord.xy;\n    ivec2 ijCoord = ivec2(floor(fragCoord.xy));\n    \n    // advect via semi-lagrangian method\n    float vorticity = vorticesStrength*(texture(iChannel0, mod(fragCoord.xy/ iResolution.y-vec2(0,0.04*iTime), iResolution.xy/ iResolution.y)).x-0.5);\n    \n   \n    vec2 posUV =fragCoord/iResolution.xy;\n    #ifdef EULER\n    vec2 posAdvUV = posUV-Euler(posUV);\n    #endif\n    #ifdef RUNGE\n    vec2 posAdvUV = posUV-Runge(posUV);\n    #endif\n    float densityAdv = GetDensityUV(posAdvUV)/(1.0+dt*alpha);\n\n    \n    // add ice with mouse\n    float pert = length((fragCoord.xy - iMouse.xy) / iResolution.y); \n    if(iMouse.z > 0.0 && pert < radius) {\n        densityAdv += dt*sourceStrength;\n    }\n    if (length(uvCoord.xy-dx*floor(0.5*iResolution.xy) +vec2(0.5*sin(0.75*iTime),0.3*cos(1.0*iTime)))<=radius)\n    {\n        densityAdv += dt*sourceStrength;\n    }\n    \n    fragColor = vec4(vorticity, densityAdv, 0, 0); \n    \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// solve for diffusion\n\n// must be modified in all buffers and image\n// simulation parameters\nconst float dt = 1.0/400.0;\nconst float reynold = 200.0;\nconst float vorticesStrength = 5.0; //strength of vortices\nconst float sourceStrength = 40.0; //stength of sources\nconst float kappa = 0.00005; //substance diffusion constant\nconst float alpha = 12.0; //substance dissipation rate\nconst float radius = 0.07; //radius of sources\n\n\n//macro\n#define GetVorticity(I,J) texelFetch( iChannel0, ijCoord+ivec2(I,J), 0 ).x\n#define GetDensity(I,J) texelFetch( iChannel0, ijCoord+ivec2(I,J), 0 ).y\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    \n    // set grid\n    float dx = 1.0 / iResolution.y;\n    float dxPow = dx *dx ;\n    vec2 uvCoord = dx*fragCoord.xy;\n    ivec2 ijCoord = ivec2(floor(fragCoord.xy));\n\n    \n    //to compute finite difference approximaton\n    float vortij = GetVorticity(0,0); \n    \n    //to compute density finite difference approximaton\n    float densij = GetDensity(0,0); \n    float densip1j = GetDensity(1,0); \n    float densim1j = GetDensity(-1,0); \n    float densijp1 = GetDensity(0,1); \n    float densijm1 = GetDensity(0,-1); \n    \n    \n    //should use more than 1 iteration...\n    //solve with jacobi for new velocity with laplacian\n    float coef = kappa*dt/(dxPow);\n    densij = (densij+coef*(densip1j+densim1j+densijp1+densijm1))/(1.0+4.0*coef);\n    \n    fragColor = vec4(vortij,densij,0,0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// solve for stream\n\n// must be modified in all buffers and image\n// simulation parameters\nconst float dt = 1.0/400.0;\nconst float reynold = 200.0;\nconst float vorticesStrength = 5.0; //strength of vortices\nconst float sourceStrength = 40.0; //stength of sources\nconst float kappa = 0.0; //substance diffusion constant\nconst float alpha = 12.0; //substance dissipation rate\nconst float radius = 0.07; //radius of sources\n\n\n//macro\n#define GetVorticity(I,J) texelFetch( iChannel0, ijCoord+ivec2(I,J), 0 ).x\n#define GetStream(I,J) texelFetch( iChannel2, ijCoord+ivec2(I,J), 0 ).x\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    //set grid\n    float dx = 1.0 / iResolution.y;\n    float dxPow = dx *dx ;\n    vec2 uvCoord = dx*fragCoord.xy;\n    ivec2 ijCoord = ivec2(floor(fragCoord.xy));\n\n        //to compute finite difference approximaton\n        float vortij = GetVorticity(0,0); \n\n        //to compute finite difference approximaton\n        float streamij = GetStream(0,0); \n        float streamip1j = GetStream(1,0); \n        float streamim1j = GetStream(-1,0); \n        float streamijp1 = GetStream(0,1);\n        float streamijm1 = GetStream(0,-1);\n\n        //Set boundary condition (image method) \n        // Left\n\n        if (ijCoord.x == 0) \n        {\n            streamim1j = GetStream(-ijCoord.x+int(iResolution.x)-1,0);\n        }\n        // Right\n        if (ijCoord.x == int(iResolution.x)-1) \n        {\n            streamip1j = GetStream(-ijCoord.x,0);\n        }\n\n        // Down\n        if (ijCoord.y == 0) \n        {\n            streamijm1 = GetStream(0,-ijCoord.y+int(iResolution.y)-1);\n        }\n\n        // Up\n        if (ijCoord.y == int(iResolution.y)-1) \n        {\n            streamijp1 = GetStream(0,-ijCoord.y);\n        }\n\n\n        // should use more than 1 iteration...\n        // compute stream via jacobi iteration... \n        // sadly it take a while for the stream initial condition to be computed...\n        streamij = (-vortij+dt/dxPow*(streamip1j+streamim1j+streamijp1+streamijm1))/(1.0+4.0*dt/dxPow);\n\n        fragColor = vec4(streamij,0,0,0);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// compute velocity\n\n// must be modified in all buffers and image\n// simulation parameters\nconst float dt = 1.0/400.0;\nconst float reynold = 200.0;\nconst float vorticesStrength = 5.0; //strength of vortices\nconst float sourceStrength = 40.0; //stength of sources\nconst float kappa = 0.0; //substance diffusion constant\nconst float alpha = 12.0; //substance dissipation rate\nconst float radius = 0.07; //radius of sources\n\n\n//macro\n#define GetStream(I,J) texelFetch( iChannel2, ijCoord+ivec2(I,J), 0 ).x\n#define GetVelocity(I,J) texelFetch( iChannel3, ijCoord+ivec2(I,J), 0 ).xy\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    //set grid\n    float dx = 1.0 / iResolution.y;\n    float dxPow = dx *dx ;\n    vec2 uvCoord = dx*fragCoord.xy;\n    ivec2 ijCoord = ivec2(floor(fragCoord.xy));\n        //to compute finite difference approximaton\n        float streamij = GetStream(0,0); \n        float streamip1j = GetStream(1,0); \n        float streamim1j = GetStream(-1,0); \n        float streamijp1 = GetStream(0,1);\n        float streamijm1 = GetStream(0,-1);\n\n        //Set boundary condition (image method) \n        // Left\n\n        if (ijCoord.x == 0) \n        {\n            streamim1j = GetStream(-ijCoord.x+int(iResolution.x)-1,0);\n        }\n        // Right\n        if (ijCoord.x == int(iResolution.x)-1) \n        {\n            streamip1j = GetStream(-ijCoord.x,0);\n        }\n\n        // Down\n        if (ijCoord.y == 0) \n        {\n            streamijm1 = GetStream(0,-ijCoord.y+int(iResolution.y)-1);\n        }\n\n        // Up\n        if (ijCoord.y == int(iResolution.y)-1) \n        {\n            streamijp1 = GetStream(0,-ijCoord.y);\n        }\n\n        //compute velocity from stream function\n        vec2 uij =  0.5*vec2(streamijp1-streamijm1, -(streamip1j-streamim1j))/dx+vec2(0.0,0.25);\n\n        fragColor = vec4(uij, 0, 0);\n\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

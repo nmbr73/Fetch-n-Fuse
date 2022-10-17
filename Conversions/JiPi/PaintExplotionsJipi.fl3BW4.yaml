@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: PaintExplotionsJipi
+  id: PaintExplotionsJipi
+  kernel: PaintExplotionsJipi
+  name: PaintExplotionsJipi
+shader:
+  author: N.N.
+  description: Having fun with particles, tweaking huwb's system and adding postpro
+  id: fl3BW4
+  name: Paint Explotions JiPi
+  parent:
+    id: 3dyXzV
+    name: Paint Explotions
+    url: https://www.shadertoy.com/view/3dyXzV
+  tags:
+  - particles
+  - paint
+  url: https://www.shadertoy.com/view/fl3BW4

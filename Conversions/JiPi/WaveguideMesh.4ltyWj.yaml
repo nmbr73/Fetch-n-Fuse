@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: WaveguideMesh
+  id: WaveguideMesh
+  kernel: WaveguideMesh
+  name: WaveguideMesh
+shader:
+  author: gleurop
+  description: 'Modeling dispersion of waves on a 2D membrane. Commonly used for audio
+    reverb.
+
+
+    Use the mouse to draw.'
+  id: 4ltyWj
+  name: Waveguide mesh
+  tags:
+  - water
+  - physics
+  - membrane
+  - waveguide
+  url: https://www.shadertoy.com/view/4ltyWj

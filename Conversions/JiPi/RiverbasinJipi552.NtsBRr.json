@@ -1,0 +1,102 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtsBRr",
+  "date": "0",
+  "viewed": 0,
+  "name": "RiverBasin JiPi552",
+  "description": "Inspired by [url]https://imgur.com/gallery/WaEbi[/url]\n\nSee [url]https://www.shadertoy.com/view/XsVBRm[/url] for previous version",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "procedural",
+   "terrain",
+   "river",
+   "erosion"
+  ],
+  "hasliked": 0,
+  "parentid": "XsVBDz",
+  "parentname": "River Basin"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// uncomment next line for hillshading\n//#define TERRAIN\n\nvoid mainImage( out vec4 r, in vec2 p ) {\n    r = vec4(0,0,0,1);\n    vec4 c = buf(p);\n#ifdef TERRAIN\n    vec2 grad = vec2(buf(p+E).r - buf(p+W).r, buf(p+N).r - buf(p+S).r);\n    r.rgb = 0.1 * vec3(1. + cos(atan(grad.y, grad.x) + 0.25*PI));\n#endif\n    if (p.x > 2. && c.b > 0. && c.g > 1.)\n        r.rgb += 0.15 * log(c.g) * (.6 + .6 * cos(6.3 * c.b + vec3(0,23,21)));\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4sfGRn",
+     "filepath": "/media/a/fb918796edc3d2221218db0811e240e72e340350008338b0c07a52bd353666a6.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// 2018 David A Roberts https://davidar.io\n\nfloat slope(vec2 p, vec2 q) {\n    return (buf(q).r - buf(p).r) / distance(p,q);\n}\n\nvec2 rec(vec2 p) { // direction of water flow at point\n    vec2 d = N;\n    if (slope(p + NE, p) > slope(p + d, p)) d = NE;\n    if (slope(p + E,  p) > slope(p + d, p)) d = E;\n    if (slope(p + SE, p) > slope(p + d, p)) d = SE;\n    if (slope(p + S,  p) > slope(p + d, p)) d = S;\n    if (slope(p + SW, p) > slope(p + d, p)) d = SW;\n    if (slope(p + W,  p) > slope(p + d, p)) d = W;\n    if (slope(p + NW, p) > slope(p + d, p)) d = NW;\n    return d;\n}\n\nvoid mainImage( out vec4 r, in vec2 p ) {\n    if (iFrame < 10 || iMouse.z > 0.) {\n        r = vec4(0);\n        r.r = texture(iChannel3, p / iResolution.xy).r + 9. * p.x/iResolution.x;\n        return;\n    }\n    r = buf(p);\n    \n    // flow accumulation\n    r.g = 1.;\n    if (rec(p + N)  == -N)  r.g += buf(p + N).g;\n    if (rec(p + NE) == -NE) r.g += buf(p + NE).g;\n    if (rec(p + E)  == -E)  r.g += buf(p + E).g;\n    if (rec(p + SE) == -SE) r.g += buf(p + SE).g;\n    if (rec(p + S)  == -S)  r.g += buf(p + S).g;\n    if (rec(p + SW) == -SW) r.g += buf(p + SW).g;\n    if (rec(p + W)  == -W)  r.g += buf(p + W).g;\n    if (rec(p + NW) == -NW) r.g += buf(p + NW).g;\n    if (p.y < 2. || p.y > iResolution.y - 2.) r.g = 0.;\n    \n    // stream power\n    vec4 receiver = buf(p + rec(p));\n    float pslope = (r.r - receiver.r) / length(rec(p));\n    r.r = max(r.r - 0.5 * pow(r.g, 0.8) * pow(pslope, 2.), receiver.r);\n    \n    // tectonic uplift\n    r.r += 0.005 * p.x/iResolution.x;\n    r.r += 0.005 * (0.5 + (abs(mod(iTime/5., 4.) - 2.) - 1.) * (p.y/iResolution.y - 0.5));\n    \n    // basin colouring\n    r.b = (p.x < 10.) ? p.y/iResolution.y : receiver.b;\n}\n",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define buf(p) texture(iChannel0,(p)/iResolution.xy)\n\n#define N  vec2( 0, 1)\n#define NE vec2( 1, 1)\n#define E  vec2( 1, 0)\n#define SE vec2( 1,-1)\n#define S  vec2( 0,-1)\n#define SW vec2(-1,-1)\n#define W  vec2(-1, 0)\n#define NW vec2(-1, 1)\n\n#define PI 3.14159265359\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

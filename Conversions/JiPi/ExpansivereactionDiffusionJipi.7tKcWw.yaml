@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ExpansivereactionDiffusionJipi
+  id: ExpansivereactionDiffusionJipi
+  kernel: ExpansivereactionDiffusionJipi
+  name: ExpansivereactionDiffusionJipi
+shader:
+  author: N.N.
+  description: Rebuild
+  id: 7tKcWw
+  name: ExpansiveReaction-diffusion JiPi
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - reactiondiffusion
+  url: https://www.shadertoy.com/view/7tKcWw

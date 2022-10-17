@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: EasterEggsJipi
+  id: EasterEggsJipi
+  kernel: EasterEggsJipi
+  name: EasterEggsJipi
+shader:
+  author: N.N.
+  description: just some dancing easter eggs
+  id: 7tdBzX
+  name: Easter eggs JiPi
+  parent:
+    id: sdjGDR
+    name: Easter eggs
+    url: https://www.shadertoy.com/view/sdjGDR
+  tags:
+  - texturepatterns
+  url: https://www.shadertoy.com/view/7tdBzX

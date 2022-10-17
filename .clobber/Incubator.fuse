@@ -87,7 +87,7 @@ PathToUse               = ""
 NUM_INPUT_CHANNELS      = 5
 
 NUM_COLOR_CONTROLS      = 10
-NUM_SLIDER_CONTROLS     = 10
+NUM_SLIDER_CONTROLS     = 25
 NUM_INTSLIDER_CONTROLS  = 10
 NUM_SCREW_CONTROLS      = 5
 NUM_BUTTON_CONTROLS     = 5
@@ -235,7 +235,7 @@ function Create()
   -- create defined to connect input contols to kernel
 
   KernelInputCtrlDefines =""
-
+--[[--
   for i=0,NUM_COLOR_CONTROLS-1 do
     KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A) "..
       "float4 NAME = to_float4( "..
@@ -244,6 +244,12 @@ function Create()
       "_shaderParameters->ctrlColor["..i.."][2],"..
       "_shaderParameters->ctrlColor["..i.."][3]"..
       ")\n"
+  end
+--]]--
+
+  for i=0,NUM_COLOR_CONTROLS-1 do
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_COLOR"..i.."(NAME,DEFAULT_R,DEFAULT_G,DEFAULT_B,DEFAULT_A) "..
+      "float4 NAME = to_float4_v( _shaderParameters->ctrlColor["..i.."] )\n"
   end
 
   for i=0,NUM_SLIDER_CONTROLS-1 do
@@ -277,7 +283,8 @@ function Create()
 
 --NUM_POINT_CONTROLS
   for i=0,NUM_POINT_CONTROLS-1 do
-    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = to_float2(_shaderParameters->ctrlPoint["..i.."][0],_shaderParameters->ctrlPoint["..i.."][1]) \n"
+    --KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = to_float2(_shaderParameters->ctrlPoint["..i.."][0],_shaderParameters->ctrlPoint["..i.."][1]) \n"
+    KernelInputCtrlDefines=KernelInputCtrlDefines.."#define CONNECT_POINT"..i.."(NAME,SDEFAULTX,SDEFAULTY) float2 NAME = to_float2_v(_shaderParameters->ctrlPoint["..i.."]) \n"
   end
 
 

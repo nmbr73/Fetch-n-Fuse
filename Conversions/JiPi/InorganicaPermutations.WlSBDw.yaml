@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: InorganicaPermutations
+  id: InorganicaPermutations
+  kernel: InorganicaPermutations
+  name: InorganicaPermutations
+shader:
+  author: xenn
+  description: yay
+  id: WlSBDw
+  name: inorganica permutations
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/WlSBDw

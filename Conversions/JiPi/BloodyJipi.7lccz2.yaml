@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: BloodyJipi
+  id: BloodyJipi
+  kernel: BloodyJipi
+  name: BloodyJipi
+shader:
+  author: N.N.
+  description: More of a remix of my last shader Msy3D1 than something new, but i
+    thought the result came out pretty well and was worth sharing. Worth trying with
+    a webcam too (change channel2, buf B).
+  id: 7lccz2
+  name: Bloody JiPi
+  parent:
+    id: 4sKGWw
+    name: Bloody
+    url: https://www.shadertoy.com/view/4sKGWw
+  tags:
+  - fluid
+  - blood
+  - waveequation
+  - jeanclaudevandamme
+  url: https://www.shadertoy.com/view/7lccz2

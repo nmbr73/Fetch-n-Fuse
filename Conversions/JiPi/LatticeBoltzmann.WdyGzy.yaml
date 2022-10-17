@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: LatticeBoltzmann
+  id: LatticeBoltzmann
+  kernel: LatticeBoltzmann
+  name: LatticeBoltzmann
+shader:
+  author: wyatt
+  description: It's really cool that you can represent a fluid as just up down left
+    right energy
+  id: WdyGzy
+  name: 'Lattice Boltzmann '
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/WdyGzy

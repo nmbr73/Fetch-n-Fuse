@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: TransportDynamics
+  id: TransportDynamics
+  kernel: TransportDynamics
+  name: TransportDynamics
+shader:
+  author: wyatt
+  description: '“At twenty, if you are not an idealist, then you don''t have a heart.
+    If you continue being an idealist, then you don''t have a brain.” '
+  id: wdVBRR
+  name: Transport Dynamics
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/wdVBRR

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: VideoDisplacementMap
+  id: VideoDisplacementMap
+  kernel: VideoDisplacementMap
+  name: VideoDisplacementMap
+shader:
+  author: Mipmap
+  description: 'TomF''s Displacement map on rast mesh with video for displacement
+    map
+
+    ([url]https://www.shadertoy.com/view/wsSBzw[/url]) '
+  id: WdSfWz
+  name: Video displacement map
+  tags:
+  - animated
+  - displacementmap
+  - rasterize
+  - mesh
+  url: https://www.shadertoy.com/view/WdSfWz

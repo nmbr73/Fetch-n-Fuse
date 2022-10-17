@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: ReactiveuniversewithinJipi355
+  id: ReactiveuniversewithinJipi355
+  kernel: ReactiveuniversewithinJipi355
+  name: ReactiveuniversewithinJipi355
+shader:
+  author: N.N.
+  description: 'Universe Within followed by "The Art of Code"
+
+    The Shader is reactive to music and mouse
+
+
+    link for the tutorial: "https://youtu.be/KGJUl8Teipk"'
+  id: 7ljcRK
+  name: ReactiveUniverseWithin JiPi355
+  parent:
+    id: Nt2czK
+    name: Reactive - Universe Within
+    url: https://www.shadertoy.com/view/Nt2czK
+  tags:
+  - music
+  url: https://www.shadertoy.com/view/7ljcRK

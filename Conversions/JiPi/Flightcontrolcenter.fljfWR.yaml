@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Flightcontrolcenter
+  id: Flightcontrolcenter
+  kernel: Flightcontrolcenter
+  name: Flightcontrolcenter
+shader:
+  author: stephenl7797
+  description: hi
+  id: fljfWR
+  name: FlightControlCenter
+  tags:
+  - lines
+  - particles
+  url: https://www.shadertoy.com/view/fljfWR

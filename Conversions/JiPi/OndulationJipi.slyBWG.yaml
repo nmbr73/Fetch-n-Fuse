@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: OndulationJipi
+  id: OndulationJipi
+  kernel: OndulationJipi
+  name: OndulationJipi
+shader:
+  author: N.N.
+  description: 'CrÃ©e une ondulation circulairel sur une image.
+
+    grÃ¢ce au coordonner polaire de uv.
+
+
+    Utilisation, ondulation de l''eau'
+  id: slyBWG
+  name: Ondulation JiPi
+  parent:
+    id: ftGBzt
+    name: Ondulation/dÃ©formation circ
+    url: https://www.shadertoy.com/view/ftGBzt
+  tags:
+  - ondulationeaudformation
+  url: https://www.shadertoy.com/view/slyBWG

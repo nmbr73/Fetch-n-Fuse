@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: FlutherOfOrbsJipi940
+  id: FlutherOfOrbsJipi940
+  kernel: FlutherOfOrbsJipi940
+  name: FlutherOfOrbsJipi940
+shader:
+  author: N.N.
+  description: School of electric audio orbs, kind of like jelly fish.  Use mouse
+    to look around.
+  id: sdsfzs
+  name: Fluther Of Orbs JiPi 940
+  parent:
+    id: 4sl3Dj
+    name: Fluther Of Orbs
+    url: https://www.shadertoy.com/view/4sl3Dj
+  tags:
+  - raymarching
+  - distancefield
+  - fisheye
+  - polarmarching
+  url: https://www.shadertoy.com/view/sdsfzs

@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: D3DBrownianTree
+  id: D3DBrownianTree
+  kernel: D3DBrownianTree
+  name: D3DBrownianTree
+shader:
+  author: mathmasterzach
+  description: 3D Brownian Tree generation (sorta because there is a bias towards
+    the center. Drag with the mouse to look around. Change the number of balls and
+    reset based on the limits of your computer.
+  id: 3s3GzH
+  name: 3D Brownian Tree
+  tags:
+  - 3d
+  - simulation
+  - sphere
+  - tree
+  - brownian
+  - dynamic
+  url: https://www.shadertoy.com/view/3s3GzH

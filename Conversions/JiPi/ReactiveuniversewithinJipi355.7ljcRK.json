@@ -1,0 +1,49 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7ljcRK",
+  "date": "0",
+  "viewed": 0,
+  "name": "ReactiveUniverseWithin JiPi355",
+  "description": "Universe Within followed by \"The Art of Code\"\nThe Shader is reactive to music and mouse\n\nlink for the tutorial: \"https://youtu.be/KGJUl8Teipk\"",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "music"
+  ],
+  "hasliked": 0,
+  "parentid": "Nt2czK",
+  "parentname": "Reactive - Universe Within"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGzn",
+     "filepath": "/media/a/a6a1cf7a09adfed8c362492c88c30d74fb3d2f4f7ba180ba34b98556660fada1.mp3",
+     "type": "music",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define S(a, b, t) smoothstep(a, b, t)\nfloat DistLine(vec2 p, vec2 a, vec2 b)\n{\n    vec2 pa = p-a;\n    vec2 ba = b-a;\n    float t = clamp(dot(pa, ba)/dot(ba, ba), 0., 1.);\n    return length(pa-ba*t);\n}\n\nfloat N21(vec2 p)//Random number generation\n{\n    p = fract(p* vec2(233.34, 851.73));\n    p += dot(p, p + 23.45);\n    return fract(p.x*p.y);\n}\n\nvec2 N22(vec2 p)// Random vec2 generation\n{\n    float n = N21(p);\n    return vec2(n, N21(p+n));\n}\n\nvec2 GetPos(vec2 id, vec2 oofs)\n{\n    vec2 n = N22(id+oofs)*iTime;\n    return oofs + sin(n)*.4;\n    //N22(id)-.5\n}\nfloat Line(vec2 p, vec2 a, vec2 b)\n{\n    float d = DistLine(p, a, b);\n    float m = S(.03, .01, d);\n    float d2 = length(a-b);\n    m*= S(1.2, .8, d2) + S(.05, .03, abs(d2-.75));\n    return m;\n}\nfloat Layer(vec2 uv, float music)\n{\n    vec2 gv = fract(uv) - .5;\n    vec2 id = floor(uv);\n    float m = 0.;\n    vec2 p[9];\n    \n    int i =0;\n    for(float y = -1.; y<=1.; y++)\n    {\n        for(float x = -1.; x<=1.; x++)\n        {\n            p[i++] = GetPos(id, vec2(x,y));\n            \n        }\n    }\n    \n    for(int i =0; i< 9; i++)\n    {\n        m+= Line(gv, p[4], p[i]);\n        \n        vec2 j = (p[i] - gv)*20.;\n        float sparkle = 1./dot(j, j);\n        m+=sparkle *(music + (sin(iTime *p[i].x*.01)*0.5+0.5));\n    }\n    m+= Line(gv, p[1], p[3]);\n    m+= Line(gv, p[1], p[5]);\n    m+= Line(gv, p[3], p[7]);\n    m+= Line(gv, p[5], p[7]);\n    return m;\n}\nmat2 rotationMatrix(float angle)\n{\n\tangle *= 3.14 / 180.0;\n    float s=sin(angle), c=cos(angle);\n    return mat2( c, -s, s, c );\n}\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = (fragCoord-0.5*iResolution.xy)/iResolution.y;\n    float gradient = uv.y;\n    vec2 mouse = (iMouse.xy/iResolution.xy)-.5;\n    \n    //float fft = texelFetch(iChannel0, ivec2(.7, 0), 0).x;\n    float fft = texture(iChannel0, (vec2(ivec2(0.7, 0))+0.5)/iResolution.xy).x;\n    \n    float m = 0.0;\n    float t = iTime*.1;\n    float s = sin(t);\n    float c = cos(t);\n    mat2 rot = rotationMatrix((t*100.)+(fft*10.));\n    \n    uv *= rot;\n    mouse *= rot;\n    \n    for(float i = 0.; i<1.; i+=1./4.)\n    {\n        float z = fract(i+t);\n        float size = mix(10., .5, z);\n        float fade = S(0., 0.5, z)*S(1.,.8, z);\n        m +=Layer(uv*size+i*20.-mouse, fft)*fade;\n    }\n    vec3 base = sin(t*vec3(.345, .456, .657)*fft)*.4 +.6;\n    vec3 col = m * base;\n    \n    \n    gradient *= fft*2.;\n    \n    col -= gradient*base;\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

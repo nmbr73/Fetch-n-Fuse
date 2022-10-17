@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: BubbleMagicJipi
+  id: BubbleMagicJipi
+  kernel: BubbleMagicJipi
+  name: BubbleMagicJipi
+shader:
+  author: N.N.
+  description: Drag to position the tail target. Try playing with the wobble variables
+    to express different emotions.
+  id: Nt3BWB
+  name: Bubble Magic JiPi
+  parent:
+    id: MltGDH
+    name: Bubble Magic
+    url: https://www.shadertoy.com/view/MltGDH
+  tags:
+  - 2d
+  - ui
+  url: https://www.shadertoy.com/view/Nt3BWB

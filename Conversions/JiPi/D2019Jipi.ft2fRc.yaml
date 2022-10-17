@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: D2019Jipi
+  id: D2019Jipi
+  kernel: D2019Jipi
+  name: D2019Jipi
+shader:
+  author: N.N.
+  description: Recycling shader. Happy new year !
+  id: ft2fRc
+  name: 2019 JiPi
+  parent:
+    id: WdXGDN
+    name: '2019'
+    url: https://www.shadertoy.com/view/WdXGDN
+  tags:
+  - '2019'
+  url: https://www.shadertoy.com/view/ft2fRc

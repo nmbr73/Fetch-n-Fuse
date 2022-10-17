@@ -1,0 +1,29 @@
+fuse:
+  author: JiPi
+  file: PhysicallyJipi
+  id: PhysicallyJipi
+  kernel: PhysicallyJipi
+  name: PhysicallyJipi
+shader:
+  author: N.N.
+  description: 'This is a physically accurate soap bubble
+
+    -Simulates 81 wavelengths of light for interference effects
+
+    -Soap film width thin on the top and thick on the bottom, 150 to 700nm initially
+
+    -Micro-sloshing on the surface
+
+    -Geometry perturbations'
+  id: 7lKcRc
+  name: Physically JiPi
+  parent:
+    id: XtKyRK
+    name: Physically-Based Soap Bubble
+    url: https://www.shadertoy.com/view/XtKyRK
+  tags:
+  - raytracing
+  - interference
+  - soapbubble
+  - spectral
+  url: https://www.shadertoy.com/view/7lKcRc

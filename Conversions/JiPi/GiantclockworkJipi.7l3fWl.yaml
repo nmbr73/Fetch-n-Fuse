@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: GiantclockworkJipi
+  id: GiantclockworkJipi
+  kernel: GiantclockworkJipi
+  name: GiantclockworkJipi
+shader:
+  author: N.N.
+  description: giant clockwork
+  id: 7l3fWl
+  name: GiantClockwork JiPi
+  parent:
+    id: WddXWB
+    name: giant clockwork
+    url: https://www.shadertoy.com/view/WddXWB
+  tags:
+  - gears
+  - truchet
+  url: https://www.shadertoy.com/view/7l3fWl

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  name: LocalTonemapping
+shader:
+  author: JiPi
+  description: 'WSL Shader
+    a GLSL Shader in Java - converting try
+    '
+  id: JiPi
+  name: LocalTonemapping
+  tags:
+  - Shadow
+  - ACES
+  url: https://www.shadertoy.com/TEST

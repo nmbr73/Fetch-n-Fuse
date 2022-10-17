@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Fractal108GazJipi323
+  id: Fractal108GazJipi323
+  kernel: Fractal108GazJipi323
+  name: Fractal108GazJipi323
+shader:
+  author: N.N.
+  description: fractal
+  id: st2yzV
+  name: Fractal108gaz JiPi323
+  parent:
+    id: 7slfD8
+    name: Fractal 108 gaz
+    url: https://www.shadertoy.com/view/7slfD8
+  tags:
+  - fractal
+  url: https://www.shadertoy.com/view/st2yzV

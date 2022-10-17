@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: SadRobotJipi
+  id: SadRobotJipi
+  kernel: SadRobotJipi
+  name: SadRobotJipi
+shader:
+  author: N.N.
+  description: '...walks forever.
+
+    an attempt at some procedural character animation.
+
+    click in window to move head.'
+  id: Nl3fW8
+  name: sad robot JiPi
+  parent:
+    id: XsXGDH
+    name: sad robot
+    url: https://www.shadertoy.com/view/XsXGDH
+  tags:
+  - distancefield
+  - animation
+  url: https://www.shadertoy.com/view/Nl3fW8

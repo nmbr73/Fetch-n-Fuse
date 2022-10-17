@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: SpaceWarAutomata2
+  id: SpaceWarAutomata2
+  kernel: SpaceWarAutomata2
+  name: SpaceWarAutomata2
+shader:
+  author: SnoopethDuckDuck
+  description: 'press r to reset
+
+
+    theres a lot you can do with this: run 1 automata on each rgb channel then have
+    a rock paper scissors interaction rule between the channels. I thought this one
+    was cool'
+  id: stSyR3
+  name: Space war automata 2
+  tags:
+  - cellularautomata
+  url: https://www.shadertoy.com/view/stSyR3

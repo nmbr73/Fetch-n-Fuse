@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: MouseableairfoilJipi
+  id: MouseableairfoilJipi
+  kernel: MouseableairfoilJipi
+  name: MouseableairfoilJipi
+shader:
+  author: N.N.
+  description: Did you know that planes fly because of Christmas magic?
+  id: fl3BWN
+  name: MouseableAirFoil  JiPi
+  parent:
+    id: lt3cDM
+    name: Mouseable Air Foil
+    url: https://www.shadertoy.com/view/lt3cDM
+  tags:
+  - fluid
+  - dynamics
+  - snow
+  url: https://www.shadertoy.com/view/fl3BWN

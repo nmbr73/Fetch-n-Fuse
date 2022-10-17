@@ -1,0 +1,49 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fsdczj",
+  "date": "0",
+  "viewed": 0,
+  "name": "FS Jet Engine Flame JiPi",
+  "description": "Experiments for the jet engine flame for Floating Sandbox.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "floatingsandbox"
+  ],
+  "hasliked": 0,
+  "parentid": "7scczj",
+  "parentname": "FS Jet Engine Flame"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sf3Rn",
+     "filepath": "/media/a/0a40562379b63dfb89227e6d172f39fdce9022cba76623f1054a2c83d6c0ba5d.png",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//\n// Based on \"Flame in the Wind\" by kuvkar (https://www.shadertoy.com/view/4tXXRn)\n//\n\nfloat GetNoise(vec2 uv) // -> (-0.375, 0.375)\n{\n    float n = (texture(iChannel0, uv).r - 0.5) * 0.5; // -0.25, 0.25\n    n += (texture(iChannel0, uv * 2.0).r - 0.5) * 0.5 * 0.5; // -0.375, 0.375\n    \n    return n;\n}\n\nmat2 GetRotationMatrix(float angle)\n{\n    mat2 m;\n    m[0][0] = cos(angle); m[0][1] = -sin(angle);\n    m[1][0] = sin(angle); m[1][1] = cos(angle);\n\n    return m;\n}\n\n#define flamePersonalitySeed .5\n\n// -----------------------------------------------\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{    \n    vec2 flameSpacePosition = fragCoord.xy / iResolution.xy - vec2(0.5, 0.0); // (x=[-0.5, 0.5], y=[0.0, 1.0])\n    \n    flameSpacePosition.x *= (iResolution.x / iResolution.y); // obey aspect ratio\n        \n    // Simulate quad\n    flameSpacePosition.x *= 1.4;\n    if (abs(flameSpacePosition.x) > 1.0)\n    {\n        fragColor = vec4(0.0);\n        return;\n    }\n    \n    float paramFlameProgress = iTime;\n    \n    #define FlameSpeed 0.8\n    vec2 noiseOffset = vec2(flamePersonalitySeed, flamePersonalitySeed - paramFlameProgress * FlameSpeed);\n    \n    ////////////////////////////////////////\n    \n    vec2 uv = flameSpacePosition;        \n    \n    //\n    // Get noise for this fragment and time\n    //\n    \n    #define NoiseResolution 0.7\n    // (-0.375, 0.375)\n    float fragmentNoise = GetNoise(uv * NoiseResolution + noiseOffset);\n    \n    //\n    // Rotate fragment based on noise\n    //\n    \n    float angle = fragmentNoise;\n\n    // Tune amount of chaos\n    //angle *= 0.45;\n\n    // Rotate (and add)\n    uv += GetRotationMatrix(angle) * uv;\n\n    //\n    // Calculate flameness\n    //\n    \n    float flameWidth = 0.1 + 0.4 * min(1.0, sqrt(flameSpacePosition.y / 0.4)); // Taper down \n    float flameness = 1.0 - abs(uv.x) / flameWidth;\n    \n    // Taper flame up depending on randomized height\n    float variationH = (fragmentNoise + 0.5) * 1.4;\n    flameness *= smoothstep(1.1, variationH * 0.5, flameSpacePosition.y);    \n    \n    //\n    // Emit\n    //\n    \n    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), flameness);\n    col1 = mix(vec3(227.0/255.0, 69.0/255.0, 11.0/255.0), col1, smoothstep(0.3, 0.8, flameness));    \n    float alpha = smoothstep(0.0, 0.5, flameness);\n    \n    //---------------------------------------------\n    // Blend with black background    \n    fragColor = mix(vec4(1.0), vec4(col1, 1.0), alpha);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

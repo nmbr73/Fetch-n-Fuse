@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SuturedSatin
+  id: SuturedSatin
+  kernel: SuturedSatin
+  name: SuturedSatin
+shader:
+  author: davidar
+  description: A variation on [url=https://www.shadertoy.com/view/ld3cWN]Satin Flow[/url]
+    and [url=https://www.shadertoy.com/view/XddSRX]Suture Fluid[/url] by [url=https://www.shadertoy.com/user/cornusammonis]cornusammonis[/url]
+  id: sdByzV
+  name: Sutured Satin
+  tags:
+  - poisson
+  - diffusion
+  - curvature
+  - reaction
+  url: https://www.shadertoy.com/view/sdByzV

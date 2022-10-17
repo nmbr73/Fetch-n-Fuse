@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SoapBubbleJipi
+  id: SoapBubbleJipi
+  kernel: SoapBubbleJipi
+  name: SoapBubbleJipi
+shader:
+  author: N.N.
+  description: Soap bubble
+  id: sltBWX
+  name: Soap bubble JiPi
+  parent:
+    id: XdXXzB
+    name: Soap bubble (improved)
+    url: https://www.shadertoy.com/view/XdXXzB
+  tags:
+  - soapbubble
+  url: https://www.shadertoy.com/view/sltBWX

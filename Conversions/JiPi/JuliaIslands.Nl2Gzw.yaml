@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: JuliaIslands
+  id: JuliaIslands
+  kernel: JuliaIslands
+  name: JuliaIslands
+shader:
+  author: golinad
+  description: Interactive water surface simulation, regarding landscape.
+  id: Nl2Gzw
+  name: Julia Islands
+  tags:
+  - 2d
+  - fractal
+  - simulation
+  - refraction
+  - water
+  - drops
+  url: https://www.shadertoy.com/view/Nl2Gzw

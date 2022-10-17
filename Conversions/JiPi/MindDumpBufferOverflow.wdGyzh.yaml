@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: MindDumpBufferOverflow
+  id: MindDumpBufferOverflow
+  kernel: MindDumpBufferOverflow
+  name: MindDumpBufferOverflow
+shader:
+  author: xenn
+  description: Alt + Down Arrow to restart (for full screen joy)
+  id: wdGyzh
+  name: Mind dump buffer overflow
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/wdGyzh

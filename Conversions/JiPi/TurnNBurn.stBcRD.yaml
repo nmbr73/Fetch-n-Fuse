@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: TurnNBurn
+  id: TurnNBurn
+  kernel: TurnNBurn
+  name: TurnNBurn
+shader:
+  author: N.N.
+  description: Rebuild
+  id: stBcRD
+  name: 'Turn_N_Burn '
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - 3d
+  url: https://www.shadertoy.com/view/stBcRD

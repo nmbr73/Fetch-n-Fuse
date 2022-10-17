@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: MarbleSatisfaction
+  id: MarbleSatisfaction
+  kernel: MarbleSatisfaction
+  name: MarbleSatisfaction
+shader:
+  author: shyshokayu
+  description: My first submission
+  id: stlBWH
+  name: Marble Satisfaction
+  tags:
+  - marble
+  - satisfying
+  - perfect
+  url: https://www.shadertoy.com/view/stlBWH

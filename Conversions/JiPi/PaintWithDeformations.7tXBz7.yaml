@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: PaintWithDeformations
+  id: PaintWithDeformations
+  kernel: PaintWithDeformations
+  name: PaintWithDeformations
+shader:
+  author: FabriceNeyret2
+  description: "paint deformations with mouse. \n- click and drag: displace. \n- LEFT/RIGHT\
+    \ keys + click or click&drag: rotate to left or right.\n- UP/DOWN keys + click\
+    \ or click&drag:  grow/shrink.\n- DEL: undo\n- rewind: reset"
+  id: 7tXBz7
+  name: paint with deformations
+  tags:
+  - swirl
+  - distortion
+  - vortex
+  - uvmap
+  - vorticity
+  - divergencefree
+  url: https://www.shadertoy.com/view/7tXBz7

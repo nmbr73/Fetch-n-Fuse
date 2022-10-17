@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TasteOfNoise15
+  id: TasteOfNoise15
+  kernel: TasteOfNoise15
+  name: TasteOfNoise15
+shader:
+  author: leon
+  description: Another diving into the noise abyss
+  id: flSBDV
+  name: Taste of Noise 15
+  tags:
+  - abstract
+  url: https://www.shadertoy.com/view/flSBDV

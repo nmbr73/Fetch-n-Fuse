@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: CellularDiffusionJipi
+  id: CellularDiffusionJipi
+  kernel: CellularDiffusionJipi
+  name: CellularDiffusionJipi
+shader:
+  author: N.N.
+  description: 'Tried to make a simple diffusion reaction that i saw without looking
+    anything up or referencing.
+
+    Slightly different to other cellular automata diffusion reactions I think because
+    there''s no randomness to get the smooth pattern. '
+  id: NsycWm
+  name: Cellular Diffusion JiPi
+  parent:
+    id: NsKcD1
+    name: Cellular Diffusion
+    url: https://www.shadertoy.com/view/NsKcD1
+  tags:
+  - crt
+  - diffusion
+  - automata
+  - cellular
+  - reaction
+  url: https://www.shadertoy.com/view/NsycWm

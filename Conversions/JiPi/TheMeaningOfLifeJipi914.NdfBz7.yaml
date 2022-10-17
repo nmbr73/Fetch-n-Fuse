@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: TheMeaningOfLifeJipi914
+  id: TheMeaningOfLifeJipi914
+  kernel: TheMeaningOfLifeJipi914
+  name: TheMeaningOfLifeJipi914
+shader:
+  author: N.N.
+  description: What the frog? Just playing with deformabed textures
+  id: NdfBz7
+  name: The meaning of Life JiPi 914
+  parent:
+    id: 3s2XWW
+    name: The meaning of life
+    url: https://www.shadertoy.com/view/3s2XWW
+  tags:
+  - texture
+  - frog
+  url: https://www.shadertoy.com/view/NdfBz7

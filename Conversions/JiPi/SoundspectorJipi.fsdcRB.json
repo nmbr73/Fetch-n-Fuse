@@ -1,0 +1,86 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fsdcRB",
+  "date": "0",
+  "viewed": 0,
+  "name": "SoundSpector JiPi",
+  "description": "Paying with sound spectrum, iq's cosine palette and polar coordinates.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "sound",
+   "polar"
+  ],
+  "hasliked": 0,
+  "parentid": "4sdyRH",
+  "parentname": "SoundSpector"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XdfGzn",
+     "filepath": "/media/a/894a09f482fb9b2822c093630fc37f0ce6cfec02b652e4e341323e4b6e4a4543.mp3",
+     "type": "music",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\n// \"SoundSpector\"\n// by Julien Vergnaud @duvengar-2018\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n//////////////////////////////////////////////////////////////////////////////////////\n\n#define CEL 64.                  // How many buckets to divide spectrum into\n\n// the original accurate spectrum was taken from \n// https://www.shadertoy.com/view/lt2fRz by 834144373\n\n#define barSize 1.0 / CEL        // Constant to avoid division in main loop\n#define sampleSize 0.2           // How accurately to sample spectrum\n\n// iq's cosine palette function\nvec3 palette( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )\n{\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\n\n\n// logo distance function written specially for the occasion :)\nfloat rect(vec2 uv,vec2 p, float w, float h, float blur){\n    \n    uv += p;\n    float rv = S(w, w + blur, length(uv.x));\n    float rh = S(h, h + blur, length(uv.y));\n    return SAT( rv + rh);\n}\n\nfloat logo(vec2 uv, float blur){    \n    uv += vec2(.001,.008);\n    uv.y *= 1.15;\n\n    float as = blur;\n    // first make 4 circles\n    float s1 = S(.011 - as, .011, length(uv - vec2(-.035,.0)));\n    float s2 = S(.019 - as, .019, length(uv - vec2(-.015,.01)));\n    float s3 = S(.023 - as, .023, length(uv - vec2(.01,.02)));\n    float s4 = S(.0142 - as, .0142, length(uv - vec2(.035,.0022)));\n    // then a rectangle\n    float r1 = rect(uv, vec2(.0,-.0012), .032, .0101, as);\n    // make vertical lines stripes for part off the screen\n          uv = uv.x > -.0072 ? uv : fract(uv * 220.);\n    float lines = S(.7, .7 + as,length(uv.x + .25));\n    // merge circles together\n    float shape =  SAT(s1 * s2 * s3 * s4 * r1); \n    // and finally substract the line from the shape\n    shape = 1. - max(shape, lines);\n    \n    return SAT(shape);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 U ) {\n  \t\n \n   \t// DOMAIN\n    vec2 uv = (U -.5 * R)/R.x;\n    vec2 uv2  = 1. - 2. * U / R;                       // additionnal domain for post processing effect       \n    vec2 st = uv;   \t\t\t\t\t               // store original domain before distortion\n    uv *= M(TWO_PI / 8. * cos(length(st)) * 20.);      // rotate and twist domain \n    vec2 pol = vec2(atan(uv.x, uv.y), length(uv));     // polar coordinates\n    float alfa = pol.x / TWO_PI + .5;                  // full polar domain from -PI to PI\n    \n    uv = vec2(alfa , pol.y);                           // convert domain to polar coordinates\n   \t\n    \n    // SPECTRUM\n    float barStart = floor(uv.x * CEL) / CEL;          // spectrum buckets id's\n    float amp = .0;  \n    amp -= texture(iChannel0,vec2(400.,0.),0.).x;      // store global sound amplitude\n    \n    float intensity = .0;                              // loop get all buckets intensity\n    \n    for(float i = 0.0; i < barSize; i += barSize * sampleSize)\n    {      \n        intensity += .9 * texture(iChannel0, vec2(barStart + i, 0.)).r;  \n    }\n    \n\tintensity *= sampleSize;                           // accurate intensity\n\tintensity  = clamp(intensity + .1, 0.29, 1.);       // apply floor on lower intensities   \n    float height  = S(.0,.005, intensity - uv.y * 3.);   // height of the bucket\n  \t\n     \n    // SHADING                                         // I'm using iq's cosine color palette for coloring\n    vec3 pal = palette(intensity -.2,\n                            vec3(.5, .5, .0),\n                            vec3(.5,.5,.35),\n                            vec3(.9,.5,.3),\n                            vec3(vec2(intensity * length(uv) + uv.y), 1.)); \t\t\n    \n    vec4 spectrum =  vec4(SAT(pal) * height, 1.);               // final colored spectrum\n    float lines  = S(.2, .4, .85*length(fract(uv.x * CEL)-.5)); // lines gap to be substrated from the spectrum\n    float center = 1.- S(.09, .091, length(st));\t            // circle to be substrated from the spectrum\n    float c0     = 1.- S(.082, .083, length(st));               // highlight circle of the logo bakground\n    vec4 bg = vec4(.1,.15,.3, 1.);\t\t\t\t\t            // base color bakground\n    vec3 pat  = texture(iChannel1, U / R).xyz;                  // get image texture from buffer A\n    \n    bg      += -amp/3.+.1 * vec4(max(pat,center), 1.);                 // connect bg luminosity to global amplitude\n    bg      += .23 * S(.03,.0,length(st));                             // hightlight middle of screen\n    float lns = S(.5,.51,length(fract(pol.y*250.)));                   // radial lines pattern applied on bg\n\tbg -= length(pol.y*.1) * lns;                       \n    bg += .05 * length( (st.y + .08)* 30.) * c0;                       // apply highlight on logo circle bg\n    vec4 col = min(vec4(spectrum),vec4(spectrum) - (lines + center)) ; //substract middle of the spectrum\n    col = mix( SAT(bg), SAT(3. * col), .5);\n    \n    \n    // POSTPROD\n    col += .1 * hash2(T + st * vec2(1462.439, 297.185));               // animated grain (hash2 function in common tab)\n    col *= 1.1 * vec4(.9 - S(.0, 2.2, length(uv2*uv2)));               // vigneting\n    col = pow(col, vec4(1.3));                                         // gamma\n    \n    \n    // LOGO\n    col = 1.1 * col + logo(st * (.9+amp*.4), .003 ) * 4. ;\t                // add soundcloud logo\n \tcol += (.075*amp)* logo((st- vec2(.0,-.009)) * (.75 + amp *.1), .004) * 2. ;   // add soundcloud logo shadows\n    \n     \n    fragColor = col ;\n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define T iTime\n#define R iResolution.xy\n#define LOWRES 320.\n#define SAT(a) clamp(a, .0,1.)\n#define S(a, b, c) smoothstep(a, b, c)\n#define M(a) mat2(cos(a), -sin(a), sin(a), cos(a))\n#define PI acos(-1.)\n#define TWO_PI (PI * 2.)\n\n\n/////////////////////////////////////////////\n// hash2 taken from Dave Hoskins \n// https://www.shadertoy.com/view/4djSRW\n/////////////////////////////////////////////\n\nfloat hash2(vec2 p)\n{  \n\tvec3 p3  = fract(vec3(p.xyx) * .2831);\n    p3 += dot(p3, p3.yzx + 19.19);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\n\n/////////////////////////////////////////////\n// hash and noise function by Inigo Quilez\n/////////////////////////////////////////////\n\nfloat hash( float n ) { \n\treturn fract(sin(n)*75728.5453123); \n}\n\n\nfloat noise( in vec2 x ) {\n    vec2 p = floor(x);\n    vec2 f = fract(x);\n    f = f*f*(3.0-2.0*f);\n    float n = p.x + p.y*57.0;\n    return mix(mix( hash(n + 0.0), hash(n + 1.0), f.x), mix(hash(n + 57.0), hash(n + 58.0), f.x), f.y);\n}\n\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// copacabana pattern + noise distortion + rot\n// https://www.shadertoy.com/view/MsXBzB\n\nvoid mainImage( out vec4 C, vec2 U )\n{  \n    U = (U -.5 * R)/R.x;\n    U *= M(T * .1);    \n    U += .4 * length(U-.5) * noise(U * 4.);\n    U *= 70.;   \n    U.y -= cos(U.x) + iDate.w ; \n    C = vec4(smoothstep(0.5,\n                        1.,\n                        mix(cos(U.x) * sin(U.y),\n                        0.3,\n                        cos(U.y) * .5) * 8.));\n        \n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

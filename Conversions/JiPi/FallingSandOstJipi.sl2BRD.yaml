@@ -1,0 +1,39 @@
+fuse:
+  author: JiPi
+  file: FallingSandOstJipi
+  id: FallingSandOstJipi
+  kernel: FallingSandOstJipi
+  name: FallingSandOstJipi
+shader:
+  author: N.N.
+  description: 'My old falling sand was bad so I made a better one. Tell me if you
+    get any errors.
+
+    0 - Air
+
+    1 - Sand
+
+    2 - Stone
+
+    3 - Oil
+
+    4 - Steam
+
+    5 - Magma
+
+    6 - Water
+
+    7 - Fire
+
+    8 - Glass
+
+    9 - Mud'
+  id: sl2BRD
+  name: Falling Sand Ost JiPi
+  parent:
+    id: MdyGWz
+    name: Falling Sand Ost_
+    url: https://www.shadertoy.com/view/MdyGWz
+  tags:
+  - fallingsandostkaka
+  url: https://www.shadertoy.com/view/sl2BRD

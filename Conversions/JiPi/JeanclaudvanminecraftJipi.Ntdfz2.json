@@ -1,0 +1,63 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "Ntdfz2",
+  "date": "0",
+  "viewed": 0,
+  "name": "JeanClaudVanMinecraft JiPi",
+  "description": "Jean Claude in the Minecraft remake of 'Double Impact' :)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "voxel"
+  ],
+  "hasliked": 0,
+  "parentid": "ldKXRR",
+  "parentname": "Jean Claude van Minecraft"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGRr",
+     "filepath": "/media/a/35c87bcb8d7af24c54d41122dadb619dd920646a0bd0e477e7bdc6d12876df17.webm",
+     "type": "video",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by Andrew Wild - akohdr/2016\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n//#define ROTATE\n//#define TECHN_IQ_COLOR\n    \n// Lower sampling res\n//#define LOOP 199\n//#define RES 1.\n\n// Higher sampling res.\n#define LOOP 899\n#define RES 6.0\n\nbool isVoxel(out vec4 k, const in vec4 P ) \n{\n    vec3 a = abs(P.xyz);\n    if(a.z<1.) {\n        \n        vec2 uv = P.xy/iChannelResolution[1].xy;\n        if(uv.x < -.02 || uv.y>.03) return false;\n        uv -= vec2(.05,.03);\n        uv *= 15.;\n        \n        k = texture(iChannel1, 1.+uv);\n\n#ifdef TECHN_IQ_COLOR\n    float maxrb = max( k.r, k.b );\n    float dg = k.g; \n    k.g = min( k.g, maxrb*0.8 ); \n    k += dg - k.g;\n#endif\n        \n        return ((k.g<.3) && ((k.r>.0)||(k.b>.0))) ||\n               ((k.g<.6) && ((k.r>.3)||(k.b>.4))) ||\n               ((k.g<.9) && ((k.r>.7)||(k.b>.7)));\n    }\n    return false;\n}\n\nvoid mainImage(out vec4 k, vec2 P) \n{\n     vec2 R = iResolution.xy,\n          h = vec2(0,.5),\n          u = (P - h*R.y)/R.x - h.yx;\n#ifdef ROTATE\n    float T = 3.*cos(iTime);\n#else\n    float T = 2.3;\n#endif\n    \n    vec3 v = vec3(cos(T), 1, sin(T)),\n         r = mat3(u.x,    0,   .8,\n                    0,  u.y,    0,\n                  -.8,    0,  u.x) * v,\n         o = vec3(50,2.,-50) * v.zzx,\n         f = floor(o),\n         q = sign(r),\n         d = abs(length(r)/r),\n         s = d * ( q*(f-o + .5) +.5), \n         m;\n\n    for(int i=0; i<LOOP; i++) {\n        float a = s.x, b = s.y, c = s.z;\n        s += d*(m = vec3(a<b&&a<=c, b<c&&b<=a, c<a&&c<=b));\n        f += m/RES*q;\n        \n        if(isVoxel(k, vec4(f.xyz, T)) || isVoxel(k, vec4(f.zyx, T))) {\n            k += m.x>.0 ? vec4(0) : m.y>.0 ? vec4(.6) : vec4(.3); return; }//early exit\n    }\n    k = texture(iChannel0, P/R.xy)/3.;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: Destructible
+  id: Destructible
+  kernel: Destructible
+  name: Destructible
+shader:
+  author: wyatt
+  description: 'Looks good with 4x speedup. Forces depend on particle collisions  as
+    well as neighborhood interactions within the solid bodies. '
+  id: 3lKSDV
+  name: 'Destructible '
+  tags:
+  - particles
+  - triangulation
+  url: https://www.shadertoy.com/view/3lKSDV

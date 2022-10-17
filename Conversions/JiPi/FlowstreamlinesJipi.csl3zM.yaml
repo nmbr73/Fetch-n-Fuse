@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FlowstreamlinesJipi
+  id: FlowstreamlinesJipi
+  kernel: FlowstreamlinesJipi
+  name: FlowstreamlinesJipi
+shader:
+  author: N.N.
+  description: variant of https://shadertoy.com/view/cdfGz7 with field = texture isogrey
+  id: csl3zM
+  name: FlowStreamlines JiPi
+  parent:
+    id: ddf3RM
+    name: flow streamlines - grey contours
+    url: https://www.shadertoy.com/view/ddf3RM
+  tags:
+  - flow
+  - isovalue
+  url: https://www.shadertoy.com/view/csl3zM

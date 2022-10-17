@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: HeartU2015
+  id: HeartU2015
+  kernel: HeartU2015
+  name: HeartU2015
+shader:
+  author: mattz
+  description: <3
+  id: lts3RX
+  name: heart u 2015
+  tags:
+  - happyvalentimes
+  url: https://www.shadertoy.com/view/lts3RX

@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: PsychadelicRapberriesJipi226
+  id: PsychadelicRapberriesJipi226
+  kernel: PsychadelicRapberriesJipi226
+  name: PsychadelicRapberriesJipi226
+shader:
+  author: N.N.
+  description: Wrote this raymarching demo a few years ago to test the closest representative
+    point (CRP) method for approximating spherical area lights. Couldn't find a better
+    name for the demo, so psychadelic raspberries it is :)
+  id: fllyD7
+  name: psychadelic_rapberries JiPi 226
+  parent:
+    id: 4ldXRr
+    name: psychadelic_raspberries
+    url: https://www.shadertoy.com/view/4ldXRr
+  tags:
+  - procedural
+  - sdf
+  - arealights
+  url: https://www.shadertoy.com/view/fllyD7

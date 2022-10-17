@@ -1,0 +1,197 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "Nt2fDW",
+  "date": "0",
+  "viewed": 0,
+  "name": "video effect 003 JiPi",
+  "description": "(Work in progress getting closer) Added colors and a sort of flammy/sandy effect. Still trying to reproduce something like https://www.premiercri.com/ using methods found in https://www.shadertoy.com/view/3tBGzh",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "videoeffect"
+  ],
+  "hasliked": 0,
+  "parentid": "7sSXRm",
+  "parentname": "video effect 003"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// -- Output\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n    \n    // Output to screen\n    fragColor = vec4(B(uv));\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// -- Simulation\n\n// Get state of particle at preceding frame. Taken from https://www.shadertoy.com/view/3tBGzh\nvec4 T(vec2 U){return A(U-A(U).xy);}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n\n    vec3 col = vec3(0);\n    col += noGreen(B(uv).rgb); // get particle input\n    \n    vec4 last = T(uv); // state of particle at preceding frame\n    last.w *= decay; // lower intensity of particle a little\n    last.w += emission*length(col); // add intensity from input\n    \n    float width = 10.; // make extreme values of noise more extreme\n    float factor = 10000.; // make big noise\n    vec2 noise = noise2(uv*factor, last.xy*factor);\n    noise *= 1. + width * smoothstep(1., 1.41421, length(noise)); // apply noise extremism \n    last.xy = 0.01*noise; // scale noise\n    last.x *= 1.5; // scale horizontal noise up a bit\n    last.y += 0.01*(-.3+ last.w); // simulate kind of heat/gravity effect\n    last.y *= 1. + width*smoothstep(0., 1., last.y); // intensify heat effect \n\n    vec4 // neighborhood of the particle. Taken from https://www.shadertoy.com/view/3tBGzh\n        n = T(uv+vec2(0,width)),\n        e = T(uv+vec2(width,0)),\n        s = T(uv-vec2(0,width)),\n        w = T(uv-vec2(width,0));\n    \n    float cohesion = .8; // particle direction is influenced by others\n    last.xy = mix(last.xy, (n.xy+s.xy+w.xy+e.xy)/4., cohesion);\n    \n    //last = clamp(last, -1., 1.);\n    \n    fragColor = last;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// -- Add colors\nvec4 T(vec2 U){return B(U-A(U).xy);}\nvec4 S(vec2 U){return A(U-A(U).xy);}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    vec3 col = vec3(0);\n    col += noGreen(C(uv).rgb) * emission;\n    col += T(uv).rgb * decay;\n    \n    fragColor = vec4(col,1.0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// -- Parameters\nfloat decay = 0.99; // how much of its preceding intensity a particle gets each frame \nfloat emission = 0.02; // how intense a new particle is\n\n\n// -- handy defines taken from https://www.shadertoy.com/view/3tBGzh\n#define A(U) texture(iChannel0, U)\n#define B(U) texture(iChannel1, U)\n#define C(U) texture(iChannel2, U)\n\n// -- Utility functions\nvec3 noGreen(vec3 vid){ // remove green background\n    float start = 0.2;\n    float stp = 1.-start;\n    vec3 col = 1. * vid * smoothstep(start,start+stp,length(vid.rb));\n    return col;\n}\n\nfloat hash (float p) // from https://www.shadertoy.com/view/3tBGzh\n{\n\tvec4 p4 = fract(vec4(p) * vec4(.1031, .1030, .0973, .1099));\n    p4 += dot(p4, p4.wzxy+19.19);\n    return (fract((p4.xxyz+p4.yzzw)*p4.zywx)*2.-1.).x;    \n}\n\nvec2 noise2(vec2 v, vec2 w){return vec2(hash(v.y*w.x), hash(v.x*w.y));}\n\n",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdfGRr",
+     "filepath": "/media/a/35c87bcb8d7af24c54d41122dadb619dd920646a0bd0e477e7bdc6d12876df17.webm",
+     "type": "video",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// -- Input\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord / iResolution.xy;\n    vec4 col = vec4(0);\n    col += A(uv);\n    //float t = iTime / 2.;\n    //col += vec4(sin(t)*.5+1., sin(t/2.), sin(t*15.)*.5+1., 1.);\n    //col *= smoothstep(0.1, 0., abs(length(0.8 * vec2(cos(t),sin(t)) - (uv*2.-1.) )));\n    //col *= smoothstep(0.1,0.,abs(length(iMouse.xy/iResolution.xy - uv)));\n    \n    fragColor = col;\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

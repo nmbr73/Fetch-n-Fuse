@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: CenterFlow
+  id: CenterFlow
+  kernel: CenterFlow
+  name: CenterFlow
+shader:
+  author: michael0884
+  description: Obfuscated code and new rendering
+  id: 3lXfzr
+  name: Center flow
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/3lXfzr

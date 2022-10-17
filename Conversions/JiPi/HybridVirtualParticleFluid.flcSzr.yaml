@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: HybridVirtualParticleFluid
+  id: HybridVirtualParticleFluid
+  kernel: HybridVirtualParticleFluid
+  name: HybridVirtualParticleFluid
+shader:
+  author: cornusammonis
+  description: Hybrid fluid solver using both forward and reverse advection.
+  id: flcSzr
+  name: Hybrid Virtual Particle Fluid
+  tags:
+  - simulation
+  - fluid
+  - poisson
+  - particle
+  - virtual
+  url: https://www.shadertoy.com/view/flcSzr

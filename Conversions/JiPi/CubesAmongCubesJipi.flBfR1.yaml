@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: CubesAmongCubesJipi
+  id: CubesAmongCubesJipi
+  kernel: CubesAmongCubesJipi
+  name: CubesAmongCubesJipi
+shader:
+  author: N.N.
+  description: An attempt to render an infinite grid. Not very efficient but it works.
+    Calculating the movement patterns of the flying cubes can probably be improved
+    too. Use the mouse to rotate and move around.
+  id: flBfR1
+  name: Cubes among cubes JiPi
+  parent:
+    id: NtXfzS
+    name: Cubes among cubes...
+    url: https://www.shadertoy.com/view/NtXfzS
+  tags:
+  - raymarching
+  - cubes
+  - repetition
+  - pattern
+  url: https://www.shadertoy.com/view/flBfR1

@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: FlowingCrystalsJipi296
+  id: FlowingCrystalsJipi296
+  kernel: FlowingCrystalsJipi296
+  name: FlowingCrystalsJipi296
+shader:
+  author: N.N.
+  description: 'Normal map forked from dmmn. See their shader in the link above.
+
+
+    Passing results from voronoi back in again to create the inner subdivisions.  Using
+    min edge distance to create crystal structure.'
+  id: st2cRd
+  name: Flowing Crystals JiPi296
+  parent:
+    id: ssXcWr
+    name: Flowing Crystals
+    url: https://www.shadertoy.com/view/ssXcWr
+  tags:
+  - voronoi
+  - light
+  - crystal
+  url: https://www.shadertoy.com/view/st2cRd

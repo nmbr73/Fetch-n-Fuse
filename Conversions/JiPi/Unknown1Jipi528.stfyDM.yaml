@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Unknown1Jipi528
+  id: Unknown1Jipi528
+  kernel: Unknown1Jipi528
+  name: Unknown1Jipi528
+shader:
+  author: N.N.
+  description: 'Video Version : https://www.youtube.com/watch?v=VS3-slsPuVc'
+  id: stfyDM
+  name: Unknown1 JiPi 528
+  parent:
+    id: stlyW4
+    name: Unknown1
+    url: https://www.shadertoy.com/view/stlyW4
+  tags:
+  - eyes
+  url: https://www.shadertoy.com/view/stfyDM

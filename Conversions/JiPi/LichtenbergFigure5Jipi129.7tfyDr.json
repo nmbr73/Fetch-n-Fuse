@@ -1,0 +1,297 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tfyDr",
+  "date": "0",
+  "viewed": 0,
+  "name": "Lichtenberg Figure5 JiPi 129",
+  "description": "Reworking edge bundling stuff to try and get a denser tree structure. Now particles spawn at a random location and follow a gradient field towards the densest regions. Use Mouse y to change smoothness of the gradient field.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "particles",
+   "river",
+   "erosion"
+  ],
+  "hasliked": 0,
+  "parentid": "3t3Xz4",
+  "parentname": "Lichtenberg figure 5"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\n//Strided sort and spatial decorrelation fit into buf a and b over 7 frames\n\n//Rendering in buf A\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    //O=abs(texture(iChannel0,I/R.xy))/1e3;//textureLod(iChannel0,vec2(.5),6.)/2.;\n    O=texture(iChannel1,I/R.xy);\n    //O += texelFetch(iChannel2, ivec2(I),0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "\n//Use O.w for render pass\n\n\n\nvoid splat(inout float O, vec2 I, vec2 ip, vec2 p){\n    \n    //O = min(O,vec4(length(p-I))/3.);\n    float d2 = dot2(I-p);\n    O += exp(-d2*.6)/8.;\n    \n    //if(floor(ip)==floor(p)) O += (.255);\n    \n}\n\n\n#define T2(a,b) texelFetch(iChannel2, ivec2(p)+ivec2(a,b),0).w\n#define T0(a,b) texelFetch(iChannel0, ivec2(I)+ivec2(a,b),0)\n\n\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    \n    int stage = iFrame%7;\n    \n    vec2 uv = I/R.xy;\n    vec2 r1 = rand2(IHash3(I.x,I.y,iFrame));\n    vec2 r2 = rand2(IHash3(I.x,I.y,34526324^iFrame));\n    \n    \n    \n    O = texture(iChannel0,uv);\n    float Owp = O.w;\n    O.w=0.;\n    vec2 p = O.xy;\n    if(iFrame<3 || (texelFetch(iChannel3,ivec2(32,0),0).x>.5)){\n    \tvec2 r = rand2(IHash3(-iFrame,I.x,I.y));\n        p = R.xy/2.;\n        O.xy = R.xy *r1;\n    }\n    else if(iFrame>30) {\n        //reset location sometimes\n        if(O.x<0.||O.y<0.||O.x>R.x||O.y>R.y||r1.x<.075){\n            O.xy = R.xy *r2;\n        }\n\n        //Shift every point in the direction of the gradient of the blurred image in buf c\n        vec2 g = vec2(T2(1,0)-T2(-1,0),T2(0,1)-T2(0,-1));\n        O.xy -= normalize(g)/(2.) * (1.+I.y/R.y*4.);//*1e-1;\n    }\n    \n    if(stage==0) {;\n    \n        \n    for(int i = 0; i < 9; i++){\n    \tvec2 ip = forward_mapping(I-1.+vec2(i/3,i%3),iR.x,iR.y,(iFrame)/7-1);\n        vec4 t = texelFetch(iChannel1,ivec2(ip),0);\n        \n        t.xy = reverse_mapping(t.xy,iR.x,iR.y,(iFrame)/7-1);\n        t.zw = reverse_mapping(t.zw,iR.x,iR.y,(iFrame)/7-1);\n        \n        splat(O.w,I,I,t.xy);\n        splat(O.w,I,I,t.zw);\n        \n        \n    }\n    }\n    O.w=pow(O.w,.7);\n    if(stage!=0) O.w=Owp;\n    else O.w = mix(O.w,Owp,0.3);\n    //Smooth over time\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define R iResolution\n#define iR ivec3(R)\n#define uR uvec3(R)\n#define IHash3(x,y,z) IHash(int(x)^IHash(int(y)^IHash(int(z))))\n#define dot2(o) dot((o),(o))\n//#define tx(ch,p,R) texelFetch(ch, Zmod(p,iR.xy),0)\n#define tx(ch,p,R) texture(ch, (vec2(Zmod(p,iR.xy))+0.5)/R.xy)\n\n//Roboust/universal integer modulus function\n#define Zmod(x,y) (((x)+(y)+(y)+(y))-(((x)+(y)+(y)+(y))/(y))*(y))\n//#define Zmod(x,y) ((x+y*10)%y)\n\n\n\nuint pack(vec2 x)\n{\n  \n    x = 65534.0f*clamp(0.5f*x+0.5f, 0.0f, 1.0f);\n    return uint(round(x.x)) + 65535u*uint(round(x.y));\n}\n\nvec2 unpack(uint a)\n{\n    vec2 x = vec2(a%65535u, a/65535u);\n    return clamp(x/65534.0f, 0.0f,1.0f)*2.0f - 1.0f;\n}\n\n\n\n\nfloat packVec2(vec2 x){\n    //return uintBitsToFloat(packSnorm2x16(x/10.));\n    return uintBitsToFloat(pack(x/10.));\n}\nvec2 umpackVec2(float x){\n    //return unpackSnorm2x16(floatBitsToUint(x))*10.;\n    return unpack(floatBitsToUint(x))*10.;\n}\n\nbool inbounds(vec2 x, vec2 y){\n    return (x.x>0.&&x.y>0.&&x.x<y.x&&x.y<y.y);\n}\n\n//RNG\nint IHash(int a){\n\ta = (a ^ 61) ^ (a >> 16);\n\ta = a + (a << 3);\n\ta = a ^ (a >> 4);\n\ta = a * 0x27d4eb2d;\n\ta = a ^ (a >> 15);\n\treturn a;\n}\n\nfloat Hash(int a){\n\treturn float(IHash(a)) / float(0x7FFFFFFF);\n}\nvec4 rand4(int seed){\n    return vec4(Hash(seed^0x34F85A93),\n                Hash(seed^0x85FB93D5),\n                Hash(seed^0x6253DF84),\n                Hash(seed^0x25FC3625));\n}\nvec3 rand3(int seed){\n    return vec3(Hash(seed^0x348CD593),\n                Hash(seed^0x8593FD5),\n                Hash(seed^0x62A5D384));\n}\nvec2 rand2(int seed){\n    return vec2(Hash(seed^0x348C5F93),\n                Hash(seed^0x8593D5BB));\n}\n\n\nvec2 randn(vec2 randuniform){\n    vec2 r = randuniform;\n    r.x = sqrt(-2.*log(1e-9+abs(r.x)));\n    r.y *= 6.28318;\n    r = r.x*vec2(cos(r.y),sin(r.y));\n    return r;\n}\n\n//Random injective mapping from each pixel to a random new pixel\n//By alternatively adding some randomness from y into x and then \n//x into y, a reversible hash function is made. To take the inverse,\n//simply undo the last \"add randomness to y\" step by subtracting the\n//same random value. You can calculate the random value that was used\n//to modify y because it depends only on x.\n//Reversible == one to one == injective\n//input iFrame/2 to re randoize the mapping every frame\n#define mapping_iters 2\nvec2 forward_mapping(vec2 Z,int p, int q, int Fover2){\n    //int seed = 0;        // Optionaly keep seed constant for that static randomness look\n\tint seed = Fover2;\n    if(!inbounds(Z,vec2(p,q))){return vec2(0);} //Dont map points from outside the boundry\n    int x=int(Z.x);\n    int y=int(Z.y);\n    \n    //Change iterations here to zero to use the identity function as a mapping\n    //Some particles seem to have a better chance of getting drawn...\n    //But it shows off the artifacts in all their glory, looks pretty cool after a reset\n    for(int i = 0; i < mapping_iters; i++){\n        x = Zmod(x + IHash(y^seed)%p,p);\n        y = Zmod(y + IHash(x^seed)%q,q);\n    }\n    \n\t//This is the inverse mapping, only difference is - instead of + and the order of x and y\n    //uncommenting should have the same effect as reducing iterations above to zero\n    //This is a pretty good test of the one to one property of the mapping\n    //Originally it seemed to not be working quite right on some platforms so\n    //this can confirm if that is happening. The effect of a non injective mapping is collisions\n    //And thus many particles getting lost near the final pass.\n    /*\n    for(int i = 0; i < 5; i++){\n        y = Zmod(y - IHash(x)%q,q);\n        x = Zmod(x - IHash(y)%p,p);\n    }\n\t*/\n    \n    return vec2(x,y)+fract(Z);\n    \n}\nvec2 reverse_mapping(vec2 Z,int p, int q, int Fover2){\n    //int seed = 0;        // Optionaly keep seed constant for that static randomness look\n\tint seed = Fover2;\n    if(!inbounds(Z,vec2(p,q))){return vec2(0);} //Dont map points from outside the boundry\n    int x=int(Z.x);\n    int y=int(Z.y);\n    \n    \n    \n    for(int i = 0; i < mapping_iters; i++){\n        y = Zmod(y - IHash(x^seed)%q,q);\n        x = Zmod(x - IHash(y^seed)%p,p);\n    }\n    \n    return vec2(x,y)+fract(Z);\n    \n}\n\nfloat score(vec2 p, vec2 I, vec3 R){\n    if(!inbounds(p,R.xy)) return 1e6; //Bad score for points outside boundry\n    //This should get revamped, there is no reasoning to use\n    //euclidean distance, this metric probably should reflect the tree strtucture\n    //Maybe even output a simple 1 or 0 if the index of this texel leads to the leaf\n    //node that this particle p is going towards\n    \n    //Difference in the noise when using this other metric suggests that \n    //this is indeed screwing performance (likelyhood of missing particles)\n    vec2 D = p-I;\n    D = mod(D+R.xy/2.,R.xy)-R.xy/2.;\n    return max(abs(D.x),abs(D.y));\n    //use l infinity in toroidal space\n    \n    //return dot2(I-p);\n}\n\nvoid updateRank(vec4 t, inout vec4 O, inout float s, vec2 I, vec3 R){\n    float sp = score(t.xy,I,R);\n    if(sp<s){\n        s=sp;\n        O=t;\n    }\n}\n\n//Update ranking, save a list of two particle xy indices. O.xy is better particle, O.zw is a different not as good one\nvoid updateRank2x(vec2 t, inout vec4 O, inout float s0, inout float s1, vec2 I, vec3 R){\n    float sp = score(t,I,R);\n    if(sp<s0){\n        //Shift down the line\n        s1=s0;\n        O.zw=O.xy;\n        s0=sp;\n        O.xy=t;\n    } else if(sp<s1){\n        //Bump off the bottom one\n        s1=sp;\n        O.zw=t;\n        \n    }\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Strided sort ~= jump flood\n//Strided sort summarry:\n//Each pass looks at 9 xy locations stored in the previous pass and selects the closest one\n//The locations sampled are arranged in a 3x3 with the center located at I, and the spacing\n//a power of 3\n//Total 7 passes over two frames sized large to small\n//A->B->C->D->B->C->D->Image\n//Spacing 3^6 ..., 3^1, 3^0\n//I think this gives an optimal data path from each pixel to each other pixel under the constraint of 7 passes\n\n//In each buffer, the pixel to get drawn at index is saved in xy and the exact particle location is saved in zw.\n//For more complex particles zw should instead be a pointer to the particle\n//zw is unused for sorting, sort only based on xy\n\n\n//large to small\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    //Split frames into two stages\n    int stage = iFrame%7;\n    int size = int(.5+pow(3.,float(6-stage)));\n    \n    vec2 r = rand2(IHash3(iFrame,I.x,I.y));\n   // if (stage==6) discard;\n    \n    //int size = stage==0?729:27; //729=3^6\n    float s0;\n    float s1;\n    //init with top left corner and center\n    if(stage==0){\n        vec2 t0 = tx(iChannel0, ivec2(I)-size,R).xy;\n        vec2 t1 = tx(iChannel0, ivec2(I),R).xy;\n                                                                         \n        s0 = score(t0,I,R);\n        s1 = score(t1,I,R);\n        \n        O.xy=t0==vec2(0)?vec2(0):forward_mapping(t0, iR.x, iR.y,iFrame/7);\n        O.zw=t1==vec2(0)?vec2(0):forward_mapping(t1, iR.x, iR.y,iFrame/7);\n        \n        //Select the better one, make sure scores are in order with s0<s1\n        if(s0>s1){\n            vec2 _ = O.xy;\n            O.xy = O.zw;\n            O.zw = _;\n            _.x = s0;\n            s0 = s1;\n            s1 = _.x;\n        }\n    } else {\n        O = tx(iChannel1, ivec2(I)-size,R );\n        s0 = score(O.xy,I,R);\n        s1 = score(O.zw,I,R);\n    }\n    for(int i = 1; i < 9; i++){\n        if(stage==0){\n        \tvec2 t = tx(iChannel0,ivec2(I)-size+size*ivec2(i/3,i%3),R).xy;\n            t = forward_mapping(t, iR.x, iR.y,iFrame/7);\n            updateRank2x(t,O,s0,s1,I,R);\n            \n        } else {\n        \tvec4 t;\n            t = tx(iChannel1,ivec2(I)-size+size*ivec2(i/3,i%3),R); \n            updateRank2x(t.xy,O,s0,s1,I,R);\n            updateRank2x(t.zw,O,s0,s1,I,R);\n        }\n        \n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Do a multipass blur, radius controlled by iMouse\nvoid mainImage( out vec4 O, in vec2 I )\n{\n    #define T0(a,b) texelFetch(iChannel0, Zmod((ivec2(I)+ivec2(a,b)),ivec2(R.xy)),0).wwww\n    #define T1(a,b) texelFetch(iChannel1, Zmod((ivec2(I)+ivec2(a,b)),ivec2(R.xy)),0).wwww\n    O = T1(0,0);//*.999999;\n    O -= T0(0,0);\n    O=mix(O,(T1(0,0) + T1(0,1) + T1(1,0) + T1(0,-1) + T1(-1,0))/5.,iFrame<60?.01:0.85-.15*iMouse.y/R.y);\n    if(iFrame<3||texelFetch(iChannel3,ivec2(32,0),0).x>.5){\n        O.w=-10.+length(I.xy-R.xy/2.); \n        //O.w = 0.; \n    }\n    if(length(I-R.xy/2.)<1.){\n        O-=1.;\n    }\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 O, in vec2 I )\n{\n    O=texture(iChannel0,I/R.xy).wwww;\n    O=mix(O,texture(iChannel1,I/R.xy),.96);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

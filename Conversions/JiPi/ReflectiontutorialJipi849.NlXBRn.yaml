@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: ReflectiontutorialJipi849
+  id: ReflectiontutorialJipi849
+  kernel: ReflectiontutorialJipi849
+  name: ReflectiontutorialJipi849
+shader:
+  author: N.N.
+  description: 'Reflection from cubemap.
+
+    From tutorial: https://inspirnathan.com/posts/63-shadertoy-tutorial-part-16'
+  id: NlXBRn
+  name: ReflectionTutorial JiPi849
+  parent:
+    id: stjyWm
+    name: ReflectionTutorial
+    url: https://www.shadertoy.com/view/stjyWm
+  tags:
+  - reflection
+  - cubemap
+  url: https://www.shadertoy.com/view/NlXBRn

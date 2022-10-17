@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: PrimordialSoupSystem
+  id: PrimordialSoupSystem
+  kernel: PrimordialSoupSystem
+  name: PrimordialSoupSystem
+shader:
+  author: davidar
+  description: A continuous version of the [url=https://nagualdesign.github.io/]Primordial
+    Particle System[/url] (also see [url]https://www.shadertoy.com/view/Wdj3zm[/url]),
+    using reintegration tracking.
+  id: NssczB
+  name: Primordial Soup System
+  tags:
+  - simulation
+  - fluid
+  - automata
+  - life
+  - cell
+  - particle
+  - ecology
+  - reintegration
+  url: https://www.shadertoy.com/view/NssczB

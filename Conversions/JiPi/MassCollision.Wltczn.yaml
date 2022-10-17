@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: MassCollision
+  id: MassCollision
+  kernel: MassCollision
+  name: MassCollision
+shader:
+  author: wyatt
+  description: Fluid dynamics arising naturally from particle collisions :) click
+    to see!
+  id: Wltczn
+  name: Mass Collision
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/Wltczn

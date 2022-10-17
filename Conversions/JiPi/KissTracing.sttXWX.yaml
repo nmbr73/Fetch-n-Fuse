@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: KissTracing
+  id: KissTracing
+  kernel: KissTracing
+  name: KissTracing
+shader:
+  author: tsaari42
+  description: Bare-bones Path Tracer
+  id: sttXWX
+  name: KISS Tracing5
+  parent:
+    id: sttXWX
+    name: 'KISS Tracing 001: Spheres&Plane'
+    url: https://www.shadertoy.com/view/sttXWX
+  tags:
+  - raytracing
+  - pathtracing
+  - minimal
+  url: https://www.shadertoy.com/view/sttXWX

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: D12032022MmExperiment
+  id: D12032022MmExperiment
+  kernel: D12032022MmExperiment
+  name: D12032022MmExperiment
+shader:
+  author: PauloFalcao
+  description: Something I have done now in Material Maker playing with MFSDF and
+    transformations in rotation
+  id: NdjBDV
+  name: 12-03-2022 MM Experiment
+  tags:
+  - materialmaker
+  - nodes
+  - mfsdf
+  url: https://www.shadertoy.com/view/NdjBDV

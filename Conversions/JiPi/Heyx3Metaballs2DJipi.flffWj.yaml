@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: Heyx3Metaballs2DJipi
+  id: Heyx3Metaballs2DJipi
+  kernel: Heyx3Metaballs2DJipi
+  name: Heyx3Metaballs2DJipi
+shader:
+  author: N.N.
+  description: Playing around with 2D metaballs and multipass rendering. Click on
+    the screen to push the balls away from you!
+  id: flffWj
+  name: heyx3 Metaballs2D JiPi
+  parent:
+    id: MdySRR
+    name: heyx3 Metaballs 2D
+    url: https://www.shadertoy.com/view/MdySRR
+  tags:
+  - 2d
+  - mouse
+  - metaballs
+  - liquid
+  url: https://www.shadertoy.com/view/flffWj

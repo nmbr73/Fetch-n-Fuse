@@ -1,0 +1,51 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NtscWM",
+  "date": "0",
+  "viewed": 0,
+  "name": "Water Punk JiPi 707",
+  "description": "water dance",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarching",
+   "refraction",
+   "webcam"
+  ],
+  "hasliked": 0,
+  "parentid": "NsKSz3",
+  "parentname": "Water Punk"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sf3zn",
+     "filepath": "/presets/webcam.png",
+     "type": "webcam",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\n#define MAX_STEPS 40\n#define MAX_DIST 40.\n#define SURF_DIST .005\n#define samples 32\n#define LOD 2\n\nfloat hash(vec2 n) {\n    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 184.5453);\n}\n\nfloat noise(vec2 n) {\n    const vec2 d = vec2(0.0, 1.0);\n    vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));\n    return mix(mix(hash(b), hash(b + d.yx), f.x), mix(hash(b + d.xy), hash(b + d.yy), f.x), f.y);\n}\n\nfloat sdSphere( vec3 p, float s ) { return length(p)-s; }\n\n\nfloat smin( float a, float b, float k ) {\n    float h = max(k-abs(a-b), 0.0);\n    return min(a, b) - h*h*0.25/k; \n}\n\n\nfloat getDist(vec3 p) {\n    float matId;\n    float final = MAX_DIST;\n    float iTime = iTime; \n    p = p - vec3(0.,0.5, 5.);\n    p.x = abs(p.x);\n    vec3 tempP = p;\n    for (int i = 0; i < 10; i++) {\n        float fi = float(i + 1)  + floor(float(i) / 5.);\n        vec3 pos = p;\n        float xmov = -dot(p.xy, tempP.xy + tempP.xy * fi * 0.8) * 3.;\n        float ymov = sign(mod(fi, 2.)) - dot(tempP.xy, tempP.xy) * 0.2 - xmov * 0.2;\n\n        vec2 xy = vec2(xmov, ymov);\n        \n        pos.xy += xy * 0.2;\n        pos.xy -= noise(pos.xy * 15. / fi) * 0.3;\n        pos.xy += (vec2(sin(iTime + fi) * 2., cos(iTime / 2. - fi) * 0.5) * 0.1 * fi);  \n\n        pos.z += sin(iTime * cos(float(i * 4))) * 0.5;\n        float r = sin(fi) * 0.2;\n        float n = min(sin(pos.z * float(i) * 5.), cos(pos.x * pos.y * float(i) * 10.)) * 0.1;\n        float bubble = sdSphere(pos + vec3(n) * 0.1 - vec3(0.05), r);\n        final = smin(final, bubble, 0.3 + final * 0.04);\n        \n        tempP = pos;\n    }\n\n    \n    return final;\n}\n\nfloat rayMarch(vec3 ro, vec3 rd) {\n\tfloat dO=0.;\n    float matId = -1.;\n    \n    for(int i=0; i<MAX_STEPS; i++) {\n    \tvec3 p = ro + rd*dO;\n        float res = getDist(p);\n        float dS = res;\n        dO += dS;\n        \n        if(dO>MAX_DIST || abs(dS)<SURF_DIST) break;\n    }\n    \n    return dO;\n}\n\nvec3 normals(vec3 p, float of ) {\n\tfloat d = getDist(p);\n    vec2 e = vec2(of, 0);\n    \n    vec3 n = d - vec3(\n        getDist(p-e.xyy),\n        getDist(p-e.yxy),\n        getDist(p-e.yyx));\n    \n    return normalize(n);\n}\n\nfloat diffuse(vec3 p, vec3 n, vec3 lp) {\n    vec3 l = normalize(lp-p);\n    float dif = clamp(dot(n, l), 0., 1.);\n\n    return dif;\n}\n\nfloat specular(vec3 rd, vec3 ld, vec3 n) {    \n    vec3 reflection = reflect(-ld, n);\n    float spec = max(dot(reflection, -normalize(rd)), 0.); \n    return spec;\n}\n\nfloat gaussian(vec2 i) {\nconst float sigma = float(samples) * .25;\n    return exp( -.5* dot(i/=sigma,i) ) / ( 6.28 * sigma*sigma );\n}\n\nvec4 blur(sampler2D sp, vec2 U, vec2 scale) {\n    const int  sLOD = 1 << LOD;\n    vec4 O = vec4(0);\n    int s = samples/sLOD;\n    \n    for ( int i = 0; i < s*s; i++ ) {\n        vec2 d = vec2(i%s, i/s)*float(sLOD) - float(samples)/2.;\n        O += gaussian(d) * texture(sp, U + scale * d);\n    }\n    \n    return O / O.a;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    vec2 uv = (fragCoord-.5*iResolution.xy)/iResolution.y;\n    vec3 col = vec3(0.0);\n    \n    float iTime = iTime * 2.;\n\n\tvec3 ro = vec3(.0, 0., 1.);\n    vec3 rd = normalize(vec3(uv.x, uv.y + 0.2 , 2.));\n    vec3 ld =  vec3(0., 0., 1.);\n    float d = rayMarch(ro, rd);\n    vec3 p = ro + rd * d;\n    vec3 n = normals(p, 0.003);\n    float dif = diffuse(p, n, ld); \n    float spec = specular(rd, ld, n) * 0.1;\n    float fresnel = smoothstep(0.5, 0.2, dot(-rd, n));\n    vec3 dispersion = vec3(noise(n.xy * 2.7), noise(n.xy * 3.), noise(n.xy * 3.3)) * 0.4; \n    \n    vec2 camUV = fragCoord / iResolution.xy;\n    vec3 cam1 =  texture(iChannel0, camUV).xyz * 0.9;\n    camUV += n.xy * 0.05 * dif;\n    vec3 cam2 = blur(iChannel0, camUV, vec2(0.002)).xyz * 0.9;\n\n    col = dif * cam2;\n    col += spec;\n    col += cam2 * 0.15;         \n    col += dispersion;\n    col += fresnel * 0.2;\n    \n    if (d > MAX_DIST) { col = vec3(cam1);  }\n\n    fragColor = vec4(col, 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

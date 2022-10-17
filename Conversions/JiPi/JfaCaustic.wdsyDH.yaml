@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: JfaCaustic
+  id: JfaCaustic
+  kernel: JfaCaustic
+  name: JfaCaustic
+shader:
+  author: wyatt
+  description: "Using a clever sorting algorithm to render a caustic. \nHere is another\
+    \ cool use of the JFA algorithm :\n[url]https://www.shadertoy.com/view/ldV3Wc[/url]"
+  id: wdsyDH
+  name: JFA Caustic
+  tags:
+  - jfa
+  url: https://www.shadertoy.com/view/wdsyDH

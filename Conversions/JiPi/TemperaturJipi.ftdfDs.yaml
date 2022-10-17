@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: TemperaturJipi
+  id: TemperaturJipi
+  kernel: TemperaturJipi
+  name: TemperaturJipi
+shader:
+  author: N.N.
+  description: 'Long ago Fabrice challenged my fluid models, telling me that I did
+    not consider temperature. I''m still trying to live up to his expectations. '
+  id: ftdfDs
+  name: Temperatur JiPi
+  parent:
+    id: fsf3zS
+    name: Temperatures
+    url: https://www.shadertoy.com/view/fsf3zS
+  tags:
+  - fluid
+  - automata
+  url: https://www.shadertoy.com/view/ftdfDs

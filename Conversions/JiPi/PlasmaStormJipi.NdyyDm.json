@@ -1,0 +1,37 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NdyyDm",
+  "date": "0",
+  "viewed": 0,
+  "name": "plasma storm JiPi",
+  "description": "My first shader using (messy) volumetric rendering. Badly optimized and writed (my poor gpu), but quite cool for looking at (especially with low RES_INV value).",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarching",
+   "volumetric",
+   "abstract",
+   "storm"
+  ],
+  "hasliked": 0,
+  "parentid": "7sdcWM",
+  "parentname": "plasma storm"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Author: paperu\n// Title: plasma storm\n\n// 3D noise, from : https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83\nfloat mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}\nvec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}\nvec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}\nfloat noise(vec3 p){\n    vec3 a = floor(p);\n    vec3 d = p - a;\n    d = d * d * (3.0 - 2.0 * d);\n\n    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);\n    vec4 k1 = perm(b.xyxy);\n    vec4 k2 = perm(k1.xyxy + b.zzww);\n\n    vec4 c = k2 + a.zzzz;\n    vec4 k3 = perm(c);\n    vec4 k4 = perm(c + 1.0);\n\n    vec4 o1 = fract(k3 * (1.0 / 41.0));\n    vec4 o2 = fract(k4 * (1.0 / 41.0));\n\n    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);\n    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);\n\n    return o4.y * d.y + o4.x * (1.0 - d.y);\n}\n\nmat2 rot(in float a) { return mat2(cos(a),sin(a),-sin(a),cos(a)); }\n\n// by decreasing RES_INV value we can get better precision but at the cost of a worse framerate\n#define RES_INV 5.\n\n// some alternatives (ALT1 to ALT4)\n#define ALT1\n\n#define MAX_IT_VOL (100*4)/int(RES_INV)\n#define STEP_SIZE .01*RES_INV\n#define MAX_COL 17./RES_INV*RES_INV*RES_INV\nvec3 rmvolum(in vec3 p, in vec3 r, in float t)\n{\n    vec3 cout = vec3(0.);\n    \n    for(int i = 0; i < MAX_IT_VOL; i++)\n    {\n        vec3 q = p;\n        float f = smoothstep(0.,1.,q.z*q.z*.2 + cos(t*.1 + q.z*.2));\n        q.xy *= rot(-t*.172 - q.z*f);\n        q.xz *= rot(t*.48 - q.y*f);\n        q.xy *= rot(t*.33 + q.z*f);\n\n        vec3 c1 = vec3(\n        \tnoise(q*1.5 + .15 + t),\n            noise(q*1.5 + t),\n            noise(q*1.5 - .15 + t)\n        );\n        float c2 = noise(q*4. + t);\n        float c3 = noise(q*8. + t);\n        float c4 = noise(q*16. + t);\n\n#ifdef ALT1\n        vec3 c = c1*.6 + c2*.2 + c3*.1 + c4*.1;\n#endif\n#ifdef ALT2\n        vec3 c = c1*.7 + c2*.2 + c3*.1;\n#endif\n#ifdef ALT3\n        vec3 c = c1*.9 + c2*.1;\n#endif\n#ifdef ALT4\n        vec3 c = c1;\n#endif\n        \n        cout += c*c*c*c*c*c*c;\n        p += r*STEP_SIZE;\n    }\n    \n\treturn cout/MAX_COL;\n}\n\nvoid mainImage(out vec4 fragColor, in vec2 fragCoord) {\n    vec2 st = (fragCoord.xy - iResolution.xy*.5)/iResolution.y;\n\t\n    fragColor = vec4(rmvolum(vec3(0.,0.,-2.), normalize(vec3(st,.17)), iTime*.75), 1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

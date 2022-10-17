@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Communicators
+  id: Communicators
+  kernel: Communicators
+  name: Communicators
+shader:
+  author: wyatt
+  description: 'Click to add points and watch the graph communicate. Sometimes your
+    roommates don''t know how to communicate... '
+  id: 3tV3zt
+  name: Communicators
+  tags:
+  - graph
+  url: https://www.shadertoy.com/view/3tV3zt

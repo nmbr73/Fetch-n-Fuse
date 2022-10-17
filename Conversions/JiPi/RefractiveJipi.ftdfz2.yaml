@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: RefractiveJipi
+  id: RefractiveJipi
+  kernel: RefractiveJipi
+  name: RefractiveJipi
+shader:
+  author: N.N.
+  description: A bit glitchy, and done before, but it's a very simple (and crappy
+    looking) refractive man.
+  id: ftdfz2
+  name: Refractive JiPi
+  parent:
+    id: XsK3WK
+    name: Refractive JCVD
+    url: https://www.shadertoy.com/view/XsK3WK
+  tags:
+  - texture
+  - experiment
+  - uv
+  - jcvd
+  - refractive
+  url: https://www.shadertoy.com/view/ftdfz2

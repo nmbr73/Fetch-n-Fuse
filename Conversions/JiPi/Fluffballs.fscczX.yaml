@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: Fluffballs
+  id: Fluffballs
+  kernel: Fluffballs
+  name: Fluffballs
+shader:
+  author: celyk
+  description: a
+  id: fscczX
+  name: fluffballs
+  tags:
+  - fluffy
+  url: https://www.shadertoy.com/view/fscczX

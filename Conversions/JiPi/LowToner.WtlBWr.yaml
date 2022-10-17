@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: LowToner
+  id: LowToner
+  kernel: LowToner
+  name: LowToner
+shader:
+  author: wyatt
+  description: Forward advected compressible fluid simulation with 3 texturephylic
+    substances
+  id: WtlBWr
+  name: Low Toner
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/WtlBWr

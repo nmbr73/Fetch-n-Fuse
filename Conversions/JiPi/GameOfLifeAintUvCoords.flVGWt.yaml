@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: GameOfLifeAintUvCoords
+  id: GameOfLifeAintUvCoords
+  kernel: GameOfLifeAintUvCoords
+  name: GameOfLifeAintUvCoords
+shader:
+  author: Arrangemonk
+  description: thats boting, i was expectiong more... buuuuut i can still fork and
+    implement proper rules, can be reseted on space now
+  id: flVGWt
+  name: Game of Life aint uv coords
+  tags:
+  - meh
+  url: https://www.shadertoy.com/view/flVGWt

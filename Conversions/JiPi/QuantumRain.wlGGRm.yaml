@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: QuantumRain
+  id: QuantumRain
+  kernel: QuantumRain
+  name: QuantumRain
+shader:
+  author: wyatt
+  description: '[url]JAVASCRIPT: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<8;i++)E.P.apply(this,A);};if(!H)close();[/url]'
+  id: wlGGRm
+  name: Quantum Rain
+  tags:
+  - schrodinger
+  url: https://www.shadertoy.com/view/wlGGRm

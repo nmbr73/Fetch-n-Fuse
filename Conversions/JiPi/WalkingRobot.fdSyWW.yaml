@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: WalkingRobot
+  id: WalkingRobot
+  kernel: WalkingRobot
+  name: WalkingRobot
+shader:
+  author: mdb
+  description: 'inspired by this video:
+
+    https://www.youtube.com/watch?v=imbIsNAvUpM&ab_channel=Polyfjord'
+  id: fdSyWW
+  name: walking robot
+  tags:
+  - raytracing
+  - glass
+  - animation
+  - inversekinematicscinematic
+  url: https://www.shadertoy.com/view/fdSyWW

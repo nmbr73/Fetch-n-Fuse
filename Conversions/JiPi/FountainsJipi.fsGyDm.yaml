@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FountainsJipi
+  id: FountainsJipi
+  kernel: FountainsJipi
+  name: FountainsJipi
+shader:
+  author: N.N.
+  description: 3 fountains
+  id: fsGyDm
+  name: Fountains  JiPi
+  parent:
+    id: NsyyWW
+    name: 'Fountains * '
+    url: https://www.shadertoy.com/view/NsyyWW
+  tags:
+  - fluid
+  - automata
+  url: https://www.shadertoy.com/view/fsGyDm

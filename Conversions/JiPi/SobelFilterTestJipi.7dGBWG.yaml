@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: SobelFilterTestJipi
+  id: SobelFilterTestJipi
+  kernel: SobelFilterTestJipi
+  name: SobelFilterTestJipi
+shader:
+  author: N.N.
+  description: Various kernel stuff.
+  id: 7dGBWG
+  name: sobel_filter_test JiPi
+  parent:
+    id: NdVBRt
+    name: sobel_filter_test
+    url: https://www.shadertoy.com/view/NdVBRt
+  tags:
+  - math
+  - filter
+  - default
+  - shader
+  - kernel
+  url: https://www.shadertoy.com/view/7dGBWG

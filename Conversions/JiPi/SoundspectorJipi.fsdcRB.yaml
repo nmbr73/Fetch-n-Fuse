@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: SoundspectorJipi
+  id: SoundspectorJipi
+  kernel: SoundspectorJipi
+  name: SoundspectorJipi
+shader:
+  author: N.N.
+  description: Paying with sound spectrum, iq's cosine palette and polar coordinates.
+  id: fsdcRB
+  name: SoundSpector JiPi
+  parent:
+    id: 4sdyRH
+    name: SoundSpector
+    url: https://www.shadertoy.com/view/4sdyRH
+  tags:
+  - 2d
+  - sound
+  - polar
+  url: https://www.shadertoy.com/view/fsdcRB

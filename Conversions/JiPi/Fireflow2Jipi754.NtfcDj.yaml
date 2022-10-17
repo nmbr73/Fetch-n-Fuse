@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: Fireflow2Jipi754
+  id: Fireflow2Jipi754
+  kernel: Fireflow2Jipi754
+  name: Fireflow2Jipi754
+shader:
+  author: N.N.
+  description: 'Just an experiment in quick-and-dirty flow like simulations. Click
+    to add buoyancy, spacebar to clear.
+
+
+    edit: by the way is there any easy way to save a duplicate of a shader?'
+  id: NtfcDj
+  name: Fireflow 2 JiPi 754
+  parent:
+    id: 4lBcDG
+    name: Fireflow 2
+    url: https://www.shadertoy.com/view/4lBcDG
+  tags:
+  - cellular
+  url: https://www.shadertoy.com/view/NtfcDj

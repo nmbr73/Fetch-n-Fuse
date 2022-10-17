@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: WaterDropsJipi
+  id: WaterDropsJipi
+  kernel: WaterDropsJipi
+  name: WaterDropsJipi
+shader:
+  author: N.N.
+  description: My first shader.
+  id: fttyRj
+  name: water drops JiPi
+  parent:
+    id: XdXGR7
+    name: water drops
+    url: https://www.shadertoy.com/view/XdXGR7
+  tags:
+  - waterwave
+  url: https://www.shadertoy.com/view/fttyRj

@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: Nebula16
+  id: Nebula16
+  kernel: Nebula16
+  name: Nebula16
+shader:
+  author: Leria
+  description: 'Big purple nebula seen from a near position (spherical bounding box)
+
+    A+mouse: tune density
+
+    C toggle : control albedo or sigma_s'
+  id: 3tBBWd
+  name: Nebula 16
+  tags:
+  - fractal
+  - noise
+  - nebula
+  - multiplicative
+  url: https://www.shadertoy.com/view/3tBBWd

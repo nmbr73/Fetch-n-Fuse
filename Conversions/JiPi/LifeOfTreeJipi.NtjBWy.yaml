@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: LifeOfTreeJipi
+  id: LifeOfTreeJipi
+  kernel: LifeOfTreeJipi
+  name: LifeOfTreeJipi
+shader:
+  author: N.N.
+  description: '[Use Mouse] Rq: The position of the sun is the real one for the date
+    of the TimeLapse picture. The hour is fixed and given by UTC_HOUR. Latitude an
+    longitude could be changed (see SunAtTime function for full calculation).
+
+    Need little bit of optimization'
+  id: NtjBWy
+  name: Life of tree JiPi
+  parent:
+    id: XsS3Dm
+    name: Life of tree
+    url: https://www.shadertoy.com/view/XsS3Dm
+  tags:
+  - sun
+  - tree
+  - position
+  - seasons
+  url: https://www.shadertoy.com/view/NtjBWy

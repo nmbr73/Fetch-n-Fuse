@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: SparkPhoenixJipi
+  id: SparkPhoenixJipi
+  kernel: SparkPhoenixJipi
+  name: SparkPhoenixJipi
+shader:
+  author: N.N.
+  description: '*drag with mouse* *space to reset* Based on Spinning Spark Clouds,
+    https://www.shadertoy.com/view/ftccDX
+
+    Since then I fixed the X/Y distortion and added an SDF for a more artistic effect.'
+  id: 7lVyRz
+  name: Spark Phoenix JiPi
+  parent:
+    id: ftdyDX
+    name: Spark Phoenix
+    url: https://www.shadertoy.com/view/ftdyDX
+  tags:
+  - 2d
+  - voronoi
+  - simulation
+  - particles
+  - flow
+  - liquid
+  - sph
+  url: https://www.shadertoy.com/view/7lVyRz

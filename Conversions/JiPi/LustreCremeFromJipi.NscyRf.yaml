@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: LustreCremeFromJipi
+  id: LustreCremeFromJipi
+  kernel: LustreCremeFromJipi
+  name: LustreCremeFromJipi
+shader:
+  author: N.N.
+  description: I've changed the parameters of my [url=https://www.shadertoy.com/view/XsdGWj]video
+    on fire[/url] shader to work without green screen. Her hair's on fire thanks to
+    luster creme now :)
+  id: NscyRf
+  name: Lustre creme from JiPi
+  parent:
+    id: MscGWX
+    name: Lustre creme from ....
+    url: https://www.shadertoy.com/view/MscGWX
+  tags:
+  - edgedetection
+  - videomultipass
+  url: https://www.shadertoy.com/view/NscyRf

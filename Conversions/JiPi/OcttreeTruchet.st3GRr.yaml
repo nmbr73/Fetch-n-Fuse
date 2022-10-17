@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: OcttreeTruchet
+  id: OcttreeTruchet
+  kernel: OcttreeTruchet
+  name: OcttreeTruchet
+shader:
+  author: flockaroo
+  description: multiscale octtree truchet
+  id: st3GRr
+  name: octtree truchet
+  tags:
+  - truchet
+  - multiscale
+  - octtree
+  url: https://www.shadertoy.com/view/st3GRr

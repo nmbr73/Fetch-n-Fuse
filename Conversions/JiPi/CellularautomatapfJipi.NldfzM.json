@@ -1,0 +1,77 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NldfzM",
+  "date": "0",
+  "viewed": 0,
+  "name": "CellularAutomataPF JiPi",
+  "description": "Uses one buffer and four channels to simulate particles with field interactions. No time input. Click to add particles with the mouse. \n\nWork in progress.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "automata"
+  ],
+  "hasliked": 0,
+  "parentid": "MdGGzG",
+  "parentname": "Cellular Automata Particle Field"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = texture(iChannel0, fragCoord.xy/iResolution.xy);\n}\t",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//sandbox -> shadertoy wrapper\n#define mouse\t\t\tiMouse.xy/iResolution.xy\n#define renderbuffer \tiChannel0\n#define resolution\t\tiResolution.xy\n\n//automata\n#define WAKE\t\t\t.975\n#define DECAY\t\t\t.00125\n#define FIELD\t\t\t.9\n#define CHARGE\t\t\t2.\n\n#define FREQUENCY \t\t25./32.\n#define MAX_FLOAT\t\tpow(2.,  8.)\n#define MIN_FLOAT\t\tpow(2., -8.)\n#define WRAP \t\t\ttrue\n\nvec2 neighbor_offset(float i);\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t//8 offsets corrosponding to the ring of moore neighborhood positions ((0., -1.), (1., -1.), (1., 0.), (1., 1.)... etc)\nvec4 reset_button(inout vec4 cell);\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t//flashing button in the bottom left, mouse over it to reset\nvec4 clear_at_screen_edge(inout vec4 cell, in vec2 coordinates);\t\t\t\t\t\t\t\t//clears the cells at the boundary of the screen to prevent wrapping\nfloat mix_angle( float angle, float target, float rate );\t\t\t\t\t\t\t\t\t\t//mixes two angles - i think its bugged\nvec4 add_new_cell(inout vec4 cell, in vec2 position, in vec2 coordinates, in bool polarity);\t//adds a new cell at the \"new cell position\"\nfloat bound(float angle);\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t//clamps particle angle above 0.\nfloat witch(float x);\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t//probability distribution curve\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec4 cell\t\t= vec4(0.);\n\n\tvec4 prior\t\t= texture(renderbuffer, gl_FragCoord.xy/resolution);\n\t\n\tvec2 field\t\t= gl_FragCoord.xy * FREQUENCY;\n\n\tvec4 sum\t\t\t= vec4(0.);\n\tvec4 neighbor[8];\n\tfor (int i = 0; i < 8; i++)\n    {\n\t\tvec2 neighbor_uv \t= gl_FragCoord.xy - neighbor_offset(float(i));\n\t\tneighbor_uv\t\t= fract(neighbor_uv/resolution);\n\n\t\tneighbor[i] \t\t= texture(renderbuffer, neighbor_uv);\n\t\tsum\t\t\t+= neighbor[i];\n\t\t\n\t\t//positive alpha/red particles\n\t\tfloat positive_angle\t= neighbor[i].w;\n\t\tif (positive_angle != 0.)\n\t\t{   \n\t\t\tfloat sequence\t\t= abs(fract(positive_angle * 2.) - .5) < .25 ? field.x : field.y;\n\t\t\tsequence \t\t= fract(sequence) * .125;\n\t\t\tsequence\t\t\t= fract(positive_angle + sequence);\n\t\t\n\t\t\tif(floor(sequence * 8.) == float(i)) \n\t\t\t{\n\t\t\t\tcell.w \t\t= positive_angle;\n\t\t\t\tcell.x \t\t= neighbor[i].x;\n\t\t\t}\t\n\t\t}\n\t\t\n\t\t//negative green/blue particles\n\t\tfloat negative_angle\t= neighbor[i].y;\n\t\tif (negative_angle != 0.)\n\t\t{   \n\t\t\tfloat sequence\t\t= abs(fract(negative_angle * 2.) - .5) < .25 ? field.x : field.y;\n\t\t\tsequence \t\t= fract(sequence) * .125;\n\t\t\tsequence\t\t\t= fract(negative_angle + sequence);\n\t\t\n\t\t\tif(floor(sequence * 8.) == float(i)) \n\t\t\t{\n\t\t\t\tcell.y \t\t= negative_angle;\n\t\t\t\tcell.z \t\t= neighbor[i].z;\n\t\t\t}\t\n\t\t}\n\t}\n\t\n\tsum\t\t\t\t\t\t= sum * .125;\n\t\n\tvec4 d_x \t\t\t\t= (neighbor[5] + neighbor[6] + neighbor[7]) - (neighbor[1] + neighbor[2] + neighbor[3]); //left right\n\tvec4 d_y \t\t\t\t= (neighbor[3] + neighbor[4] + neighbor[6]) - (neighbor[1] + neighbor[0] + neighbor[7]); //top bottom\n\t\n\tfloat positive_normal \t= fract(atan(d_x.x, d_y.x)*.15915494);\n\tfloat negative_normal \t= fract(atan(d_x.z, d_y.z)*.15915494);\n\t\n\tvec2 f\t\t\t\t\t= normalize(sum.xz);\n\tfloat positive_field \t= abs(f.x-cell.x);\n\tfloat negative_field \t= abs(f.y-cell.z);\n\t\n\tfloat positive_angle \t= cell.w;\n\tfloat negative_angle \t= cell.y;\n\n\tfloat emission\t\t\t= CHARGE;\n\tfloat slope\t\t\t\t= FIELD*witch(abs(1.-prior.x-prior.z));\n\tfloat decay\t\t\t\t= DECAY;\t\n\t\n\tbool positive_charge\t= cell.w > 0.;\n\tbool negative_charge\t= cell.y > 0.;\n\t\n\n\t//fields that curve particle paths - red is positive, blue is negative\n\t\n\t//existing particles emit - empty space average charge in local neighborhood\n\tpositive_field \t\t= positive_charge ? emission : mix(sum.x, mix(sum.x, prior.x, WAKE), -slope)-decay; \n\tnegative_field \t\t= negative_charge ? emission : mix(sum.z, mix(sum.z, prior.z, WAKE), -slope)-decay; \n\t\n\tpositive_angle \t\t= positive_charge && positive_field > 0. ? mix_angle(positive_angle, fract(1.-positive_normal), .00625) : cell.w;\n\tnegative_angle \t\t= negative_charge && negative_field > 0. ? mix_angle(negative_angle, fract(1.-negative_normal), .00625) : cell.y; \n\t\n    positive_angle \t\t= positive_charge && negative_field > 0. ? mix_angle(positive_angle, negative_normal, slope) : cell.w;\n\tnegative_angle \t\t= negative_charge && positive_field > 0. ? mix_angle(negative_angle, positive_normal, slope) : cell.y; \n\t\n    \n    \n\tpositive_angle\t\t= positive_charge ? max(fract(positive_angle), MIN_FLOAT) : 0.;\n\tnegative_angle\t\t= negative_charge ? max(fract(negative_angle), MIN_FLOAT) : 0.;\n\t\n\t\n\tcell\t\t\t\t= vec4(positive_field, negative_angle, negative_field, positive_angle);\n\n\tcell\t\t\t\t= add_new_cell(cell, floor(resolution * vec2(mouse)), fragCoord, false);\n\tcell\t\t\t\t= add_new_cell(cell, floor(resolution * vec2(1.-mouse)), fragCoord, true);\n\tcell\t\t\t\t= add_new_cell(cell, floor(resolution * .75), fragCoord, false);\n\tcell\t\t\t\t= add_new_cell(cell, floor(resolution * .25), fragCoord, true);\n    \n\tcell\t\t\t\t= WRAP ? cell : clear_at_screen_edge(cell, fragCoord);\n\t\n\tfragColor\t    \t= clamp(cell, 0., 1.);\n}//sphinx\n\n\n//returns the sequence of offsets for the moore neighborhood\nvec2 neighbor_offset(float i)\n{\n\tfloat c = abs(i-2.);\n\tfloat s = abs(i-4.);\n\treturn vec2(c > 1. ? c > 2. ? 1. : .0 : -1., s > 1. ? s > 2. ? -1. : .0 : 1.);\n}\n\n\n\nfloat mix_angle( float angle, float target, float rate )\n{    \n\n   \tangle = abs( angle - target - 1. ) < abs( angle - target ) ? angle - 1. : angle;\n   \tangle = abs( angle - target + 1. ) < abs( angle - target ) ? angle + 1. : angle;\n\tangle = fract(mix(angle, target, rate));   \t\n   \treturn bound(angle);\n}\n\nfloat bound(float angle)\n{\n\treturn max(angle,.00392156);\n}\n\nfloat witch(float x)\n{\n\tx\t= 1.-x;\n\tfloat w = .0625/(x*x+.0625);\n\treturn \tw*w;\n}\n\n//adds a new cell at the position every frame\nvec4 add_new_cell(inout vec4 cell, in vec2 position, in vec2 coordinates, in bool polarity)\n{\n\tvec2 uv\t\t\t= coordinates.xy/resolution.xy; \n\tbool is_pixel\t   \t= abs(length(floor(coordinates.xy-position))) < 1.;\n\tfloat prior_angle\t= polarity ? texture(renderbuffer, uv).y : texture(renderbuffer, uv).w; \n\tfloat initial_angle\t= max(fract(prior_angle + MIN_FLOAT * 55.), MIN_FLOAT);\n\tvec2 angle\t\t= polarity ? initial_angle * vec2(1., 0.) : initial_angle * vec2(0., 1.);\n    \t\n\tcell \t\t\t= is_pixel ? vec4(0., angle.x, 0., angle.y) : cell;\t\n\treturn cell;\n}\n\n\n//clears the cell if it reaches the screen border\nvec4 clear_at_screen_edge(inout vec4 cell, in vec2 coordinates)\n{\n\treturn cell * float(coordinates.x > 1. && coordinates.y > 1. && coordinates.x < resolution.x-1. && coordinates.y < resolution.y-1.);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

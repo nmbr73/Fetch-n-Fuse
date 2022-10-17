@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: DreamLikeStylizedSobelEdge
+  id: DreamLikeStylizedSobelEdge
+  kernel: DreamLikeStylizedSobelEdge
+  name: DreamLikeStylizedSobelEdge
+shader:
+  author: NakedBowman
+  description: Stylized sobel edge detection, still a work in progress
+  id: 7tfcRj
+  name: Dream like Stylized Sobel Edge
+  tags:
+  - sobel
+  - edge
+  - dream
+  - styalized
+  url: https://www.shadertoy.com/view/7tfcRj

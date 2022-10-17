@@ -1,0 +1,93 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sl3BzS",
+  "date": "0",
+  "viewed": 0,
+  "name": "The Passage XXIX JiPi",
+  "description": "still life replicating 'The Passage\" series by H.R. Giger [url]https://wikioo.org/paintings.php?refarticle=A25TB8&titlepainting=hr+giger+passage+XXIX&artistname=H.R.+Giger[/url]",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "3d",
+   "reproduction",
+   "giger"
+  ],
+  "hasliked": 0,
+  "parentid": "7dK3DD",
+  "parentname": "The Passage XXIX"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by SHAU - 2021\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n//-----------------------------------------------------\n\n/**\n * Still life of The Passage XXIX by H.R.Giger\n * https://wikioo.org/paintings.php?refarticle=A25TB8&titlepainting=hr+giger+passage+XXIX&artistname=H.R.+Giger\n */\n \n#define R iResolution.xy\n\nvec3 ACESFilm(vec3 x)\n{\n    float a = 2.51;\n    float b = 0.03;\n    float c = 2.43;\n    float d = 0.59;\n    float e = 0.14;\n    return (x*(a*x+b))/(x*(c*x+d)+e);\n}\n\nvoid mainImage(out vec4 C, vec2 U)\n{\n    vec3 col = texture(iChannel0,U/R).xyz;\n    if (U.x<R.x*0.25 || U.x>R.x*0.75) col = vec3(0.75,0.7,0.8);\n    col = pow(ACESFilm(col),vec3(0.3545));\n    C = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsX3zn",
+     "filepath": "/media/a/94284d43be78f00eb6b298e6d78656a1b34e2b91b34940d02f1ca8b22310e8a0.png",
+     "type": "cubemap",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Created by SHAU - 2021\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n//-----------------------------------------------------\n\n#define R iResolution.xy\n#define ZERO (min(iFrame,0))\n#define EPS .002\n#define FAR 100.\n#define T iTime\n\n//Fabrice - compact rotation\nmat2 rot(float x) {return mat2(cos(x), sin(x), -sin(x), cos(x));}\n\n//Shane IQ\nfloat n3D(vec3 p) {    \n\tconst vec3 s = vec3(7, 157, 113);\n\tvec3 ip = floor(p); \n    p -= ip; \n    vec4 h = vec4(0., s.yz, s.y + s.z) + dot(ip, s);\n    p = p * p * (3. - 2. * p);\n    h = mix(fract(sin(h) * 43758.5453), fract(sin(h + s.x) * 43758.5453), p.x);\n    h.xy = mix(h.xz, h.yw, p.y);\n    return mix(h.x, h.y, p.z);\n}\n\n//distance functions from IQ\n//https://iquilezles.org/articles/distfunctions\nfloat sdCappedCylinder( vec3 p, float h, float r )\n{\n  vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(h,r);\n  return min(max(d.x,d.y),0.0) + length(max(d,0.0));\n}\n\nfloat sdBox( vec3 p, vec3 b )\n{\n  vec3 q = abs(p) - b;\n  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);\n}\n\nfloat dot2( in vec2 v ) { return dot(v,v); }\nfloat sdCappedCone( vec3 p, float h, float r1, float r2 )\n{\n  vec2 q = vec2( length(p.xy), p.z );\n  vec2 k1 = vec2(r2,h);\n  vec2 k2 = vec2(r2-r1,2.0*h);\n  vec2 ca = vec2(q.x-min(q.x,(q.y<0.0)?r1:r2), abs(q.y)-h);\n  vec2 cb = q - k1 + k2*clamp( dot(k1-q,k2)/dot2(k2), 0.0, 1.0 );\n  float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;\n  return s*sqrt( min(dot2(ca),dot2(cb)) );\n}\n\nfloat sdTorus( vec3 p, vec2 t )\n{\n  vec2 q = vec2(length(p.xy)-t.x,p.z);\n  return length(q)-t.y;\n}\n\nfloat sdTriPrism( vec3 p, vec2 h )\n{\n  vec3 q = abs(p);\n  return max(q.z-h.y,max(q.x*0.866025-p.y*0.5,-p.y)-h.x*0.5);\n}\n\nfloat sdCapsule( vec3 p, vec3 a, vec3 b, float r )\n{\n  vec3 pa = p - a, ba = b - a;\n  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );\n  return length( pa - ba*h ) - r;\n}\n\nfloat sdEllipsoid(vec3 p, vec3 r)\n{\n    float k0 = length(p/r);\n    float k1 = length(p/(r*r));\n    return k0*(k0-1.0)/k1;\n}\n\nfloat smin(float a, float b, float k) {\n\tfloat h = clamp(0.5 + 0.5 * (b - a) / k, 0., 1.);\n\treturn mix(b, a, h) - k * h * (1. - h);\n}\n\nfloat smax(float a, float b, float k) {\n\tfloat h = clamp( 0.5 + 0.5 * (b - a) / k, 0.0, 1.0 );\n\treturn mix(a, b, h) + k * h * (1.0 - h);\n}\n\nvec2 near(vec2 a, vec2 b)\n{\n    float s = step(a.x,b.x);\n    return s*a + (1.0-s)*b;\n}\n\nfloat dfHandle(vec3 p, float r)\n{\n    p.xy *= rot(r);\n    float t = min(sdTorus(p,vec2(1.6,0.3)),\n                  sdCapsule(p,vec3(0.0,0.0,-0.3),vec3(0.0,0.0,4.0),0.3));\n    t = min(t,sdCapsule(p,vec3(-2.0,0.0,0.0),vec3(2.0,0.0,0.0),0.2));\n    t = min(t,sdCapsule(p,vec3(0.0,-2.0,0.0),vec3(0.0,2.0,0.0),0.2));\n    return t;\n}\nvec2 map(vec3 p) \n{\n    //backplane\n    float t = min(sdBox(p-vec3(0.0,0.0,3.2),vec3(100,100,1)),\n            sdTorus(p-vec3(0.0,13.0,2.2),vec2(25.0,0.2)));\n    t = max(t,-sdBox(p-vec3(0,1,0),vec3(5.0,7.0,10.0)));\n    t = min(t,sdBox(p-vec3(-23.0,2.0,3.2),vec3(13.0,6.0,2.5)));\n    t = min(t,sdBox(p-vec3(-9.0,6.5,3.2),vec3(1.0,1.5,2.5)));\n    t = min(t,sdBox(p-vec3(-8.0,-2.8,2.4),vec3(1.8,0.4,2.0)));  \n    t = smin(t,sdBox(p-vec3(-13.5,-4.0,2.0),vec3(1.0,2.0,2.0)),0.5);\n    //side hinge\n    float th = min(sdCappedCylinder(p-vec3(-8.0,7.2,1.0),1.0,1.0),\n                   sdBox(p-vec3(-18.0,7.2,1.0),vec3(10.0,1.0,1.0)));\n    th = max(th,-p.y-p.x*0.1+5.0);\n    t = min(t,th);\n    //web\n    t = min(t,sdCappedCylinder(p.xzy-vec3(-10.0,3.2,5.0),0.3,4.0));\n    t = min(t,sdBox(p-vec3(-10.0,0.0,3.2),vec3(0.3,5.0,4.0)));\n    t = min(t,sdBox(p-vec3(-8.5,5.0,3.2),vec3(1.5,0.3,4.0)));\n    //FRONT DOOR\n    float td = sdBox(p,vec3(5.0,5.0,0.2));\n    td = max(td,-sdCappedCone(p,1.0,4.8,3.4));\n    td = min(td,sdTorus(p-vec3(0.0,0.0,-0.2),vec2(4.4,0.2)));\n    //bottom hinge\n    td = smin(td,sdCappedCylinder(p.yxz-vec3(-5.5,0.0,0.5),1.0,5.0),0.2);\n    //top hinge\n    td = smin(td,sdCappedCylinder(p.yxz-vec3(5.25,0.0,0.0),0.5,5.0),0.2);\n    vec3 q = p-vec3(2.0,0.0,0.0)*clamp(round(p/vec3(2.0,0.0,0.0)),-2.0,2.0);\n    td = max(td,-sdCappedCylinder(q.yxz-vec3(5.25,0.0,0.0),0.7,0.5));\n    td = min(td,sdCappedCylinder(q.yxz-vec3(5.25,0.0,0.0),0.5,0.42));\n    \n    //clean edges????\n    //td = max(td,abs(p.x)-5.0);\n    \n    q = p;\n    q.x = abs(q.x);\n    //backplane again\n    t = min(t,sdBox(q-vec3(5.0,20.0,3.2),vec3(1.0,14.0,1.3)));\n    //rivets\n    float metal = min(sdCappedCylinder(q.xzy-vec3(5.0,0.0,5.0),0.2,1.2),\n                      sdCappedCylinder(q.xzy-vec3(4.0,0.0,5.0),0.2,1.2));\n    metal = min(metal,sdCappedCylinder(q.xzy-vec3(5.0,0.0,4.2),0.2,1.2));\n    q.y = abs(q.y);\n    td = min(td,sdBox(q-vec3(4.5,3.0,0.0),vec3(0.5,0.3,0.6)));\n    metal = min(metal,sdCappedCylinder(q.xzy-vec3(4.5,0.0,3.0),0.2,0.8));\n    t = min(t,td);\n    //top bracket\n    q = p - vec3(0.0,5.5,0.0);\n    q.yz *= rot(0.35);\n    t = min(t,sdBox(q-vec3(0.0,4.5,0.0),vec3(4.0,4.0,0.1)));\n    float b = sdBox(q-vec3(0.0,1.8,-0.7),vec3(5.45,1.8,0.2));\n    b = smax(b,sdCappedCylinder(q.xzy-vec3(0.0,0.0,0.0),5.4,1.0),0.2);\n    b = smax(b,-sdCappedCylinder(q.xzy-vec3(0.0,0.0,0.0),3.0,1.0),0.2);\n    b = smin(b,sdBox(vec3(abs(p.x),p.yz)-vec3(4.2,4.8,-0.65),vec3(1.2,1.0,0.2)),0.2);\n    t = min(t,b-0.1);\n    //sides\n    q = p;\n    q.x = abs(q.x);\n    t = min(t,sdBox(q-vec3(4.9,-0.125,0.0),vec3(0.1,5.375,0.5)));\n    t = min(t,sdBox(q-vec3(5.3,-0.3,1.5),vec3(0.15,6.3,2.1)));\n    t = min(t,max(sdTriPrism(q.yzx-vec3(-7.0,0.0,5.3),vec2(2.0,0.15)),p.z-3.0));\n    //handles\n    t = min(t,sdBox(vec3(p.x,abs(p.y-3.6),p.z)-vec3(13.0,6.0,2.8),vec3(3.0,0.5,1.0)));\n    metal = min(metal,dfHandle(vec3(p.x,abs(p.y-3.6),p.z)-vec3(13.0,6.0,1.0),0.3));    \n    //cut\n    //top\n    t = max(t,-sdBox(p-vec3(0.0,5.0,0.0),vec3(1.6,2.0,1.0)));\n    //bottom\n    t = max(t,-sdBox(p-vec3(0.0,-6.0,0.0),vec3(1.6,0.8,2.0)));\n    metal = min(metal,sdCappedCylinder(p.yxz-vec3(-5.5,-0.5,0.5),0.6,7.0));    \n    //bottom pistons\n    q.yz *= rot(-0.1);\n    metal = min(metal,sdCappedCylinder(q-vec3(0.0,-7.0,0.0),1.8,0.2));\n    metal = min(metal,sdCappedCylinder(q-vec3(1.0,-16.0,0.0),0.4,9.0));\n    float white = sdCappedCylinder(q-vec3(1.0,-14.0,0.0),0.7,5.0);\n    t = min(t,sdCappedCylinder(q-vec3(1.0,-14.0,0.0),0.5,5.4));\n    t = min(t,sdCappedCylinder(q-vec3(1.0,-18.0,0.0),1.0,0.2));\n    t = min(t,sdBox(q-vec3(0.0,-18.0,0.0),vec3(1.0,0.2,1.0)));\n    metal = smin(metal,sdBox(q-vec3(0.0,-6.5,0.0),vec3(1.0,0.5,1.0)),0.2);\n    white = smin(white,sdBox(q-vec3(1.8,-10.5,0.0),vec3(0.4,1.0,0.6)),0.2); \n    //LEFT CYLINDER\n    q = p - vec3(-7.4,-5.5,0.5);\n    float tlc = smin(sdCappedCylinder(q-vec3(0.0,6.7,0.0),1.0,3.0)-0.5,\n                     sdCappedCylinder(q-vec3(0.0,5.0,0.0),1.6,0.3),0.1);\n    tlc = min(tlc, sdCappedCylinder(q.yzx-vec3(2.6,0.0,0.0),0.6,0.8));\n    tlc = max(tlc,-sdCappedCylinder(q.yzx-vec3(2.6,0.0,0.0),0.5,0.9));\n    metal = min(metal,sdCappedCylinder(q.yxz,0.9,0.7));\n    float tcc = smin(sdCappedCylinder(q.yxz,1.5,0.5),\n                     sdCappedCylinder(q.yxz-vec3(1.5,0.0,0.0),0.4,0.5),0.2); \n    tcc = smin(tcc,sdCappedCylinder(q.yxz-vec3(-0.8,0.0,-1.2),0.4,0.5),0.2);\n    tcc = max(tcc,abs(q.x)-0.5);\n    metal = min(metal,tcc);\n    t = min(t,tlc);\n    //RIGHT CYLINDER\n    q = p - vec3(6.4,-5.5,0.5);\n    float trc = sdCappedCylinder(q-vec3(0.0,6.0,0.0),0.2,2.0)-0.3;\n    trc = max(trc,-sdTorus(q.xzy-vec3(0.0,0.0,5.0),vec2(0.5,0.1)));\n    trc = max(trc,-sdTorus(q.xzy-vec3(0.0,0.0,7.0),vec2(0.5,0.1)));\n    metal = min(metal,sdCappedCylinder(q-vec3(0.0,6.0,0.0),0.2,3.0));\n    trc = min(trc,sdCappedCylinder(q-vec3(0.0,2.4,0.0),0.4,0.5));\n    trc = max(trc,-sdBox(q-vec3(0.0,1.2,0.0),vec3(0.15,1.2,1.0)));\n    metal = min(metal,sdBox(q-vec3(0.0,1.2,0.0),vec3(0.1,1.0,0.3)));\n    metal = min(metal,sdCappedCylinder(q.yxz,1.2,0.06));\n    metal = min(metal,sdCappedCylinder(q.yxz,1.0,0.3));\n    //armature\n    q.y -= 9.4;\n    trc = min(trc,sdCappedCylinder(q.xzy,0.6,0.6));\n    metal = min(metal,sdCappedCylinder(q.xzy,0.3,0.8));\n    trc = min(trc,sdBox(q-vec3(-0.8,1.0,0.0),vec3(0.5,1.0,0.2)));\n    q.xy *= rot(0.8);\n    trc = min(trc,sdBox(q-vec3(0.0,0.0,0.0),vec3(0.2,1.2,0.2)));\n    t = min(t,trc);\n    //wires\n    q = p - vec3(-9.0,-10.0,1.0);\n    q.x += sin(q.y*0.3);\n    q.z -= q.x*0.05;\n    q.xy *= rot(-0.5);\n    float tw = min(max(sdTorus(q,vec2(5.0,0.2)),q.y),\n                   max(sdTorus(q-vec3(8.0,0.0,0.0),vec2(3.0,0.2)),-q.y));\n    tw = min(tw,max(sdTorus(q-vec3(-10.0,0.0,0.0),vec2(5.0,0.2)),-q.y));\n    tw = max(tw,q.x-7.0);\n    tw = max(tw,-q.x-7.0);\n    q = p - vec3(-9.0,-12.0,1.0);\n    q.z -= q.x*-0.05;\n    tw = min(tw,max(sdTorus(q,vec2(4.3,0.2)),q.y));\n    tw = min(tw,max(sdTorus(q-vec3(6.3,0.0,0.0),vec2(2.0,0.2)),-q.y));    \n    tw = min(tw,sdCapsule(q,vec3(-4.3,0.0,0.0),vec3(-4.3,8.0,0.0),0.2));\n    tw = max(tw,q.x-8.0);\n    //flesh\n    q = p-vec3(0,1,3);\n    float nz = n3D(vec3(p.x*8.1,p.y,p.z*9.17));\n    nz *= smoothstep(1.0,2.0,abs(p.x))*smoothstep(4.0,2.0,abs(p.x))*\n          smoothstep(4.0,-1.6,p.y)*smoothstep(-4.0,-1.6,p.y) *\n          0.06;\n    float tf = sdEllipsoid(q-vec3(0,0.6,0),vec3(2.6+nz,4.8+nz,1.6+nz));\n    tf = smin(tf,sdEllipsoid(q-vec3(0,6,2.8),vec3(4.0,8.0,4.0)),1.0);\n    q.x = abs(q.x);\n    tf = smin(tf,sdEllipsoid(q-vec3(5.0,-2.0,3.3),vec3(4,20,4)),2.0);\n    //cut\n    nz = n3D(p)*0.3;\n    float tfc = sdEllipsoid(q-vec3(0,0,-1),vec3(0.5,4.4,4.0));\n    tfc = smin(tfc,sdEllipsoid(q-vec3(0,1.6,-0.4),vec3(0.4+nz,1.0+nz,4.2)),0.1);\n    tfc = smin(tfc,sdEllipsoid(q-vec3(0,-0.7,-0.6),vec3(0.7+nz,2.9+nz,4.2)),0.1);\n    tf = smax(tf,-tfc,0.2);\n    //join\n    float tfl = sdEllipsoid(q-vec3(0,0.6,-0.7),vec3(0.4,5.6,1.0));\n    tfl = smin(tfl,sdEllipsoid(q-vec3(0,1.6,-0.6),vec3(0.4+nz,1.0+nz,1.2)),0.1);\n    tfl = smin(tfl,sdEllipsoid(q-vec3(0,-1.1,-0.6),vec3(0.6+nz,2.4+nz,1.2)),0.1);\n    tfl = smax(tfl,-sdEllipsoid(q-vec3(0,-1.8,-0.6),vec3(0.15+nz,3.2+nz,10.0)),0.2);\n    tf = max(tf,abs(p.x)-5.0);\n    tf = max(tf,abs(p.y-1.0)-7.0); \n    vec2 n = near(vec2(t,1.0),vec2(metal,2.0));\n    n = near(n,vec2(tw,3.0));\n    n = near(n,vec2(tf,4.0));\n    n = near(n,vec2(tfl,5.0));\n    return near(n,vec2(white,6.0));\n}\n\nvec3 normal(vec3 p) \n{  \n    vec4 n = vec4(0.0);\n    for (int i=ZERO; i<4; i++) \n    {\n        vec4 s = vec4(p, 0.0);\n        s[i] += EPS;\n        n[i] = map(s.xyz).x;\n    }\n    return normalize(n.xyz-n.w);\n}\n\n//IQ - https://iquilezles.org/articles/raymarchingdf\nfloat AO(vec3 p, vec3 n) \n{\n    float ra = 0., w = 1., d = 0.;\n    for (int i=ZERO; i<5; i++){\n        d = float(i) / 5.;\n        ra += w * (d - map(p + n*d).x);\n        if (ra>1.) break;\n        w *= .5;\n    }\n    return 1. - clamp(ra,0.,1.);\n}\n\nvec2 march(vec3 ro, vec3 rd) \n{\n    float t = 0.0, id = 0.0;   \n    for (int i=ZERO; i<100; i++)\n    {\n        vec2 ns = map(ro + rd*t);\n        if (abs(ns.x)<EPS)\n        {\n            id = ns.y;\n            break;\n        }\n        t += ns.x;\n        if (t>FAR) \n        {\n            t = -1.0;\n            break;\n        }\n        \n    }\n    return vec2(t,id);\n}\n\n//IQ\n//https://www.shadertoy.com/view/lsKcDD\nfloat calcSoftshadow( in vec3 ro, in vec3 rd, in float mint, in float tmax, int technique )\n{\n\tfloat res = 1.0;\n    float t = mint;\n    float ph = 1e10; // big, such that y = 0 on the first iteration\n    \n    for( int i=0; i<64; i++ )\n    {\n\t\tfloat h = map( ro + rd*t ).x;\n\n        // traditional technique\n        if( technique==0 )\n        {\n        \tres = min( res, 10.0*h/t );\n        }\n        // improved technique\n        else\n        {\n            // use this if you are getting artifact on the first iteration, or unroll the\n            // first iteration out of the loop\n            //float y = (i==0) ? 0.0 : h*h/(2.0*ph); \n\n            float y = h*h/(2.0*ph);\n            float d = sqrt(h*h-y*y);\n            res = min( res, 10.0*d/max(0.0,t-y) );\n            ph = h;\n        }\n        \n        t += h;\n        \n        if( res<0.0001 || t>tmax ) break;\n        \n    }\n    res = clamp( res, 0.0, 1.0 );\n    return res*res*(3.0-2.0*res);\n}\n\nvec3 camera(vec2 U, vec3 ro, vec3 la, float fl) \n{\n    vec2 uv = (U - R*.5) / R.y;\n    vec3 fwd = normalize(la-ro),\n         rgt = normalize(vec3(fwd.z,0.0,-fwd.x));\n    return normalize(fwd + fl*uv.x*rgt + fl*uv.y*cross(fwd, rgt));\n}\n\nvoid mainImage(out vec4 C, vec2 U)\n{\n    vec3 pc = vec3(0),\n         la = vec3(0,-5.0,0),\n         lp = vec3(10,45,-40),\n         ro = vec3(0,-5.0,-22);\n    \n    vec3 rd = camera(U,ro,la,1.4);\n    \n    vec2 s = march(ro,rd);\n    if (s.x>0.0)\n    {\n        vec3 p = ro + rd*s.x;\n        vec3 n = normal(p);\n        vec3 ld = normalize(lp - p);\n        vec3 ld2 = normalize(vec3(10,45,-40)-p);\n        float spg = 0.0;\n        float spm = 0.0;\n        \n        vec3 sc = vec3(0.7);\n        if (s.y==1.0)\n        {\n            spm = 0.2+n3D(1.7+p*0.7)*0.4;\n            spg = 0.3;\n            sc = mix(vec3(0.7,0.6,0.8),vec3(0.7),n3D(vec3(p.x,p.y*0.3,p.z)));\n        }\n        if (s.y==2.0)\n        {\n            spg = 1.0;\n            sc = texture(iChannel1,reflect(rd,n)).xyz;\n        }\n        if (s.y==3.0)\n        {\n            spm = 0.3;\n            sc = vec3(0.2);\n        }\n        if (s.y==4.0)\n        {\n            spg = smoothstep(3.0,0.0,abs(p.x));\n            spm = 0.2;\n            sc = mix(vec3(1.0,0.8,0.7),\n                     vec3(1,0.3,0.3),\n                     spg);\n            sc = mix(sc,vec3(1.0,0.8,0.7),n3D(p*3.0));\n            float nz = n3D(51.2+vec3(p.x*19.31+sin(p.y*0.9)*1.4,p.y,p.z*17.37));\n            nz *= smoothstep(3.0,1.0,p.y)*smoothstep(3.0,0.0,abs(p.x));\n            sc = mix(sc,vec3(0),min(1.0,nz*2.));\n            sc *= max(0.0,dot(ld2,n));\n        }\n        if (s.y==5.0)\n        {\n            spg = 1.0;\n            sc = mix(vec3(1,0.3,0.3),vec3(1,0.7,0.7),n3D(p*3.0));\n            sc *= max(0.0,dot(ld2,n));\n        }\n        if (s.y==6.0)\n        {\n            spg = 1.0;\n            sc = vec3(1);\n        }\n        float ao = AO(p,n);\n        float specg = pow(max(dot(reflect(-ld,n),-rd),0.0),32.0);\n        float specm = pow(max(dot(reflect(-ld,n),-rd),0.0),4.0);\n        float sh = calcSoftshadow(p,ld,EPS,FAR,0);\n\n        pc += sc * max(0.0,dot(ld,n));        \n        //pc += vec3(0,0,0.02)*max(0.0,-n.y); \n        pc += vec3(1)*specg*spg;\n        pc += vec3(1)*specm*spm;\n        pc *= ao;\n        pc *= sh;\n        if (s.y==4.0||s.y==5.0)\n        {\n            //fix shadow\n            float ct = length(p.xy-vec2(0.6,-1.3));\n            pc *= smoothstep(0.01,0.0,ct-4.7);\n        }\n    }\n    C = vec4(pc,1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

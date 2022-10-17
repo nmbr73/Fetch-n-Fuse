@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: WaterPunkJipi707
+  id: WaterPunkJipi707
+  kernel: WaterPunkJipi707
+  name: WaterPunkJipi707
+shader:
+  author: N.N.
+  description: water dance
+  id: NtscWM
+  name: Water Punk JiPi 707
+  parent:
+    id: NsKSz3
+    name: Water Punk
+    url: https://www.shadertoy.com/view/NsKSz3
+  tags:
+  - raymarching
+  - refraction
+  - webcam
+  url: https://www.shadertoy.com/view/NtscWM

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: D2DPhysicsEngine
+  id: D2DPhysicsEngine
+  kernel: D2DPhysicsEngine
+  name: D2DPhysicsEngine
+shader:
+  author: mdb
+  description: 'simple 2D physics engine with circles
+
+
+    could be upgrade with some kind of k-tree to check collisions faster'
+  id: flX3zH
+  name: 2D physics engine
+  tags:
+  - physicsengine
+  url: https://www.shadertoy.com/view/flX3zH

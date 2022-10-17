@@ -1,0 +1,34 @@
+fuse:
+  author: JiPi
+  file: NeonplasmastormJipi
+  id: NeonplasmastormJipi
+  kernel: NeonplasmastormJipi
+  name: NeonplasmastormJipi
+shader:
+  author: N.N.
+  description: My first effort with Shadertoy. Inspired by mu6k's Noise Plasma (https://www.shadertoy.com/view/XsS3Rd).
+    I decided to turn this into a bit of tutorial for others who are new to Shaders.
+    Updated with toggle-able CRT filter effects. Share and modify! :)
+  id: Ntdfz4
+  name: NeonPlasmaStorm JiPi
+  parent:
+    id: 4scGDH
+    name: Neon Plasma Storm
+    url: https://www.shadertoy.com/view/4scGDH
+  tags:
+  - swirl
+  - tutorial
+  - plasma
+  - contrast
+  - crt
+  - psychedelic
+  - vignette
+  - trig
+  - vortex
+  - firstshader
+  - hash
+  - rotozoom
+  - distorsion
+  - neon
+  - tut
+  url: https://www.shadertoy.com/view/Ntdfz4

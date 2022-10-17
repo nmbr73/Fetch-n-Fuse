@@ -1,0 +1,116 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7llBR2",
+  "date": "0",
+  "viewed": 0,
+  "name": "Lots Of Particles JiPi507",
+  "description": "Testing particles with multipass. The number of particles is only limited by the number of pixels, but there's a catch: if multiple particles exist in the same cell, they are combined. This results in fewer and fewer particles over time...",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "particles",
+   "multipass"
+  ],
+  "hasliked": 0,
+  "parentid": "MdtGDX",
+  "parentname": "lots o' particles"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [],
+   "code": "/*\n\tlots o' particles (Image)\n\t2016 stb\n\n\tDrawing from Buf B...\n*/\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    \n    float pDot, pTrail;\n    \n    pDot = texture(iChannel0, uv).r;\n    pTrail = texture(iChannel0, uv).g;\n    \n\tfragColor = vec4(vec3(pDot)+vec3(.5, .75, 1.)*vec3(pTrail), 1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n\tlots o' particles (Buf A)\n\t2016 stb\n\n\tThis shader updates the particles.\n\n\tNo attempt is made to preserve particles upon contact, so only a few will remain after a while :(\n*/\n\nconst float ParticleDensity = 1.; // 0.0-1.0\n\n// hash without sine\n// https://www.shadertoy.com/view/4djSRW\nfloat hash12(vec2 p) {\n    vec3 MOD3 = vec3(443.8975, 397.2973, 491.1871);\n    vec3 p3 = fract(vec3(p.xyx) * MOD3);\n    p3 += dot(p3, p3.yzx + 19.19);\n    return fract((p3.x + p3.y) * p3.z);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n    vec2 res = iResolution.xy;\n    vec2 px = 1. / res;\n    vec2 uv = fragCoord.xy / res;\n    \n    vec4 buf[9];\n    buf[0] = texture(iChannel0, uv);\n    buf[1] = texture(iChannel0, fract(uv-vec2(px.x, 0.)));\n    buf[2] = texture(iChannel0, fract(uv-vec2(-px.x, 0.)));\n    buf[3] = texture(iChannel0, fract(uv-vec2(0., px.y)));\n    buf[4] = texture(iChannel0, fract(uv-vec2(0., -px.y)));\n    buf[5] = texture(iChannel0, fract(uv-vec2(px.x, px.y)));\n    buf[6] = texture(iChannel0, fract(uv-vec2(-px.x, px.y)));\n    buf[7] = texture(iChannel0, fract(uv-vec2(px.x, -px.y)));\n    buf[8] = texture(iChannel0, fract(uv-vec2(-px.x, -px.y)));\n    \n    // this cell's particle direction & position, if any\n    vec2 pDir = buf[0].rg;\n    vec2 pPos = buf[0].ba;\n    \n    // update this cell's particle position\n    pPos = mod(pPos+pDir, res);\n    \n    // clear the current cell if its particle leaves it\n    if(floor(pPos)!=floor(fragCoord)) {\n        pDir = vec2(0.);\n        pPos = vec2(0.);\n    }\n    \n    // add up any incoming particles\n    float ct = 0.;\n    vec2 pDirAdd = vec2(0.);\n    vec2 pPosAdd = vec2(0.);\n    for(int i=1; i<9; i++) {\n        vec2 pPosI = buf[i].ba;\n        pPosI = mod(pPosI+buf[i].rg, res);\n        if(floor(pPosI)==floor(fragCoord)) {\n            pDirAdd += buf[i].rg;\n            pPosAdd += pPosI;\n            ct ++;\n        }\n    }\n    \n    // if particles were added up, average and transfer them to the current cell\n    if(ct>0.) {\n        pDir = normalize(pDirAdd / ct);\n        pPos = pPosAdd / ct;\n    }\n    \n    // first frame particle setup\n    if(iFrame==0)\n        if(ParticleDensity>hash12(fragCoord/res)) {\n            vec2 randXY =\n                vec2(\n                    hash12(mod(uv+iTime/100.-4., 100.)),\n            \t\thash12(mod(uv-iTime/100.-8., 100.))\n\t\t\t\t);\n            \n            pDir = normalize(randXY-.5);\n            pPos = fragCoord;\n        }\n    \n    fragColor = vec4(pDir, pPos);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "/*\n\tlots o' particles (Buf B)\n\t2016 stb\n\n\tThis shader predraws the particles for the Image shader.\n*/\n\nconst float FadeAmt = 0.1; // 0.0-1.0\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord ) {\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    \n    float pDot, pTrail;\n    vec2 pDir = texture(iChannel0, uv).rg;\n    \n    pDot = texture(iChannel0, uv).r;\n    pTrail = texture(iChannel1, uv).g;\n    \n    // make this cell white if it has a nonzero vector length\n    if(length(pDir)>0.)\n       \tpDot = 1.;\n    \n    // trail effect\n    pTrail = max(pDot, pTrail-FadeAmt);\n    \n\tfragColor = vec4(pDot, pTrail, 0., 1.);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

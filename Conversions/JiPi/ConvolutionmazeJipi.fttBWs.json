@@ -1,0 +1,78 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fttBWs",
+  "date": "0",
+  "viewed": 0,
+  "name": "ConvolutionMaze JiPi",
+  "description": "playing with lomateron blur convolutions",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "convolution",
+   "ca"
+  ],
+  "hasliked": 0,
+  "parentid": "7ld3zs",
+  "parentname": "Convolution maze (fork)"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//forked from https://www.shadertoy.com/view/stfGzr by lomateron \nvoid mainImage( out vec4 O, in vec2 U )\n{\n    \n    vec4 v=texelFetch(iChannel0,ivec2(U),0);\n    \n    O = (.3+.7*smoothstep(.01,.0,v.w) )//border    \n     * (sin(     \n         v*vec4(.9, 5.2,3.5,0) //colors: base, node, vein\n         +vec4(.2) //background\n        )*.5+.5); \n   \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define A(u) texelFetch(iChannel0,ivec2(u),0)\n#define R iResolution\nvoid mainImage( out vec4 O, in vec2 u )\n{       \n    float z =8.,dm=1.;\n    vec4 k1= vec4(1.,3.24,6.,.2), \n         k2= vec4(-1,1.07,-0.03,-0.03),\n         s=vec4(0),b=s;\n  \n    for(float i = 0.; i<=z;i++) for(float j = 0.; j<=z;j++){\n        float  l=(i*i+j*j)/z/z;\n        if(l<=1.) {\n            vec4 e=exp(-l*k1);\n            s+= (i==0.?1.:2.)*(j==0.?1.:2.)* e;\n            for(float i1 =-1.;i1<=1.;i1+=2.)for(float j1 =-1.;j1<=1.;j1+=2.){//symmetry\n                float d = A(u+vec2(i*i1,j*j1)).x;             \n                b+=d*e;\n                if(d>=1.)dm=min(dm,l);\n            }\n        }\n    }    \n    \n    O=vec4(1.,b.x/s.x,b.y/s.y*6.,dm*z)* \n    (((iFrame%1200)==0) ? \n        smoothstep(.01,0.,abs(.1+.01*sin(u.x)-length((2.*u-R.xy)/R.y))):\n        clamp( z* dot(b/s,k2),0.,1.));    \n    if(iMouse.z>0.) O =mix(O,1.-500.*O, max(0.,.1-length(2.*(u-iMouse.xy)/R.y))); \n\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

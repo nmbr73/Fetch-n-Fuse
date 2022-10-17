@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: BrokenScreenJipi
+  id: BrokenScreenJipi
+  kernel: BrokenScreenJipi
+  name: BrokenScreenJipi
+shader:
+  author: N.N.
+  description: perhaps with something that drives the position of mouse
+  id: flcyWH
+  name: Broken Screen JiPi
+  parent:
+    id: NdKXDd
+    name: Broken Screen
+    url: https://www.shadertoy.com/view/NdKXDd
+  tags:
+  - fluid
+  - experimental
+  - fluorescent
+  - xenomorph
+  url: https://www.shadertoy.com/view/flcyWH

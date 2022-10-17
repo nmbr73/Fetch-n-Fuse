@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Hexwaves
+  id: Hexwaves
+  kernel: Hexwaves
+  name: Hexwaves
+shader:
+  author: mattz
+  description: No distance marching -- just raytracing a hexagonal grid as first developed
+    in https://www.shadertoy.com/view/XdSyzK
+  id: XsBczc
+  name: hexwaves
+  tags:
+  - voxel
+  - raytrace
+  - hex
+  - seasick
+  url: https://www.shadertoy.com/view/XsBczc

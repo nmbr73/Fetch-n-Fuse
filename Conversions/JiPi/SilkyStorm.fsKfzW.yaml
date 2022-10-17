@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: SilkyStorm
+  id: SilkyStorm
+  kernel: SilkyStorm
+  name: SilkyStorm
+shader:
+  author: leon
+  description: Shader suave
+  id: fsKfzW
+  name: Silky Storm
+  tags:
+  - cloud
+  - abstract
+  - gyroid
+  url: https://www.shadertoy.com/view/fsKfzW

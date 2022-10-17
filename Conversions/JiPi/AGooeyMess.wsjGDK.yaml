@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: AGooeyMess
+  id: AGooeyMess
+  kernel: AGooeyMess
+  name: AGooeyMess
+shader:
+  author: wyatt
+  description: 'Modeling surface tension using a mixture of particles and continuum
+    algorithms. Mouse does a thing.
+
+    '
+  id: wsjGDK
+  name: A Gooey Mess
+  tags:
+  - surfacetension
+  url: https://www.shadertoy.com/view/wsjGDK

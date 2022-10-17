@@ -1,0 +1,34 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7t3czn",
+  "date": "0",
+  "viewed": 0,
+  "name": "3D Perlin Ice Cracks JiPi",
+  "description": "Just some Perlin noise experiments to get the look down before using it in a ray marcher.\n\nThe view shows an XZ slice and scrolls over time in all dimensions.\n\nReferences:\nHashes from https://www.shadertoy.com/view/XlGcRh",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "noise"
+  ],
+  "hasliked": 0,
+  "parentid": "fsyBRV",
+  "parentname": "3D Perlin Ice Cracks"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Hash without Sine\n// https://www.shadertoy.com/view/4djSRW\nfloat hashwithoutsine11(float p)\n{\n    p = fract(p * .1031);\n    p *= p + 33.33;\n    p *= p + p;\n    return fract(p);\n}\n\n// Integer Hash - II\n// - Inigo Quilez, Integer Hash - II, 2017\n//   https://www.shadertoy.com/view/XlXcW4\nuvec3 iqint2(uvec3 x)\n{\n    const uint k = 1103515245u;\n\n    x = ((x>>8U)^x.yzx)*k;\n    x = ((x>>8U)^x.yzx)*k;\n    x = ((x>>8U)^x.yzx)*k;\n\n    return x;\n}\n\n// http://www.jcgt.org/published/0009/03/02/\nuvec3 pcg3d(uvec3 v) {\n\n    v = v * 1664525u + 1013904223u;\n\n    v.x += v.y*v.z;\n    v.y += v.z*v.x;\n    v.z += v.x*v.y;\n\n    v ^= v >> 16u;\n\n    v.x += v.y*v.z;\n    v.y += v.z*v.x;\n    v.z += v.x*v.y;\n\n    return v;\n}\n\n// SuperFastHash, adapated from http://www.azillionmonkeys.com/qed/hash.html\nuint superfast(uvec3 data)\n{\n    uint hash = 8u, tmp;\n\n    hash += data.x & 0xffffu;\n    tmp = (((data.x >> 16) & 0xffffu) << 11) ^ hash;\n    hash = (hash << 16) ^ tmp;\n    hash += hash >> 11;\n\n    hash += data.y & 0xffffu;\n    tmp = (((data.y >> 16) & 0xffffu) << 11) ^ hash;\n    hash = (hash << 16) ^ tmp;\n    hash += hash >> 11;\n\n    hash += data.z & 0xffffu;\n    tmp = (((data.z >> 16) & 0xffffu) << 11) ^ hash;\n    hash = (hash << 16) ^ tmp;\n    hash += hash >> 11;\n\n    /* Force \"avalanching\" of final 127 bits */\n    hash ^= hash << 3;\n    hash += hash >> 5;\n    hash ^= hash << 4;\n    hash += hash >> 17;\n    hash ^= hash << 25;\n    hash += hash >> 6;\n\n    return hash;\n}\n\n// Used to switch hash methods easily for testing\n// pcg3d seems to be the best\nuvec3 Hash(uvec3 v)\n{\n    //return uvec3(superfast(v));\n    //return iqint2(v);\n    return pcg3d(v);\n}\n\n// Turns a hashed uvec3 into a noise value\nfloat HashToNoise(uvec3 hash)\n{\n    return (float(hash.y % 65536u) / 65536.0);\n}\n\nfloat HashToNormalizedNoise(uvec3 hash, vec3 offset)\n{\n    // Normalize hash\n    vec3 hashF = vec3(\n        float(hash.x % 65536u) / 32768.0 - 1.0,\n        float(hash.y % 65536u) / 32768.0 - 1.0,\n        float(hash.z % 65536u) / 32768.0 - 1.0\n    );\n    hashF /= length(hashF);\n    \n    return dot(hashF, offset);\n}\n\nfloat SCurve(float v)\n{\n    return v*v*(3.0-2.0*v);\n}\n\nvec3 SCurve(vec3 v)\n{\n    return v*v*(3.0-2.0*v);\n}\n\nfloat Perlin3D(vec3 uv)\n{\n    uvec3 u = uvec3(uv);\n    \n    float v;\n    float scale = 1.0;\n    uint pitch = 64u;\n    for (int i = 0; i < 7; ++i)\n    {\n        uvec3 u2 = u - (u % uvec3(pitch));\n        vec3 lerp = SCurve((uv - vec3(u2)) / vec3(pitch));\n        \n        float s000 = HashToNoise(Hash(u2));\n        float s100 = HashToNoise(Hash(u2 + uvec3(pitch, 0u, 0u)));\n        float s010 = HashToNoise(Hash(u2 + uvec3(0u, pitch, 0u)));\n        float s110 = HashToNoise(Hash(u2 + uvec3(pitch, pitch, 0u)));\n        float s001 = HashToNoise(Hash(u2 + uvec3(0u, 0u, pitch)));\n        float s101 = HashToNoise(Hash(u2 + uvec3(pitch, 0u, pitch)));\n        float s011 = HashToNoise(Hash(u2 + uvec3(0u, pitch, pitch)));\n        float s111 = HashToNoise(Hash(u2 + uvec3(pitch, pitch, pitch)));\n        \n        v += scale * mix(\n            mix(mix(s000, s100, lerp.x), mix(s010, s110, lerp.x), lerp.y),\n            mix(mix(s001, s101, lerp.x), mix(s011, s111, lerp.x), lerp.y), lerp.z);\n        scale /= 2.0;\n        pitch /= 2u;\n    }\n    \n    return v;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n    float scale = 100.0;\n    uv = (uv + iTime * 0.05) * scale;\n    \n    float n0 = Perlin3D(vec3(uv.xy, iTime * 5.0));\n    float n1 = Perlin3D(vec3(uv.yx + iTime * 11.8 + vec2(1083.1389, 829.3289), iTime * 5.0));\n    //float n2 = Perlin3D(vec3(uv * vec2(5.1389, 6.3289), iTime * 5.0));\n    \n    float cracks = pow(min(1.0, (1.0 - abs(n0 - n1)) * 1.115 - 0.1), 7.0);\n    float clouds = n0 * n0 * 0.125 * (1.0 - cracks);\n    float v = cracks + clouds;\n    \n    v += max(0.0, min(1.0, (n1 - n0) * 15.0)) * 0.5; // good way to split into regions\n    \n    //v = n0;\n    //v = cracks;\n    //v = clouds;\n\n    // Apply blue tint\n    vec3 col = vec3(pow(v, 2.0) * 0.9, pow(v, 1.5), v);\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

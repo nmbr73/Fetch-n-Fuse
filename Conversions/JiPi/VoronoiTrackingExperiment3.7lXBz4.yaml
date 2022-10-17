@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: VoronoiTrackingExperiment3
+  id: VoronoiTrackingExperiment3
+  kernel: VoronoiTrackingExperiment3
+  name: VoronoiTrackingExperiment3
+shader:
+  author: aiekick
+  description: 'just the Voronoi Tracking Experiment 1 with a simple layering
+
+
+    use mouse for add particles
+
+    use spacebar for clear the screen'
+  id: 7lXBz4
+  name: Voronoi Tracking Experiment 3
+  tags:
+  - voronoi
+  - experiment
+  - tracking
+  url: https://www.shadertoy.com/view/7lXBz4

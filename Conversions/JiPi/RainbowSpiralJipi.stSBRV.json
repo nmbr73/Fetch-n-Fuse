@@ -1,0 +1,39 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stSBRV",
+  "date": "0",
+  "viewed": 0,
+  "name": "Rainbow Spiral JiPi",
+  "description": "Fork from https://www.shadertoy.com/view/MdlXRS",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "spiral",
+   "noice",
+   "animation",
+   "loop",
+   "rainbow",
+   "weel"
+  ],
+  "hasliked": 0,
+  "parentid": "7ljBRy",
+  "parentname": "Rainbow Spiral (Noise Animation)"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Noise animation - Flow\n// 2014 by nimitz (twitter: @stormoid)\n// https://www.shadertoy.com/view/MdlXRS\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License\n// Contact the author for other licensing options\n\n\n\n//Somewhat inspired by the concepts behind \"flow noise\"\n//every octave of noise is modulated separately\n//with displacement using a rotated vector field\n\n//normalization is used to created \"swirls\"\n//usually not a good idea, depending on the type of noise\n//you are going for.\n\n//Sinus ridged fbm is used for better effect.\n\n#define time iTime*0.1\n#define tau 6.2831853\n// details 0.0 - 1.0\n#define details 0.3\n\nmat2 makem2(in float theta){float c = cos(theta);float s = sin(theta);return mat2(c,-s,s,c);}\nfloat hash(vec2 p) {\n    p  = 50.0*fract( p*0.3183099 + vec2(0.71,0.113));\n    return -1.0+2.0*fract( p.x*p.y*(p.x+p.y) );\n}\n\nfloat noise( in vec2 x ) {\n    vec2 i = floor( x );\n    vec2 f = fract( x );\n\t\n\tvec2 u = f*f*(3.0-2.0*f);\n\n    return mix( mix( hash( i + vec2(0.0,0.0) ), \n                     hash( i + vec2(1.0,0.0) ), u.x),\n                mix( hash( i + vec2(0.0,1.0) ), \n                     hash( i + vec2(1.0,1.0) ), u.x), u.y);\n}\nmat2 m2 = mat2( 0.80,  0.60, -0.60,  0.80 );\n\nvec3 hsb2rgb( in vec3 c ){\n    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),\n                             6.0)-3.0)-1.0,\n                     0.0,\n                     1.0 );\n    rgb = rgb*rgb*(3.0-2.0*rgb);\n    return c.z * mix( vec3(1.0), rgb, c.y);\n}\n\nfloat grid(vec2 p)\n{\n\tfloat s = sin(p.x)*cos(p.y);\n\treturn s;\n}\n\nfloat flow(in vec2 p)\n{\n\tfloat z=2.;\n\tfloat rz = 0.;\n\tvec2 bp = p;\n\tfor (float i= 1.;i < 7.;i++ )\n\t{\n\t\tbp += time*1.5;\n\t\tvec2 gr = vec2(grid(p*3.-time*2.),grid(p*3.+4.-time*2.))*0.4;\n\t\tgr = normalize(gr)*0.4;\n\t\tgr *= makem2((p.x+p.y)*.3+time*10.);\n\t\tp += gr*0.5;\n\t\t\n\t\trz+= (sin(noise(p)*8.)*0.5+0.5) /z;\n\t\t\n\t\tp = mix(bp,p,.5);\n\t\tz *= 1.7;\n\t\tp *= 2.5;\n\t\tp*=m2;\n\t\tbp *= 2.5;\n\t\tbp*=m2;\n\t}\n\treturn rz;\t\n}\n\nfloat spiral(vec2 p,float scl) \n{\n\tfloat r = length(p);\n\tr = log(r);\n\tfloat a = atan(p.y, p.x);\n\treturn abs(mod(scl*(r-2./scl*a),tau)-1.)*2.;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 p = fragCoord.xy / iResolution.xy-0.5;\n    vec3 color = vec3(1.0);\n        \n        \n    // rainbow part\n    float angle = atan(p.y,p.x)+iTime;\n    color = hsb2rgb(vec3((angle/tau)+0.5,length(p)*2.0,1.0));\n\n    \n\tp.x *= iResolution.x/iResolution.y;\n\tp*= 3.;\n\tfloat rz = flow(p) * details;\n\tp /= exp(mod(time*9.,2.1));\n\trz += (6.-spiral(p,3.))*.5;\n\n\tvec3 col = abs(vec3(.2,0.07,0.01)/rz);\n    \n\tfragColor = vec4(col * color,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

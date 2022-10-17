@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: TheDoorAtTheEndOfTheWorld
+  id: TheDoorAtTheEndOfTheWorld
+  kernel: TheDoorAtTheEndOfTheWorld
+  name: TheDoorAtTheEndOfTheWorld
+shader:
+  author: leon
+  description: final boss vibes
+  id: fdVBRw
+  name: The door at the end of the world
+  tags:
+  - fire
+  - smoke
+  - plastic
+  url: https://www.shadertoy.com/view/fdVBRw

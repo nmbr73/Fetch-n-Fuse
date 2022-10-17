@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: MetaCrtJipi
+  id: MetaCrtJipi
+  kernel: MetaCrtJipi
+  name: MetaCrtJipi
+shader:
+  author: N.N.
+  description: 'Experiments with CRT screen material with scanlines and RGB elements.
+
+    Post FX include temporal AA, depth of field and motion blur.'
+  id: flGcWm
+  name: Meta CRT JiPi
+  parent:
+    id: 4dlyWX
+    name: Meta CRT
+    url: https://www.shadertoy.com/view/4dlyWX
+  tags:
+  - motionblur
+  - dof
+  - crt
+  - depthoffield
+  - temporalaa
+  - taa
+  url: https://www.shadertoy.com/view/flGcWm

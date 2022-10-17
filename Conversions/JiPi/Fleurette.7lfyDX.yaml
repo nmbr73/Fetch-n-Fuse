@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: Fleurette
+  id: Fleurette
+  kernel: Fleurette
+  name: Fleurette
+shader:
+  author: wyatt
+  description: 60's style fractal with caustic
+  id: 7lfyDX
+  name: Fleurette
+  tags:
+  - fractal
+  - caustic
+  url: https://www.shadertoy.com/view/7lfyDX

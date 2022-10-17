@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: VideoOnF
+  id: VideoOnF
+  kernel: VideoOnF
+  name: VideoOnF
+shader:
+  author: elevations01
+  description: edges as motion blur with feedback. Buf B does the edges and feeds
+    them back to itself based on Buf A. Buf A does video with Buf B as green screen
+    filler.
+  id: ssjczK
+  name: Fork Video on f elevations 785
+  tags:
+  - video
+  - edge
+  - multipass
+  url: https://www.shadertoy.com/view/ssjczK

@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: DynamicVoronoiGraph
+  id: DynamicVoronoiGraph
+  kernel: DynamicVoronoiGraph
+  name: DynamicVoronoiGraph
+shader:
+  author: michael0884
+  description: Drawing lines between directly neighboring Voronoi cells, within a
+    radius.
+  id: 3t33D2
+  name: Dynamic Voronoi Graph
+  tags:
+  - fast
+  - particles
+  - triangulation
+  url: https://www.shadertoy.com/view/3t33D2

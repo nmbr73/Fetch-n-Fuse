@@ -1,0 +1,35 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fdGyDm",
+  "date": "0",
+  "viewed": 0,
+  "name": "Getting Hyperspace JiPi",
+  "description": "Getting into hyperspace.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "star",
+   "hyperspace"
+  ],
+  "hasliked": 0,
+  "parentid": "NdKyD1",
+  "parentname": "Getting into/out of hyperspace"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define NUM_STARS (1 << 11)\n\nfloat rand(float x) {\n    return fract(sin(x) * 123.456);\n}\n\nfloat cross2(vec2 a, vec2 b) {\n    return a.x * b.y - a.y * b.x;\n}\n\nfloat getDistanceLP(vec2 s, vec2 t, vec2 p) {\n    return abs(cross2(t - s, p - s) / distance(t, s));\n}\n\nfloat getDistanceSP(vec2 s, vec2 t, vec2 p) {\n    if (dot(t - s, p - s) < 0.) {\n        return distance(p, s);\n    }\n    if (dot(s - t, p - t) < 0.) {\n        return distance(p, t);\n    }\n    return getDistanceLP(s, t, p);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = (fragCoord - .5 * iResolution.xy) / iResolution.y;\n    \n    vec3 col = vec3(0);\n    \n    // Switching forward/backward transition\n    const float cycle = 7.0;\n    float t = mod(iTime, cycle);\n    if (t > cycle * 0.5) {\n       t = cycle - t;\n    }\n    // 1.5 sec delay timer\n    float td = max(t - 1.5, 0.);\n    \n    \n    for (int i = 0; i < NUM_STARS; i++) {\n        // Create random star\n        float x = rand(float(i*3)*12.34) * 2. - 1.;\n        float y = rand(float(i*3+1)*23.45) * 2. - 1.;\n        vec2 c = vec2(x, y);\n        float r = rand(float(i*3+2)) * 0.0018;\n        \n        // Create line segment of star and get distance from uv coordinates\n        vec2 n = c * (exp(t*4.)-1.) * 0.002;\n        float d = (getDistanceSP(c, c + n, uv.xy)-r);\n        \n        // Line segment color\n        col += vec3(exp(-800.*d)) * vec3(0.7, 0.8, 1.0);\n        \n        // Environmental lighting\n        col += vec3(0.7, 0.8, 1.0) * ((exp(t*0.00008)-1.) + (exp(td*td*0.01)-1.) * (0.04/length(uv.xy)));\n    }\n    \n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,105 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flBBRD",
+  "date": "0",
+  "viewed": 0,
+  "name": "diffusion test23 JiPi",
+  "description": "diffusion  test getting closer",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "test"
+  ],
+  "hasliked": 0,
+  "parentid": "slScD1",
+  "parentname": "diffusion test23"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4df3zn",
+     "filepath": "/media/a/3405e48f74815c7baa49133bdc835142948381fbe003ad2f12f5087715731153.ogv",
+     "type": "video",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define S(a,b,t) smoothstep(a,b,t)\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n\n    //uv.x *= iResolution.x/iResolution.y;\n    vec3 col = vec3(texture(iChannel0, uv));\n    //col = (col - 0.5)* vec3(texture(iChannel1, uv)) -0.8;\n    col = col * vec3(0.5,0.3,0.3);\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float calc(float colorSum, int range, float preColor){\n    float d = float (range*range - 1);\n    float diff = colorSum/d - preColor;\n    \n    float result ;\n    \n    if(diff > 0.){\n        if(colorSum/d > 4. ){\n            result += -0.01; \n        }else{\n            result = preColor + 0.01;\n        }\n        \n    }else{\n        result = 0.;\n    }\n    \n    return result;\n}\n\nvec3 kernel(ivec2 fragCoord){\n    vec3 colorSum = vec3(0.);\n    vec3 preColor = texelFetch(iChannel1, fragCoord, 0).rgb;\n    int range = 10;\n    for(int i = -range; i < range+1 ; i++ ){\n        for(int j = -range; j < range+1 ; j++ ){\n            if(i != 0 || j != 0){\n                //colorSum += texelFetch(iChannel1, fragCoord + ivec2(i,j), 0).rgb;\n                colorSum += texture(iChannel1, (vec2(fragCoord + ivec2(i,j))+0.5)/iResolution.xy).rgb;\n            }  \n        }\n    }\n    \n    vec3 c = vec3(calc(colorSum.r, range, preColor.r),\n    calc(colorSum.g, range, preColor.g),\n    calc(colorSum.b, range, preColor.b));\n    \n    return c;\n}\n\nvec3 getColor(ivec2 fragCoord){\n    vec3 num = kernel(fragCoord);\n    return num;\n}\n\n\nvec2 N22(vec2 uv){\n    vec3 a = fract(uv.xyx * vec3(123.34,234.34,345.65));\n    a += dot(a, a+34.45);\n    return fract(vec2(a.x*a.y, a.y*a.z));\n}\n\nvec3 circle(vec2 uv, vec2 pos, float size) {\n    uv.x = uv.x*iResolution.x/iResolution.y;\n    uv = uv - pos;\n    vec3 col = vec3(length(10./size*uv));\n    vec3 result = vec3(smoothstep(.98,1.0,col.x)); \n    return result;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord/iResolution.xy;\n  \n    vec3 col = vec3(0.);\n    vec2 pos = vec2(1.);\n    \n\n    /**/\n    if(iFrame < 10){\n        col = vec3(texture(iChannel0, uv));\n        //col = circle(uv, pos, 0.1);\n        for(int i = 0; i < 10; i++ ){\n            pos = vec2(float(i)+1.);\n            //col += 1.* (1. - circle(uv, N22(pos), 1.));\n        }\n    }else{\n        col = getColor(ivec2(fragCoord));\n    }\n    /**/\n    \n    fragColor = vec4(col,1);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

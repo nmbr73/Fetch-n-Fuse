@@ -1,0 +1,184 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "slSfWW",
+  "date": "0",
+  "viewed": 0,
+  "name": "Falling Sand Manthrax JiPi",
+  "description": "sand: click + drag: \nwall: left shift + click + drag:\nerase: space + click + drag:\n\nchange scale and brush radius in common tab\n\ntheres a bug where sometimes sand duplicates itself :)",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation",
+   "falling",
+   "sand"
+  ],
+  "hasliked": 0,
+  "parentid": "7d2cDz",
+  "parentname": "Fork Falling Sa manthrax 836"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "float rand_n(float r, int n)\n{\n    for (int i = 0; i < n; ++i)\n    {\n        r = fract(r * 100.0);\n    }\n    \n    return r;\n}\n\nvoid mainImage(out vec4 frag_color, in vec2 frag_coord)\n{\n    ivec2 coord = ivec2(frag_coord / scale);\n    Particle self = particle_at(coord);\n    \n    switch (self.type)\n    {\n        case SAND:\n        {\n            frag_color = vec4(\n                mix(0.9, 1.0, rand_n(self.shade, 1)), \n                mix(0.75, 0.8, rand_n(self.shade, 2)),\n                mix(0.5, 0.6, rand_n(self.shade, 3)), 1.0) * mix(0.7, 1.0, self.shade);\n            return;\n        } break;\n        \n        case WATER:\n        {\n            frag_color = vec4(\n                mix(0.0, 0.0, rand_n(self.shade, 1)), \n                mix(0.5, 0.2, rand_n(self.shade, 2)),\n                mix(0.9, 0.8, rand_n(self.shade, 3)), 1.0) * mix(0.7, 1.0, self.shade);\n            return;\n        } break;\n        \n        case WALL:\n        {\n            frag_color = vec4(\n                mix(0.3, 0.4, rand_n(self.shade, 1)), \n                mix(0.3, 0.4, rand_n(self.shade, 2)),\n                mix(0.3, 0.4, rand_n(self.shade, 3)), 1.0) * mix(0.7, 1.0, self.shade);\n            return;\n        } break;\n        \n        case AIR:\n        {\n            frag_color = vec4(0.6, 0.8, 1.0, 1.0);\n            return;\n        }\n    }\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "// SETTINGS\nconst float scale        = 4.0;\nconst float brush_radius = 40.0;\n\n// COMMON\n#ifndef HW_PERFORMANCE\nuniform vec3      iResolution;\nuniform sampler2D iChannel0;\nuniform float     iTime;\nuniform int       iFrame;\n#endif\n\nint seed;\n\nfloat rand()\n{\n    int n = (seed++ << 13) ^ seed;\n    return float((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 2147483647.0;\n}\n\n#define INIT_SEED() \\\n    seed = int(iTime * frag_coord.x + frag_coord.y * iResolution.x); \\\n    seed = int(rand() * 2147483647.0) + iFrame;\n\nconst int AIR  = 0;\nconst int SAND = 1;\nconst int WALL = 2;\nconst int WATER = 3;\n\nstruct Particle\n{\n    int   type;\n    bool  has_moved_this_frame;\n    float shade;\n};\n\n#define IN_BOUNDS(coord) (0 <= (coord).x && (coord).x < int(iResolution.x / scale) && 0 <= (coord).y && (coord).y < int(iResolution.y / scale))\n#define NOT_IN_BOUNDS(coord) ((coord.x) < 0 || int(iResolution.x / scale) <= (coord.x) || (coord.y) < 0 || int(iResolution.y / scale) <= (coord.y))\n\n\nParticle particle_at(ivec2 coord)\n{\n    if (NOT_IN_BOUNDS(coord))\n    {\n        return Particle(WALL, false, 0.0);\n    }\n    \n    vec4 data = texelFetch(iChannel0, coord, 0);\n    return Particle(\n        int(data.x),\n        bool(data.y),\n        data.z\n    );\n}\n\nvec4 to_vec4(Particle particle)\n{\n    return vec4(\n        float(particle.type),\n        float(particle.has_moved_this_frame),\n        particle.shade,\n        0.0\n    );\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "float distance_to_line(vec2 a, vec2 b, vec2 p)\n{\n    // from iq: https://www.youtube.com/watch?v=PMltMdi1Wzg\n    float h = clamp(dot(p - a, b - a) / dot(b - a, b - a), 0.0, 1.0);\n    return length(p - mix(a, b, h));\n}\n\nconst float KEY_SPACE = 32.0;\nconst float KEY_LEFT_SHIFT = 16.0;\nconst float KEY_LEFT_CONTROL = 17.0;\n\n\nbool key_pressed(float key_code)\n{\n    return texture(iChannel2, vec2((key_code + 0.5) / 256.0, 0.5 / 3.0)).r > 0.0;\n}\n\nvoid mainImage(out vec4 frag_color, in vec2 frag_coord)\n{\n    ivec2 coord = ivec2(frag_coord);\n    if (NOT_IN_BOUNDS(coord))\n    {\n        return;\n    }\n    \n    INIT_SEED();\n    \n    vec4 pMouse = texelFetch(iChannel1, ivec2(0, 0), 0);\n    \n    if (pMouse.z > 0.0)\n    {\n        if (iMouse.z > 0.0 && distance_to_line(pMouse.xy / scale, iMouse.xy / scale, vec2(coord)) < brush_radius)\n        {\n            frag_color = to_vec4(Particle(\n                (key_pressed(KEY_SPACE) ? AIR : key_pressed(KEY_LEFT_SHIFT) ? (key_pressed(KEY_LEFT_CONTROL) ? WATER:WALL) : SAND), \n                true, mix(0.7, 1.0, rand())\n            ));\n            return;\n        }\n    }\n    else\n    {\n        if (iMouse.z > 0.0 && distance(vec2(coord), iMouse.xy / scale) < brush_radius)\n        {\n            frag_color = to_vec4(Particle(\n                (key_pressed(KEY_SPACE) ? AIR : key_pressed(KEY_LEFT_SHIFT) ? WALL : SAND), \n                true, mix(0.7, 1.0, rand())\n            ));\n            return;\n        }\n    }\n    \n    Particle self = particle_at(coord);\n    \n    if(rand()>0.1)\n    \n    switch (self.type)\n    {\n        case WATER:\n        {\n            Particle below = particle_at(coord + ivec2(0, -1));\n            \n            if (below.type == AIR)\n            {\n                frag_color = to_vec4(Particle(AIR, true, 0.0));\n                return;\n            }\n        } break;\n        \n        case SAND:\n        {\n            Particle below = particle_at(coord + ivec2(0, -1));\n            \n            if (below.type == AIR)\n            {\n                frag_color = to_vec4(Particle(AIR, true, 0.0));\n                return;\n            }\n            if (below.type == WATER)\n            {\n                frag_color = to_vec4(Particle(WATER, true, 0.0));\n                return;\n            }\n            \n        } break;\n        \n        case AIR:\n        {\n            Particle above = particle_at(coord + ivec2(0, 1));\n            \n            if (above.type == SAND)\n            {\n                above.has_moved_this_frame = true;\n                frag_color = to_vec4(above);\n                return;\n            }\n            if (above.type == WATER)\n            {\n                above.has_moved_this_frame = true;\n                frag_color = to_vec4(above);\n                return;\n            }\n        } break;\n    }\n    \n    frag_color = to_vec4(Particle(self.type, false, self.shade));\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 frag_color, in vec2 frag_coord)\n{\n    ivec2 coord = ivec2(frag_coord);\n    if (NOT_IN_BOUNDS(coord))\n    {\n        return;\n    }\n    \n    Particle self = particle_at(coord);\n    \n    if (self.has_moved_this_frame)\n    {\n        frag_color = to_vec4(self);\n        return;\n    }\n    \n    INIT_SEED();\n    \n    int dir = int(rand() < 0.5) * 2 - 1;\n  \n    //if(rand()>0.5)\n    if(false)switch (self.type)\n    {\n        case WATER:\n        {\n            Particle below = particle_at(coord + ivec2(dir, -1));\n            \n            if (!below.has_moved_this_frame && below.type == AIR)\n            {\n                frag_color = to_vec4(Particle(AIR, true, 0.0));\n                return;\n            }\n        } break;\n        \n        case SAND:\n        {\n            Particle below = particle_at(coord + ivec2(dir, -1));\n            \n            if (!below.has_moved_this_frame && below.type == AIR)\n            {\n                frag_color = to_vec4(Particle(AIR, true, 0.0));\n                return;\n            }\n            if (!below.has_moved_this_frame && below.type == WATER)\n            {\n                frag_color = to_vec4(Particle(WATER, true, 0.0));\n                return;\n            }\n        } break;\n        \n        case AIR:\n        {\n            Particle above = particle_at(coord + ivec2(-dir, 1));\n            \n            if (!above.has_moved_this_frame){\n                if(above.type == SAND)\n                {\n                    above.has_moved_this_frame = true;\n                    frag_color = to_vec4(above);\n                    return;\n                }\n                if(above.type == WATER)\n                {\n                    above.has_moved_this_frame = true;\n                    frag_color = to_vec4(above);\n                    return;\n                }\n            }\n        } break;\n    }\n    \n    frag_color = to_vec4(self);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage(out vec4 frag_color, in vec2 frag_coord)\n{\n    ivec2 coord = ivec2(frag_coord);\n    if (NOT_IN_BOUNDS(coord))\n    {\n        return;\n    }\n    \n    Particle self = particle_at(coord);\n    \n    if (self.has_moved_this_frame)\n    {\n        frag_color = to_vec4(self);\n        return;\n    }\n    \n    INIT_SEED();\n    rand();\n    \n    int dir = int(rand() >= 0.5) * 2 - 1;\n\n    //if(rand()>0.5)\n    switch (self.type)\n    {\n        case WATER:\n        {\n            Particle below = particle_at(coord + ivec2(dir, -1));\n               \n            if (!below.has_moved_this_frame && below.type == AIR)\n            {\n                frag_color = to_vec4(Particle(AIR, true, 0.0));\n                return;\n            }\n            \n            Particle side = particle_at(coord + ivec2(-dir, 0));\n            if (!side.has_moved_this_frame && side.type == AIR)\n            {\n                side.has_moved_this_frame = true;\n                frag_color = to_vec4(side);\n                return;\n            }\n            \n        } break;\n        \n        case SAND:\n        {\n            Particle below = particle_at(coord + ivec2(dir, -1));\n            \n            if (!below.has_moved_this_frame && below.type == AIR)\n            {\n                frag_color = to_vec4(Particle(AIR, true, 0.0));\n                return;\n            }\n            \n            if (!below.has_moved_this_frame && below.type == WATER)\n            {\n                frag_color = to_vec4(Particle(WATER,true, 0.0));\n                return;\n            }\n        } break;\n        \n        case AIR:\n        {\n            Particle above = particle_at(coord + ivec2(-dir, 1));\n            \n            if (!above.has_moved_this_frame && above.type == SAND)\n            {\n                above.has_moved_this_frame = true;\n                frag_color = to_vec4(above);\n                return;\n            }\n            \n            Particle side = particle_at(coord + ivec2(-dir, 0));\n            if (!side.has_moved_this_frame && side.type == WATER)\n            {\n                side.has_moved_this_frame = true;\n                frag_color = to_vec4(side);\n                return;\n            }\n            \n        } break;\n    }\n    \n    frag_color = to_vec4(self);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Save off last mouse cursor coordinate so it can form a line with the next cursor position\n\nvoid mainImage(out vec4 frag_color, in vec2 frag_coord)\n{\n    if (frag_coord == vec2(0.5, 0.5))\n    {\n        frag_color = iMouse;\n    }\n    else\n    {\n        frag_color = vec4(0.0);\n    }\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

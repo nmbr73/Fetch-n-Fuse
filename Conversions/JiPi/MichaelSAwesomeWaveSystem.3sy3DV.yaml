@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: MichaelSAwesomeWaveSystem
+  id: MichaelSAwesomeWaveSystem
+  kernel: MichaelSAwesomeWaveSystem
+  name: MichaelSAwesomeWaveSystem
+shader:
+  author: wyatt
+  description: 'Learning lots from michael0884!
+
+
+    [url]javascript: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<7;i++)E.P.apply(this,A);};if(!H)close();[/url]'
+  id: 3sy3DV
+  name: Michael's Awesome Wave System
+  tags:
+  - wavesystem
+  url: https://www.shadertoy.com/view/3sy3DV

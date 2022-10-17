@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FountainwaterJipi840
+  id: FountainwaterJipi840
+  kernel: FountainwaterJipi840
+  name: FountainwaterJipi840
+shader:
+  author: N.N.
+  description: 'Fountain water '
+  id: 7l2yD3
+  name: FountainWater JiPi840
+  parent:
+    id: 7tBcDc
+    name: Fountain water
+    url: https://www.shadertoy.com/view/7tBcDc
+  tags:
+  - water
+  - fountain
+  url: https://www.shadertoy.com/view/7l2yD3

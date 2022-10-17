@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: LightningStormJipi
+  id: LightningStormJipi
+  kernel: LightningStormJipi
+  name: LightningStormJipi
+shader:
+  author: N.N.
+  description: Use mouse to move camera around.
+  id: NdccDM
+  name: LIGHTNING Storm JiPi
+  parent:
+    id: sd3cDN
+    name: Fork LIGHTNING Storm LenoC 619
+    url: https://www.shadertoy.com/view/sd3cDN
+  tags:
+  - cloud
+  - volumetric
+  - bloom
+  - lightning
+  - storm
+  - electricity
+  - thunder
+  - bolt
+  url: https://www.shadertoy.com/view/NdccDM

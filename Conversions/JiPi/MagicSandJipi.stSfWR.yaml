@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: MagicSandJipi
+  id: MagicSandJipi
+  kernel: MagicSandJipi
+  name: MagicSandJipi
+shader:
+  author: N.N.
+  description: Trying out some psuedo fluid stuff. You can control the dot with your
+    mouse
+  id: stSfWR
+  name: Magic sand JiPi
+  parent:
+    id: 4ljyzK
+    name: Magic sand
+    url: https://www.shadertoy.com/view/4ljyzK
+  tags:
+  - liquid
+  - buffer
+  - sand
+  url: https://www.shadertoy.com/view/stSfWR

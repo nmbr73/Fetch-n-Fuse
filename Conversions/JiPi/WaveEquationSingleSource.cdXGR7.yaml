@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: WaveEquationSingleSource
+  id: WaveEquationSingleSource
+  kernel: WaveEquationSingleSource
+  name: WaveEquationSingleSource
+shader:
+  author: ilia87
+  description: wave equation with a single source. Use mouse to set source position.
+  id: cdXGR7
+  name: wave equation single source
+  tags:
+  - waves
+  - mouseinput
+  - differenceequation
+  url: https://www.shadertoy.com/view/cdXGR7

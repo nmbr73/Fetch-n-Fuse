@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: ThermalParticlesIv
+  id: ThermalParticlesIv
+  kernel: ThermalParticlesIv
+  name: ThermalParticlesIv
+shader:
+  author: wyatt
+  description: I don't really know if this is a real analogy to any physical system.
+    But I think there's something to it and it's really fun to to play with.
+  id: 3slGRr
+  name: Thermal Particles IV
+  tags:
+  - dynamics
+  - physics
+  url: https://www.shadertoy.com/view/3slGRr

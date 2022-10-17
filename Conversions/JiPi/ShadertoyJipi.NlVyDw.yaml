@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: ShadertoyJipi
+  id: ShadertoyJipi
+  kernel: ShadertoyJipi
+  name: ShadertoyJipi
+shader:
+  author: N.N.
+  description: rebuild
+  id: NlVyDw
+  name: Shadertoy JiPi
+  parent:
+    id: ''
+    name: ''
+    url: https://www.shadertoy.com/view/
+  tags:
+  - shadertoy
+  url: https://www.shadertoy.com/view/NlVyDw

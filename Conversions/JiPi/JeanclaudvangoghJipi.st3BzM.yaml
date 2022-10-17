@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: JeanclaudvangoghJipi
+  id: JeanclaudvangoghJipi
+  kernel: JeanclaudvangoghJipi
+  name: JeanclaudvangoghJipi
+shader:
+  author: N.N.
+  description: trying to resemble van gogh drawing style
+  id: st3BzM
+  name: JeanClaudVanGogh JiPi
+  parent:
+    id: MdGSDG
+    name: jean claude van gogh
+    url: https://www.shadertoy.com/view/MdGSDG
+  tags:
+  - effect
+  - paint
+  - drawing
+  url: https://www.shadertoy.com/view/st3BzM

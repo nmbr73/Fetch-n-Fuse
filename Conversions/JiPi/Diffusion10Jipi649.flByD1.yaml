@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Diffusion10Jipi649
+  id: Diffusion10Jipi649
+  kernel: Diffusion10Jipi649
+  name: Diffusion10Jipi649
+shader:
+  author: N.N.
+  description: diffusion  test 10
+  id: flByD1
+  name: diffusion10  JiPi 649
+  parent:
+    id: flBcW1
+    name: diffusion test10
+    url: https://www.shadertoy.com/view/flBcW1
+  tags:
+  - test
+  url: https://www.shadertoy.com/view/flByD1

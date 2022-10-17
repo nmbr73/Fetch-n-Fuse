@@ -1,0 +1,128 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sl3czn",
+  "date": "0",
+  "viewed": 0,
+  "name": "n-pendulum JiPi",
+  "description": "Just a joint physics test using \"stiff springs\". There are n pendulums each with n joints",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "random",
+   "physics"
+  ],
+  "hasliked": 0,
+  "parentid": "fsVBWG",
+  "parentname": "n-pendulum"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n    vec4 raw = texture(iChannel0, uv);\n    // Time varying pixel color\n    vec4 col = raw*1.0+ 0.0;\n   \n    fragColor = vec4(vec3(col),1.);\n\n    \n    \n    \n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "// Thanks iq for line segment sdf.\nfloat line_segment(in vec2 p, in vec2 a, in vec2 b) {\n\tvec2 ba = b - a;\n\tvec2 pa = p - a;\n\tfloat h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);\n\treturn length(pa - h * ba);\n}\n\n\nvec4 tf(ivec2 p, int i, int j){\n    return texelFetch(iChannel0,p+ivec2(i,j),0);\n}\nvec4 get(int i){\n    return texelFetch(iChannel1,ivec2(i,0),0);\n}\n\nvec4 state(ivec2 p){\n    vec4 colNow = vec4(0,0,0,0);\n    vec4 r = tf(p,0,0) * 0.7;\n    for(int i = -1; i < 2; i++){\n        for(int j = -1; j < 2; j++){\n            vec4 u = tf(p,i,j);\n            r+= u*0.03;\n        }\n    }\n    return r;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    fragColor = vec4(0.0,0.0,1.0,1.0);\n    vec4 col = state(ivec2(fragCoord));\n\n    if(iFrame < 1){\n        vec2 uv = fragCoord/iResolution.xy;\n        col = texture(iChannel1, uv*0.5)*0.5-0.25;\n    }\n\n    for(int i = 0; i < AMT * AMT; i ++){\n        if(i%AMT <= i/AMT){\n            vec4 col2 = get(i);\n            if(show == 0 || i >= AMT * (AMT-1)){\n                if(length(vec2(col2.x,col2.y + iResolution.y*0.4) - fragCoord) < 2.){\n                    col += 0.1*vec4(1.*sin(iTime*5. + float(i))+1.0,1.*sin(iTime*5. + 2.1 + float(i))+1.0,1.*sin(iTime*5. + 4.2 + float(i))+1.0,0);\n                    if(i%AMT == i/AMT){\n                        col += trails*vec4(1.*sin(iTime*5. + float(i))+1.0,1.*sin(iTime*5. + 2.1 + float(i))+1.0,1.*sin(iTime*5. + 4.2 + float(i))+1.0,0);\n                    }\n                }\n                \n                vec4 col3 = get(i-1);\n                if(i%AMT == 0){\n                    col3.x = iResolution.x*0.5;\n                    col3.y = iResolution.y*0.5;\n                }\n                if(line_segment(fragCoord-vec2(0,iResolution.y*0.4),col2.xy,col3.xy) <0.5){\n                    col += 0.04*vec4(1.*sin(iTime*5. + float(i))+1.0,1.*sin(iTime*5. + 2.1 + float(i))+1.0,1.*sin(iTime*5. + 4.2 + float(i))+1.0,0);\n                }\n            }\n        }\n    }\n    \n    fragColor = col;\n\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "vec4 get(int i){\n    return texelFetch(iChannel0,ivec2(i,0),0);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    int t = int(fragCoord.x);\n    fragColor = vec4(0.0,0.0,1.0,1.0);\n    if(t < AMT * AMT && t%AMT <= t/AMT){\n        \n        // Physics\n        vec4 r = get(int(fragCoord.x));\n\n        float wlen = iResolution.y*0.8/(1. + float(t/AMT));\n        // Center Length\n        vec2 center = iResolution.xy*0.5;\n        if(t%AMT >=1){\n            center = get(t-1).xy;\n            wlen += 0.01 * float(t%AMT);\n        }\n        vec2 delt = r.xy - center;\n        float len = wlen - length(delt);\n        \n        r.z += len * normalize(delt).x * 0.9;\n        r.w += len * normalize(delt).y * 0.9; \n        \n        r.x = (center.x + wlen * normalize(delt).x) * 0.1 + r.x * 0.9; // force position towards \n        r.y = (center.y + wlen * normalize(delt).y) * 0.1 + r.y * 0.9;\n        \n        if(t%AMT <= t/AMT - 1){\n            center = get(t+1).xy;\n        \n            delt = r.xy - center;\n            len = wlen - length(delt);\n        \n            r.z += len * normalize(delt).x * 0.9;\n            r.w += len * normalize(delt).y * 0.9; \n        \n        }\n        r.w+= gravity;\n        \n        if(iMouse.z > 0.0 && t%AMT == t/AMT){// mouse drag\n            center = iMouse.xy - vec2(0,iResolution.y*0.4);\n            r.x = (center.x ) * 0.03 + r.x * 0.97;  \n            r.y = (center.y ) * 0.03 + r.y * 0.97;\n            r.z = 0.;\n            r.w = 0.; \n        }\n        \n        r.x += r.z;\n        r.y += r.w;\n        \n        //r.z *= 0.9999;\n        //r.w *= 0.9999;\n        \n        \n        \n        \n        \n        fragColor = r;\n        \n        if(iFrame < 1){            \n            fragColor = vec4(iResolution.x * 0.5 + wlen*float(t%AMT+1),iResolution.y*0.5,0.,0.);\n            \n        }\n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "int AMT = 8; // Number of pendulums. Each one being longer than the previous. Currently uses x of a buffer to store each item. \nint show = 0; // if it is 1, then only show the pendulum with the most links\nfloat gravity = -0.02;\nfloat trails = 1.5;",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

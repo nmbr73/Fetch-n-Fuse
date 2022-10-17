@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: SurfaceTensionPhaseShiftOsci
+  id: SurfaceTensionPhaseShiftOsci
+  kernel: SurfaceTensionPhaseShiftOsci
+  name: SurfaceTensionPhaseShiftOsci
+shader:
+  author: xenn
+  description: 'SPACE to restart
+
+
+    Use mouse to spawn vortices'
+  id: 3sdczs
+  name: surface tension phase shift osci
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/3sdczs

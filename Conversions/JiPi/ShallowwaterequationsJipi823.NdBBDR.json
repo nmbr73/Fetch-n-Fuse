@@ -1,0 +1,149 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "NdBBDR",
+  "date": "0",
+  "viewed": 0,
+  "name": "ShallowWaterEquations JiPi 823",
+  "description": "Simulating shallow water!\nUse your mouse for creating waves.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "simulation",
+   "water"
+  ],
+  "hasliked": 0,
+  "parentid": "4t3GWM",
+  "parentname": "[Test] shallow water equations"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "\n\nvec2 screen2uv(in vec2 fragCoord)\n{\n    return fragCoord / iResolution.xy;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = screen2uv(fragCoord);\n    float height = texture(iChannel0, uv).x;\n\tfragColor = 0.5+vec4(height)*0.5;\n\t//fragColor = 0.5 + 0.5*texture(iChannel1, uv)*100.0;\n    \n    return;\n    \n    float t = dot(normalize(vec3(dFdx(height), dFdy(height), 1.)), normalize(vec3(1.)));\n    t = max(0., t);\n    \n\tfragColor = vec4(t);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define Dt\t0.5\n#define Dx\t0.01\n#define H\t1.0\n\n#define RADIUS\t\t.06\n#define INTENSITY\t.2\n\n#define DX\tvec2(1.0/iResolution.x, 0.0)\n#define DY\tvec2(0.0, 1.0/iResolution.y)\n\n\nvec2 screen2world(in vec2 fragCoord)\n{\n    return (2.0*fragCoord.xy - iResolution.xy)/iResolution.y;\n}\n\nvec2 world2screen(in vec2 pos)\n{\n    return (pos*iResolution.y + iResolution.xy) * 0.5;\n}\n\nvec2 screen2uv(in vec2 fragCoord)\n{\n    return fragCoord / iResolution.xy;\n}\n\nvec2 uv2screen(in vec2 uv)\n{\n    return uv * iResolution.xy;\n}\n\nvec2 world2uv(in vec2 pos)\n{\n    return world2screen(pos) / iResolution.xy;\n}\n\nvec2 uv2world(in vec2 uv)\n{\n    return screen2world(uv2screen(uv));\n}\n\nfloat brushIntensity(float r)\n{\n    if(r/RADIUS <0.707)\n        return INTENSITY;\n    return -INTENSITY;\n}\n\n\nfloat PointSegDistance2(in vec2 p, in vec2 p0, in vec2 p1)\n{\n    vec2 px0 = p-p0, p10 = p1-p0;\n    float h = clamp(dot(px0, p10) / dot(p10, p10), 0.0, 1.0);\n    return length(px0 - p10*h);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = screen2uv(fragCoord);\n    \n    vec2 pos = screen2world(fragCoord);\n    \n    \n    // Retrieving mouse data\n    bool mousePressed = iMouse.z > 0.0;\n    bool prevMousePressed = texture(iChannel0, uv).y > 0.0;\n    \n    vec2 mousePos = screen2world(iMouse.xy);\n    vec2 prevMousePos = texture(iChannel0, uv).zw;\n    \n    \n    \n    float prev_eta = texture(iChannel0, uv).x;\n    \n    //float dev_speed_x = 0.5*(texture(iChannel1, uv + vec2(1,0)/iResolution.xy).x - texture(iChannel1, uv + vec2(-1,0)/iResolution.xy).x);\n    //float dev_speed_y = 0.5*(texture(iChannel1, uv + vec2(0,1)/iResolution.xy).y - texture(iChannel1, uv + vec2(0,-1)/iResolution.xy).y);\n    \n    \n    float dev_speed_x = texture(iChannel1, uv+DX).x - texture(iChannel1, uv-DX).x;\n    float dev_speed_y = texture(iChannel1, uv+DY).y - texture(iChannel1, uv-DY).y;\n    \n    \n    float eta = .99*prev_eta - Dt * (dev_speed_x+dev_speed_y);\n    \n    fragColor = vec4(eta);\n    \n    \n    if (iMouse.x < 10.0) \n    {\n        //float dist = length(vec2(cos(float(iFrame) * 0.03), 0.7*sin(2.0*float(iFrame) * 0.03))*vec2(1.2,0.6) - pos);\n        vec2 p1 = vec2(cos(float(iFrame) * 0.03), 0.7*sin(2.0*float(iFrame) * 0.03))*vec2(1.2,0.6);\n        vec2 p0 = vec2(cos(float(iFrame-1) * 0.03), 0.7*sin(2.0*float(iFrame-1) * 0.03))*vec2(1.2,0.6);\n        float dist = PointSegDistance2(pos, p0, p1);\n        if (dist < RADIUS) \n        {\n            fragColor += vec4(brushIntensity(dist));\n            //fragColor -= vec4(brushIntensity(length(p1-pos)));\n        }\n    } \n    else \n    {\n       \n        //fragColor = vec4(0.0);\n        if(mousePressed && prevMousePressed)\n        {\n            //float dist = length(screen2world(iMouse.xy)-pos);\n            float dist = PointSegDistance2(pos, mousePos, prevMousePos);\n            if(dist < RADIUS)\n            {\n            \tfragColor += vec4(brushIntensity(dist));\n            \t//fragColor -= vec4(brushIntensity(length(mousePos-pos)));\n            }\n        }\n    }\n    \n    // Back-uping mouse data\n    fragColor.y = iMouse.z;\n    fragColor.zw = mousePos;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define Dt\t0.5\n#define Dx\t0.01\n#define B\t0.02\n#define G\t1.0\n\n#define DX\tivec2(1, 0)\n#define DY\tivec2(0, 1)\n\n\nvec2 screen2world(in vec2 fragCoord)\n{\n    return (2.0*fragCoord.xy - iResolution.xy)/iResolution.y;\n}\n\nvec2 world2screen(in vec2 pos)\n{\n    return (pos*iResolution.y + iResolution.xy) * 0.5;\n}\n\nvec2 screen2uv(in vec2 fragCoord)\n{\n    return fragCoord / iResolution.xy;\n}\n\nvec2 uv2screen(in vec2 uv)\n{\n    return uv * iResolution.xy;\n}\n\nvec2 world2uv(in vec2 pos)\n{\n    return world2screen(pos) / iResolution.xy;\n}\n\nvec2 uv2world(in vec2 uv)\n{\n    return screen2world(uv2screen(uv));\n}\n\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = screen2uv(fragCoord);\n    \n    \n    vec2 dev_height;\n    //dev_height.x = texelFetch(iChannel0, ivec2(fragCoord)+DX, 0).x - texelFetch(iChannel0, ivec2(fragCoord)-DX, 0).x;\n    dev_height.x = texture(iChannel0, (vec2(ivec2(fragCoord)+DX)+0.5)/iResolution.xy).x \n                 - texture(iChannel0, (vec2(ivec2(fragCoord)-DX)+0.5)/iResolution.xy).x;\n    \n    //dev_height.y = texelFetch(iChannel0, ivec2(fragCoord)+DY, 0).x - texelFetch(iChannel0, ivec2(fragCoord)-DY, 0).x;\n    dev_height.y = texture(iChannel0, (vec2(ivec2(fragCoord)+DY)+0.5)/iResolution.xy).x \n                 - texture(iChannel0, (vec2(ivec2(fragCoord)-DY)+0.5)/iResolution.xy).x;\n    \n    \n    //vec2 prev_speed = texelFetch(iChannel1, ivec2(fragCoord), 0).xy;\n    vec2 prev_speed = texture(iChannel1, (vec2(ivec2(fragCoord))+0.5)/iResolution.xy).xy;\n    \n    \n    vec2 new_speed = prev_speed - Dt*(G*dev_height + B * prev_speed);\n    \n    \n    //*\n    // Reflexions\n    if(fragCoord.x < 0.5)\n    {\n        new_speed.x = abs(new_speed.x);\n    }\n    \n    if(fragCoord.y < 0.5)\n    {\n        new_speed.y = abs(new_speed.y);\n    }\n    if(fragCoord.x > iResolution.x-1.5)\n    {\n        new_speed.x = -abs(new_speed.x);\n    }\n    \n    if(fragCoord.y > iResolution.y-1.5)\n    {\n        new_speed.y = -abs(new_speed.y);\n    }\n\t//*/\n    \n    fragColor = vec4(new_speed, vec2(0.0));\n}\n",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

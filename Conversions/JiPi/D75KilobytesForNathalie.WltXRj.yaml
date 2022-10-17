@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: D75KilobytesForNathalie
+  id: D75KilobytesForNathalie
+  kernel: D75KilobytesForNathalie
+  name: D75KilobytesForNathalie
+shader:
+  author: BrunoLevy
+  description: ' A special valentine shader for my wife Nathalie, rendered using ''cupidon
+    arrows tracing''.
+
+    '
+  id: WltXRj
+  name: 7.5 kilobytes for Nathalie
+  tags:
+  - raytracing
+  - aabb
+  - mesh
+  - valentine
+  url: https://www.shadertoy.com/view/WltXRj

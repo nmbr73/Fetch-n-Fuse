@@ -1,0 +1,25 @@
+fuse:
+  author: JiPi
+  file: GameOfLifeJipi
+  id: GameOfLifeJipi
+  kernel: GameOfLifeJipi
+  name: GameOfLifeJipi
+shader:
+  author: N.N.
+  description: 'Yep
+
+
+    Thanks to stb for learning me mouse things
+
+
+    Thanks to demofox for the space-to-reset-code I nicked from his snake game'
+  id: st3fD8
+  name: Game of life JiPi
+  parent:
+    id: ldGGRm
+    name: Game of life, again
+    url: https://www.shadertoy.com/view/ldGGRm
+  tags:
+  - 2d
+  - gameoflife
+  url: https://www.shadertoy.com/view/st3fD8

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: TryFire
+  id: TryFire
+  kernel: TryFire
+  name: TryFire
+shader:
+  author: cailuming
+  description: try some 2d fire , and make fun
+  id: ftlyzf
+  name: try fire
+  tags:
+  - fire2d
+  url: https://www.shadertoy.com/view/ftlyzf

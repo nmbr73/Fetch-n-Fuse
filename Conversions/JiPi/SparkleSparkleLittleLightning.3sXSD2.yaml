@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: SparkleSparkleLittleLightning
+  id: SparkleSparkleLittleLightning
+  kernel: SparkleSparkleLittleLightning
+  name: SparkleSparkleLittleLightning
+shader:
+  author: MacSlow
+  description: 'I am neglecting pure 2D stuff recently. Thus trying out simplex-noise
+    with a bit of polar-coords to create some lightning-like lines. '
+  id: 3sXSD2
+  name: Sparkle sparkle little lightning
+  tags:
+  - 2d
+  - noise
+  - simplex
+  - lightning
+  - polar
+  url: https://www.shadertoy.com/view/3sXSD2

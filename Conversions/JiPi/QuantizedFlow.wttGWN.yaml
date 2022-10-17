@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: QuantizedFlow
+  id: QuantizedFlow
+  kernel: QuantizedFlow
+  name: QuantizedFlow
+shader:
+  author: wyatt
+  description: 'pressure solve a schrodinger equation!
+
+    [url]JAVASCRIPT: H=location.host;E=(H?window:opener).Effect;P=E.prototype;if(!E.P)E.P=P.Paint;P.Paint=function(...A){for(i=0;i<4;i++)E.P.apply(this,A);};if(!H)close();[/url]'
+  id: wttGWN
+  name: Quantized Flow
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/wttGWN

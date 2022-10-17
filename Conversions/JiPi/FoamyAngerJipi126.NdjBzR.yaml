@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: FoamyAngerJipi126
+  id: FoamyAngerJipi126
+  kernel: FoamyAngerJipi126
+  name: FoamyAngerJipi126
+shader:
+  author: N.N.
+  description: The darkness within must eventually bubble up
+  id: NdjBzR
+  name: Foamy Anger JiPi 126
+  parent:
+    id: sdffDj
+    name: Foamy Anger JiPi 678
+    url: https://www.shadertoy.com/view/sdffDj
+  tags:
+  - fluid
+  - particles
+  url: https://www.shadertoy.com/view/NdjBzR

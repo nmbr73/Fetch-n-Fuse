@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "stcBzS",
+  "date": "0",
+  "viewed": 0,
+  "name": "BubbleMoving JiPi",
+  "description": " bubbles with sampler2d texture",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "2d",
+   "bubble",
+   "motion",
+   "moving"
+  ],
+  "hasliked": 0,
+  "parentid": "sdt3zH",
+  "parentname": "bubble moving"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define MAX_STEPS 100\n#define MIN_DISTANCE .01\n#define MAX_DISTANCE 100.\nfloat hash(float n){\n    return fract(sin(n)*43758.5453);\n}\nstruct Mesh\n{\n    vec3 pos;\n    vec3 scale;\n    vec3 rotation;\n};\nfloat noise(in vec3 x){\n    vec3 p=floor(x);\n    vec3 f=fract(x);\n    \n    f=f*f*(3.-2.*f);\n    float n=p.x+p.y*57.+113.*p.z;\n    return mix(mix(mix(hash(n+0.),hash(n+1.),f.x),\n    mix(hash(n+57.),hash(n+58.),f.x),f.y),\n    mix(mix(hash(n+113.),hash(n+114.),f.x),\n    mix(hash(n+170.),hash(n+171.),f.x),f.y),f.z);\n}\n\nvec3 noise3(vec3 x){\n    return vec3(noise(x+vec3(123.456,.567,.37)),\n    noise(x+vec3(.11,47.43,19.17)),\n    noise(x));\n}\n\n// a sphere with a little bit of warp\nfloat sdf(vec3 p,float r){\n    vec3 n=vec3(sin(iTime),sin(iTime*.6),cos(iTime*.4));\n    vec3 q=.2*(noise3(p+n)-.5);\n    \n    return length(q+p)-r;\n}\nMesh BUBBLE1_MESH=Mesh(vec3(0),vec3(1),vec3(0));\nMesh BUBBLE2_MESH=Mesh(vec3(0),vec3(1),vec3(0));\nMesh BUBBLE3_MESH=Mesh(vec3(0),vec3(1),vec3(0));\nMesh BUBBLE4_MESH=Mesh(vec3(0),vec3(1),vec3(0));\nmat2 Rot(float a){\n    float s=sin(a),c=cos(a);\n    return mat2(c,-s,s,c);\n}\nfloat smin(float a,float b,float k)\n{\n    float h=max(k-abs(a-b),0.)/k;\n    return min(a,b)-h*h*k*(1./4.);\n}\nvec3 transform(vec3 p,Mesh mesh)\n{\n    vec3 point=p-mesh.pos;\n    point.yz*=Rot(mesh.rotation.x);\n    point.xz*=Rot(mesh.rotation.y);\n    point.xy*=Rot(mesh.rotation.z);\n    point/=mesh.scale;\n    return point;\n}\nfloat getDist(vec3 p)\n{\n    vec3 point=p;\n    point=transform(p,BUBBLE1_MESH);\n    float s1=sdf(point,.3);\n    point=transform(p,BUBBLE2_MESH);\n    float s2=sdf(point,.5);\n    point=transform(p,BUBBLE3_MESH);\n    float s3=sdf(point,1.);\n    point=transform(p,BUBBLE4_MESH);\n    float s4=sdf(point,.7);\n    s1=smin(s1,s2,.3);\n    s1=smin(s1,s3,.3);\n    s1=smin(s1,s4,.3);\n    return s1;\n}\nfloat RayMarch(vec3 ro,vec3 rd)\n{\n    float dist=0.;\n    for(int i=0;i<MAX_STEPS;i++)\n    {\n        float d=getDist(ro+rd*dist);\n        dist+=d;\n        if(d<MIN_DISTANCE||dist>MAX_DISTANCE)break;\n    }\n    return dist;\n}\n\nvec3 getNormal(vec3 p)\n{\n    float d=getDist(p);\n    vec2 e=vec2(.01,0);\n    return normalize(d-vec3(getDist(p-e.xyy),getDist(p-e.yxy),getDist(p-e.yyx)));\n}\nvoid update()\n{\n    BUBBLE1_MESH.pos=vec3(cos(iTime),sin(1.3*iTime),4.+sin(iTime));\n    BUBBLE2_MESH.pos=vec3(0.,cos(iTime),4.+sin(1.3*iTime));\n    BUBBLE3_MESH.pos=vec3(cos(1.3*iTime),sin(iTime),4.2);\n    BUBBLE4_MESH.pos=vec3(sin(iTime),1,4);\n}\n\nvec3 refractTex(vec3 camdir,vec3 normal,float eta)\n{\n    vec3 rd=refract(camdir,normal,eta);\n    vec2 uv=rd.xy-.5;\n    return texture(iChannel0,uv).rgb;\n}\nvec3 reflectTex(vec3 camdir,vec3 normal)\n{\n    vec3 rd=reflect(camdir,normal);\n    vec2 uv=.5-rd.xy*.3;\n    return textureLod(iChannel0,uv,1.).rgb;\n}\nvec3 illuminate(in vec3 pos,in vec3 camdir)\n{\n    vec3 normal=getNormal(pos);\n    \n    const float ETA=1.03;\n    vec3 refrd=-refract(camdir,normal,ETA);\n    vec3 refro=pos+10.*refrd;\n    float refdist=RayMarch(refro,refrd);\n    vec3 refpos=refro+refdist*refrd;\n    vec3 refnormal=getNormal(refpos);\n    \n    vec3 etaRatioRGB=vec3(1.02,1.04,1.07);\n    \n    vec3 refracted_color;\n    refracted_color.r=refractTex(camdir,normal,etaRatioRGB.r).r;\n    refracted_color.g=refractTex(camdir,normal,etaRatioRGB.g).g;\n    refracted_color.b=refractTex(camdir,normal,etaRatioRGB.b).b;\n    vec3 reflected_color=reflectTex(camdir,normal);\n    vec3 texture=.8*refracted_color+.2*reflected_color;\n    return texture;\n}\nvoid mainImage(out vec4 fragColor,in vec2 fragCoord)\n{\n    vec2 uv=(fragCoord-.5*iResolution.xy)/iResolution.y;\n    vec3 ro=vec3(0,0,0);\n    // Normalized pixel coordinates (from 0 to 1)\n    vec3 rd=normalize(vec3(uv.x,uv.y,1));\n    \n    update();\n    \n    vec3 col=vec3(1);\n    \n    float dist=RayMarch(ro,rd);\n    if(dist>=MAX_DISTANCE)\n    {\n        vec2 st=fragCoord/iResolution.xy;\n        col=texture(iChannel0,st).rgb;\n    }else\n    {\n        vec3 p=ro+rd*dist;\n        col=illuminate(p,rd);\n    }\n    \n    // Output to screen\n    fragColor=vec4(col,1.);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

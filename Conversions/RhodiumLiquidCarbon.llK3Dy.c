@@ -36,7 +36,7 @@ __DEVICE__ float2 pR(float2 p, float a)
 // 3D noise function (IQ)
 __DEVICE__ float noise(float3 p)
 {
-  float3 ip=_floor(p);
+    float3 ip=_floor(p);
     p-=ip; 
     float3 s=to_float3(7,157,113);
     float4 h=to_float4(0.0f,s.y,s.z,s.y+s.z)+dot(ip,s);
@@ -48,7 +48,7 @@ __DEVICE__ float noise(float3 p)
 
 __DEVICE__ float map(float3 p, float bounce, float iTime)
 {  
-  p.z-=1.0f;
+    p.z-=1.0f;
     p*=0.9f;
     float2 _p = pR(swi2(p,y,z),bounce*1.0f+0.4f*p.x);
     p.y=_p.x; p.z=_p.y;
@@ -120,6 +120,8 @@ __KERNEL__ void RhodiumLiquidCarbonFuse__Buffer_A(float4 fragColor, float2 fragC
   //CONNECT_COLOR0(BaseColor, (1.0f/1.0f) ,  (1.0f/4.0f) , (1.0f/16.0f), 1.0f);
   
   CONNECT_SLIDER0(MixTex, 0.0f, 1.0f, 1.0f);
+  CONNECT_SLIDER1(Mix2, 0.0f, 1.0f, 1.0f);
+  CONNECT_SLIDER2(Threshold, -1.0f, 30.0f, 12.0f);
     
   float bounce=_fabs(fract(0.05f*time)-0.5f)*20.0f; // triangle function
     
@@ -137,7 +139,7 @@ __KERNEL__ void RhodiumLiquidCarbonFuse__Buffer_A(float4 fragColor, float2 fragC
 //   standard sphere tracing:
   float3 color = to_float3_s(0.0f);
   float3 color2 =to_float3_s(0.0f);
-  float t=castRayx(org,dir,bounce,iTime);
+  float t = castRayx(org,dir,bounce,iTime);
   float3 pos=org+dir*t;
   float3 nor=calcNormal(pos,bounce,iTime);
 
@@ -146,16 +148,23 @@ __KERNEL__ void RhodiumLiquidCarbonFuse__Buffer_A(float4 fragColor, float2 fragC
 //  scene depth    
   float depth=clamp((1.0f-0.09f*t),0.0f,1.0f);
     
-  float3 pos2 = to_float3_s(0.0f);
+
+  float4 tex = texture(iChannel0, uv);
+  float4 tex2 = texture(iChannel1, uv);
+   
+    
+  //float3 pos2 = swi3(tex,x,y,z);//to_float3_s(0.0f);
   float3 nor2 = to_float3_s(0.0f);
-  if(t<12.0f)
+  //if(t<12.0f)
+  if(t<Threshold)
   {
       color2 = to_float3_s(_fmaxf(dot(lig,nor),0.0f)  +  _powf(_fmaxf(dot(reflect(dir,nor),lig),0.0f),16.0f));
       color2 *=clamp(softshadow(pos,lig,bounce,iTime),0.0f,1.0f);  // shadow              
       float t2;
       swi3S(color2,x,y,z, swi3(color2,x,y,z) + refr(pos,lig,dir,nor,0.9f, &t2, &nor2,bounce,iTime)*depth);
-      color2-=clamp(0.1f*t2,0.0f,1.0f);        // inner intensity loss
-  }      
+      color2 -= clamp(0.1f*t2,0.0f,1.0f);        // inner intensity loss
+  } 
+else color2 = to_float3_s(1.0f);
   
 
   float tmp = 0.0f;
@@ -176,15 +185,18 @@ __KERNEL__ void RhodiumLiquidCarbonFuse__Buffer_A(float4 fragColor, float2 fragC
       org += dir*0.078f;
   }    
   
-  float4 tex = texture(iChannel0, uv);
+  
   
   //float3 basecol=to_float3(1.0f/1.0f ,  1.0f/4.0f , 1.0f/16.0f);
-  float3 basecol=swi3(BaseColor,x,y,z);
+  float3 basecol = swi3(BaseColor,x,y,z);
      
   basecol = _mix(swi3(tex,x,y,z), basecol, MixTex);
   
   T=clamp(T,0.0f,1.5f); 
   color += basecol* _expf(4.0f*(0.5f-T) - 0.8f);
+  
+  color2 = _mix(color2, swi3(tex,x,y,z), Mix2);
+  
   color2*=depth;
   color2+= (1.0f-depth)*noise(6.0f*dir+0.3f*time)*0.1f;  // subtle mist
 

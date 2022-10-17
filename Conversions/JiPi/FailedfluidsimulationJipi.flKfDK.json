@@ -1,0 +1,100 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flKfDK",
+  "date": "0",
+  "viewed": 0,
+  "name": "FailedFluidSimulation JiPi",
+  "description": "drag mouse to change velocity field and density of each cell.\nnot finished yet. xp\nmaybe handdle this for next time.\nmore reason is in 'Common'",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "simulation",
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "sdy3W1",
+  "parentname": "failed fluid simulation"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 O, in vec2 C )\n{\n    vec4 tc=texture(iChannel0,C/iR);\n    O.rgb=sqrt(tc.xyz)*tc.z*1.3;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "/*-------------------------------------------------------------\nI have read papers for several days to deal with N-S Equation, \nbut I found there are too many pre knowledge I don't know yet,\nso it's too hard for me to completely understand this equation and \nhow to solve it. :(\nSo I have to decide to give up this time to do another thing\nwhat I read:\n    WIKIPEDIA:Navier-Stokes Equations\n    Real-Time Fluid Dynamics for Games by Jos Stam\nand\nhttps://www.shadertoy.com/view/4tGfDW\n    Chimera's Breath by nimitz\nI really like this shader, and I learned some thing too from it, thanks for this cool man\n-------------------------------------------------------------*/\n#define iR iResolution.xy\n#define iM iMouse\n#define iT iTime\nconst float EPS=1e-3;\nconst float dt=0.02;\nfloat dot2(vec2 v){return dot(v,v);}\nvec4 simulate(sampler2D tex,vec2 C,vec2 resolution,vec4 mouse,vec4 lMouse,float time)\n{\n    float diffV=.22;\n    \n    vec2 pixw=1./resolution,uv=(C*pixw);\n    vec4 tc=texture(tex,uv),\n         tl=texture(tex,uv+vec2(-pixw.x,0)),\n         tr=texture(tex,uv+vec2(+pixw.x,0)),\n         tu=texture(tex,uv+vec2(0,pixw.y)),\n         td=texture(tex,uv+vec2(0,-pixw.y));\n    //diffuse\n    vec4 O=tc+diffV*(tl+tr+tu+td-4.*tc);\n    //advection\n    vec2 pos=uv-dt*(tc.xy-.5)*resolution.x*0.0001; \n        //remark:density did't diffuse here, because is coverd\n    O.zw=texture(tex,pos).zw;\n    \n\n    if(mouse.z>0.&&lMouse.z>0.)\n    {\n        float d=1./(1.+80000.*dot2((mouse.xy-C)*pixw.x));\n        O.z+=d*.5;\n        O.xy=clamp(O.xy+(mouse.xy-lMouse.xy)*pixw.x*d*300.,-2.,2.);\n        //O.w=mix(O.w,fract(time*0.1),step(.20,d));\n    }\n    //boundary\n    float bound=2.;\n    O.x=mix(.5,O.x,step(bound,C.x)*step(C.x,resolution.x-bound));\n    O.y=mix(.5,O.y,step(bound,C.y)*step(C.y,resolution.y-bound));\n    \n    if(length(C-.5)<EPS)\n    {\n        O.xyz=mouse.xyz;\n        O.w=0.;\n    }\n        \n    return O;\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 O, in vec2 C )\n{\n    O=simulate(iChannel0,C,iR,iM,texelFetch(iChannel0,ivec2(.5),0),iT);\n    \n    //initalizing velocity and density\n    vec4 tc=texture(iChannel1,C/iR);\n    tc.xy=vec2(0.5);//xy-0.5->velocity\n    O=iFrame==0?tc.xyzw:O;\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

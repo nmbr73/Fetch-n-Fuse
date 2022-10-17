@@ -1,0 +1,172 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "fdtyR2",
+  "date": "0",
+  "viewed": 0,
+  "name": "cranks2 difficult JiPi",
+  "description": "Making a tree using random walks that separate from each other and are affected by some forces. ",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "procedural",
+   "generative",
+   "stochastic",
+   "routing"
+  ],
+  "hasliked": 0,
+  "parentid": "7l2BRd",
+  "parentname": "cranks2 difficult"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 o, in vec2 i )\n{\n    vec2 uv = i/R.xy;\n    o = vec4(texture(iChannel0,uv)/1e2);\n    \n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//Store all the particles here\nvoid mainImage( out vec4 o, in vec2 i )\n{\n    vec2 uv = i/R.xy;\n    \n    o = texture(iChannel0,uv);\n    \n    float v = exp2(7.-floor(.7*T+T*T/20.));\n    \n    if(T<.3){\n        o.xyzw = vec4(floor(uv.x/v*R.x)*v/R.x*.8+.1,0,0,5.1);\n    }\n    \n    o.xy+=o.zw/R.xy*2.;\n    vec4 r = hash44(vec4(floor(i/v),F,iMouse.x));\n    r.z = sqrt(-2.*log(r.z));\n    r.w *= 6.28318;\n    r.zw = r.z*vec2(cos(r.w),sin(r.w))*.4;\n    o.zw+=r.zw*(.1+T/2000.);\n    o.w -= .6/(100.+T*30.);\n    float l = length(o.zw);\n    o.zw*=max(0.,(pow(l,.9+r.x*.1)*(1.-T/30.))/l);\n    float t = atan(o.w,o.z);\n    if(o.w>0.)\n        t += .01*sign(o.z);\n    o.zw = length(o.zw)*vec2(cos(t),sin(t));\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "//This is the first pass of the rendering/search\n\nvoid mainImage( out vec4 o, in vec2 i )\n{\n    o = vec4(0);\n    for(int a = 0; a < i1; a++){\n        vec4 r = hash44(vec4(i,F,a));//randomly read points from buffer A\n        vec4 p = texture(iChannel0,r.xy);\n        float l = length(p.xy*R.xy-i);\n        if(l < length(o.xy*R.xy-i)){//save only the closest to this pixel\n            o = p;\n        }\n    }\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "void mainImage( out vec4 o, in vec2 i )\n{\n    vec2 uv = i/R.xy;\n    o = texture(iChannel1,uv);\n    for(int a = 0; a < i1; a++){\n        vec4 r = hash44(vec4(i,F,a));//Transform this uniform random into a normal distribution\n        r.z = sqrt(-2.*log(r.z));\n        r.w *= 6.28318;\n        r.zw = r.z*vec2(cos(r.w),sin(r.w))*s;\n        vec4 p = texture(iChannel0,(i+r.xy)/R.xy);//sample random nearby points\n        if(p.xy!=vec2(0)&&length(p.zw)>.001)\n        \to += vec4(length(p.zw),.5+.5*sin(p.z),.5+.5*cos(4.*p.w),1)/(1.+exp((2.+T/5.)*length(p.xy*R.xy-i))); //add a gaussian to the accumulated image from the particle \n    }\n    if(T<.3){\n        o = vec4(0);\n    }\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [],
+   "outputs": [],
+   "code": "#define CL(x) clamp(x,0.,.5)\n#define R iResolution\n#define F iFrame\n#define T mod(float(iFrame)/60.,20.)\n#define PI 2.*asin(1.)\n#define E exp(1.)\nvec4 hash44(vec4 p4)\n{\n\tp4 = fract(p4  * vec4(.1031, .1030, .0973, .1099));\n    p4 += dot(p4, p4.wzxy+19.19);\n    return fract((p4.xxyz+p4.yzzw)*p4.zywx);\n}\nfloat s = 15.;\t//search radius\n\nint i1 = 100;\nint i2 = 100;\n\nvec2 cis(float t){\n    return cos(t - vec2(0,PI/2.));\n}\nvec2 cexp(vec2 z) {\n    return exp(z.x)*cis(z.y);\n}\nvec2 clog(vec2 z) {\n    return vec2(log(length(z)),atan(z.y,z.x));\n}",
+   "name": "Common",
+   "description": "",
+   "type": "common"
+  }
+ ]
+}

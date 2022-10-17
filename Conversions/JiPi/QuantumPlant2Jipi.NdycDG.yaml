@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: QuantumPlant2Jipi
+  id: QuantumPlant2Jipi
+  kernel: QuantumPlant2Jipi
+  name: QuantumPlant2Jipi
+shader:
+  author: N.N.
+  description: toolbox
+  id: NdycDG
+  name: Quantum Plant2 JiPi
+  parent:
+    id: NdKyRd
+    name: Quantum Plant 2
+    url: https://www.shadertoy.com/view/NdKyRd
+  tags:
+  - personnaltoolbox
+  url: https://www.shadertoy.com/view/NdycDG

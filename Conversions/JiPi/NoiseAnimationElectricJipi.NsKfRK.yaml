@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: NoiseAnimationElectricJipi
+  id: NoiseAnimationElectricJipi
+  kernel: NoiseAnimationElectricJipi
+  name: NoiseAnimationElectricJipi
+shader:
+  author: N.N.
+  description: Playing with different ways of animating noise. In this version, the
+    domain is displaced by two random fbm noise calls (one for each axis).
+  id: NsKfRK
+  name: Noise animation-Electric JiPi
+  parent:
+    id: ldlXRS
+    name: Noise animation - Electric
+    url: https://www.shadertoy.com/view/ldlXRS
+  tags:
+  - procedural
+  - 2d
+  - noise
+  url: https://www.shadertoy.com/view/NsKfRK

@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SoapMetabubble
+  id: SoapMetabubble
+  kernel: SoapMetabubble
+  name: SoapMetabubble
+shader:
+  author: yasuo
+  description: It's like the soup bubble with the metaball animation.
+  id: sdcyz4
+  name: Soap MetaBubble
+  tags:
+  - metaball
+  url: https://www.shadertoy.com/view/sdcyz4

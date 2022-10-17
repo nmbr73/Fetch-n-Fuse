@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: RippleTextureTransition
+  id: RippleTextureTransition
+  kernel: RippleTextureTransition
+  name: RippleTextureTransition
+shader:
+  author: tb
+  description: 'This attempts to replicate the transition seen in Oddworld - Abe''s
+    Oddysee here:
+
+    https://www.youtube.com/watch?v=SYL6nxUkuOo&feature=youtu.be&t=68'
+  id: 3ljfzV
+  name: Ripple Texture Transition
+  tags:
+  - transition
+  - ripple
+  url: https://www.shadertoy.com/view/3ljfzV

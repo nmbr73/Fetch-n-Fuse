@@ -1,0 +1,24 @@
+fuse:
+  author: JiPi
+  file: Instamaze
+  id: Instamaze
+  kernel: Instamaze
+  name: Instamaze
+shader:
+  author: davidar
+  description: I was playing with Lenia and happened across this Turing pattern
+  id: sdsyWN
+  name: Instamaze
+  tags:
+  - convolution
+  - diffusion
+  - automata
+  - life
+  - cellular
+  - maze
+  - reaction
+  - turing
+  - continuous
+  - artificial
+  - lenia
+  url: https://www.shadertoy.com/view/sdsyWN

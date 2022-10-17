@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: SmellOfBurningPlastic
+  id: SmellOfBurningPlastic
+  kernel: SmellOfBurningPlastic
+  name: SmellOfBurningPlastic
+shader:
+  author: leon
+  description: shader fragrange
+  id: 7dyBRm
+  name: Smell of Burning Plastic
+  tags:
+  - fire
+  - smoke
+  - plastic
+  url: https://www.shadertoy.com/view/7dyBRm

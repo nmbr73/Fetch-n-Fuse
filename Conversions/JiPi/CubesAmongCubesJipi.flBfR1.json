@@ -1,0 +1,52 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "flBfR1",
+  "date": "0",
+  "viewed": 0,
+  "name": "Cubes among cubes JiPi",
+  "description": "An attempt to render an infinite grid. Not very efficient but it works. Calculating the movement patterns of the flying cubes can probably be improved too. Use the mouse to rotate and move around.",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "raymarching",
+   "cubes",
+   "repetition",
+   "pattern"
+  ],
+  "hasliked": 0,
+  "parentid": "NtXfzS",
+  "parentname": "Cubes among cubes..."
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sfGRr",
+     "filepath": "/media/a/27012b4eadd0c3ce12498b867058e4f717ce79e10a99568cca461682d84a4b04.bin",
+     "type": "volume",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "struct Material {\n    vec3 ka;\n    vec3 kd;\n    vec3 ks;\n    float a;\n};\n\nmat2 rot(float a){\n    float c = cos(a);\n    float s = sin(a);\n    return mat2(c, -s, s, c);\n}\n\nfloat mdot(vec3 a, vec3 b){\n    return clamp(dot(a, b), 0., 1.);\n}\n\nfloat rand(vec2 u){\n    u = 50.*fract(u);\n    return fract(u.x*u.y*(u.x+u.y));\n}\n\nfloat udbox(vec3 p, vec3 a, float r){\n    return length(max(abs(p) - a, 0.)) - r;\n}\n\nfloat sdcone(vec3 p, vec3 u, float a){\n    // u : direction of the cone\n    float y = dot(u, p);\n    float x = length(p - y*u);\n    return x*cos(a) - y*sin(a);\n}\n\nfloat noise(vec3 p){\n    vec3 i = floor(p);\n    vec3 f = fract(p);\n    f = smoothstep(0., 1., f);\n    p = i + f;\n    return texture(iChannel0, (p+0.5)/32.).r;\n}\n\nfloat fbm(vec3 p){\n    float f;\n    f = 0.5 * noise(p * 1.);\n    f += 0.25 * noise(p * 2.);\n    f += 0.125 * noise(p * 4.);\n    return f;\n}\n\n\n\nconst vec2 h = vec2(-1., 1.);\nconst vec3 path[] = vec3[](\n    h.xxx, h.xyx, h.yyx, h.yxx, h.yxy, h.yyy, h.xyy, h.xxy\n);\nvec3 positions[7];\n\nvoid updateMovingCubes(){\n    // Updates the positions of the 6 moving cubes\n    float t0 = 8.*iTime/6.;\n    float h = 1./6.;\n    int ki = 0;\n    float kf = 0.;\n    for(; ki < 6; ki++){\n        float t = mod(t0 + kf*h, 8.);\n        int i = int(floor(t));\n        float f = min(6.*fract(t), 1.);\n        vec3 p1 = path[(i+ki)%8];\n        vec3 p2 = path[(i+ki+1)%8];\n        vec3 p = mix(p1, p2, smoothstep(0., 1., f));\n        positions[ki] = p;\n        kf++;\n    }\n}\n\nfloat cuboidDst(vec3 p){\n    // Returns the distance to the moving cubes\n    p.xz *= rot(0.8*iTime);\n    p.yz *= rot(1.1*iTime+sin(iTime));\n    \n    float a = 0.8;\n    \n    //float t = mod(10.*iTime, 22.);\n    float sp = 1.;// + 0.25*smoothstep(0., 1., t)*smoothstep(10., 9., t);\n    \n    float r = 0.2;\n    float d = 10000.;\n    for(int k = 0; k < 6; k++){\n        vec3 pos = sp*positions[k];\n        d = min(d, udbox(p - pos, vec3(a), r));\n    }\n    \n    return d;\n}\n\n\nvec3 spotPos = vec3(5., 10., 5.);\nvec3 spotDir = normalize(-vec3(5., 10., 5.));\nfloat spotAngle = 0.4;\n\nvec3 lightCol = vec3(1., 1., 1.);\n\nvec3 cuboidPos = vec3(0., 1.8, 0.);\n\nvec2 moveDir = 0.5 * vec2(-1., -1.);\n\n\nMaterial defBoxesMat = Material(\n    vec3(0.08, 0.0, 0.0),\n    vec3(0.3, 0.2, 0.1),\n    vec3(0.3, 0.3, 0.3),\n    100.\n);\n\nMaterial cuboidMat = Material(\n    vec3(0.05, 0., 0.),\n    vec3(0.05,0.,0.05),\n    vec3(1.),\n    10.\n);\n\n\nvec3 cubeLocal(vec3 p, vec2 o){\n    // Returns the local space of a ground block\n    vec3 q;\n    q.xz = p.xz - o;\n\n    float d2c = length(o - cuboidPos.xz);\n    float att = smoothstep(-2., -4., d2c) + smoothstep(2., 4., d2c) - 0.3;\n    float w = 80.;\n    float t = iTime;\n    float f = (0.8+0.5*abs(sin(w*o.y+t)+cos(w*o.x-t)))*att;\n\n    q.y = p.y - f - 0.3;\n\n    return q;\n}\n\nfloat gridCubeDst(vec3 p, vec2 c, vec2 offset, out vec2 closestO, float curD){\n    // Returns the distance to a single ground block\n    vec2 o = c + offset;\n    vec3 q = cubeLocal(p, o);\n\n    float dst = udbox(q+vec3(0., 1.5, 0.), vec3(0.3, 2., 0.3), 0.1);\n\n    float sd = step(0., dst - curD);\n    closestO = sd*closestO + (1.-sd)*o;\n    \n    return dst;\n}\n\n\nfloat sdf(vec3 p, out Material mat){\n    float d = 10000.;\n    \n    // Evaluate distance to the closest ground block by\n    // checking its neighbors (thus simulating an infinite grid)\n    // It's not very efficient but I don't know if it can be\n    // improved\n    vec2 c = floor(p.xz) + 0.5;\n    vec2 closestO = vec2(0.);\n    vec3 h = vec3(1., 0., -1.);\n    for(float x = -1.; x <= 1.; x++){\n        for(float y = -1.; y <= 1.; y++){\n            d = min(d, gridCubeDst(p, c, vec2(x, y), closestO, d));\n        }\n    }\n    \n    // Select the color of the material based on the\n    // closest ground block\n    mat = defBoxesMat;\n    vec3 col = sin((closestO.x*closestO.y) + vec3(0., 0.4, 0.8));\n    mat.kd = defBoxesMat.kd + 0.15 * col;\n    mat.kd = clamp(1.3*mat.kd, 0., 1.);\n    \n    // Adding noise to a block\n    vec3 q = cubeLocal(p, closestO);\n    d += 0.01*fbm(10.*q + 10.*rand(closestO));\n    \n    \n    // Distance and material to the moving cubes\n    q = p-cuboidPos;\n    float dc = cuboidDst(q/0.3)*0.3;\n    if(dc < d){\n        mat = cuboidMat;\n    }\n    d = min(d, dc);\n\n    return d;\n}\n\nfloat shadow(vec3 ro, vec3 rd, float tmin, float tmax){\n    Material _;\n    float t = tmin;\n    float res = 1.;\n    for(int i = 0; i < 50 && t < tmax; i++)\n    {\n        float d = sdf(ro + rd*t, _);\n        if(d < 0.0001)\n            return 0.;\n        res = min(res, 32.*d/t);\n        t += d;\n    }\n    return res;\n}\n\nvec2 raymarch(vec3 ro, vec3 rd, float tmin, float tmax, out Material mat){\n    float maxSteps = 100.;\n    float t = tmin;\n    for(float i = 0.; i < maxSteps && t < tmax; i++){\n        float d = sdf(ro + rd * t, mat);\n        if(d < 0.001){\n            return vec2(t, i/maxSteps);\n        }\n        t += d*0.8;\n    }\n    \n    return vec2(-1., -1.);\n}\n\nvec3 normal(vec3 p){\n    vec2 h = vec2(1., 0.) * 0.0001;\n    Material _;\n    return normalize(vec3(\n        sdf(p+h.xyy, _) - sdf(p-h.xyy, _),\n        sdf(p+h.yxy, _) - sdf(p-h.yxy, _),\n        sdf(p+h.yyx, _) - sdf(p-h.yyx, _)\n    ));\n}\n\nvec3 lighting(vec3 p, vec3 n, vec3 ro, Material mat){\n    vec3 lightDir = -spotDir;\n    \n    float shad = shadow(p, lightDir, 0.0, 10.);\n\n    vec3 v = normalize(ro - p);\n    vec3 r = reflect(-lightDir, n);\n    vec3 h = normalize(lightDir + v);\n    \n    vec3 amb = vec3(0.);\n    vec3 dif = vec3(0.);\n    vec3 spc = vec3(0.);\n    \n    vec3 q = p;\n    q -= spotPos;\n    float spd = sdcone(q, spotDir, spotAngle);\n    \n    vec3 col = vec3(0.);\n    \n    amb = mat.ka * lightCol;\n    dif = mat.kd * lightCol * mdot(n, lightDir);\n    spc = mat.ks * lightCol * pow(mdot(n, h), mat.a);\n\n    float lig = clamp(-spd, 0., 1.5);\n    col = (amb + (dif + spc) * shad) * lig;\n    \n    return clamp(col, 0., 1.);\n}\n\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec3 col = vec3(0.);\n    \n    vec2 uv = fragCoord/iResolution.xy;\n    uv -= 0.5;\n    uv.x *= iResolution.x/iResolution.y;\n    \n    vec3 ro = vec3(-1., 4., -5.);\n    vec3 rd = normalize(vec3(uv, 1.));\n    \n    rd.yz *= rot(0.5);\n    mat2 rr = rot(iTime*0.1+2. - iMouse.x*0.01);\n    ro.xz *= rr;\n    rd.xz *= rr;\n    \n    vec2 disp = moveDir * iTime - iMouse.y * 0.01;\n    ro.xz += disp;\n    cuboidPos.xz += disp;\n    spotPos.xz += disp;\n    \n    updateMovingCubes();\n    \n    Material mat;\n    vec2 hit = raymarch(ro, rd, 0., 20., mat);\n    float t = hit.x;\n    \n    if(t > 0.){\n        vec3 p = ro + rd * t;\n        vec3 n = normal(p);\n        p += n * 0.01;\n        col = lighting(p, n, ro, mat);\n    }\n\n    fragColor = vec4(col,1.0);\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

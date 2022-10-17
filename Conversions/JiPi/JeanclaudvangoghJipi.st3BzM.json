@@ -1,0 +1,79 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "st3BzM",
+  "date": "0",
+  "viewed": 0,
+  "name": "JeanClaudVanGogh JiPi",
+  "description": "trying to resemble van gogh drawing style",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "effect",
+   "paint",
+   "drawing"
+  ],
+  "hasliked": 0,
+  "parentid": "MdGSDG",
+  "parentname": "jean claude van gogh"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "Xsf3zn",
+     "filepath": "/media/a/f735bee5b64ef98879dc618b016ecf7939a5756040c2cde21ccb15e69a6e1cfb.png",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGRr",
+     "filepath": "/media/a/35c87bcb8d7af24c54d41122dadb619dd920646a0bd0e477e7bdc6d12876df17.webm",
+     "type": "video",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sf3Rr",
+     "filepath": "/media/a/ad56fba948dfba9ae698198c109e71f118a54d209c0ea50d77ea546abad89c57.png",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// created by florian berger (flockaroo) - 2016\n// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.\n\n// trying to resemble van gogh drawing style\n\n#define Res  iResolution.xy\n#define Res0 iChannelResolution[0].xy\n#define Res1 iChannelResolution[1].xy\n#define Res2 iChannelResolution[2].xy\n\nvec4 getCol(vec2 pos)\n{\n    vec2 uv=pos/Res0;\n    \n    vec4 c1 = texture(iChannel0,uv);\n    uv = uv*vec2(-1,-1)*0.39+0.015*vec2(sin(iTime*1.1),sin(iTime*0.271));\n    // had to use .xxxw because tex on channel2 seems to be a GL_RED-only tex now (was probably GL_LUMINANCE-only before)\n    vec4 c2 = vec4(0.5,0.7,1.0,1.0)*1.0*texture(iChannel2,uv).xxxw;\n    float d=clamp(dot(c1.xyz,vec3(-0.5,1.0,-0.5)),0.0,1.0);\n    return mix(c1,c2,1.8*d);\n}\n\nfloat getVal(vec2 pos, float level)\n{\n    return length(getCol(pos).xyz)+0.0001*length(pos-0.5*Res0);\n}\n    \nvec2 getGrad(vec2 pos,float delta)\n{\n    float l = 1.0*log2(delta);\n    vec2 d=vec2(delta,0);\n    return vec2(\n        getVal(pos+d.xy,l)-getVal(pos-d.xy,l),\n        getVal(pos+d.yx,l)-getVal(pos-d.yx,l)\n    )/delta;\n}\n\nvec4 getRand(vec2 pos) \n{\n    vec2 uv=pos/Res1;\n    uv+=1.0*float(iFrame)*vec2(0.2,0.1)/Res1;\n    \n    return texture(iChannel1,uv);\n}\n\nvec4 getColDist(vec2 pos)\n{\n\treturn floor(0.8*getCol(pos)+1.1*getRand(1.2*pos));\n    float fact = clamp(length(getGrad(pos,5.0))*20.0,0.0,1.0);\n\treturn floor(0.8*getCol(pos)+1.1*mix(getRand(0.7*pos),getRand(1.7*pos),fact));\n}\n\n#define SampNum 16\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 pos = fragCoord/Res*Res0;\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    vec3 col=vec3(0);\n    float cnt=0.0;\n    float fact=1.0;\n    for(int i=0;i<1*SampNum;i++)\n    {\n        col+=fact*getColDist(pos).xyz;\n        vec2 gr=getGrad(pos,4.0);\n        pos+=0.6*normalize(mix(gr.yx*vec2(1,-1),-gr,0.2));\n        fact*=0.87;\n        cnt+=fact;\n    }\n    col/=cnt;\n\tfragColor = vec4(col,1.0);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

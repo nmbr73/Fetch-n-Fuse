@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: MaybeLatticeBoltzmann
+  id: MaybeLatticeBoltzmann
+  kernel: MaybeLatticeBoltzmann
+  name: MaybeLatticeBoltzmann
+shader:
+  author: wyatt
+  description: 'instead of velocity and pressure, I track up,down,left,right energy.
+    pressure is the sum and velocity is the difference.  This really cool researcher
+    guy challenged me to this today! I hope he has another challenge tomorrow! '
+  id: wdG3DW
+  name: 'Maybe Lattice Boltzmann '
+  tags:
+  - fluid
+  url: https://www.shadertoy.com/view/wdG3DW

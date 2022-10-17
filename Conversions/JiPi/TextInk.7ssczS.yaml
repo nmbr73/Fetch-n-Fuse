@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: TextInkJipi751
+  id: TextInkJipi751
+  kernel: TextInkJipi751
+  name: TextInkJipi751
+shader:
+  author: N.N.
+  description: adapted from https://www.shadertoy.com/view/wsKfWG
+  id: 7ssczS
+  name: text Ink JiPi 751
+  parent:
+    id: fty3zW
+    name: text Ink
+    url: https://www.shadertoy.com/view/fty3zW
+  tags:
+  - carwash
+  url: https://www.shadertoy.com/view/7ssczS

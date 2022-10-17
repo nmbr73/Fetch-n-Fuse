@@ -1,0 +1,105 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7tBBzW",
+  "date": "0",
+  "viewed": 0,
+  "name": "Navier-Stokes JiPi",
+  "description": "test fluid\nbased on https://www.shadertoy.com/view/4lyyzc by wyatt",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fluid"
+  ],
+  "hasliked": 0,
+  "parentid": "4ltBWj",
+  "parentname": "Navier-Stokes"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "//based on https://www.shadertoy.com/view/4lyyzc by wyatt\nvec2 R;\nvec4 T ( vec2 U ) {return texture(iChannel0,U/R);}\nvoid mainImage( out vec4 C, in vec2 U )\n{\n    R = iResolution.xy;\n    \n   \tvec4 v = T(U);\n    vec2 dz = v.xy-vec2(.5,0);\n    C.xyz = max(vec3(0),sin(1.5+5.*(v.w)*vec3(1,2,3)));\n    float ndz = length(dz);\n    C *= (0.7+.5*ndz);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define k 0.25\n#define l .7\n#define m 0.0\nvec2 R;\nvec4 T ( vec2 U ) {return texture(iChannel0,U/R);}\nvoid mainImage( out vec4 Q, in vec2 U )\n{   R = iResolution.xy;\n \t\n \tvec2 O = U,A = U+vec2(1,0),B = U+vec2(0,1),C = U+vec2(-1,0),D = U+vec2(0,-1);\n \tvec4 u,a,b,c,d;\n \tfloat ds = 0.;\n \tvec2 g = vec2(0);\n    vec2 vdv = vec2(0);\n \t\n    float s = 0.5;\n \t\n    u = T(U); U -= u.xy*s;\n    a = T(A); b = T(B); c = T(C); d = T(D);\n    A -=a.xy*s; B -=b.xy*s; C -=c.xy*s; D -=d.xy*s;     \n    g += vec2(a.z-c.z,b.z-d.z);\n    //vdv += vec2(u.x*(c.x-a.x)+u.y*(d.x-b.x), u.x*(c.y-a.y)+u.y*(d.y-b.y))/2.; \t\n \tQ = T(U);\n \tvec4 N = 0.25*(a+b+c+d);\n    float div = 0.25*((c.x-a.x)+(d.y-b.y));\n \tQ.z = N.z-k*div;\n \tQ.xy += g*l;\n    //Q.xy -= vdv*m;\n \t//Q *= 0.9999;\n \tif (iFrame < 1) Q = vec4(.5,0,0,0);\n \tif (length(U-vec2(0.075,0.15)*R) < 4.) Q.xyw = vec3(Q.xy*0.5+0.5*vec2(-1.0,0),1.);\n    if (length(U-vec2(0.075,0.5)*R) < 16.) Q.xyw=vec3(0.,0.,1.);\n    if (length(U-vec2(0.115,0.75)*R)+ length(U-vec2(0.055,0.82)*R)< R.x/12.) Q.xyw=vec3(0.,0.,1.);\n \tif (U.x<1.||U.y<1.||R.x-U.x<1.||R.y-U.y<1.) Q.xy=vec2(.5,0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define k 0.25\n#define l .7\n#define m 0.0\nvec2 R;\nvec4 T ( vec2 U ) {return texture(iChannel0,U/R);}\nvoid mainImage( out vec4 Q, in vec2 U )\n{   R = iResolution.xy;\n \t\n \tvec2 O = U,A = U+vec2(1,0),B = U+vec2(0,1),C = U+vec2(-1,0),D = U+vec2(0,-1);\n \tvec4 u,a,b,c,d;\n \tfloat ds = 0.;\n \tvec2 g = vec2(0);\n    vec2 vdv = vec2(0);\n \t\n    float s = 0.5;\n \t\n    u = T(U); U -= u.xy*s;\n    a = T(A); b = T(B); c = T(C); d = T(D);\n    A -=a.xy*s; B -=b.xy*s; C -=c.xy*s; D -=d.xy*s;     \n    g += vec2(a.z-c.z,b.z-d.z);\n    //vdv += vec2(u.x*(c.x-a.x)+u.y*(d.x-b.x), u.x*(c.y-a.y)+u.y*(d.y-b.y))/2.; \t\n \tQ = T(U);\n \tvec4 N = 0.25*(a+b+c+d);\n    float div = 0.25*((c.x-a.x)+(d.y-b.y));\n \tQ.z = N.z-k*div;\n \tQ.xy += g*l;\n    //Q.xy -= vdv*m;\n \t//Q *= 0.9999;\n \tif (iFrame < 1) Q = vec4(.5,0,0,0);\n \tif (length(U-vec2(0.075,0.15)*R) < 4.) Q.xyw = vec3(Q.xy*0.5+0.5*vec2(-1.0,0),1.);\n    if (length(U-vec2(0.075,0.5)*R) < 16.) Q.xyw=vec3(0.,0.,1.);\n    if (length(U-vec2(0.115,0.75)*R)+ length(U-vec2(0.055,0.82)*R)< R.x/12.) Q.xyw=vec3(0.,0.,1.);\n \tif (U.x<1.||U.y<1.||R.x-U.x<1.||R.y-U.y<1.) Q.xy=vec2(.5,0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

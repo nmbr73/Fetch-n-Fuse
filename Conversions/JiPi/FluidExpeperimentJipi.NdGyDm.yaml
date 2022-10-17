@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: FluidExpeperimentJipi
+  id: FluidExpeperimentJipi
+  kernel: FluidExpeperimentJipi
+  name: FluidExpeperimentJipi
+shader:
+  author: N.N.
+  description: 'Forked from aiekick''s Fluid Cells Random Experiment:
+
+    https://www.shadertoy.com/view/MlVBWd'
+  id: NdGyDm
+  name: Fluid Expeperiment JiPi
+  parent:
+    id: fsVcDz
+    name: Fluid Experiment (fork)
+    url: https://www.shadertoy.com/view/fsVcDz
+  tags:
+  - experiment
+  - fluid
+  - cells
+  - hazard
+  url: https://www.shadertoy.com/view/NdGyDm

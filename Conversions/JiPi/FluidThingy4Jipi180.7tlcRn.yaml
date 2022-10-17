@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: FluidThingy4Jipi180
+  id: FluidThingy4Jipi180
+  kernel: FluidThingy4Jipi180
+  name: FluidThingy4Jipi180
+shader:
+  author: N.N.
+  description: "Space reset. \nNearest to linear filter from ttg : https://www.shadertoy.com/view/tssXWf\n\
+    Fluid tutorial from wyatt : http://wyattflanders.com/MeAndMyNeighborhood.pdf\n"
+  id: 7tlcRn
+  name: fluid_thingy_4 JiPi 180
+  parent:
+    id: wdlfWM
+    name: fluid_thingy_4 (webcam)
+    url: https://www.shadertoy.com/view/wdlfWM
+  tags:
+  - 2d
+  - fluid
+  url: https://www.shadertoy.com/view/7tlcRn

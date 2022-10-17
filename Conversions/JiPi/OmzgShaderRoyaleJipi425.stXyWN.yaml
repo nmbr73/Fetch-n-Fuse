@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: OmzgShaderRoyaleJipi425
+  id: OmzgShaderRoyaleJipi425
+  kernel: OmzgShaderRoyaleJipi425
+  name: OmzgShaderRoyaleJipi425
+shader:
+  author: N.N.
+  description: 'Shader made Live during OMZG Shader Royale (12/02/2021) in about 80m
+
+    1st place'
+  id: stXyWN
+  name: OMZG Shader Royale JiPi 425
+  parent:
+    id: 3l3Bzl
+    name: OMZG Shader Royale - NuSan
+    url: https://www.shadertoy.com/view/3l3Bzl
+  tags:
+  - raymarching
+  - live
+  url: https://www.shadertoy.com/view/stXyWN

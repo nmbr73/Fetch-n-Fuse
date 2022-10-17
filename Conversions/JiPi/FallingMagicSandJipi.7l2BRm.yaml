@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: FallingMagicSandJipi
+  id: FallingMagicSandJipi
+  kernel: FallingMagicSandJipi
+  name: FallingMagicSandJipi
+shader:
+  author: N.N.
+  description: s
+  id: 7l2BRm
+  name: Falling magic Sand JiPi
+  parent:
+    id: XtjyRt
+    name: Falling magic sand
+    url: https://www.shadertoy.com/view/XtjyRt
+  tags:
+  - simulation
+  url: https://www.shadertoy.com/view/7l2BRm

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: RocketMachDiamonds
+  id: RocketMachDiamonds
+  kernel: RocketMachDiamonds
+  name: RocketMachDiamonds
+shader:
+  author: michael0884
+  description: 'Cellular automaton particle tracking used for advection in a fluid/gas
+    which is also fully conservative
+
+    Each pixel has 1 virtual particle
+
+    takes time for the diamonds to appear'
+  id: 3llcRj
+  name: Rocket Mach Diamonds
+  tags:
+  - particles
+  - ca
+  url: https://www.shadertoy.com/view/3llcRj

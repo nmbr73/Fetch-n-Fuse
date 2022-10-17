@@ -1,0 +1,14 @@
+fuse:
+  author: JiPi
+  file: SeaStars
+  id: SeaStars
+  kernel: SeaStars
+  name: SeaStars
+shader:
+  author: wyatt
+  description: 'These are my sea star friends. Please don''t tap the glass. '
+  id: fdScWw
+  name: Sea Stars
+  tags:
+  - seastars
+  url: https://www.shadertoy.com/view/fdScWw

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: AutumnMushrooms
+  id: AutumnMushrooms
+  kernel: AutumnMushrooms
+  name: AutumnMushrooms
+shader:
+  author: iapafoto
+  description: 'Leprechauns love mushrooms, when they find an owl they party a lot
+
+    With party sound on, they only dance when there is music!'
+  id: 7lVGzh
+  name: Autumn mushrooms
+  tags:
+  - bezier
+  - automn
+  - elf
+  - lutin
+  - leprechaun
+  url: https://www.shadertoy.com/view/7lVGzh

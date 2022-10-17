@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: StrangeSmoke
+  id: StrangeSmoke
+  kernel: StrangeSmoke
+  name: StrangeSmoke
+shader:
+  author: xenn
+  description: kinda interesting
+  id: ft2yRD
+  name: strange smoke
+  tags:
+  - mouse
+  - background
+  - shadertoy
+  - feedback
+  - integration
+  - library
+  - web
+  - webdevelopment
+  - webdev
+  - javascript
+  url: https://www.shadertoy.com/view/ft2yRD

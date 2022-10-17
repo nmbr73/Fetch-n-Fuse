@@ -1,0 +1,26 @@
+fuse:
+  author: JiPi
+  file: DangerNoodle
+  id: DangerNoodle
+  kernel: DangerNoodle
+  name: DangerNoodle
+shader:
+  author: BigWIngs
+  description: 'Reflection from cubemap.
+
+    Watch fullscreen with sound. Use mouse to look around.'
+  id: wlVSDK
+  name: DangerNoodle
+  parent:
+    id: wlVSDK
+    name: DangerNoodle
+    url: https://www.shadertoy.com/view/wlVSDK
+  tags: 
+  - raymarching
+  - snake
+  - animal
+  - jungle
+  - viper  
+  - reflection
+  - cubemap
+  url: https://www.shadertoy.com/view/wlVSDK

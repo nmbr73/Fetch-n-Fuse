@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: LotsOfParticlesJipi507
+  id: LotsOfParticlesJipi507
+  kernel: LotsOfParticlesJipi507
+  name: LotsOfParticlesJipi507
+shader:
+  author: N.N.
+  description: 'Testing particles with multipass. The number of particles is only
+    limited by the number of pixels, but there''s a catch: if multiple particles exist
+    in the same cell, they are combined. This results in fewer and fewer particles
+    over time...'
+  id: 7llBR2
+  name: Lots Of Particles JiPi507
+  parent:
+    id: MdtGDX
+    name: lots o' particles
+    url: https://www.shadertoy.com/view/MdtGDX
+  tags:
+  - 2d
+  - particles
+  - multipass
+  url: https://www.shadertoy.com/view/7llBR2

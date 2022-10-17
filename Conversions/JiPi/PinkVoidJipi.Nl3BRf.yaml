@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: PinkVoidJipi
+  id: PinkVoidJipi
+  kernel: PinkVoidJipi
+  name: PinkVoidJipi
+shader:
+  author: N.N.
+  description: black soap hole
+  id: Nl3BRf
+  name: Pink Void  JiPi
+  parent:
+    id: wt2Gzc
+    name: Pink Void ðŸ§¼
+    url: https://www.shadertoy.com/view/wt2Gzc
+  tags:
+  - fbm
+  - portal
+  - soap
+  url: https://www.shadertoy.com/view/Nl3BRf

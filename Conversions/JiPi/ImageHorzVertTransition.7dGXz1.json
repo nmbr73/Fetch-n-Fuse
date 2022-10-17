@@ -1,0 +1,91 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "7dGXz1",
+  "date": "0",
+  "viewed": 0,
+  "name": "Image Horz&Vert Transition",
+  "description": "Fork of https://www.shadertoy.com/view/ssyXzR with additional vertical Transition",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "transition"
+  ],
+  "hasliked": 0,
+  "parentid": "",
+  "parentname": ""
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dfGRn",
+     "filepath": "/media/a/8de3a3924cb95bd0e95a443fff0326c869f9d4979cd1d5b6e94e2a01f5be53e9.jpg",
+     "type": "texture",
+     "channel": 2,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dX3Rn",
+     "filepath": "/media/a/bd6464771e47eed832c5eb2cd85cdc0bfc697786b903bfd30f890f9d4fc36657.jpg",
+     "type": "texture",
+     "channel": 1,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4df3Rr",
+     "filepath": "/media/a/3871e838723dd6b166e490664eead8ec60aedd6b8d95bc8e2fe3f882f0fd90f0.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define PI 3.141592653589\n\nvoid addLight(float t,out vec3 col, vec2 mouse, float offset1, vec2 uv, vec3 barCol, float yOffset){\n    vec3 lightCol=mix(vec3(1.,1.0,1.0),barCol,0.3);\n    float lightY=0.1+(yOffset - t*0.1);//1.-mod(t*0.1+yOffset, 1.2)-yOffset+0.1;\n    lightY=1.-mod(1.-lightY,1.1);\n    \n    float lightDst = distance(vec2(mouse.x-offset1,lightY),uv);\n    float r = abs(sin(t*2.+yOffset*t*2.))*0.03+0.06;\n    float lightF=smoothstep(r,0.,lightDst);\n    col=mix(col,lightCol,lightF*1.5);\n}\n\n//*****************************************************\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\n    float ratio = iResolution.x/iResolution.y;\n    // Normalized pixel coordinates (from 0 to 1)\n    vec2 uv = fragCoord/iResolution.xy;\n\n    // Time varying pixel color\n    vec2 mouse = iMouse.xy / iResolution.xy;\n    vec3 col=vec3(0);\n    float thk=0.01;\n    vec3 col1=texture(iChannel0, uv).xyz;\n    vec3 col2=texture(iChannel1, uv).xyz;\n    vec3 col3=texture(iChannel2, uv).xyz;\n    vec3 col4=texture(iChannel3, uv).xyz;\n    \n    //vec3 col1=vec3(0.);\n    //vec3 col2=vec3(1.);\n    vec3 barCol=vec3(0,1.0,1.0);\n    float t = iTime;\n    //t=0.;\n    float offset1 = sin(uv.y*PI*4.+t*7.)*0.005;\n    offset1 += -cos(uv.y*PI*8.+t*3.)*0.007;\n    offset1 +=  cos(uv.y*PI*8.+t*3.)*0.007 * cos(4.+uv.y*PI*3.+t*6.);//\n    \n    \n    float offset2 = sin(uv.x*PI*4.+t*7.)*0.005;\n    offset2 += -cos(uv.x*PI*8.+t*3.)*0.007;\n    offset2 += cos(uv.x*PI*8.+t*3.)*0.007 * cos(4.+uv.x*PI*3.+t*6.) * ratio;//\n    \n    \n    //offset1+=-sin(PI+uv.y*PI*13.+t*4.)*0.002;//\n    //offset1+=-cos(7.+uv.y*PI*13.+t*14.)*0.003*sin(3.+uv.y*PI*3.+t*4.);//\n    //float offset2=0.;//abs(sin(2.+uv.y*PI*14.))*0.015;\n    \n    float edgeCloseFactorX = smoothstep(mouse.x-thk-offset1-0.03,mouse.x-offset1,uv.x);\n    float edgeCloseFactorY = smoothstep(mouse.y-thk*ratio-offset2-0.03,mouse.y-offset2,uv.y);\n    \n    \n    float barFactorX = edgeCloseFactorX* smoothstep(mouse.x+thk   -offset1, mouse.x-offset1, uv.x);\n    float barFactorY = edgeCloseFactorY* smoothstep(mouse.y+thk*7.-offset2, mouse.y-offset2, uv.y);\n    \n    \n     \n    \n    col = mix(col1,col2,step(mouse.x-offset1, uv.x));\n    vec3 _col = mix(col3,col4,step(mouse.x-offset1, uv.x));\n    \n    \n    col = mix(col,_col,step(mouse.y-offset2, uv.y)); \n    \n    \n    col=mix(col,barCol,barFactorX);\n    col=mix(col,barCol,barFactorY);\n    \n    //addLight(t, col, mouse, offset1, uv, barCol,1.0);\n    //addLight(t, col, mouse, offset1, uv, barCol,0.4);\n    //addLight(t, col, mouse, offset1, uv, barCol,0.);\n    \n    \n\n    // Output to screen\n    fragColor = vec4(col,1.0);\n}\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

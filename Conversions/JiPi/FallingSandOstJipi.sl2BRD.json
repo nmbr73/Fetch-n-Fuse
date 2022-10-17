@@ -1,0 +1,301 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "sl2BRD",
+  "date": "0",
+  "viewed": 0,
+  "name": "Falling Sand Ost JiPi",
+  "description": "My old falling sand was bad so I made a better one. Tell me if you get any errors.\n0 - Air\n1 - Sand\n2 - Stone\n3 - Oil\n4 - Steam\n5 - Magma\n6 - Water\n7 - Fire\n8 - Glass\n9 - Mud",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "fallingsandostkaka"
+  ],
+  "hasliked": 0,
+  "parentid": "MdyGWz",
+  "parentname": "Falling Sand Ost_"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 3,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "nearest",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define BUFFER_A_SAMPLER iChannel0\n#define BUFFER_B_SAMPLER iChannel1\n#define BUFFER_D_SAMPLER iChannel2\n\n#define NUM_TILE_IDS 32.0\n#define DATA_BEGIN 0.0\n#define DENSITY_BEGIN DATA_BEGIN\n#define DENSITY_END (DENSITY_BEGIN+NUM_TILE_IDS)\n#define COLOR_BEGIN DENSITY_END\n#define COLOR_END (COLOR_BEGIN+NUM_TILE_IDS)\n#define DATA_END COLOR_END\n#define SELECTED_ELEMENT DATA_END\n\n// Output image\n\nfloat rand(vec2 co)\n{\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}  \n\nfloat getSandID(vec2 uv) {\n    float value = texture(BUFFER_D_SAMPLER, uv).x;\n    return mod(floor(value), NUM_TILE_IDS);\n}\n\nvec4 getSandColor(float sandID) {\n    float pixelIndex = float(sandID+COLOR_BEGIN)/iResolution.x;\n    vec2 uv = vec2(mod(pixelIndex, 1.0), pixelIndex/iResolution.y) + vec2(0.5)/iResolution.xy;\n    vec4 color = texture(BUFFER_A_SAMPLER, uv);\n    return color;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n\tvec2 uv = fragCoord.xy / iResolution.xy;\n    \n    float id = getSandID(uv);\n    vec4 color = getSandColor(id); \n    \n\tfragColor = color;\n}",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGRr",
+     "filepath": "/presets/tex00.jpg",
+     "type": "keyboard",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define BUFFER_A_SAMPLER iChannel0\n\n#define NUM_TILE_IDS 32.0\n#define DATA_BEGIN 0.0\n#define DENSITY_BEGIN DATA_BEGIN\n#define DENSITY_END (DENSITY_BEGIN+NUM_TILE_IDS)\n#define COLOR_BEGIN DENSITY_END\n#define COLOR_END (COLOR_BEGIN+NUM_TILE_IDS)\n#define DATA_END COLOR_END\n#define SELECTED_ELEMENT DATA_END\n\n// global data \n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    float index = fragCoord.x-0.5 + (fragCoord.y-0.5)*iResolution.y;\n    \n    if (index >= DATA_BEGIN && index < DATA_END) {\n        //Default value:\n        fragColor = vec4(0.0, 0.0, 0.0, 1.0);\n        \n        if (index >= DENSITY_BEGIN && index < DENSITY_END) {\n            float id = index - DENSITY_BEGIN;\n            if (id == 0.0) //Air\n                fragColor = vec4(0.0);\n            else if (id == 1.0) // Sand\n                fragColor = vec4(1.5);\n            else if (id == 2.0) // Stone\n                fragColor = vec4(3.0);\n            else if (id == 3.0) // Oil\n                fragColor = vec4(0.89);\n            else if (id == 4.0) // Steam\n                fragColor = vec4(-0.1);\n            else if (id == 5.0) // Magma\n                fragColor = vec4(2.5);\n            else if (id == 6.0) // Water\n                fragColor = vec4(1.0);\n            else if (id == 7.0) // Fire\n                fragColor = vec4(-1.0);\n            else if (id == 8.0) // Glass\n                fragColor = vec4(1.5);\n            else if (id == 9.0) // Mud\n                fragColor = vec4(1.4);\n        }\n        else if (index >= COLOR_BEGIN && index < COLOR_END) {\n            float id = index - COLOR_BEGIN;\n            if (id == 0.0) // Air\n                fragColor = vec4(0.0);\n            else if (id == 1.0) // Sand\n                fragColor = vec4(0.8, 0.6, 0.2, 1.0);\n            else if (id == 2.0) // Stone\n                fragColor = vec4(0.6, 0.6, 0.6, 1.0);\n            else if (id == 3.0) // Oil\n                fragColor = vec4(0.5, 0.3, 0.1, 1.0);\n            else if (id == 4.0) // Steam\n                fragColor = vec4(0.9, 0.9, 0.9, 1.0);\n            else if (id == 5.0) // Magma\n                fragColor = vec4(0.8, 0.1, 0.0, 1.0);\n            else if (id == 6.0) // Water\n                fragColor = vec4(0.1, 0.2, 0.8, 1.0);\n            else if (id == 7.0) // Fire\n                fragColor = vec4(1.0, 0.5, 0.0, 1.0);\n            else if (id == 8.0) // Glass\n                fragColor = vec4(0.8, 0.8, 0.8, 1.0);\n            else if (id == 9.0) // Mud\n                fragColor = vec4(0.4, 0.2, 0.0, 1.0);\n        }\n        \n        return;\n    }\n    else if (index == SELECTED_ELEMENT) {\n        if (iFrame == 0) {\n            fragColor = vec4(6.0);\n            return;\n        }\n        \n        \n        if (texture(iChannel1, vec2(48.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(0.0);\n        else if (texture(iChannel1, vec2(49.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(1.0);\n        else if (texture(iChannel1, vec2(50.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(2.0);\n        else if (texture(iChannel1, vec2(51.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(3.0);\n        else if (texture(iChannel1, vec2(52.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(4.0);\n        else if (texture(iChannel1, vec2(53.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(5.0);\n        else if (texture(iChannel1, vec2(54.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(6.0);\n        else if (texture(iChannel1, vec2(55.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(7.0);\n        else if (texture(iChannel1, vec2(56.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(8.0);\n        else if (texture(iChannel1, vec2(57.5/256.0, 0.0)).x > 0.0)\n            fragColor = vec4(9.0);\n        else\n            fragColor = texture(BUFFER_A_SAMPLER, uv);\n        return;\n    }\n    \n    \n    fragColor = vec4(uv.x*32.0, uv.y*32.0, 0.5,1.0);\n}",
+   "name": "Buffer A",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XsXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define BUFFER_A_SAMPLER iChannel0\n#define BUFFER_D_SAMPLER iChannel1\n\n#define NUM_TILE_IDS 32.0\n#define DATA_BEGIN 0.0\n#define DENSITY_BEGIN DATA_BEGIN\n#define DENSITY_END (DENSITY_BEGIN+NUM_TILE_IDS)\n#define COLOR_BEGIN DENSITY_END\n#define COLOR_END (COLOR_BEGIN+NUM_TILE_IDS)\n#define DATA_END COLOR_END\n#define SELECTED_ELEMENT DATA_END\n\n// Movement calculations.\n\nfloat rand(vec2 co)\n{\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}  \n\nfloat getDensity(float id) {\n    float index = id + DENSITY_BEGIN;\n    vec2 uv = vec2(mod(index/iResolution.x , 1.0), floor(index/iResolution.x)/iResolution.y) + 0.5/iResolution.xy;\n    float density = texture(BUFFER_A_SAMPLER, uv).x;\n    return density;\n}\n\nmat3 readMatID(vec2 fragCoord) {\n    mat3 matID = mat3(0.0);\n    \n    for (int x = 0; x < 3; ++x) {\n            matID[x][0] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,-1))/iResolution.xy).x;\n            matID[x][1] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,0))/iResolution.xy).x;\n            matID[x][2] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,+1))/iResolution.xy).x;\n    }\n    return matID;\n}\n\nmat3 readMatDensity(vec2 fragCoord, mat3 matID) {\n    mat3 matDensity = mat3(0.0);\n    \n    for (int x = 0; x < 3; ++x) {\n        matDensity[x][0] = getDensity(matID[x][0]);\n        matDensity[x][1] = getDensity(matID[x][1]);\n        matDensity[x][2] = getDensity(matID[x][2]);\n    }\n    return matDensity;\n    \n}\n\nvec2 calcMove(mat3 matID, mat3 matDensity, vec2 fragCoord) {\n    int hash = int(1024.0*rand(vec2(rand(fragCoord), iTime)));\n    int hash_3 = int(mod(float(hash), 3.0)+0.5);\n    int hash_2 = int(mod(float(hash), 4.0)+0.5);\n    float density = matDensity[1][1];\n    \n    //if (density <= 0.0 && hash_2 != 1)\n    //    return vec2(0.0);\n    \n    if (matDensity[1][0] < density-1.25)\n        return vec2(0, -1);\n    \n    if (matDensity[0][2] < density-1.25)\n        return vec2(-1, -1);\n    \n    if (matDensity[2][2] < density-1.25)\n        return vec2(1, -1);\n    \n    \n    if (hash_3 == 0 && matDensity[0][0] < density)\n        return vec2(-1, -1);\n    \n    if (hash_3 == 2 && matDensity[2][0] < density)\n        return vec2(+1, -1);\n    \n    if (matDensity[1][1] < density)\n        return vec2(0, -1);\n        \n    if (hash_3 == 0)\n        return vec2(+1, 0);\n    \n    if (hash_3 == 2)\n        return vec2(-1, 0);\n    \n    /*if (hash_9 == 3)\n        return vec2(-1, +0);\n    \n    if (hash_9 == 4)\n        return vec2(+0, +0);\n    \n    if (hash_9 == 5)\n        return vec2(+1, +0);\n    \n    if (hash_9 == 6)\n        return vec2(-1, +1);\n    \n    if (hash_9 == 7)\n        return vec2(+0, +1);\n    \n    if (hash_9 == 8)\n        return vec2(+1, +1);*/\n    \n    \n    return vec2(0,-1);\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    \n    mat3 matID = readMatID(fragCoord);\n    mat3 matDensity = readMatDensity(fragCoord, matID);\n    //float[3][3] sand = {{vec4(0.0,vec4(0.0,vec4(0.0},{vec4(0.0,vec4(0.0,vec4(0.0},{vec4(0.0,vec4(0.0,vec4(0.0}};\n    \n    vec2 move = calcMove(matID, matDensity, fragCoord);\n    \n    fragColor = vec4(move.x, move.y, 0.0, 0.0);\n}",
+   "name": "Buffer B",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XsXGR8",
+     "filepath": "/media/previz/buffer01.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4sXGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define BUFFER_A_SAMPLER iChannel0\n#define BUFFER_B_SAMPLER iChannel1\n#define BUFFER_D_SAMPLER iChannel2\n\n#define NUM_TILE_IDS 32.0\n#define DATA_BEGIN 0.0\n#define DENSITY_BEGIN DATA_BEGIN\n#define DENSITY_END (DENSITY_BEGIN+NUM_TILE_IDS)\n#define COLOR_BEGIN DENSITY_END\n#define COLOR_END (COLOR_BEGIN+NUM_TILE_IDS)\n#define DATA_END COLOR_END\n#define SELECTED_ELEMENT DATA_END\n\n// Pixel movements are paired.\n\nfloat getDensity(float id) {\n    float index = id + DENSITY_BEGIN;\n    vec2 uv = vec2(mod(index/iResolution.x , 1.0), floor(index/iResolution.x)/iResolution.y) + 0.5/iResolution.xy;\n    float density = texture(BUFFER_A_SAMPLER, uv).x;\n    return density;\n}\n\nmat3 readMatID(vec2 fragCoord) {\n    mat3 matID = mat3(0.0);\n    \n    for (int x = 0; x < 3; ++x) {\n        matID[x][0] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,0-1))/iResolution.xy).x;\n        matID[x][1] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,1-1))/iResolution.xy).x;\n        matID[x][2] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,2-1))/iResolution.xy).x;\n    }\n    return matID;\n}\n\nmat3 readMatDensity(vec2 fragCoord, mat3 matID) {\n    mat3 matDensity = mat3(0.0);\n    \n    for (int x = 0; x < 3; ++x) {\n        matDensity[x][0] = getDensity(matID[x][0]);\n        matDensity[x][1] = getDensity(matID[x][1]);\n        matDensity[x][2] = getDensity(matID[x][2]);\n    }\n    return matDensity;\n    \n}\n\nvoid readMatMove(out mat3 matMoveX, out mat3 matMoveY, vec2 fragCoord) {\n    mat3 matID = mat3(0.0);\n    \n    for (int x = 0; x < 3; ++x) {\n        vec2 v0 = texture(BUFFER_B_SAMPLER, (fragCoord+vec2(x-1,0-1))/iResolution.xy).xy;\n        vec2 v1 = texture(BUFFER_B_SAMPLER, (fragCoord+vec2(x-1,1-1))/iResolution.xy).xy;\n        vec2 v2 = texture(BUFFER_B_SAMPLER, (fragCoord+vec2(x-1,2-1))/iResolution.xy).xy;\n        matMoveX[x][0] = v0.x;\n        matMoveY[x][0] = v0.y;\n        matMoveX[x][1] = v1.x;\n        matMoveY[x][1] = v1.y;\n        matMoveX[x][2] = v2.x;\n        matMoveY[x][2] = v2.y;\n    }\n}\n\n\nvec2 calcMovePaired(const mat3 matID, const mat3 matDensity, const mat3 matMoveX, const mat3 matMoveY, const vec2 fragCoord) {\n    float density = matDensity[1][1];\n     vec2 move = vec2(matMoveX[1][1], matMoveY[1][1]);\n     int ox = int(1.0+move.x);\n     int oy = int(1.0+move.y);\n    \n    \n    if (matMoveY[1][2] == -1.0 && matMoveX[1][2] == 0.0 && matDensity[1][2] > density)\n        return vec2(0.0, 1.0);\n    \n    if (matMoveY[0][2] == -1.0 && matMoveX[0][2] == 1.0 && matDensity[0][2] > density)\n        return vec2(-1.0, 1.0);\n    \n    if (matMoveY[2][2] == -1.0 && matMoveX[2][2] == -1.0 && matDensity[2][2] > density)\n        return vec2(1.0, 1.0);\n    \n    \n    if (matMoveY[2][1] == 0.0 && matMoveX[2][1] == -1.0)\n        return vec2(1.0, 0.0);\n    \n    if (matMoveY[0][1] == 0.0 && matMoveX[0][1] == 1.0)\n        return vec2(-1.0, 0.0);\n    \n   \n    /*if ((matDensity[0][0] <= density && ox == 0 && oy == 0 && matMoveX[0][0] == 1.0 && matMoveY[0][0] == 1.0) ||\n        (matDensity[1][0] <= density && ox == 1 && oy == 0 && matMoveX[1][0] == 0.0 && matMoveY[1][0] == 1.0) ||\n        (matDensity[2][0] <= density && ox == 2 && oy == 0 && matMoveX[2][0] == -1.0 && matMoveY[2][0] == 1.0) ||\n        (matDensity[0][1] <= density && ox == 0 && oy == 1 && matMoveX[0][1] == 1.0 && matMoveY[0][1] == 0.0) ||\n        (matDensity[1][1] <= density && ox == 1 && oy == 1 && matMoveX[1][1] == 0.0 && matMoveY[1][1] == 0.0) ||\n        (matDensity[2][1] <= density && ox == 2 && oy == 1 && matMoveX[2][1] == -1.0 && matMoveY[2][1] == 0.0) ||\n        (matDensity[0][2] <= density && ox == 0 && oy == 2 && matMoveX[0][2] == 1.0 && matMoveY[0][2] == -1.0) ||\n        (matDensity[1][2] <= density && ox == 1 && oy == 2 && matMoveX[1][2] == 0.0 && matMoveY[1][2] == -1.0) ||\n        (matDensity[2][2] <= density && ox == 2 && oy == 2 && matMoveX[2][2] == -1.0 && matMoveY[2][2] == -1.0))\n        return move;*/\n    \n    return move;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    \n    mat3 matID = readMatID(fragCoord);\n    mat3 matDensity = readMatDensity(fragCoord, matID);\n    //float[3][3] sand = {{vec4(0.0,vec4(0.0,vec4(0.0},{vec4(0.0,vec4(0.0,vec4(0.0},{vec4(0.0,vec4(0.0,vec4(0.0}};\n    mat3 matMoveX = mat3(0);\n    mat3 matMoveY = mat3(0);\n    \n    readMatMove(matMoveX, matMoveY, fragCoord);\n    \n    \n    vec2 move = calcMovePaired(matID, matDensity, matMoveX, matMoveY, fragCoord);\n    \n    \n    fragColor = vec4(move.x, move.y, 0.0, 0.0);\n}",
+   "name": "Buffer C",
+   "description": "",
+   "type": "buffer"
+  },
+  {
+   "inputs": [
+    {
+     "id": "XdX3Rn",
+     "filepath": "/media/a/52d2a8f514c4fd2d9866587f4d7b2a5bfa1a11a0e772077d7682deb8b3b517e5.jpg",
+     "type": "texture",
+     "channel": 3,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "repeat",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4dXGR8",
+     "filepath": "/media/previz/buffer00.png",
+     "type": "buffer",
+     "channel": 0,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "4sXGR8",
+     "filepath": "/media/previz/buffer02.png",
+     "type": "buffer",
+     "channel": 1,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    },
+    {
+     "id": "XdfGR8",
+     "filepath": "/media/previz/buffer03.png",
+     "type": "buffer",
+     "channel": 2,
+     "sampler": {
+      "filter": "linear",
+      "wrap": "clamp",
+      "vflip": "true",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "XdfGR8",
+     "channel": 0
+    }
+   ],
+   "code": "#define BUFFER_A_SAMPLER iChannel0\n#define BUFFER_C_SAMPLER iChannel1\n#define BUFFER_D_SAMPLER iChannel2\n\n#define NUM_TILE_IDS 32.0\n#define DATA_BEGIN 0.0\n#define DENSITY_BEGIN DATA_BEGIN\n#define DENSITY_END (DENSITY_BEGIN+NUM_TILE_IDS)\n#define COLOR_BEGIN DENSITY_END\n#define COLOR_END (COLOR_BEGIN+NUM_TILE_IDS)\n#define DATA_END COLOR_END\n#define SELECTED_ELEMENT DATA_END\n\n// State buffer. States are updated here.\nfloat rand(vec2 co)\n{\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}  \n\n\nfloat getSelectedElement() {\n    float index = SELECTED_ELEMENT;\n    vec2 uv = vec2(mod(index/iResolution.x , 1.0), floor(index/iResolution.x)/iResolution.y) + 0.5/iResolution.xy;\n    float id = texture(BUFFER_A_SAMPLER, uv).x;\n    return id;\n}\n\nmat3 readMatID(vec2 fragCoord) {\n    mat3 matID = mat3(0.0);\n    \n    for (int x = 0; x < 3; ++x) {\n        matID[x][0] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,0-1))/iResolution.xy).x;\n        matID[x][1] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,1-1))/iResolution.xy).x;\n        matID[x][2] = texture(BUFFER_D_SAMPLER, (fragCoord+vec2(x-1,2-1))/iResolution.xy).x;\n    }\n    return matID;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n    vec2 uv = fragCoord.xy / iResolution.xy;\n    \n    if (iFrame <= 10) {\n    \tfloat id = floor(texture(iChannel3, uv).x*12.0);\n        if (id-0.5 > NUM_TILE_IDS)\n            id = 5.0;\n        \n        else if (id == 5.0)\n            id = 0.0;\n        else if (id == 5.0)\n            id == 0.0;\n        \n        fragColor = vec4(id, vec3(0.0));\n        return;\n    }\n    \n    vec2 move = texture(BUFFER_C_SAMPLER, uv).xy;\n    vec2 otherMove = texture(BUFFER_C_SAMPLER, uv+move/iResolution.xy).xy;\n    if (otherMove.x != -move.x || otherMove.y != -move.y)\n        move = vec2(0.0);\n    \n    float oldID = texture(BUFFER_D_SAMPLER, uv).x;\n    float id = texture(BUFFER_D_SAMPLER, uv+move/iResolution.xy).x;\n    \n    if (length(fragCoord.xy - iMouse.xy) < 8.0 && iMouse.z >= 1.0)\n        id = getSelectedElement();\n    \n    int hash = int(1000.0*rand(vec2(rand(fragCoord), iTime)));\n    \n    bool hasFire = false;\n    bool hasPlant = false;\n    bool hasAir = false;\n    bool hasWater = false;\n    \n    mat3 matID = readMatID(fragCoord);\n    for (int x = 0; x < 3; ++x) {\n        for (int y = 0; y < 3; ++y) {\n            float id = matID[x][y];\n            hasFire = hasFire || id == 5.0 || id == 7.0;\n            hasAir = hasAir || id == 0.0;\n            hasWater = hasWater || id == 6.0;\n            hasPlant = hasPlant;\n        }\n    }\n    \n    if (id == 4.0 && hash < 3) // Steam > water\n        id = 6.0;\n    if (id == 6.0 && oldID == 5.0) // water + magma > steam\n        id = 4.0;\n    if (id == 5.0 && oldID == 6.0) // magma + water > stone\n        id = 2.0;\n    if (id == 1.0 && oldID == 6.0) // sand + water > mud\n        id = 9.0;\n    if (id == 6.0 && oldID == 1.0) // water + sand > air\n        id = 0.0;\n    if (id == 9.0 && oldID == 0.0) // Mud + air > sand\n        id = 1.0;\n    if (id == 0.0 && oldID == 9.0) // air + mud > water\n        id = 6.0;\n    if (id == 7.0 && hash < 10) // fire > air\n        id = 0.0;\n    \n    // Oil + fire + air > fire\n    if (id == 3.0 && hasFire && hasAir && hash < 200) \n        id = 7.0;\n    \n    // Sand + fire > glass\n    if (id == 1.0 && hasFire) \n        id = 8.0;\n    \n    // Glass + water > sand\n    if (id == 8.0 && hasWater)\n        id = 1.0;\n    \n    // water + fire > steam\n    if (id == 6.0 && hasFire && hash < 20)\n        id = 4.0;\n    \n    // magma + water > stone\n    if (id == 5.0 && hasWater)\n        id = 2.0;\n    \n    \n        \n    fragColor = vec4(id, 0.0, 0.0, 0.0);\n}",
+   "name": "Buffer D",
+   "description": "",
+   "type": "buffer"
+  }
+ ]
+}

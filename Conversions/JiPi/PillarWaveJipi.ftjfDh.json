@@ -1,0 +1,50 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ftjfDh",
+  "date": "0",
+  "viewed": 0,
+  "name": "Pillar Wave JiPi",
+  "description": "Pillar Wave\nSDF from IQ\nAA Option from FN",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "loop",
+   "learning"
+  ],
+  "hasliked": 0,
+  "parentid": "slSfW1",
+  "parentname": "Pillar Wave"
+ },
+ "renderpass": [
+  {
+   "inputs": [
+    {
+     "id": "4sfGzn",
+     "filepath": "/media/a/793a105653fbdadabdc1325ca08675e1ce48ae5f12e37973829c87bea4be3232.png",
+     "type": "cubemap",
+     "channel": 0,
+     "sampler": {
+      "filter": "mipmap",
+      "wrap": "clamp",
+      "vflip": "false",
+      "srgb": "false",
+      "internal": "byte"
+     },
+     "published": 1
+    }
+   ],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "// Pillar Wave\n//\n// SDF from IQ\n// AA Option from FN\n\nfloat PI = 3.14159256;\nfloat TAU = 2.*3.14159256;\n\n// Rotation matrix around the X axis.\n// https://www.shadertoy.com/view/fdjGRD\nmat3 rotateX(float theta) {\n    float c = cos(theta);\n    float s = sin(theta);\n    return mat3(\n        vec3(1, 0, 0),\n        vec3(0, c, -s),\n        vec3(0, s, c)\n    );\n}\n\nstruct ray{\n vec3 direction;\n vec3 origin;\n};\n\n// Rounded Box SDF Function\nfloat sdBox( vec3 p, vec3 boxDim, vec3 boxLoc, mat3 transform ){\n  p = (p - boxLoc) * transform;\n  vec3 q = abs(p) - boxDim;\n  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - 0.035;\n}\n\nvec3 calcNormalBox(in vec3 p, vec3 dimVal, vec3 loc, mat3 transform){\n  vec2 e = vec2(1.0, -1.0) * .0005; \n  return normalize(\n    e.xyy * sdBox(p + e.xyy, dimVal, loc, transform) +\n    e.yyx * sdBox(p + e.yyx, dimVal, loc, transform) +\n    e.yxy * sdBox(p + e.yxy, dimVal, loc, transform) +\n    e.xxx * sdBox(p + e.xxx, dimVal, loc, transform));\n}\n\n// easings.net\nfloat easeInOutQuint(float x){\n  return x < 0.5 ? 16. * x * x * x * x * x : 1. - pow(-2. * x + 2., 5.) / 2.;\n}\n\n// Sphere Tracing\nbool sphereTrace(vec3 ro, vec3 rd, out vec3 p, out vec3 pN){\n  float mint = -5.0;  // Minimum trace distance\n  float maxt = 20.0;   // Maximum trace distance\n   \n  float dist = mint;\n  while(dist < maxt){\n    vec3 p = ro + rd*dist;       \n\n    vec3 boxDimension = vec3(.04,.5,.5);\n    vec3 boxLocation;\n        \n    float minD = 9999.;\n    float i;\n        \n    for(i=0.; i<17.; i++){\n      boxLocation = vec3(-1.44+.18*i,0.,-2.0);\n      float currD = sdBox(p,boxDimension, boxLocation, rotateX(PI*easeInOutQuint(fract(iTime/4.)-(i*.015))));\n      minD = min(currD, minD);\n      if (minD < .001) break;\n    }\n        \n    pN = calcNormalBox(p, boxDimension, boxLocation, rotateX(PI*easeInOutQuint(fract(iTime/4.)-(i*.015))));       \n    dist = dist + minD;\n        \n    if (minD < .001) return true;\n        \n  }\n  return false;\n}\n\nvoid mainImage0( out vec4 fragColor, in vec2 fragCoord ){\n  \n  vec2 uv = ( fragCoord - .5* iResolution.xy ) /iResolution.y;\n   \n  // Background Horizon 1\n  // vec3 col = vec3(smoothstep(0.,1.0,pow(19.,-abs(uv.y)-abs(uv.x)*.4)));\n  \n  //Background Horizon 2\n  vec3 col = vec3(pow(1.-(abs(uv.y)),4.0));\n   \n  // Create ray at eye location, through each point in the \"screen\"\n  ray r;\n  r.origin = vec3(0.,0.,4.); \n  r.direction = normalize(vec3(uv,1.) - r.origin);\n\n  vec3 p, pN;\n  if(sphereTrace(r.origin, r.direction, p, pN)){\n      \n      vec3 rr = reflect(r.direction, pN); \n      vec3 reflecter = texture(iChannel0,rr).rgb;\n     \n      col = reflecter*.3;\n     \n      // Diffuse light    \n      vec3 light = vec3(0.,0.,.3);\n      // vec3 light = vec3(.5+.4*sin(iTime),cos(iTime),1.); \n      float dif = clamp(dot(pN, normalize(light-p)),0.,1.);\n      dif *= 3./dot(light - p, light - p);\n      col *= vec3(pow(dif, 0.4545));\n    }\n     \n   fragColor = vec4(col,1.0);\n}\n\n// smart AA, from FabriceNeyret (FN).\nvoid mainImage(out vec4 O, vec2 U) {\n    mainImage0(O,U);\n    bool AA = false;  // AA option\n    if(AA == true)\n    if ( fwidth(length(O)) > .01 ) {  // difference threshold between neighbor pixels\n        vec4 o;\n        for (int k=0; k < 9; k+= k==3?2:1 )\n          { mainImage0(o,U+vec2(k%3-1,k/3-1)/3.); O += o; }\n        O /= 9.;\n    //  O.r++;                        // uncomment to see where the oversampling occurs\n    }\n}\n\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

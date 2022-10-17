@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: Entwined
+  id: Entwined
+  kernel: Entwined
+  name: Entwined
+shader:
+  author: davidar
+  description: Inspired by [url]https://www.shadertoy.com/view/fsjyR3[/url]
+  id: 7lySWh
+  name: Entwined
+  tags:
+  - simulation
+  - heart
+  - convolution
+  - diffusion
+  - kernel
+  - ca
+  - reaction
+  - differential
+  - growth
+  - meandering
+  url: https://www.shadertoy.com/view/7lySWh

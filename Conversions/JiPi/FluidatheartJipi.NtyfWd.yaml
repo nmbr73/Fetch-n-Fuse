@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: FluidatheartJipi
+  id: FluidatheartJipi
+  kernel: FluidatheartJipi
+  name: FluidatheartJipi
+shader:
+  author: N.N.
+  description: First attempt at fluid simulation ^_^
+  id: NtyfWd
+  name: FluidAtHeart JiPi
+  parent:
+    id: Nd3SW7
+    name: Fluid at heart
+    url: https://www.shadertoy.com/view/Nd3SW7
+  tags:
+  - fluidsimulation
+  url: https://www.shadertoy.com/view/NtyfWd

@@ -1,0 +1,15 @@
+fuse:
+  author: JiPi
+  file: FoamSimulation
+  id: FoamSimulation
+  kernel: FoamSimulation
+  name: FoamSimulation
+shader:
+  author: wyatt
+  description: Triangulated particle simulation + Fluid simulation
+  id: tlyXDG
+  name: Foam Simulation
+  tags:
+  - particles
+  - triangulation
+  url: https://www.shadertoy.com/view/tlyXDG

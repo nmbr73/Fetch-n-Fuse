@@ -1,0 +1,18 @@
+fuse:
+  author: JiPi
+  file: Fractal11
+  id: Fractal11
+  kernel: Fractal11
+  name: Fractal11
+shader:
+  author: N.N.
+  description: fractal
+  id: NdXBW7
+  name: Fork Fractal 11 JiPi 577
+  parent:
+    id: 7ssfD4
+    name: Fractal 110 gaz
+    url: https://www.shadertoy.com/view/7ssfD4
+  tags:
+  - fractal
+  url: https://www.shadertoy.com/view/NdXBW7
