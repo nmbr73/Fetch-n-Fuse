@@ -79,14 +79,18 @@ end
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 
 Conversions_table = nil
-Conversions_currentFolderIndex = nil
+-- Conversions_currentFolderIndex = nil
 
 function Conversions_resetData(path)
 
   -- print("Conversions_resetData('"..path.."')")
 
-  Conversions_table = {}
-  Conversions_currentFolderIndex = 1
+  Conversions_table = {
+    CurrentFolder = 1,
+    FetchShaderID = "",
+    Folders = {}
+  }
+  
   
   local handle	= bmd.readdir(path.."*")
 
@@ -131,10 +135,11 @@ function Conversions_resetData(path)
     end
   
     
-    Conversions_table[folderIndex]={
+    Conversions_table.Folders[folderIndex]={
       Folder=folder,
       --Label= "Conversions/" .. folder,
       Label= folder ~= "" and folder or "/",
+      CurrentEntry = 1,
       Entries=entries
     }
   end
@@ -356,7 +361,7 @@ function Create()
 
   local attrsFolders = {}
 
-  for k,folder in pairs(Conversions_table) do
+  for k,folder in pairs(Conversions_table.Folders) do
     -- print("Create InFolderToUseCombo ...")
     -- print(" k='".. k .."'") 
     -- print(" folder.Label='".. folder.Label .."'") 
@@ -382,7 +387,7 @@ function Create()
   InFileToUseCombo = {}
 
 
-  for folderIndex,folderData in pairs(Conversions_table) do
+  for folderIndex,folderData in pairs(Conversions_table.Folders) do
 
     -- print("Create InFileToUseCombo[] ...")
     -- print("   folderIndex='".. folderIndex .."'") 
@@ -403,7 +408,7 @@ function Create()
       INP_DoNotifyChanged = true,
       INP_Default = 0,
       INP_Integer = true,
-      IC_Visible  =  (folderIndex == Conversions_currentFolderIndex),
+      IC_Visible  =  (folderIndex == Conversions_table.CurrentFolder),
       attrs
       })
       
@@ -960,28 +965,12 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
       IC_Visible             = true,
     }) 
       
-    InFetchButtonRebuildFlag = self:AddInput( "FetchButtonRebuildFlag","FetchButtonRebuildFlag", {
-      LINKID_DataType     = "Number",
-      INPID_InputControl  = "CheckboxControl",
-      INP_Integer         = true,
-      INP_Default         = 0,
-      IC_Visible          = false,
-    })
       
   self:EndControlNest()
 
 
   self:BeginControlNest("Fuse", "FnF_Fuse", true, {}) 
       
-    InManualID = self:AddInput("Manual ID", "ManualID", {
-      LINKID_DataType    = "Number",
-      INPID_InputControl = "CheckboxControl",
-      INP_Default        = 0,
-      INP_MinScale       = 0,
-      INP_MaxScale       = 1,
-      IC_Visible         = false,
-    })	
-
     InFuseFolder = self:AddInput("Folder to Fuse from", "FuseFolder", {
       LINKID_DataType = "Text",
       INPID_InputControl = "TextEditControl",
@@ -1016,6 +1005,24 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
       INP_Passive = true,
     })	
 
+    InFuseName = self:AddInput("Fuse Name", "FuseName", {
+      LINKID_DataType = "Text",
+      INPID_InputControl = "TextEditControl",
+      INP_External = false,
+      IC_NoLabel = false,
+      ICD_Width = 1.0,
+      INPS_DefaultText = "-",
+      TEC_Lines = 1,
+      TEC_Wrap = false,
+      TEC_ReadOnly = true,
+      TEC_CharLimit = 0,
+      TEC_DeferSetInputs = false,
+      INP_DoNotifyChanged  = false,
+      INP_Disabled = true,
+      INP_Passive = true,
+    })	
+
+
     InFuseButton = self:AddInput('Fuse a Shadertoy', 'InFuseButton', {
       LINKID_DataType        = 'Number',
       INPID_InputControl     = 'ButtonControl',
@@ -1029,13 +1036,6 @@ SepImage = self:AddInput("________________Image__________________", "SepBufferIm
     }) 
 
 
-    InFuseButtonRebuildFlag = self:AddInput( "FuseButtonRebuildFlag","FuseButtonRebuildFlag", {
-      LINKID_DataType     = "Number",
-      INPID_InputControl  = "CheckboxControl",
-      INP_Integer         = true,
-      INP_Default         = 0,
-      IC_Visible          = false,
-    })
 
   self:EndControlNest()
 
@@ -1748,64 +1748,6 @@ function Process(req)
 
 
 
-  if (InFetchButtonRebuildFlag:GetValue(req).Value == 1) then
-    
-    local shaderID = InFetchShaderID:GetValue(req).Value
-    local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
-    local folder = Conversions_table[selectedFolder].Folder
-    
-    doFetch = 
-      [[comp:RunScript("]]..GLOBAL_REPOSITORYPATH..
-      [[fetch-from-ui.py", { id = "]]..shaderID..
-      [[", verbose=false, noassets=false, folder="]]..folder..
-      [["})]]
-
-      --print("Ändere FetchButton!")
-      --print(doFetch)
-
-      InFetchButton:SetAttrs({ BTNCS_Execute = doFetch, })
-
-
-
-
-    --Warum auch immer - verstehe wer will    
-    --GLOBAL_REPOSITORYPATH_cor =  string.gsub(GLOBAL_REPOSITORYPATH, '\\', '\\\\')
-
-    -- local doFetch =  [==[ 
-    --   comp:RunScript("PFADfetch-from-ui.py", { id = "SHADERID", verbose=false, noassets=false, folder="FOLDER"}) 
-    --                ]==]  
-
-    -- doFetch = string.gsub(doFetch, 'PFAD', GLOBAL_REPOSITORYPATH_cor)
-    -- doFetch = string.gsub(doFetch, 'SHADERID', shaderID)
-    -- doFetch = string.gsub(doFetch, 'FOLDER', PathToUse)
-        
-
-    --print("----------------\n DoFetch-String-Process",doFetch,"\n----------------" )    
-    
-    InFetchButtonRebuildFlag:SetSource(Number(0),0,0) --nur einmal ändern
-  end
-
-  if (false and InFuseButtonRebuildFlag:GetValue(req).Value == 1 and table.getn(Conversions_table) > 0) then
-
-    shaderIDFuse = Conversions_table[InFuseShaderID:GetValue(req).Value + 1].ShadertoyID
-
-
-    --Warum auch immer - verstehe wer will    
-    GLOBAL_REPOSITORYPATH_cor =  string.gsub(GLOBAL_REPOSITORYPATH, '\\', '\\\\')
-         
-    doFuse =[==[ 
-      comp:RunScript("PFADfuse.py", { id = "SHADERID", pforce=false, folder="FOLDER"}) 
-                  ]==]  
-    doFuse = string.gsub(doFuse, 'PFAD', GLOBAL_REPOSITORYPATH_cor)
-    doFuse = string.gsub(doFuse, 'SHADERID', shaderIDFuse)
-    doFuse = string.gsub(doFuse, 'FOLDER', PathToUse)
-        
-    InFuseButton:SetAttrs({ BTNCS_Execute = doFuse, })
- 
-    --print("----------------\n DoFuse-String-Process",doFuse,"\n----------------" )
-    
-    InSemaphoreFuse:SetSource(Number(0),0,0)
-  end
 
 
   local rebuild = false
@@ -1822,36 +1764,35 @@ function Process(req)
 
 
 
-  if (rebuild and table.getn(Conversions_table) > 0) then
+  if (rebuild and table.getn(Conversions_table.Folders) > 0) then
 
     local selectedFolder = InFolderToUseCombo:GetValue(req).Value + 1
     local selectedFile = InFileToUseCombo[selectedFolder]:GetValue(req).Value + 1
 
     -- print("Process() ... rebuild")
-    -- print("  selectedFolder = '"..selectedFolder.."' ('".. Conversions_table[selectedFolder].Label .."')")
-    -- print("  selectedFile = '"..selectedFile.."' ('".. Conversions_table[selectedFolder].Entries[selectedFile].Label .."')")
+    -- print("  selectedFolder = '"..selectedFolder.."' ('".. Conversions_table.Folders[selectedFolder].Label .."')")
+    -- print("  selectedFile = '"..selectedFile.."' ('".. Conversions_table.Folders[selectedFolder].Entries[selectedFile].Label .."')")
 
-    local folderData = Conversions_table[selectedFolder]
-    local item   = folderData.Entries[selectedFile]
+    -- local folderData = Conversions_table.Folders[selectedFolder]
+    -- local item   = folderData.Entries[selectedFile]
 
-    if InFuseShaderID:GetValue(req).Value ~= item.ShadertoyID then
-      InFuseShaderID:SetAttrs({INP_Disabled=false})
-      InFuseShaderID:SetSource(Text( item.ShadertoyID ),0,0)
-      InFuseShaderID:SetAttrs({INP_Disabled=true})
-    end
+    -- if InFuseShaderID:GetValue(req).Value ~= item.ShadertoyID then
+    --   InFuseShaderID:SetAttrs({INP_Disabled=false})
+    --   InFuseShaderID:SetSource(Text( item.ShadertoyID ),0,0)
+    --   InFuseShaderID:SetAttrs({INP_Disabled=true})
+    -- end
   
-    if InFetchFolder:GetValue(req).Value ~= folderData.Folder then
-      print("InFetchFolder '".. folderData.Folder .."'")
-      InFetchFolder:SetAttrs({INP_Disabled=false})
-      InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
-      InFetchFolder:SetAttrs({INP_Disabled=true})
-    end
+    -- if InFetchFolder:GetValue(req).Value ~= folderData.Folder then
+    --   InFetchFolder:SetAttrs({INP_Disabled=false})
+    --   InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
+    --   InFetchFolder:SetAttrs({INP_Disabled=true})
+    -- end
 
-    if InFuseFolder:GetValue(req).Value ~= folderData.Folder then
-      InFuseFolder:SetAttrs({INP_Disabled=false})
-      InFuseFolder:SetSource(Text( folderData.Folder ),0,0)
-      InFuseFolder:SetAttrs({INP_Disabled=true})
-    end
+    -- if InFuseFolder:GetValue(req).Value ~= folderData.Folder then
+    --   InFuseFolder:SetAttrs({INP_Disabled=false})
+    --   InFuseFolder:SetSource(Text( folderData.Folder ),0,0)
+    --   InFuseFolder:SetAttrs({INP_Disabled=true})
+    -- end
 
 
 
@@ -2457,6 +2398,27 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Callback to handle UI control events.
 --
+
+function command_doFetch(shaderID, folder)
+  
+  return
+    [[comp:RunScript("]]..GLOBAL_REPOSITORYPATH..[[fetch-from-ui.py", { id = "]]..
+    shaderID..[[", verbose=false, noassets=false, folder="]]..folder..[["})]]
+
+  -- return "print(\"fetch shader "..shaderID.." into "..folder.."\")"
+end
+
+function command_doFuse(shaderID, folder)
+  
+  return
+    [[comp:RunScript("]]..GLOBAL_REPOSITORYPATH..[[fuse.py", { id = "]]..
+    shaderID..[[", pforce=false, folder="]]..folder..[["})]]
+
+  -- return "print(\"fuse shader "..shaderID.." from folder "..folder.."\")"
+end
+
+
+
 function NotifyChanged(inp, param, time)
 	
   if inp == nil or param == nil then
@@ -2473,25 +2435,69 @@ function NotifyChanged(inp, param, time)
   if inp == InFolderToUseCombo then
     verbose("NotifyChanged: folder to use changed")
         
-    InFileToUseCombo[Conversions_currentFolderIndex]:SetAttrs({IC_Visible = false})
-    Conversions_currentFolderIndex = param.Value + 1
-    InFileToUseCombo[Conversions_currentFolderIndex]:SetAttrs({IC_Visible = true})
+    InFileToUseCombo[Conversions_table.CurrentFolder]:SetAttrs({IC_Visible = false})
+    Conversions_table.CurrentFolder = param.Value + 1
+    InFileToUseCombo[Conversions_table.CurrentFolder]:SetAttrs({IC_Visible = true})
+
+    local folderData = Conversions_table.Folders[Conversions_table.CurrentFolder]
+        
+    InFetchFolder:SetAttrs({INP_Disabled=false})
+    InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
+    InFetchFolder:SetAttrs({INP_Disabled=true})
+
+    InFuseFolder:SetAttrs({INP_Disabled=false})
+    InFuseFolder:SetSource(Text( folderData.Folder ),0,0)
+    InFuseFolder:SetAttrs({INP_Disabled=true})
+    
+    currentEntry =  Conversions_table.Folders[Conversions_table.CurrentFolder].CurrentEntry
+    entry = folderData.Entries[folderData.CurrentEntry]
+
+    InFuseShaderID:SetAttrs({INP_Disabled=false})
+    InFuseShaderID:SetSource(Text( entry.ShadertoyID ),0,0)
+    InFuseShaderID:SetAttrs({INP_Disabled=true})
+
+    InFuseName:SetAttrs({INP_Disabled=false})
+    InFuseName:SetSource(Text( entry.Name ),0,0)
+    InFuseName:SetAttrs({INP_Disabled=true})
+
+    
+    InFetchButton:SetAttrs({ BTNCS_Execute = command_doFetch(Conversions_table.FetchShaderID,folderData.Folder) , })
+    InFuseButton:SetAttrs({ BTNCS_Execute = command_doFuse(entry.ShadertoyID,folderData.Folder) , })
+
+
+    -- InFetchFolder:SetSource(Text( folderData.Folder ),0,0)
 
     verbose("  set flag for a rebuild")
     InRebuildCheckBox:SetSource(Number(1),0)
-    InFetchButtonRebuildFlag:SetSource(Number(1),0,0)
-    InFuseButtonRebuildFlag:SetSource(Number(1),0,0)
 
     return
   end
     
     
     
-		if (inp == InFileToUseCombo[Conversions_currentFolderIndex]) then
-      verbose("NotifyChanged: file to use changed - set flag for a rebuild")
+		if (inp == InFileToUseCombo[Conversions_table.CurrentFolder]) then
+      -- print("NotifyChanged: file to use changed - set flag for a rebuild")
+
+      local currentEntry = param.Value + 1
+
+      Conversions_table.Folders[Conversions_table.CurrentFolder].CurrentEntry
+        = currentEntry
+
+      local entry = Conversions_table.Folders[Conversions_table.CurrentFolder].Entries[currentEntry]
+      
+      InFuseShaderID:SetAttrs({INP_Disabled=false})
+      InFuseShaderID:SetSource(Text( entry.ShadertoyID ),0,0)
+      InFuseShaderID:SetAttrs({INP_Disabled=true})
+
+      InFuseName:SetAttrs({INP_Disabled=false})
+      InFuseName:SetSource(Text( entry.Name ),0,0)
+      InFuseName:SetAttrs({INP_Disabled=true})
+
+      -- InFetchButton:SetAttrs({ BTNCS_Execute = command_doFetch(Conversions_table.FetchShaderID,Conversions_table.Folders[Conversions_table.CurrentFolder].Folder) , })
+      InFuseButton:SetAttrs({ BTNCS_Execute = command_doFuse(entry.ShadertoyID,Conversions_table.Folders[Conversions_table.CurrentFolder].Folder) , })
+
+
       InRebuildCheckBox:SetSource(Number(1),0)
-      -- InFetchButtonRebuildFlag:SetSource(Number(1),0,0)
-      InFuseButtonRebuildFlag:SetSource(Number(1),0,0)
 
       return
     end
@@ -2504,23 +2510,22 @@ function NotifyChanged(inp, param, time)
 
 		if (inp == InFetchShaderID) then
 
-      dump(Conversions_currentFolderIndex)
+      Conversions_table.FetchShaderID = param.Value
+
 			if (string.len(param.Value) == 6) then 
         InFetchButton:SetAttrs({INP_Disabled = false})
         InFetchButton:SetAttrs({LINKS_Name = "Fetch Shadertoy ID "..param.Value})
+        
+        InFetchButton:SetAttrs({ BTNCS_Execute = command_doFetch(Conversions_table.FetchShaderID,Conversions_table.Folders[Conversions_table.CurrentFolder].Folder) , })
+
       else
         InFetchButton:SetAttrs({INP_Disabled = true})
-        InFetchButton:SetAttrs({LINKS_Name = "Please Enter ID (6 Characters) "})
+        InFetchButton:SetAttrs({LINKS_Name = "Please Enter ID (6 Characters) "})        
       end
-      
-      InFetchButtonRebuildFlag:SetSource(Number(1),0,0)
-       
+             
       return
   	end
     
-    if (inp == InFuseShaderID) then  -- ev Button noch modifizieren
-      InFuseButtonRebuildFlag:SetSource(Number(1),0,0)
-    end  
 
 		if inp == InSize then
 		  if param.Value == 1 then
