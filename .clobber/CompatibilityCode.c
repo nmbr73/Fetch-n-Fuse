@@ -50,6 +50,7 @@
 
 /*| swi2S         |*/    #define swi2S(a,b,c,d)   {float2 tmp = d; (a).b = tmp.x; (a).c = tmp.y;}
 /*| swi3S         |*/    #define swi3S(a,b,c,d,e) {float3 tmp = e; (a).b = tmp.x; (a).c = tmp.y; (a).d = tmp.z;}
+/*| swi3S         |*/    #define swi4S(a,b,c,d,e,f) {float4 tmp = f; (a).b = tmp.x; (a).c = tmp.y; (a).d = tmp.z; (a).e = tmp.w;}
 
   #endif
 
@@ -361,10 +362,12 @@
   /*| exp2_f3       |*/ #define exp2_f3(a) _exp2f((a))
   /*| exp2_f4       |*/ #define exp2_f4(a) _exp2f((a))
   /*| ceil_f2       |*/ #define ceil_f2(a) ceil(a)
+  /*| ceil_f3       |*/ #define ceil_f3(a) ceil(a)
   /*| mix_f2        |*/ #define mix_f2(v,i,m) mix(v,i,m)
   /*| mix_f3        |*/ #define mix_f3(v,i,m) mix(v,i,m)
   /*| mix_f4        |*/ #define mix_f4(v,i,m) mix(v,i,m)
   /*| log_f3        |*/ #define log_f3(a) log(a)
+  /*| log_f4        |*/ #define log_f4(a) log(a)
   /*| log2_f3       |*/ #define log2_f3(a) log2(a)
   /*| round_f2      |*/ #define round_f2(a) round(a)
   /*| round_f3      |*/ #define round_f3(a) round(a)
@@ -432,10 +435,12 @@
     /*| exp2_f3       |*/ #define exp2_f3(a) _exp2f((a))
     /*| exp2_f4       |*/ #define exp2_f4(a) _exp2f((a))
     /*| ceil_f2       |*/ #define ceil_f2(a) ceil(a)
+    /*| ceil_f3       |*/ #define ceil_f3(a) ceil(a)
     /*| mix_f2        |*/ #define mix_f2(v,i,m) mix(v,i,m)
     /*| mix_f3        |*/ #define mix_f3(v,i,m) mix(v,i,m)
     /*| mix_f4        |*/ #define mix_f4(v,i,m) mix(v,i,m)
     /*| log_f3        |*/ #define log_f3(a) log(a)
+    /*| log_f4        |*/ #define log_f4(a) log(a)
     /*| log2_f3       |*/ #define log2_f3(a) log2(a)
     /*| sign_f        |*/ #define sign_f(a) sign(a)
     /*| sign_f2       |*/ #define sign_f2(a) sign(a)
@@ -523,10 +528,12 @@
     /*| exp2_f3       |*/ #define exp2_f3(a) to_float3(_exp2f((a).x), _exp2f((a).y), _exp2f((a).z))
     /*| exp2_f4       |*/ #define exp2_f4(a) to_float4(_exp2f((a).x), _exp2f((a).y), _exp2f((a).z), _exp2f((a).w))
     /*| ceil_f2       |*/ #define ceil_f2(a) to_float2(_ceil((a).x), _ceil((a).y))
+    /*| ceil_f3       |*/ #define ceil_f3(a) to_float3(_ceil((a).x), _ceil((a).y), _ceil((a).z))
     /*| mix_f2        |*/ #define mix_f2(v,i,m) to_float2(_mix((v).x,(i).x,(m).x),_mix((v).y,(i).y,(m).y))
     /*| mix_f3        |*/ #define mix_f3(v,i,m) to_float3(_mix((v).x,(i).x,(m).x),_mix((v).y,(i).y,(m).y),_mix((v).z,(i).z,(m).z))
     /*| mix_f4        |*/ #define mix_f4(v,i,m) to_float4(_mix((v).x,(i).x,(m).x),_mix((v).y,(i).y,(m).y),_mix((v).z,(i).z,(m).z),_mix((v).w,(i).w,(m).w))
     /*| log_f3        |*/ #define log_f3(a) to_float3(_logf((a).x), _logf((a).y),_logf((a).z))
+    /*| log_f4        |*/ #define log_f4(a) to_float4(_logf((a).x), _logf((a).y),_logf((a).z),_logf((a).w))
     /*| log2_f3       |*/ #define log2_f3(a) to_float3(_log2f((a).x), _log2f((a).y),_log2f((a).z))
     /*| sign_f        |*/ #define sign_f(a) (a==0.0f?0.0f:a>0.0f?1.0f:-1.0f)
     /*| sign_f2       |*/ #define sign_f2(a) to_float2((a).x==0.0f?0.0f:(a).x>0.0f?1.0f:-1.0f, (a).y==0.0f?0.0f:(a).y>0.0f?1.0f:-1.0f)
