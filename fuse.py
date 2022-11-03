@@ -284,7 +284,7 @@ def check_controls(conversionCode):
 
     # print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
 
-    if ctrlType == 'SLIDER':
+    if ctrlType == 'SLIDER' or ctrlType == 'SCREW':
 
       m = re.match(r'^\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*,\s*(-?\d+\.\d+)f\s*$',ctrlParams)
 
@@ -296,15 +296,24 @@ def check_controls(conversionCode):
       codeParams  = f"float  {ctrlVar};"
       codeKernel  = f"float  {ctrlVar} = params->{ctrlVar};"
       codeProcess = f"params.{ctrlVar} = In{ctrlVar}Slider:GetValue(req).Value"
-      codeCreate  = f"""
-          In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
-              LINKID_DataType    = "Number",
-              INPID_InputControl = "SliderControl",
-              INP_MinScale       = {min},
-              INP_MaxScale       = {max},
-              INP_Default        = {default},
-          }})"""
-
+      if ctrlType == 'SLIDER':
+          codeCreate  = f"""
+              In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+                  LINKID_DataType    = "Number",
+                  INPID_InputControl = "SliderControl",
+                  INP_MinScale       = {min},
+                  INP_MaxScale       = {max},
+                  INP_Default        = {default},
+              }})"""
+      else:
+          codeCreate  = f"""
+              In{ctrlVar}Slider = self:AddInput("{ctrlVar}", "{ctrlVar}", {{
+                  LINKID_DataType    = "Number",
+                  INPID_InputControl = "ScrewControl",
+                  INP_MinScale       = {min},
+                  INP_MaxScale       = {max},
+                  INP_Default        = {default},
+              }})"""      
 
     elif ctrlType == 'INTSLIDER':
 

@@ -85,7 +85,7 @@ iMouse:
       LINKID_DataType = "Point",
       INPID_InputControl = "OffsetControl",
       INP_DoNotifyChanged  = false,
-      INP_Passive = true,
+      --INP_Passive = true,
       INPID_PreviewControl = "CrosshairControl",
     })
 
@@ -93,7 +93,7 @@ iMouse:
       LINKID_DataType = "Point",
       INPID_InputControl = "OffsetControl",
       INP_DoNotifyChanged  = false,
-      INP_Passive = true,
+      --INP_Passive = true,
       INPID_PreviewControl = "CrosshairControl",
       INP_Disabled = true,
     })
@@ -102,7 +102,7 @@ iMouse:
       LINKID_DataType = "Number",
       INPID_InputControl = "CheckboxControl",
       INP_DoNotifyChanged  = false,
-      INP_Passive = true,
+      --INP_Passive = true,
       INP_MinScale = 0,
       INP_MaxScale = 1,
       INP_Default = 0,
