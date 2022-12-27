@@ -242,9 +242,9 @@
 /*| to_mat4       |*/  {
 /*| to_mat4       |*/    mat4 t;
 /*| to_mat4       |*/    t.r0.x = a; t.r0.y = b; t.r0.z = c; t.r0.w = d;
-/*| to_mat4       |*/    t.r1.x = e; t.r1.y = f; t.r1.z = g; t.r0.w = h;
-/*| to_mat4       |*/    t.r2.x = i; t.r2.y = j; t.r2.z = k; t.r0.w = l;
-/*| to_mat4       |*/    t.r3.x = m; t.r3.y = n; t.r3.z = o; t.r0.w = p;
+/*| to_mat4       |*/    t.r1.x = e; t.r1.y = f; t.r1.z = g; t.r1.w = h;
+/*| to_mat4       |*/    t.r2.x = i; t.r2.y = j; t.r2.z = k; t.r2.w = l;
+/*| to_mat4       |*/    t.r3.x = m; t.r3.y = n; t.r3.z = o; t.r3.w = p;
 /*| to_mat4       |*/    return t;
 /*| to_mat4       |*/  }
 /*|               |*/
