@@ -45,9 +45,22 @@ chmod a+x fetch.py fuse.py
 ... on Windows the following could work in a PowerShell:
 ```
 python.exe -m venv .venv
-.venv/Scripts/activate.bat
+.venv\Scripts\activate.bat
 python.exe -m pip install -r requirements.txt
 python.exe .\fetch.py
+```
+The use of the fetch/fuse functionality from the Incubator.fuse is currently only possible or tested under Windows systems. This requires the installation of Python 3.6
+https://www.python.org/downloads/release/python-360/
+
+![Fusion Screenshot](FetchNFuse.jpg)
+
+In addition, the Requirements.txt for Python3.6 must be installed
+```
+{Python3.6 Path}python.exe -m pip install -r requirements.txt
+```
+By default, Python3.6 is installed in the following folder:
+```
+C:\Users\${USER}\AppData\Local\Programs\Python\Python36\
 ```
 
 
