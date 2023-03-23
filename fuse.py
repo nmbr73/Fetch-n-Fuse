@@ -132,6 +132,30 @@ def write_markdown_file(info,target_file,force=False):
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+def write_sfi_file(info,target_file,force=False):
+
+  fuse_name     = info['fuse']['name']
+  fuse_author   = info['fuse']['author']
+  shader_author = info['shader']['author']
+  shader_id     = info['shader']['id']
+  shader_name   = info['shader']['name']
+  description   = info['shader'].get('description','')
+
+  if os.path.isfile(target_file) and not force:
+    print("file '"+target_file+"' already exists - use force option to overwrite")
+    return
+
+  with open(target_file, 'w') as f:
+    f.write( "" \
+      f"info = {{\n\n   -- https://www.shadertoy.com/view/{shader_id}\n\n   Shadertoy = {{\n      Name = \"{shader_name}\",\n      Author = \"{fuse_author}\",\n      ID = \"{shader_id}\",\n   }},\n\n" \
+      f"   Fuse = {{\n      Author = \"{fuse_author}\",\n      Date = \"2023-03-23\",\n   }},\n\n" \
+      f"   Compatibility = {{\n      macOS_Metal = false,\n      macOS_OpenCL = false,\n      Windows_CUDA = false,\n      Windows_OpenCL = false,\n   }},\n}}"
+      )
+
+    verbose("wrote file '"+target_file+"'")
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 def patch_kernel(conversionCode,kernelName,has_param,part=""):
 
 
@@ -504,8 +528,10 @@ def fuse_it(id,force=False):
   # write .md file
 
   write_markdown_file(info, target_file = target_path+fuse_file+".md", force = force )
-
-
+  
+  # write .sfi file
+  
+  write_sfi_file(info, target_file = target_path+fuse_file+".sfi", force = force )
 
   # read conversion code
 
