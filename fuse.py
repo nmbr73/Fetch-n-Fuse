@@ -120,12 +120,11 @@ def write_markdown_file(info,target_file,force=False):
   dlbtn = f"[![Download Installer](https://img.shields.io/static/v1?label=Download&message={fuse_name}-Installer.lua&color=blue)]({fuse_name}-Installer.lua \"Installer\")"
   with open(target_file, 'w') as f:
     f.write( "" \
-      f"# {fuse_name}\n{dlbtn}\n\n" \
-      f"Based on '_[{shader_name}](https://www.shadertoy.com/view/{shader_id})_' by [{shader_author}](https://www.shadertoy.com/user/{shader_author}) "
-      f"and ported by [{fuse_author}](../../Site/Profiles/{fuse_author}.md).\n\n" \
-      f"[![Thumbnail]({fuse_name}_320x180.png)](https://www.shadertoy.com/view/{shader_id} \"View on Shadertoy.com\")\n\n" \
-      f":construction: ***ADD SOME REASONABLE DESCRIPTION HERE!*** {description} :construction:\n\n" \
-      "## Compatibility\n- [ ] Tested on macOS/Metal\n- [ ] Tested on macOS/OpenCL\n- [ ] Tested on Windows/Cuda\n- [ ] Tested on Windows/OpenCL\n" \
+      f"# {fuse_name}\n\n" \
+      f"[![Thumbnail]({fuse_name}.png)](https://www.shadertoy.com/view/{shader_id}\"View on Shadertoy.com\")\n" \
+      f"# Here insert a description of the shader! And maybe a gif\n\n" \
+      f"# Description of the Shader in Shadertoy: \n{description}\n\n" \
+      f"[![Thumbnail]({fuse_name}_screenshoot.png)]({fuse_name}.fuse)\n\n"
       )
 
     verbose("wrote file '"+target_file+"'")
@@ -140,6 +139,7 @@ def write_sfi_file(info,target_file,force=False):
   shader_id     = info['shader']['id']
   shader_name   = info['shader']['name']
   description   = info['shader'].get('description','')
+  creationdate  = date.today().strftime("%Y-%m-%d")
 
   if os.path.isfile(target_file) and not force:
     print("file '"+target_file+"' already exists - use force option to overwrite")
@@ -148,7 +148,7 @@ def write_sfi_file(info,target_file,force=False):
   with open(target_file, 'w') as f:
     f.write( "" \
       f"info = {{\n\n   -- https://www.shadertoy.com/view/{shader_id}\n\n   Shadertoy = {{\n      Name = \"{shader_name}\",\n      Author = \"{fuse_author}\",\n      ID = \"{shader_id}\",\n   }},\n\n" \
-      f"   Fuse = {{\n      Author = \"{fuse_author}\",\n      Date = \"2023-03-23\",\n   }},\n\n" \
+      f"   Fuse = {{\n      Author = \"{fuse_author}\",\n      Date = \"{creationdate}\",\n   }},\n\n" \
       f"   Compatibility = {{\n      macOS_Metal = false,\n      macOS_OpenCL = false,\n      Windows_CUDA = false,\n      Windows_OpenCL = false,\n   }},\n}}"
       )
 

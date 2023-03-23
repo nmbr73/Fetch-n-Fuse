@@ -114,12 +114,17 @@ As soon as your conversion works without errors, is equipped with some nice cont
 ```
 ./fuse --id <TOYID>
 ```
-... which should create a fuse and a markdown file in the `Converted/` folder.
+or fuse a shadertoy from incubator.fuse (only Windows)
+
+... which should create a fuse, a markdown file and a sfi-file in the `Converted/` folder.
+
+These files you can copy to the fuse-directory of Resolve/Fusion. 
+However, it is necessary for Shaderfuse (https://github.com/nmbr73/Shaderfuse/blob/main/README.md) to be cloned and installed ( https://github.com/nmbr73/Shaderfuse/blob/main/ Tools/README.md )
+Note that the files must be in a subfolder under Shaders. (e.g. c:\Users\{USERNAME}\AppData\Roaming\Blackmagic Design\Fusion\Fuses\Shaders\Incubator\ ) The "Incubator" folder can be freely selected, in the Effects/Tools the fuse is then listed under Shaderfuse(dev) /Incubator.
 
 ## Postprocessing
 
-:construction:
-...
+Once the fuse has been tested (if possible under OpenCl, Cuda and metal), the md file can be edited. A description of the operation and special features. A png file in 320*180 pixel format, which shows a typical image of the shader and a screenshot (any format), which shows the parameters and the typical nodes in operation. The 320*180 pixel file must be named <Shaderfusenamen>.png and the screenshoot <Shaderfusenamen>_screenshoot.png. All these files are then checked into one of the subfolders (category) in https://github.com/nmbr73/Shaderfuse/Shaders and a pull request is started.
 
 ## Pull Request on [Shadertoys](https://github.com/nmbr73/Shadertoys)
 
