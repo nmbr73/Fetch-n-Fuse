@@ -1,0 +1,17 @@
+fuse:
+  author: nmbr73
+  file: PartyConcertVisuals2020
+  id: PartyConcertVisuals2020
+  kernel: PartyConcertVisuals2020
+  name: PartyConcertVisuals2020
+shader:
+  author: blackle
+  description: visuals for the concert at @party online 2020, programmed in about
+    1 hour
+  id: WtscW4
+  name: '@Party Concert Visuals 2020'
+  tags:
+  - raymarching
+  - 4d
+  - lasers
+  url: https://www.shadertoy.com/view/WtscW4
