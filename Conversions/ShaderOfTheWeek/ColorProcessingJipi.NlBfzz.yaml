@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ColorProcessingJipi
+  id: ColorProcessingJipi
+  kernel: ColorProcessingJipi
+  name: ColorProcessingJipi
+shader:
+  author: N.N.
+  description: I really don't know what it is...
+  id: NlBfzz
+  name: Color processing JiPi
+  parent:
+    id: 7tfBzs
+    name: Color processing
+    url: https://www.shadertoy.com/view/7tfBzs
+  tags:
+  - sdf
+  - glow
+  url: https://www.shadertoy.com/view/NlBfzz

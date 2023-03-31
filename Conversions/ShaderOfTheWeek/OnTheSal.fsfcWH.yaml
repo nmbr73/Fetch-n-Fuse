@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: OnTheSal
+  id: OnTheSal
+  kernel: OnTheSal
+  name: OnTheSal
+shader:
+  author: N.N.
+  description: "Improve a bit my red hiker. \nInspired by nguyen nhut work https://twitter.com/nguyenhut_art"
+  id: fsfcWH
+  name: Fork On the sal JiPi 020
+  parent:
+    id: fsXcR8
+    name: On the salt lake
+    url: https://www.shadertoy.com/view/fsXcR8
+  tags:
+  - animation
+  - walk
+  - human
+  - bone
+  url: https://www.shadertoy.com/view/fsfcWH

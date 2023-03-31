@@ -1,0 +1,17 @@
+fuse:
+  author: JiPi
+  file: HyperbolicGroupLimitSet
+  id: HyperbolicGroupLimitSet
+  kernel: HyperbolicGroupLimitSet
+  name: HyperbolicGroupLimitSet
+shader:
+  author: neozhaoliang
+  description: old version of https://www.shadertoy.com/view/WdGBz3
+  id: NstSDs
+  name: Hyperbolic Group Limit Set
+  tags:
+  - 3d
+  - tiling
+  - hyperbolic
+  - limitset
+  url: https://www.shadertoy.com/view/NstSDs

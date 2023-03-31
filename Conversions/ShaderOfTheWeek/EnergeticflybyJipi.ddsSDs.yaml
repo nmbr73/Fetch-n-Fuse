@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: EnergeticflybyJipi
+  id: EnergeticflybyJipi
+  kernel: EnergeticflybyJipi
+  name: EnergeticflybyJipi
+shader:
+  author: N.N.
+  description: Livecoded at Inercia Shader Royale 2022 - 04/11/22 - 4th place
+  id: ddsSDs
+  name: EnergeticFlyby JiPi
+  parent:
+    id: csjGDD
+    name: '[InÃ©rcia 2022] Energetic Flyby'
+    url: https://www.shadertoy.com/view/csjGDD
+  tags:
+  - demoscene
+  - livecoding
+  url: https://www.shadertoy.com/view/ddsSDs

@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: ControllableMachinery
+  id: ControllableMachinery
+  kernel: ControllableMachinery
+  name: ControllableMachinery
+shader:
+  author: dr2
+  description: Still doesn't do much, but now with speed controller (slide the knob)
+    and more gears; mouseable
+  id: fsXyDj
+  name: Controllable Machinery
+  tags:
+  - interactive
+  - wheel
+  - gear
+  - widget
+  - machine
+  url: https://www.shadertoy.com/view/fsXyDj

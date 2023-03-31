@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: ElectricEelUniverse
+  id: ElectricEelUniverse
+  kernel: ElectricEelUniverse
+  name: ElectricEelUniverse
+shader:
+  author: mrange
+  description: 'CC0: Electric Eel Universe
+
+    Saturday tinkering with an old failed shader
+
+    Turned out a bit better today
+
+    '
+  id: cdV3DW
+  name: Electric Eel Universe
+  tags:
+  - electric
+  url: https://www.shadertoy.com/view/cdV3DW

@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: TwizzlyCircleMess
+  id: TwizzlyCircleMess
+  kernel: TwizzlyCircleMess
+  name: TwizzlyCircleMess
+shader:
+  author: SnoopethDuckDuck
+  description: Messing around again
+  id: sltGRj
+  name: Twizzly Circle Mess
+  tags:
+  - raymarching
+  - template
+  - artofcode
+  url: https://www.shadertoy.com/view/sltGRj

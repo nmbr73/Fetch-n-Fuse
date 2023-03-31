@@ -1,0 +1,21 @@
+fuse:
+  author: JiPi
+  file: CoastalLandscapeJipi
+  id: CoastalLandscapeJipi
+  kernel: CoastalLandscapeJipi
+  name: CoastalLandscapeJipi
+shader:
+  author: N.N.
+  description: I wanted to do something in the spirit of Van Gogh. It looks better
+    on the full screen.
+  id: fsccWl
+  name: Coastal Landscape JiPi
+  parent:
+    id: fstyD4
+    name: Coastal Landscape
+    url: https://www.shadertoy.com/view/fstyD4
+  tags:
+  - 2d
+  - landscape
+  - vangogh
+  url: https://www.shadertoy.com/view/fsccWl

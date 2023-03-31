@@ -1,0 +1,35 @@
+{
+ "ver": "0.1",
+ "info": {
+  "id": "ddsSDs",
+  "date": "0",
+  "viewed": 0,
+  "name": "EnergeticFlyby JiPi",
+  "description": "Livecoded at Inercia Shader Royale 2022 - 04/11/22 - 4th place",
+  "likes": 0,
+  "published": "Private",
+  "usePreview": 0,
+  "tags": [
+   "demoscene",
+   "livecoding"
+  ],
+  "hasliked": 0,
+  "parentid": "csjGDD",
+  "parentname": "[Inércia 2022] Energetic Flyby"
+ },
+ "renderpass": [
+  {
+   "inputs": [],
+   "outputs": [
+    {
+     "id": "4dfGRr",
+     "channel": 0
+    }
+   ],
+   "code": "#define time iTime\n#define resolution iResolution\n#define so fract(sin(time)*123.456)\n\nfloat det=.001, br=0., tub=0., hit=0.;\nvec3 pos, sphpos;\nmat3 lookat(vec3 dir, vec3 up) {\n  vec3 rt=normalize(cross(dir,up));\n  return mat3(rt,cross(rt,dir),dir);\n}\nvec3 path(float t) {\n  return vec3(sin(t+cos(t)*.5)*.5,cos(t*.5),t);\n}\nmat2 rot(float a) {\n  float s=sin(a);\n  float c=cos(a);\n  return mat2(c,s,-s,c);\n}\nvec3 fractal(vec2 p) {\n  p=fract(p*.1);\n  float m=1000.;\n  for (int i=0; i<7; i++) {\n    p=abs(p)/clamp(abs(p.x*p.y),.25,2.)-1.2;\n    m=min(m,abs(p.y)+fract(p.x*.3+time*.5+float(i)*.25));\n  }\n  m=exp(-6.*m);\n  return m*vec3(abs(p.x),m,abs(p.y));\n}\n\nfloat coso(vec3 pp) {\n  pp*=.7;\n  pp.xy*=rot(pp.z*2.);\n  pp.xz*=rot(time*2.);\n  pp.yz*=rot(time);\n  float sph=length(pp)-.04;\n  sph-=length(sin(pp*40.))*.05;\n  sph=max(sph,-length(pp)+.11);\n  float br2=length(pp)-.03;\n  br2=min(br2,length(pp.xy)+.005);\n  br2=min(br2,length(pp.xz)+.005);\n  br2=min(br2,length(pp.yz)+.005);\n  br2=max(br2,length(pp)-1.);\n  br=min(br2,br);\n  float d=min(br,sph);\n  return d;\n}\n\n\nfloat de(vec3 p) {\n  hit=0.;\n  br=1000.;\n  vec3 pp=p-sphpos;\n  p.xy-=path(p.z).xy;\n  p.xy*=rot(p.z+time*.5);\n  float s=sin(p.z*.5+time*.5);\n  p.xy*=1.3-s*s*.7;\n  \n  for(int i=0; i<6; i++) {\n    p=abs(p)-.4;\n  }\n  pos=p;\n  tub=-length(p.xy)+.45+sin(p.z*10.)*.1*smoothstep(.4,.5,abs(.5-fract(p.z*.05))*2.);\n  float co=coso(pp);\n  co=min(co,coso(pp+.7));\n  co=min(co,coso(pp-.7));\n  float d=min(tub,co);\n  if (d==tub) hit=step(fract(.1*length(sin(p*10.))),.05);\n  return d*.3;\n}\n\nvec3 march(vec3 from, vec3 dir) {\n  vec2 uv=vec2(atan(dir.x,dir.y)+time*.5,length(dir.xy)+sin(time*.2));\n  vec3 col=fractal(uv);\n  float d=0.,td=0.,g=0., ref=0., ltd=0., li=0.;\n  vec3 p=from;\n  for (int i=0; i<200; i++) {\n    p+=dir*d;\n    d=de(p);\n    if (d<det && ref==0. && hit==1.) {\n      vec2 e=vec2(0.,.1);\n      vec3 n=normalize(vec3(de(p+e.yxx),de(p+e.xyx),de(p+e.xxy))-de(p));\n      p-=dir*d*2.;\n      dir=reflect(dir,n);\n      ref=1.;\n      td=0.;\n      ltd=td;\n      continue;\n    }\n    if (d<det || td>5.) break;\n    td+=d;\n    g+=.1/(.1+br*13.);\n    li+=.1/(.1+tub*5.);\n  }\n  g=max(g,li*.15);\n  float f=1.-td/3.;\n  if (ref==1.) f=1.-ltd/3.;\n  if (d<.01) {\n    col=vec3(1.);\n    vec2 e=vec2(0.,det);\n    vec3 n=normalize(vec3(de(p+e.yxx),de(p+e.xyx),de(p+e.xxy))-de(p));\n    col=vec3(n.x)*.7;\n    col+=fract(pos.z*5.)*vec3(.2,.1,.5);\n    col+=fractal(pos.xz*2.);\n    if (tub>.01) col=vec3(0.);\n  }\n  col*=f;\n  vec3 glo=g*.1*vec3(2.,1.,2.)*(.5+so*1.5)*.5;\n  glo.rb*=rot(dir.y*1.5);\n  col+=glo;\n  col*=vec3(.8,.7,.7);\n  col=mix(col,vec3(1.),ref*.3);\n  return col;\n}\n\nvoid mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n  vec2 uv = vec2(gl_FragCoord.x / resolution.x, gl_FragCoord.y / resolution.y);\n  uv -= 0.5;\n  uv /= vec2(resolution.y / resolution.x, 1);\n  float t=time;\n  vec3 from= path(t);\n  if (mod(time,10.)>5.) from=path(floor(t/4.+.5)*4.);\n  sphpos=path(t+.5);\n  from.x+=.2;\n  vec3 fw=normalize(path(t+.5)-from);\n  vec3 dir=normalize(vec3(uv,.5));\n  dir=lookat(fw,vec3(fw.x*2.,1.,0.))*dir;\n  dir.xz+=sin(time)*.3;\n  vec3 col=march(from,dir);\n  col=mix(vec3(.5)*length(col),col,.8);\n  fragColor =vec4(col,1.);\n}\n\n",
+   "name": "Image",
+   "description": "",
+   "type": "image"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: WednesdayMessingAround
+  id: WednesdayMessingAround
+  kernel: WednesdayMessingAround
+  name: WednesdayMessingAround
+shader:
+  author: mrange
+  description: 'CC0: Wednesday messing around
+
+    Tinkered a bit with an earlier shader
+
+    Thought while similar it turned out distinct enough to share
+
+    '
+  id: NtcyDn
+  name: Wednesday messing around
+  tags:
+  - 3d
+  url: https://www.shadertoy.com/view/NtcyDn

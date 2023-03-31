@@ -1,0 +1,23 @@
+fuse:
+  author: JiPi
+  file: GreenfielddioramaJipi
+  id: GreenfielddioramaJipi
+  kernel: GreenfielddioramaJipi
+  name: GreenfielddioramaJipi
+shader:
+  author: N.N.
+  description: Raymarched Green Field diorama with stylized shading and "clay-like"
+    deformations.
+  id: md33WB
+  name: GreenFieldDiorama JiPi
+  parent:
+    id: 7dSGW1
+    name: Green Field Diorama
+    url: https://www.shadertoy.com/view/7dSGW1
+  tags:
+  - raymarching
+  - stylized
+  - corner
+  - diorama
+  - clay
+  url: https://www.shadertoy.com/view/md33WB

@@ -1,0 +1,20 @@
+fuse:
+  author: JiPi
+  file: StarsAndGalaxy
+  id: StarsAndGalaxy
+  kernel: StarsAndGalaxy
+  name: StarsAndGalaxy
+shader:
+  author: mrange
+  description: 'License CC0: Stars and galaxy
+
+    Bit of sunday tinkering lead to stars and a galaxy
+
+    Didn''t turn out as I envisioned but it turned out to something
+
+    that I liked so sharing it.'
+  id: stBcW1
+  name: Stars and galaxy
+  tags:
+  - 2d
+  url: https://www.shadertoy.com/view/stBcW1

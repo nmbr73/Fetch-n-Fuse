@@ -1,0 +1,19 @@
+fuse:
+  author: JiPi
+  file: GenerativeArtDeco4
+  id: GenerativeArtDeco4
+  kernel: GenerativeArtDeco4
+  name: GenerativeArtDeco4
+shader:
+  author: morisil
+  description: I just played a bit with the coefficients of my original "generative
+    art deco". I changed color grading to be based on polar coordinates and put the
+    shape in motion.
+  id: mds3DX
+  name: generative art deco 4
+  tags:
+  - chromaticaberration
+  - study
+  - depthoffield
+  - focus
+  url: https://www.shadertoy.com/view/mds3DX

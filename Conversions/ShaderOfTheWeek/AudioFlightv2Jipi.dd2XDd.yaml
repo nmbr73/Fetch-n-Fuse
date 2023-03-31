@@ -1,0 +1,27 @@
+fuse:
+  author: JiPi
+  file: AudioFlightv2Jipi
+  id: AudioFlightv2Jipi
+  kernel: AudioFlightv2Jipi
+  name: AudioFlightv2Jipi
+shader:
+  author: N.N.
+  description: 'Audio Flight ðŸš€ v2 - >> caution/strobing effects << - seriously
+    in 46 seconds..
+
+    > click and drag <
+
+    music Boris Brejcha - Gravity
+
+    (if audio doesn''t start - stop, rewind and play)
+
+    '
+  id: dd2XDd
+  name: Audio FlightV2 JiPi
+  parent:
+    id: 7tfyRl
+    name: Audio Flight v2 (strobes)
+    url: https://www.shadertoy.com/view/7tfyRl
+  tags:
+  - audioflightv2
+  url: https://www.shadertoy.com/view/dd2XDd

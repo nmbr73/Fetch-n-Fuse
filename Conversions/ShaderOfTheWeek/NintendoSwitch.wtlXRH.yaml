@@ -1,0 +1,22 @@
+fuse:
+  author: JiPi
+  file: NintendoSwitch
+  id: NintendoSwitch
+  kernel: NintendoSwitch
+  name: NintendoSwitch
+shader:
+  author: jackdavenport
+  description: 'Decided to practice my distance field modelling skills by creating
+    a Nintendo Switch, displaying one of my older shaders on it''s screen :D
+
+
+    Click the mouse to look around the console.'
+  id: wtlXRH
+  name: Nintendo Switch
+  tags:
+  - raymarching
+  - raymarcher
+  - modelling
+  - nintendo
+  - switch
+  url: https://www.shadertoy.com/view/wtlXRH

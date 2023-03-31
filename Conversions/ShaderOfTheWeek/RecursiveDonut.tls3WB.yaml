@@ -1,0 +1,16 @@
+fuse:
+  author: JiPi
+  file: RecursiveDonut.tls3WB
+  id: RecursiveDonut
+  name: RecursiveDonut
+shader:
+  author: ShnitzelKiller
+  description: Everything is chrome in the future. Also mousable.
+  id: tls3WB
+  name: Recursive Donut
+  tags:
+  - fractal
+  - interactive
+  - torus
+  - mousable
+  url: https://www.shadertoy.com/view/tls3WB
