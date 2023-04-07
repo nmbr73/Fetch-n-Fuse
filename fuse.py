@@ -120,8 +120,6 @@ def write_markdown_file(info,target_file,force=False):
   dlbtn = f"[![Download Installer](https://img.shields.io/static/v1?label=Download&message={fuse_name}-Installer.lua&color=blue)]({fuse_name}-Installer.lua \"Installer\")"
   with open(target_file, 'w') as f:
     f.write( "" \
-      f"# {fuse_name}\n\n" \
-      f"[![Thumbnail]({fuse_name}.png)](https://www.shadertoy.com/view/{shader_id}\"View on Shadertoy.com\")\n" \
       f"# Here insert a description of the shader! And maybe a gif\n\n" \
       f"# Description of the Shader in Shadertoy: \n{description}\n\n" \
       f"[![Thumbnail]({fuse_name}_screenshoot.png)]({fuse_name}.fuse)\n\n"
@@ -147,7 +145,7 @@ def write_sfi_file(info,target_file,force=False):
 
   with open(target_file, 'w') as f:
     f.write( "" \
-      f"info = {{\n\n   -- https://www.shadertoy.com/view/{shader_id}\n\n   Shadertoy = {{\n      Name = \"{shader_name}\",\n      Author = \"{fuse_author}\",\n      ID = \"{shader_id}\",\n   }},\n\n" \
+      f"info = {{\n\n   -- https://www.shadertoy.com/view/{shader_id}\n\n   Shadertoy = {{\n      Name = \"{shader_name}\",\n      Author = \"{shader_author}\",\n      ID = \"{shader_id}\",\n   }},\n\n" \
       f"   Fuse = {{\n      Author = \"{fuse_author}\",\n      Date = \"{creationdate}\",\n   }},\n\n" \
       f"   Compatibility = {{\n      macOS_Metal = false,\n      macOS_OpenCL = false,\n      Windows_CUDA = false,\n      Windows_OpenCL = false,\n   }},\n}}"
       )
@@ -337,7 +335,7 @@ def check_controls(conversionCode):
                   INP_MinScale       = {min},
                   INP_MaxScale       = {max},
                   INP_Default        = {default},
-              }})"""      
+              }})"""
 
     elif ctrlType == 'INTSLIDER':
 
@@ -438,27 +436,27 @@ def check_controls(conversionCode):
             In{ctrlVar}ColorA = self:AddInput("Alpha", "{ctrlVar}Alpha", {{ INP_Default  = {a}, IC_ControlID = 3, attrs}})
 
           self:EndControlNest()"""
-    
+
     elif ctrlType == 'BUTTON':
       #print(f"create {ctrlType} for {ctrlVar} with parameters '{ctrlParams}'")
-      
+
       m=ctrlParams.split(",")
-      
+
       if m == None:
         raise Exception (f"failed to match '{ctrlParams}' as {ctrlType} parameters")
-      
+
       #print("m",m, m[0])
-      
-      if (m[0] == "0"): 
+
+      if (m[0] == "0"):
         _type = ""
-      if (m[0] == "1"): 
+      if (m[0] == "1"):
         _type = f""" MBTNC_Type         = "Toggle", """
 
       buttons = ""
       m.pop(0)
       for i in m:
         buttons += f""" {{ MBTNC_AddButton  = "{i}", }}, """
-      
+
       codeParams  = f"float  {ctrlVar};"
       codeKernel  = f"float  {ctrlVar} = params->{ctrlVar};"
       codeProcess = f"params.{ctrlVar} = In{ctrlVar}Button:GetValue(req).Value"
@@ -475,7 +473,7 @@ def check_controls(conversionCode):
 		      INP_Default        = 0,
               IC_Visible         = true,
           }})"""
- 
+
 
     else:
       raise Exception(f"unknow resp. not yet implemented contol {ctrlType} for {ctrlVar}")
@@ -528,9 +526,9 @@ def fuse_it(id,force=False):
   # write .md file
 
   write_markdown_file(info, target_file = target_path+fuse_file+".md", force = force )
-  
+
   # write .sfi file
-  
+
   write_sfi_file(info, target_file = target_path+fuse_file+".sfi", force = force )
 
   # read conversion code
